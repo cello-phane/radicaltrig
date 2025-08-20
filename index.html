@@ -176,16 +176,6 @@
             return (1.0 - x) * invSqrtA;
         }
 
-        function rpsin(x) {
-            const x2 = x * x;
-            return (2.0 * x) / (1.0 + x2);
-        }
-
-        function rpcos(x) {
-            const x2 = x * x;
-            return (1.0 - x2) / (1.0 + x2);
-        }
-
         // Convert from degrees (period 4)
         function degreesToFreq(degrees) {
             return (degrees / 90.0); // Maps 0-360° to 0-4 frequency units
