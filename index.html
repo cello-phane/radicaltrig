@@ -164,7 +164,6 @@
         const toggleAnimBtn = document.getElementById('toggleAnim');
         const stepAnimBtn = document.getElementById('stepAnim');
         
-        // Your Radical Angle Unit System from the shader!
         function rsin(x) {
             const a = 1.0 - 2.0 * x + 2.0 * x * x;
             const invSqrtA = 1.0 / Math.sqrt(a);
@@ -187,12 +186,12 @@
             return (1.0 - x2) / (1.0 + x2);
         }
 
-        // Convert from degrees to your frequency domain (period 4)
+        // Convert from degrees (period 4)
         function degreesToFreq(degrees) {
             return (degrees / 90.0); // Maps 0-360° to 0-4 frequency units
         }
         
-        // Quadrant mapping for your frequency domain trig
+        // Quadrant mapping
         function freqRadSinCos(freq) {
             const phase = freq % 4.0;
             const quadrant = Math.floor(phase);
@@ -215,7 +214,7 @@
             return { sin: sin_result, cos: cos_result };
         }
 
-        // 3D Rotation using YOUR radical angle system
+        // 3D Rotation
         function rotateX(point, angleDegrees) {
             const freq = degreesToFreq(angleDegrees);
             const { sin, cos } = freqRadSinCos(freq);
@@ -262,24 +261,24 @@
             return sum;
         }
         
-        // Generate sphere points using YOUR radical angle system
+        // Generate sphere points
         function generateSpherePoints(radius, meridianCount, parallelCount, integParam) {
             const points = [];
             const a = integParam; // Integration parameter (0-1)
             
-            // Generate meridians using your frequency domain (0-4 instead of 0-2π)
+            // Generate meridians (0-4 instead of 0-2π)
             for (let m = 0; m < meridianCount; m++) {
-                const phiFreq = (m / meridianCount) * 4.0; // Longitude in your freq units
+                const phiFreq = (m / meridianCount) * 4.0; // Longitude
                 const meridianPoints = [];
                 
                 for (let p = 0; p <= parallelCount; p++) {
-                    const thetaFreq = (p / parallelCount) * 2.0; // Latitude in your freq units
+                    const thetaFreq = (p / parallelCount) * 2.0; // Latitude
                     
                     // Apply semicircle integration influence
                     const integralInfluence = semicircleIntegral(radius, a) / (radius * radius);
                     const modifiedRadius = radius * (1 + 0.1 * freqRadSinCos(integralInfluence * 2.0).sin);
                     
-                    // Spherical to Cartesian using YOUR radical trig functions
+                    // Spherical to Cartesian (radical angle trigonometry)
                     const thetaTrig = freqRadSinCos(thetaFreq);
                     const phiTrig = freqRadSinCos(phiFreq);
                     
@@ -292,7 +291,7 @@
                 points.push(meridianPoints);
             }
             
-            // Generate parallels using radical angle system
+            // Generate parallels
             const parallelLines = [];
             for (let p = 1; p < parallelCount; p++) { // Skip poles
                 const thetaFreq = (p / parallelCount) * 2.0;
@@ -336,12 +335,12 @@
             ctx.fill();
         }
         
-        // Main render function using YOUR radical angle system
+        // Main render function
         function render() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
-            const rotXAngle = parseFloat(controls.rotX.value); // Now in degrees
-            const rotYAngle = parseFloat(controls.rotY.value); // Now in degrees
+            const rotXAngle = parseFloat(controls.rotX.value);
+            const rotYAngle = parseFloat(controls.rotY.value);
             const integParam = parseFloat(controls.integParam.value) / 100;
             const meridianCount = parseInt(controls.meridians.value);
             const parallelCount = parseInt(controls.parallels.value);
