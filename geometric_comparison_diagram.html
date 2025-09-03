@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Geometric Comparison</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: #1a1a1a;
+            color: white;
+            font-family: 'Courier New', monospace;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container {
+            display: flex;
+            gap: 40px;
+            margin: 20px 0;
+        }
+        .panel {
+            background: #2a2a2a;
+            border: 2px solid #444;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+        }
+        .panel h3 {
+            margin-top: 0;
+            color: #88ff88;
+        }
+        canvas {
+            border: 1px solid #555;
+            background: #0a0a0a;
+        }
+        .controls {
+            margin: 20px 0;
+            text-align: center;
+        }
+        input[type="range"] {
+            width: 300px;
+            margin: 0 10px;
+        }
+        .parameter-info {
+            display: flex;
+            justify-content: space-between;
+            margin: 10px 0;
+            font-size: 14px;
+        }
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 10px 0;
+            font-size: 12px;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .color-box {
+            width: 12px;
+            height: 12px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Geometric Comparison: Shader vs Graph Circle</h1>
+    
+    <div class="controls">
+        <label for="parameter">Parameter: </label>
+        <input type="range" id="parameter" min="0" max="1" step="0.01" value="0.25">
+        <span id="paramValue">0.25</span>
+    </div>
+    
+    <div class="parameter-info">
+        <div>Shader pos_rad: t = <span id="shaderT">0.25</span> (0.0-1.0)</div>
+        <div>Graph: t = <span id="graphT">1.57</span> (0-2π)</div>
+    </div>
+    
+    <div class="container">
+        <div class="panel">
+            <h3>Shader Circle (pos_rad)</h3>
+            <canvas id="shaderCanvas" width="380" height="300"></canvas>
+            <div class="parameter-info">
+                <div>Uses radical approximation</div>
+                <div>Parameter: 0.0-1.0</div>
+            </div>
+        </div>
+        
+        <div class="panel">
+            <h3>Graph Circle (Exact)</h3>
+            <canvas id="graphCanvas" width="380" height="300"></canvas>
+            <div class="parameter-info">
+                <div>Uses exact trigonometry</div>
+                <div>Parameter: 0-2π</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="legend">
+        <div class="legend-item">
+            <div class="color-box" style="background: #0088ff;"></div>
+            <span>Circle</span>
+        </div>
+        <div class="legend-item">
+            <div class="color-box" style="background: #ff4444;"></div>
+            <span>Current Point</span>
+        </div>
+        <div class="legend-item">
+            <div class="color-box" style="background: #00ff00;"></div>
+            <span>X Projection</span>
+        </div>
+        <div class="legend-item">
+            <div class="color-box" style="background: #00ff00;"></div>
+            <span>Y Projection</span>
+        </div>
+        <div class="legend-item">
+            <div class="color-box" style="background: #ffaa00;"></div>
+            <span>Orange Segment (t)</span>
+        </div>
+        <div class="legend-item">
+            <div class="color-box" style="background: #aa44ff;"></div>
+            <span>Purple Segment (t×e)</span>
+        </div>
+    </div>
+    
+    <script>
+        // Radical sine/cosine approximations from your shader
+        function rsin(x) {
+            const a = 1.0 - 2.0 * x + 2.0 * x * x;
+            const invSqrtA = 1.0 / Math.sqrt(a);
+            return x * invSqrtA;
+        }
+        
+        function rcos(x) {
+            const a = 1.0 - 2.0 * x + 2.0 * x * x;
+            const invSqrtA = 1.0 / Math.sqrt(a);
+            return (1.0 - x) * invSqrtA;
+        }
+        
+        function returnFreq(s, c, quadrant, fsc) {
+            const q0 = quadrant === 0 ? 1 : 0;
+            const q1 = quadrant === 1 ? 1 : 0;
+            const q2 = quadrant === 2 ? 1 : 0;
+            const q3 = quadrant === 3 ? 1 : 0;
+            
+            const sinResult = s * q0 + c * q1 - s * q2 - c * q3;
+            const cosResult = c * q0 - s * q1 - c * q2 + s * q3;
+            
+            return fsc > 0 ? cosResult : sinResult;
+        }
+        
+        function freqRadSinCos(freq) {
+            const phase = ((freq % 4) + 4) % 4; // Handle negative values
+            const quadrant = Math.floor(phase);
+            const t = phase - quadrant;
+            const s = rsin(t);
+            const c = rcos(t);
+            return {
+                sin: returnFreq(s, c, quadrant, 0),
+                cos: returnFreq(s, c, quadrant, 1)
+            };
+        }
+        
+        // Canvas setup
+        const shaderCanvas = document.getElementById('shaderCanvas');
+        const graphCanvas = document.getElementById('graphCanvas');
+        const shaderCtx = shaderCanvas.getContext('2d');
+        const graphCtx = graphCanvas.getContext('2d');
+        
+        const centerX = 150;
+        const centerY = 150;
+        const radius = 120;
+        
+        function clearCanvas(ctx) {
+            ctx.fillStyle = '#0a0a0a';
+            ctx.fillRect(0, 0, 380, 300);
+        }
+        
+        function drawGrid(ctx) {
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 1;
+            ctx.setLineDash([2, 2]);
+            
+            // Grid lines
+            for (let i = 0; i <= 300; i += 30) {
+                ctx.beginPath();
+                ctx.moveTo(i, 0);
+                ctx.lineTo(i, 300);
+                ctx.stroke();
+                
+                ctx.beginPath();
+                ctx.moveTo(0, i);
+                ctx.lineTo(300, i);
+                ctx.stroke();
+            }
+            
+            ctx.setLineDash([]);
+            
+            // Axes
+            ctx.strokeStyle = '#555';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(centerX, 0);
+            ctx.lineTo(centerX, 300);
+            ctx.stroke();
+            
+            ctx.beginPath();
+            ctx.moveTo(0, centerY);
+            ctx.lineTo(300, centerY);
+            ctx.stroke();
+        }
+        
+        function drawCircle(ctx) {
+            ctx.strokeStyle = '#0088ff';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+            ctx.stroke();
+        }
+        
+        function drawShaderVisualization(t) {
+            clearCanvas(shaderCtx);
+            drawGrid(shaderCtx);
+            drawCircle(shaderCtx);
+            
+            // Convert t (0-1) to shader's frequency parameter
+            const freq = t * 4; // Maps 0-1 to 0-4 (one full period in shader)
+            const result = freqRadSinCos(freq);
+            
+            // Point on circle using radical approximations
+            const x = centerX + result.cos * radius;
+            const y = centerY - result.sin * radius; // Flip Y for canvas
+            
+            // Draw current point
+            shaderCtx.fillStyle = '#ff4444';
+            shaderCtx.beginPath();
+            shaderCtx.arc(x, y, 6, 0, 2 * Math.PI);
+            shaderCtx.fill();
+            
+            // Draw projections (like your shader's projection lines)
+            shaderCtx.strokeStyle = '#00ff00';
+            shaderCtx.lineWidth = 3;
+            
+            // X projection (horizontal line to Y-axis)
+            shaderCtx.beginPath();
+            shaderCtx.moveTo(centerX, centerY);
+            shaderCtx.lineTo(x, centerY);
+            shaderCtx.stroke();
+            
+            // Y projection (vertical line to X-axis)
+            shaderCtx.beginPath();
+            shaderCtx.moveTo(centerX, centerY);
+            shaderCtx.lineTo(centerX, y);
+            shaderCtx.stroke();
+            
+            // Point labels
+            shaderCtx.fillStyle = '#ffffff';
+            shaderCtx.font = '12px monospace';
+            shaderCtx.fillText(`(${result.cos.toFixed(2)}, ${result.sin.toFixed(2)})`, x + 10, y - 10);
+        }
+        
+        function drawGraphVisualization(t) {
+            clearCanvas(graphCtx);
+            drawGrid(graphCtx);
+            drawCircle(graphCtx);
+            
+            // Convert t (0-1) to radians (0-2π)
+            const angle = t * 2 * Math.PI;
+            
+            // Exact trigonometric functions
+            const cos_exact = Math.cos(angle);
+            const sin_exact = Math.sin(angle);
+            
+            // Point on circle using exact trigonometry
+            const x = centerX + cos_exact * radius;
+            const y = centerY - sin_exact * radius; // Flip Y for canvas
+            
+            // Draw current point
+            graphCtx.fillStyle = '#ff4444';
+            graphCtx.beginPath();
+            graphCtx.arc(x, y, 6, 0, 2 * Math.PI);
+            graphCtx.fill();
+            
+            // Draw your graph's orange and purple segments
+            const segmentLength = t * radius; // Orange: length = t
+            const purpleLength = t * Math.E * radius / (2 * Math.PI); // Purple: length = t*e (scaled for display)
+            
+            // Orange segment (horizontal)
+            graphCtx.strokeStyle = '#ffaa00';
+            graphCtx.lineWidth = 4;
+            graphCtx.beginPath();
+            graphCtx.moveTo(centerX, centerY);
+            graphCtx.lineTo(centerX + segmentLength, centerY);
+            graphCtx.stroke();
+            
+            // Purple segment (vertical)
+            graphCtx.strokeStyle = '#aa44ff';
+            graphCtx.lineWidth = 4;
+            graphCtx.beginPath();
+            graphCtx.moveTo(centerX, centerY);
+            graphCtx.lineTo(centerX, centerY - purpleLength);
+            graphCtx.stroke();
+            
+            // Standard projections for comparison
+            graphCtx.strokeStyle = '#00ff00';
+            graphCtx.lineWidth = 2;
+            
+            // X projection
+            //graphCtx.beginPath();
+            //graphCtx.moveTo(centerX, centerY);
+            //graphCtx.lineTo(x, centerY);
+            //graphCtx.stroke();
+            
+            // Y projection
+            //graphCtx.beginPath();
+            //graphCtx.moveTo(centerX, centerY);
+            //graphCtx.lineTo(centerX, y);
+            //graphCtx.stroke();
+            
+            // Point labels
+            graphCtx.fillStyle = '#ffffff';
+            graphCtx.font = '12px monospace';
+            graphCtx.fillText(`(${cos_exact.toFixed(2)}, ${sin_exact.toFixed(2)})`, x + 10, y - 10);
+        }
+        
+        function updateVisualization() {
+            const slider = document.getElementById('parameter');
+            const t = parseFloat(slider.value);
+            
+            document.getElementById('paramValue').textContent = t.toFixed(3);
+            document.getElementById('shaderT').textContent = t.toFixed(3);
+            document.getElementById('graphT').textContent = (t * 2 * Math.PI).toFixed(2);
+            
+            drawShaderVisualization(t);
+            drawGraphVisualization(t);
+        }
+        
+        document.getElementById('parameter').addEventListener('input', updateVisualization);
+        
+        // Initial draw
+        updateVisualization();
+    </script>
+</body>
+</html>
