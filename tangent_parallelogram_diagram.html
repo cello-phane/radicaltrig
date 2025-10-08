@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tangent via Parallelogram</title>
     <style>
+    	container {
+    		width: 100%;
+    		overflow: auto;
+    	}
         body {
             margin: 0;
             padding: 20px;
@@ -21,10 +25,11 @@
         }
         
         .controls {
+ 			float: right;
             max-width: 800px;
-            margin: 0 auto;
+            margin-left: 10px;
             background: white;
-            padding: 20px;
+            padding: 10px;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
@@ -79,6 +84,7 @@
     </style>
 </head>
 <body>
+	<div id="containter">
     <div class="controls">
         <h2>Tangent of Angle Between Vectors via Parallelogram</h2>
         
@@ -124,7 +130,7 @@
     </div>
 
     <canvas id="canvas" width="800" height="600"></canvas>
-
+	</div>
     <script>
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
