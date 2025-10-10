@@ -280,21 +280,44 @@ function render(){
     const rauRad = Math.atan(Math.abs(cross/dot));
     const rauDeg = radToDeg(rauRad);
 
-    displays.resultsContent.textContent=
+// --- Inside render(), after computing all quantities ---
+function formatNum(num, width=8, decimals=2){
+    return num.toFixed(decimals).padStart(width);
+}
+
+function formatNum(num, width=8, decimals=2){
+    return num.toFixed(decimals).padStart(width);
+}
+
+const uXStr = formatNum(u.x);
+const uYStr = formatNum(u.y);
+const vXStr = formatNum(v.x);
+const vYStr = formatNum(v.y);
+const crossStr = formatNum(cross);
+const dotStr = formatNum(dot);
+const angleRadStr = formatNum(angleRad,8,3);
+const angleDegStr = formatNum(angleDeg,6,1);
+const tangentStr = isFinite(tangent) ? formatNum(tangent,8,4) : '    ∞';
+const rauPhaseStr = formatNum(rauPhase,6,3);
+const rauSineStr = formatNum(rauSine,8,3);
+const rauCosStr = formatNum(rauCos,8,3);
+const rauRadStr = formatNum(rauRad,8,3);
+const rauDegStr = formatNum(rauDeg,6,1);
+
+displays.resultsContent.textContent =
 `Vector Information:
-u = (${u.x.toFixed(1)}, ${u.y.toFixed(1)})
-v = (${v.x.toFixed(1)}, ${v.y.toFixed(1)})
-Cross = ${cross.toFixed(2)}, Dot = ${dot.toFixed(2)}
+u = (${uXStr}, ${uYStr})
+v = (${vXStr}, ${vYStr})
+Cross = ${crossStr}, Dot = ${dotStr}
 
 Traditional Angle:
-θ = ${angleRad.toFixed(3)} rad | ${angleDeg.toFixed(1)}°
-tan(θ) = ${isFinite(tangent)?tangent.toFixed(4):'∞'}
+θ = ${angleRadStr} rad | ${angleDegStr}°
+tan(θ) = ${tangentStr}
 
 RAU / Radical Angle:
-Phase = ${rauPhase.toFixed(3)} (0–4)
-radicalSine = ${rauSine.toFixed(3)}, radicalCosine = ${rauCos.toFixed(3)}
-θ = ${rauRad.toFixed(3)} rad | ${rauDeg.toFixed(1)}°`;
-}
+Phase = ${rauPhaseStr} (0–4)
+radicalSine = ${rauSineStr}, radicalCosine = ${rauCosStr}
+θ = ${rauRadStr} rad | ${rauDegStr}°`;
 
 // event listeners
 Object.values(controls).forEach(c=>c.addEventListener('input',render));
