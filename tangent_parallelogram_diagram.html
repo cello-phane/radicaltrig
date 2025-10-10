@@ -167,6 +167,49 @@ function shadeQuadrant(ctx,uEnd,vEnd){
     ctx.fill();
 }
 
+// --- RAU radical sine & cosine ---
+function radicalSine(t){
+    t = t % 4;
+    const quadrant = Math.floor(t);
+    const lt = t - quadrant;
+    const a = 1 - 2*lt + 2*lt*lt;
+    switch(quadrant){
+        case 0: return lt/Math.sqrt(a);
+        case 1: return (1-lt)/Math.sqrt(a);
+        case 2: return -lt/Math.sqrt(a);
+        case 3: return -(1-lt)/Math.sqrt(a);
+    }
+}
+
+function radicalCosine(t){
+    t = t % 4;
+    const quadrant = Math.floor(t);
+    const lt = t - quadrant;
+    const a = 1 - 2*lt + 2*lt*lt;
+    switch(quadrant){
+        case 0: return (1-lt)/Math.sqrt(a);
+        case 1: return -lt/Math.sqrt(a);
+        case 2: return -(1-lt)/Math.sqrt(a);
+        case 3: return lt/Math.sqrt(a);
+    }
+}
+
+// --- Compute RAU phase from two vectors (0-4) ---
+function computeRAUPhase(u,v){
+    const dot = u.x*v.x + u.y*v.y;
+    const cross = u.x*v.y - u.y*v.x;
+    if(dot === 0 && cross === 0) return 0;
+    let angle = Math.atan2(cross, dot);
+    if(angle < 0) angle += 2*Math.PI;
+    return (angle/(2*Math.PI))*4;
+}
+
+// --- Compute traditional angle 0→2π ---
+function vectorAngle(u,v){
+    const angle = Math.atan2(v.y,v.x) - Math.atan2(u.y,u.x);
+    return (angle + 2*Math.PI) % (2*Math.PI);
+}
+
 function render(){
     ctx.clearRect(0,0,canvas.width,canvas.height);
 
@@ -216,10 +259,9 @@ function render(){
     ctx.beginPath();
     ctx.arc(centerX,centerY,arcRadius,-endAngle,-startAngle);
     ctx.stroke();
-
-    const midAngle = (startAngle + endAngle)/2;
-    const labelX = centerX + (arcRadius+15)*Math.cos(midAngle);
-    const labelY = centerY - (arcRadius+15)*Math.sin(midAngle);
+    const midAngle = (startAngle+endAngle)/2;
+    const labelX=centerX+(arcRadius+15)*Math.cos(midAngle);
+    const labelY=centerY-(arcRadius+15)*Math.sin(midAngle);
     drawText(ctx,'θ',labelX,labelY,'#666','bold 14px Arial');
 
     // cross, dot
@@ -227,18 +269,15 @@ function render(){
     const dot = u.x*v.x + u.y*v.y;
 
     // traditional
-    <!-- const angleRad = Math.atan2(cross,dot); -->
-	let angleRad = Math.atan2(v.y, v.x) - Math.atan2(u.y, u.x); // relative angle from u to v
-	if (angleRad < 0) angleRad += 2 * Math.PI; // make positive 0 → 2π				   
-    <!-- const angleDeg = radToDeg(angleRad); -->
-	let angleDeg = radToDeg(angleRad);										   
+    const angleRad = vectorAngle(u,v);
+    const angleDeg = radToDeg(angleRad);
     const tangent = dot!==0 ? Math.abs(cross/dot) : Infinity;
 
     // RAU
-    const ratio = Math.abs(cross)/Math.abs(dot);
-    const rauParam = ratio/(ratio+1);
-    const phase = rauParam*4;
-    const rauRad = Math.atan(ratio);
+    const rauPhase = computeRAUPhase(u,v);
+    const rauSine = radicalSine(rauPhase);
+    const rauCos = radicalCosine(rauPhase);
+    const rauRad = Math.atan(Math.abs(cross/dot));
     const rauDeg = radToDeg(rauRad);
 
     displays.resultsContent.textContent=
@@ -252,7 +291,8 @@ Traditional Angle:
 tan(θ) = ${isFinite(tangent)?tangent.toFixed(4):'∞'}
 
 RAU / Radical Angle:
-Phase = ${phase.toFixed(3)} (0–4)
+Phase = ${rauPhase.toFixed(3)} (0–4)
+radicalSine = ${rauSine.toFixed(3)}, radicalCosine = ${rauCos.toFixed(3)}
 θ = ${rauRad.toFixed(3)} rad | ${rauDeg.toFixed(1)}°`;
 }
 
