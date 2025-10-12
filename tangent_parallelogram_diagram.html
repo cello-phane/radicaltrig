@@ -209,7 +209,52 @@ function vectorAngle(u,v){
     const angle = Math.atan2(v.y,v.x) - Math.atan2(u.y,u.x);
     return (angle + 2*Math.PI) % (2*Math.PI);
 }
-
+function drawMirroredTriangle(ctx, u, v) {
+    // Normalize vectors to unit circle
+    const uNorm = {x: u.x / Math.sqrt(u.x*u.x + u.y*u.y), 
+                   y: u.y / Math.sqrt(u.x*u.x + u.y*u.y)};
+    const vNorm = {x: v.x / Math.sqrt(v.x*v.x + v.y*v.y), 
+                   y: v.y / Math.sqrt(v.x*v.x + v.y*v.y)};
+    
+    const radius = 80; // Circle radius for visualization
+    
+    // Draw theoretical circle
+    ctx.strokeStyle = 'rgba(100, 200, 100, 0.3)';
+    ctx.setLineDash([5, 5]);
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    
+    // Triangle vertices
+    const O = {x: centerX, y: centerY};
+    const B = {x: centerX + radius * uNorm.x, y: centerY - radius * uNorm.y};
+    const A = {x: centerX + radius * vNorm.x, y: centerY - radius * vNorm.y};
+    
+    // Midpoint M (for mirror line)
+    const M = {x: (O.x + A.x) / 2, y: (O.y + A.y) / 2};
+    
+    // Draw mirrored triangle
+    ctx.strokeStyle = 'rgba(0, 150, 0, 0.5)';
+    ctx.fillStyle = 'rgba(0, 255, 0, 0.1)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(O.x, O.y);
+    ctx.lineTo(B.x, B.y);
+    ctx.lineTo(A.x, A.y);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    
+    // Draw mirror line (vertical through M)
+    ctx.strokeStyle = 'rgba(0, 150, 0, 0.3)';
+    ctx.setLineDash([3, 3]);
+    ctx.beginPath();
+    ctx.moveTo(M.x, M.y - 50);
+    ctx.lineTo(M.x, M.y + 50);
+    ctx.stroke();
+    ctx.setLineDash([]);
+}
 function render(){
     ctx.clearRect(0,0,canvas.width,canvas.height);
 
@@ -273,52 +318,53 @@ function render(){
     const angleDeg = radToDeg(angleRad);
     const tangent = dot!==0 ? Math.abs(cross/dot) : Infinity;
 
-    // RAU
+    // rau
     const rauPhase = computeRAUPhase(u,v);
     const rauSine = radicalSine(rauPhase);
     const rauCos = radicalCosine(rauPhase);
     const rauRad = Math.atan(Math.abs(cross/dot));
     const rauDeg = radToDeg(rauRad);
 
-// --- Inside render(), after computing all quantities ---
-function formatNum(num, width=8, decimals=2){
-    return num.toFixed(decimals).padStart(width);
-}
+    function formatNum(num, width=8, decimals=2){
+        return num.toFixed(decimals).padStart(width);
+    }
+    
+    function formatNum(num, width=8, decimals=2){
+        return num.toFixed(decimals).padStart(width);
+    }
+    
+    const uXStr = formatNum(u.x);
+    const uYStr = formatNum(u.y);
+    const vXStr = formatNum(v.x);
+    const vYStr = formatNum(v.y);
+    const crossStr = formatNum(cross);
+    const dotStr = formatNum(dot);
+    const angleRadStr = formatNum(angleRad,8,3);
+    const angleDegStr = formatNum(angleDeg,6,1);
+    const tangentStr = isFinite(tangent) ? formatNum(tangent,8,4) : '    ∞';
+    const rauPhaseStr = formatNum(rauPhase,6,3);
+    const rauSineStr = formatNum(rauSine,8,3);
+    const rauCosStr = formatNum(rauCos,8,3);
+    const rauRadStr = formatNum(rauRad,8,3);
+    const rauDegStr = formatNum(rauDeg,6,1);
+    
+    displays.resultsContent.textContent =
+    `Vector Information:
+    u = (${uXStr}, ${uYStr})
+    v = (${vXStr}, ${vYStr})
+    Cross = ${crossStr}, Dot = ${dotStr}
+    
+    Traditional Angle:
+    θ = ${angleRadStr} rad | ${angleDegStr}°
+    tan(θ) = ${tangentStr}
+    
+    RAU / Radical Angle:
+    Phase =     ${rauPhaseStr} (0–4)
+    radicalSine   = ${rauSineStr}
+    radicalCosine = ${rauCosStr}
+    θ = ${rauRadStr} rad | ${rauDegStr}°`;
 
-function formatNum(num, width=8, decimals=2){
-    return num.toFixed(decimals).padStart(width);
-}
-
-const uXStr = formatNum(u.x);
-const uYStr = formatNum(u.y);
-const vXStr = formatNum(v.x);
-const vYStr = formatNum(v.y);
-const crossStr = formatNum(cross);
-const dotStr = formatNum(dot);
-const angleRadStr = formatNum(angleRad,8,3);
-const angleDegStr = formatNum(angleDeg,6,1);
-const tangentStr = isFinite(tangent) ? formatNum(tangent,8,4) : '    ∞';
-const rauPhaseStr = formatNum(rauPhase,6,3);
-const rauSineStr = formatNum(rauSine,8,3);
-const rauCosStr = formatNum(rauCos,8,3);
-const rauRadStr = formatNum(rauRad,8,3);
-const rauDegStr = formatNum(rauDeg,6,1);
-
-displays.resultsContent.textContent =
-`Vector Information:
-u = (${uXStr}, ${uYStr})
-v = (${vXStr}, ${vYStr})
-Cross = ${crossStr}, Dot = ${dotStr}
-
-Traditional Angle:
-θ = ${angleRadStr} rad | ${angleDegStr}°
-tan(θ) = ${tangentStr}
-
-RAU / Radical Angle:
-Phase =     ${rauPhaseStr} (0–4)
-radicalSine   = ${rauSineStr}
-radicalCosine = ${rauCosStr}
-θ = ${rauRadStr} rad | ${rauDegStr}°`;
+    drawMirroredTriangle(ctx, u, v);
 }
 // event listeners
 Object.values(controls).forEach(c=>c.addEventListener('input',render));
