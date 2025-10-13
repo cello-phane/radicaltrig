@@ -222,14 +222,12 @@ function vectorAngle(u,v){
     return (angle + 2*Math.PI) % (2*Math.PI);
 }
 
-function drawChordConnection(ctx, u, v) {
+function drawChordConnection(ctx, u, v, radius) {
     // Normalize vectors to unit circle
     const uNorm = {x: u.x / Math.sqrt(u.x*u.x + u.y*u.y), 
                    y: u.y / Math.sqrt(u.x*u.x + u.y*u.y)};
     const vNorm = {x: v.x / Math.sqrt(v.x*v.x + v.y*v.y), 
                    y: v.y / Math.sqrt(v.x*v.x + v.y*v.y)};
-    
-    const radius = 80; // Circle radius for visualization
     
     // Draw theoretical circle
     ctx.strokeStyle = 'rgba(100, 200, 100, 0.3)';
@@ -247,7 +245,7 @@ function drawChordConnection(ctx, u, v) {
     // Midpoint M (for mirror line)
     const M = {x: (O.x + A.x) / 2, y: (O.y + A.y) / 2};
     
-    // Draw mirrored triangle
+    // Draw triangle
     ctx.strokeStyle = 'rgba(0, 150, 0, 0.5)';
     ctx.fillStyle = 'rgba(0, 255, 0, 0.1)';
     ctx.lineWidth = 2;
@@ -267,6 +265,15 @@ function drawChordConnection(ctx, u, v) {
     ctx.lineTo(M.x, M.y + 50);
     ctx.stroke();
     ctx.setLineDash([]);
+
+    // label chord length
+    const chordLen = Math.hypot(A.x - B.x, A.y - B.y);
+    drawText(ctx, `Chord = ${chordLen.toFixed(1)}`, (A.x+B.x)/2 + 10, (A.y+B.y)/2, '#060', '12px monospace');
+    
+    // mark the arc endpoints
+    ctx.fillStyle = '#060';
+    ctx.beginPath(); ctx.arc(A.x, A.y, 3, 0, 2*Math.PI); ctx.fill();
+    ctx.beginPath(); ctx.arc(B.x, B.y, 3, 0, 2*Math.PI); ctx.fill();
 }
 
 function render(){
@@ -378,7 +385,7 @@ function render(){
     radicalCosine = ${rauCosStr}
     θ = ${rauRadStr} rad | ${rauDegStr}°`;
 
-    drawChordConnection(ctx, v, u);
+    drawChordConnection(ctx, v, u, arcRadius);
 }
 // event listeners
 Object.values(controls).forEach(c=>c.addEventListener('input',render));
