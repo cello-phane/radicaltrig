@@ -268,7 +268,7 @@ function drawChordConnection(ctx, u, v, radius) {
 
     // label chord length
     const chordLen = Math.hypot(A.x - B.x, A.y - B.y);
-    drawText(ctx, `Chord = ${chordLen.toFixed(1)}`, (A.x+B.x)/2 + 10, (A.y+B.y)/2, '#060', '12px monospace');
+    //drawText(ctx, `Chord = ${chordLen.toFixed(1)}`, (A.x+B.x)/2 + 10, (A.y+B.y)/2, '#060', '12px monospace');
     
     // mark the arc endpoints
     ctx.fillStyle = '#060';
@@ -385,7 +385,7 @@ function render(){
     radicalCosine = ${rauCosStr}
     θ = ${rauRadStr} rad | ${rauDegStr}°`;
 
-    drawChordConnection(ctx, v, u, arcRadius);
+    drawChordConnection(ctx, v, u, max(uLen, vLen));
 }
 // event listeners
 Object.values(controls).forEach(c=>c.addEventListener('input',render));
