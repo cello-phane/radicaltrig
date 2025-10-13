@@ -1,6 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
+<html lang="en"><head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Vector + RAU Angle Visualization</title>
@@ -75,13 +74,26 @@ input[type="range"] {
         </div>
         <div class="control-group">
             <label>v angle (°):</label>
-            <input type="range" id="vAngle" min="0" max="360" value="80">
-            <span class="value" id="vAngleVal">80°</span>
+            <input type="range" id="vAngle" min="0" max="360" value="0">
+            <span class="value" id="vAngleVal">0°</span>
         </div>
 
         <div class="results">
         <h3>Computation Results</h3>
-        <pre id="resultsContent"></pre>
+        <pre id="resultsContent">Vector Information:
+    u = (  103.92,   -60.00)
+    v = (  100.00,     0.00)
+    Cross =  6000.00, Dot = 10392.30
+    
+    Traditional Angle:
+    θ =    0.524 rad |   30.0°
+    tan(θ) =   0.5774
+    
+    RAU / Radical Angle:
+    Phase =      0.333 (0–4)
+    radicalSine   =    0.447
+    radicalCosine =    0.894
+    θ =    0.524 rad |   30.0°</pre>
     </div>
     </div>
 </div>
@@ -209,7 +221,8 @@ function vectorAngle(u,v){
     const angle = Math.atan2(v.y,v.x) - Math.atan2(u.y,u.x);
     return (angle + 2*Math.PI) % (2*Math.PI);
 }
-function drawMirroredTriangle(ctx, u, v) {
+
+function drawChordConnection(ctx, u, v) {
     // Normalize vectors to unit circle
     const uNorm = {x: u.x / Math.sqrt(u.x*u.x + u.y*u.y), 
                    y: u.y / Math.sqrt(u.x*u.x + u.y*u.y)};
@@ -228,8 +241,8 @@ function drawMirroredTriangle(ctx, u, v) {
     
     // Triangle vertices
     const O = {x: centerX, y: centerY};
-    const B = {x: centerX + radius * uNorm.x, y: centerY - radius * uNorm.y};
-    const A = {x: centerX + radius * vNorm.x, y: centerY - radius * vNorm.y};
+    const B = {x: centerX + radius * uNorm.x, y: centerY + radius * uNorm.y};
+    const A = {x: centerX + radius * vNorm.x, y: centerY + radius * vNorm.y};
     
     // Midpoint M (for mirror line)
     const M = {x: (O.x + A.x) / 2, y: (O.y + A.y) / 2};
@@ -255,6 +268,7 @@ function drawMirroredTriangle(ctx, u, v) {
     ctx.stroke();
     ctx.setLineDash([]);
 }
+
 function render(){
     ctx.clearRect(0,0,canvas.width,canvas.height);
 
@@ -364,11 +378,10 @@ function render(){
     radicalCosine = ${rauCosStr}
     θ = ${rauRadStr} rad | ${rauDegStr}°`;
 
-    drawMirroredTriangle(ctx, u, v);
+    drawChordConnection(ctx, v, u);
 }
 // event listeners
 Object.values(controls).forEach(c=>c.addEventListener('input',render));
 render();
 </script>
-</body>
-</html>
+</body></html>
