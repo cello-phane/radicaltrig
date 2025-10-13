@@ -317,7 +317,7 @@ function render(){
     drawArrow(ctx,centerX,centerY,vEnd.x,vEnd.y,'#4444ff',3);
 
     // angle arc
-    const arcRadius = 40;
+    const arcRadius = Math.max(uLen, vLen);
     const startAngle = Math.min(uAng,vAng);
     const endAngle = Math.max(uAng,vAng);
     ctx.strokeStyle='#666';
