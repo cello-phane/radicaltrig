@@ -385,7 +385,7 @@ function render(){
     radicalCosine = ${rauCosStr}
     θ = ${rauRadStr} rad | ${rauDegStr}°`;
 
-    drawChordConnection(ctx, v, u, max(uLen, vLen));
+    drawChordConnection(ctx, v, u, Math.max(uLen, vLen));
 }
 // event listeners
 Object.values(controls).forEach(c=>c.addEventListener('input',render));
