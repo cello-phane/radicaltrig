@@ -567,21 +567,15 @@ const ctx = canvas.getContext('2d');
       return (angle + 2*Math.PI) % (2*Math.PI);
   }
 
-  function vectorAngle(u, v) {
+function vectorAngle(u, v) {
     const cross = u.x * v.y - u.y * v.x;
     const dot = u.x * v.x + u.y * v.y;
+    let angle = Math.atan2(cross, dot);
+    // Normalize to [0,2]
+    if (angle < 0) angle += 2.0;
 
-    let angle = Math.abs(cross) / (Math.abs(dot) + Math.abs(cross));
-
-    // GLSL-style mix() with continuous blending
-    const mix = (a, b, t) => a * (1 - t) + b * t;
-    const boolToFloat = (cond) => cond ? 1.0 : 0.0;
-
-    angle = mix(
-        angle,
-        mix(2.0 - angle, angle + 1.0, boolToFloat(cross < 0)),
-        boolToFloat(dot < 0)
-    );
+    return angle;
+}
 
     return mix(
         mix(Math.sign(cross) * angle, angle, boolToFloat(cross > dot)),
