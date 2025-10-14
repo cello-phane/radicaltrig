@@ -581,17 +581,10 @@ const ctx = canvas.getContext('2d');
       if (cross_uv_mag < 0 && dot_uv < 0) {
           angle = angle + 1.0;
       }
-      if (angle > 2.0) {
+      if (angle > 2.0 && cross_uv_mag > dot_uv) {
 		  angle = Math.sign(cross) * angle;
 	  }
       return angle;
-  }
-
-    return mix(
-        mix(Math.sign(cross) * angle, angle, boolToFloat(cross > dot)),
-        angle + 1.0,
-        boolToFloat(cross < 0 && dot < 0)
-    );
   }
   
   function drawChordConnection(ctx, u, v, radius) {
