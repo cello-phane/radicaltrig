@@ -551,19 +551,16 @@ const ctx = canvas.getContext('2d');
   
   // --- Compute RAU phase from two vectors (0-4) ---
   function computeRAUPhase(u,v){
-      const dot = u.x*v.x + u.y*v.y;
-      const cross = u.x*v.y - u.y*v.x;
-      if(dot === 0 && cross === 0) return 0;
-      let angle = Math.atan2(cross, dot);
+	  let angle = vectorAngle(u, v);
       if(angle < 0) angle += 2*Math.PI;
       return (angle/(2*Math.PI))*4;
   }
   
   // --- Compute traditional angle 0→2π ---
-  //function vectorAngle(u,v){
-  //    const angle = Math.atan2(v.y,v.x) - Math.atan2(u.y,u.x);
-  //    return (angle + 2*Math.PI) % (2*Math.PI);
-  //}
+  function vectorAngleTrad(u,v){
+      const angle = Math.atan2(v.y,v.x) - Math.atan2(u.y,u.x);
+      return (angle + 2*Math.PI) % (2*Math.PI);
+  }
 
   // atanVec implementation from GLSL
   function vectorAngle(u, v) {
@@ -697,7 +694,7 @@ const ctx = canvas.getContext('2d');
       const dot = u.x*v.x + u.y*v.y;
   
       // traditional
-      const angleRad = vectorAngle(u,v);
+      const angleRad = vectorAngleTrad(u,v);
       const angleDeg = radToDeg(angleRad);
       const tangent = dot!==0 ? Math.abs(cross/dot) : Infinity;
   
