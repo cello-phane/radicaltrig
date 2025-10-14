@@ -726,15 +726,16 @@ const ctx = canvas.getContext('2d');
       v = (${vXStr}, ${vYStr})
       Cross = ${crossStr}, Dot = ${dotStr}
       
-      Traditional Angle:
+      Radian(Traditional)
       θ = ${angleRadStr} rad | ${angleDegStr}°
+      ---------------------------------------
       tan(θ) = ${tangentStr}
-      
-      RAU / Radical Angle:
-      Phase =     ${rauPhaseStr} (0–4)
-      radicalSine   = ${rauSineStr}
-      radicalCosine = ${rauCosStr}
-      θ = ${rauRadStr} rad | ${rauDegStr}°`;
+      sine  = ${rauSineStr}
+      coine = ${rauCosStr}
+      ---------------------------------------
+      RadicalAngleUnit
+      θ =   ${rauPhaseStr} `;
+      //θ = ${rauRadStr} rad | ${rauDegStr}°
   
       drawChordConnection(ctx, v, u, arcRadius);
   }
