@@ -1,478 +1,745 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D Wireframe Sphere</title>
-    <style>
-        body {
-            margin: 0;
-            padding: 20px;
-            background: #0a0a0a;
-            color: white;
-            font-family: monospace;
-            overflow: hidden;
-        }
-        
-        canvas {
-            display: block;
-            margin: 0 auto;
-            border: 1px solid #333;
-            background: linear-gradient(45deg, #001122, #000511);
-        }
-        
-        .controls {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            background: rgba(0,0,0,0.8);
-            padding: 15px;
-            border-radius: 8px;
-            border: 1px solid #333;
-        }
-        
-        .control-group {
-            margin-bottom: 10px;
-        }
-        
-        label {
-            display: inline-block;
-            width: 120px;
-            font-size: 12px;
-        }
-        
-        input[type="range"] {
-            width: 150px;
-        }
-        
-        .value {
-            color: #00ff88;
-            font-weight: bold;
-        }
-        
-        .info {
-            position: absolute;
-            bottom: 20px;
-            left: 20px;
-            background: rgba(0,0,0,0.8);
-            padding: 10px;
-            border-radius: 8px;
-            border: 1px solid #333;
-            font-size: 11px;
-            max-width: 300px;
-        }
-        
-        .animation-controls {
-            margin-top: 15px;
-            border-top: 1px solid #333;
-            padding-top: 10px;
-        }
-        
-        button {
-            background: #333;
-            color: white;
-            border: 1px solid #555;
-            padding: 5px 10px;
-            border-radius: 4px;
-            cursor: pointer;
-            margin-right: 10px;
-        }
-        
-        button:hover {
-            background: #555;
-        }
-        
-        button.active {
-            background: #007755;
-        }
-    </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>RAU System & Vector Visualization — Full</title>
+
+<!-- MathJax -->
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] },
+  svg: { fontCache: 'global' }
+};
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+
+<style>
+  :root {
+    --accent: #2196F3;
+    --bg: #f0f0f0;
+    --card: #ffffff;
+    --muted: #888;
+  }
+  html,body { height:100%; margin:0; font-family: Arial, Helvetica, sans-serif; background:var(--bg); color:#222; }
+  header {
+    background:#333; color:white; padding:10px 16px; display:flex; align-items:center; justify-content:space-between;
+  }
+  header h1 { margin:0; font-size:18px; }
+  .top-controls { display:flex; gap:10px; align-items:center; }
+  .toggle-btn {
+    background:var(--accent); color:white; border:none; padding:8px 12px; border-radius:6px; cursor:pointer; font-weight:600;
+  }
+  .page {
+    padding:16px;
+  }
+
+  /* sections */
+  section {
+    overflow:hidden;
+    max-height:0;
+    opacity:0;
+    transition: max-height 0.6s ease, opacity 0.6s ease, padding 0.3s ease;
+  }
+  section.active {
+    max-height:2400px;
+    opacity:1;
+    padding:20px 16px 40px;
+  }
+
+  /* general container card */
+  .card {
+    background:var(--card);
+    border-radius:10px;
+    padding:18px;
+    max-width:1000px;
+    margin:0 auto;
+    box-shadow:0 6px 18px rgba(0,0,0,0.06);
+  }
+
+  /* RAU canvas */
+  #canvas1 { border:2px solid #333; border-radius:8px; background:white; display:block; margin:16px auto; }
+
+  /* formulas / small description */
+  .desc { background:#e8f4f8; border-left:4px solid var(--accent); padding:12px; margin-top:12px; border-radius:6px; }
+  .controls { margin-top:12px; text-align:center; }
+  input[type=range] { width:320px; margin-top:8px; }
+
+  /* vector section layout */
+  .vector-grid {
+    display:flex;
+    gap:18px;
+    flex-wrap:wrap;
+    justify-content:center;
+    align-items:flex-start;
+    margin-top:8px;
+  }
+  #canvas2 { border:2px solid #333; border-radius:8px; background:white; display:block; }
+  .panel {
+    width:380px;
+    min-width:260px;
+    background:white;
+    padding:12px;
+    border-radius:8px;
+    box-shadow:0 2px 8px rgba(0,0,0,0.06);
+    font-size:14px;
+  }
+  .control-group { display:flex; align-items:center; gap:8px; margin:8px 0; }
+  .control-group label { min-width:110px; font-weight:600; }
+  .control-group input[type=range] { flex:1; }
+  .value { width:56px; text-align:right; font-family:monospace; }
+
+  pre#resultsContent { background:#f5f5f5; padding:10px; border-radius:6px; white-space:pre-wrap; }
+
+  /* formula side panel (collapsible to slim bar) */
+  #formulaPanel {
+    position:fixed;
+    right:18px;
+    top:72px;
+    width:320px;
+    background:rgba(255,255,255,0.98);
+    border:2px solid var(--accent);
+    border-radius:10px;
+    box-shadow:0 8px 24px rgba(0,0,0,0.12);
+    transition: transform 0.45s cubic-bezier(.2,.9,.2,1), width 0.3s ease;
+    z-index:1200;
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+  }
+  #formulaPanel.slim {
+    width:64px;
+    transform: translateX(0);
+  }
+  #formulaHeader {
+    background:var(--accent);
+    color:white;
+    padding:8px 10px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    cursor:pointer;
+  }
+  #formulaHeader .title { font-weight:700; font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  #formulaHeader .chev { font-size:16px; opacity:0.95; }
+  #formulaBody { padding:12px 14px; font-size:15px; line-height:1.35; background:transparent; }
+  /* when slim, hide formula content but keep header visible */
+  #formulaPanel.slim #formulaBody { display:none; }
+  #formulaPanel.slim #formulaHeader { justify-content:center; }
+
+  /* small responsive */
+  @media (max-width:900px) {
+    #formulaPanel { right:10px; top:72px; width:260px; }
+    #formulaPanel.slim { width:56px; }
+    .panel { width:320px; }
+  }
+</style>
 </head>
 <body>
-    <div class="controls">
-        <div class="control-group">
-            <label>Rotation X:</label>
-            <input type="range" id="rotX" min="0" max="360" value="23">
-            <span class="value" id="rotXVal">23°</span>
-        </div>
-        <div class="control-group">
-            <label>Rotation Y:</label>
-            <input type="range" id="rotY" min="0" max="360" value="45">
-            <span class="value" id="rotYVal">45°</span>
-        </div>
-        <div class="control-group">
-            <label>Integration Param:</label>
-            <input type="range" id="integParam" min="0" max="100" value="50">
-            <span class="value" id="integParamVal">0.50</span>
-        </div>
-        <div class="control-group">
-            <label>Meridians:</label>
-            <input type="range" id="meridians" min="8" max="32" value="32">
-            <span class="value" id="meridiansVal">32</span>
-        </div>
-        <div class="control-group">
-            <label>Parallels:</label>
-            <input type="range" id="parallels" min="8" max="32" value="32">
-            <span class="value" id="parallelsVal">32</span>
-        </div>
-        <div class="control-group">
-            <label>Perspective:</label>
-            <input type="range" id="perspective" min="100" max="1000" value="1000">
-            <span class="value" id="perspectiveVal">1000</span>
-        </div>
-        
-        <div class="animation-controls">
-            <div class="control-group">
-                <label>Frame Delay (ms):</label>
-                <input type="range" id="frameDelay" min="16" max="500" value="42">
-                <span class="value" id="frameDelayVal">42ms</span>
-            </div>
-            <button id="toggleAnim">Start Animation</button>
-            <button id="stepAnim">Step Once</button>
-        </div>
+
+<header>
+  <h1>RAU Interactive Visualizations</h1>
+  <div class="top-controls">
+    <button id="toggleButton" class="toggle-btn">Switch to Vector Diagram</button>
+  </div>
+</header>
+
+<!-- Floating MathJax formula panel (collapsible to slim bar) -->
+<div id="formulaPanel" aria-hidden="false">
+  <div id="formulaHeader" title="Click to expand/collapse RAU formulas (MathJax)">
+    <div class="title">RAU Formulas</div>
+    <div class="chev" id="formulaChevron">◀</div>
+  </div>
+  <div id="formulaBody">
+    <p style="margin:0 0 8px 0; font-weight:600;">For parameter \(0.0 < t < 1.0\):</p>
+
+    <div id="mathBlock">
+      <!-- MathJax-rendered content -->
+      <div>
+        \[
+        \mathrm{rsin}(t) \;=\; \frac{t}{\sqrt{\,1.0 - 2.0t + 2.0t^{2.0}\,}}
+        \]
+      </div>
+      <div>
+        \[
+        \mathrm{rcos}(t) \;=\; \frac{1.0 - t}{\sqrt{\,1.0 - 2.0t + 2.0t^{2.0}\,}}
+        \]
+      </div>
+      <div>
+        \[
+        \mathrm{rtan}(t) \;=\; \frac{t}{1.0 - t}
+        \]
+      </div>
+      <p style="margin-top:8px;font-size:13px;color:#444;">
+        These formulas are used for the RAU diagonal interpolation on each quadrant.
+      </p>
     </div>
-    
-    <canvas id="canvas" width="800" height="600"></canvas>
+  </div>
+</div>
 
-    <script>
-        const canvas = document.getElementById('canvas');
-        const ctx = canvas.getContext('2d');
-        const centerX = canvas.width / 2;
-        const centerY = canvas.height / 2;
-        
-        // Control elements
-        const controls = {
-            rotX: document.getElementById('rotX'),
-            rotY: document.getElementById('rotY'),
-            integParam: document.getElementById('integParam'),
-            meridians: document.getElementById('meridians'),
-            parallels: document.getElementById('parallels'),
-            perspective: document.getElementById('perspective'),
-            frameDelay: document.getElementById('frameDelay')
-        };
-        
-        const values = {
-            rotXVal: document.getElementById('rotXVal'),
-            rotYVal: document.getElementById('rotYVal'),
-            integParamVal: document.getElementById('integParamVal'),
-            meridiansVal: document.getElementById('meridiansVal'),
-            parallelsVal: document.getElementById('parallelsVal'),
-            perspectiveVal: document.getElementById('perspectiveVal'),
-            frameDelayVal: document.getElementById('frameDelayVal')
-        };
-        
-        // Animation controls
-        const toggleAnimBtn = document.getElementById('toggleAnim');
-        const stepAnimBtn = document.getElementById('stepAnim');
-        
-        function rsin(x) {
-            const a = 1.0 - 2.0 * x + 2.0 * x * x;
-            const invSqrtA = 1.0 / Math.sqrt(a);
-            return x * invSqrtA;
-        }
+<!-- RAU Section -->
+<section id="section1" class="active">
+  <div class="card">
+    <h2 style="margin-top:6px;">Rational Angle Unit (RAU) — Explanation</h2>
+    <div class="desc">
+      <strong>Key insight:</strong> RAU maps a linear parameter (0.0–4.0) to circular motion by using rational functions on quadrant diagonals.
+    </div>
 
-        function rcos(x) {
-            const a = 1.0 - 2.0 * x + 2.0 * x * x;
-            const invSqrtA = 1.0 / Math.sqrt(a);
-            return (1.0 - x) * invSqrtA;
-        }
+    <canvas id="canvas1" width="420" height="420" style="display:block;margin:18px auto;"></canvas>
 
-        // Convert from degrees (period 4)
-        function degreesToFreq(degrees) {
-            return (degrees / 90.0); // Maps 0-360° to 0-4 frequency units
-        }
-        
-        // Quadrant mapping
-        function freqRadSinCos(freq) {
-            const phase = freq % 4.0;
-            const quadrant = Math.floor(phase);
-            const t = phase - quadrant;
-            const s = rsin(t);
-            const c = rcos(t);
-            
-            // Quadrant mapping
-            let sin_result, cos_result;
-            if (quadrant === 0) {
-                sin_result = s; cos_result = c;
-            } else if (quadrant === 1) {
-                sin_result = c; cos_result = -s;
-            } else if (quadrant === 2) {
-                sin_result = -s; cos_result = -c;
-            } else {
-                sin_result = -c; cos_result = s;
-            }
-            
-            return { sin: sin_result, cos: cos_result };
-        }
+    <div class="controls" style="text-align:center;">
+      <label style="font-weight:700;">RAU Parameter: <span id="paramValue">0.00</span></label><br>
+      <input type="range" id="paramSlider" min="0" max="4" step="0.01" value="0" />
+    </div>
 
-        // 3D Rotation
-        function rotateX(point, angleDegrees) {
-            const freq = degreesToFreq(angleDegrees);
-            const { sin, cos } = freqRadSinCos(freq);
-            return {
-                x: point.x,
-                y: point.y * cos - point.z * sin,
-                z: point.y * sin + point.z * cos
-            };
-        }
-        
-        function rotateY(point, angleDegrees) {
-            const freq = degreesToFreq(angleDegrees);
-            const { sin, cos } = freqRadSinCos(freq);
-            return {
-                x: point.x * cos + point.z * sin,
-                y: point.y,
-                z: -point.x * sin + point.z * cos
-            };
-        }
-        
-        function project3D(point3d, perspective) {
-            const scale = perspective / (perspective + point3d.z);
-            return {
-                x: centerX + point3d.x * scale,
-                y: centerY + point3d.y * scale,
-                scale: scale
-            };
-        }
-        
-        // Semicircle integration approximation
-        function semicircleIntegral(r, a, steps = 50) {
-            const start = r * a;
-            const end = r * (2 * a);
-            const dx = (end - start) / steps;
-            let sum = 0;
-            
-            for (let i = 0; i < steps; i++) {
-                const x = start + i * dx;
-                if (x <= r) {
-                    const height = Math.sqrt(r * r - x * x);
-                    sum += height * dx;
-                }
-            }
-            return sum;
-        }
-        
-        // Generate sphere points
-        function generateSpherePoints(radius, meridianCount, parallelCount, integParam) {
-            const points = [];
-            const a = integParam; // Integration parameter (0-1)
-            
-            // Generate meridians (0-4 instead of 0-2π)
-            for (let m = 0; m < meridianCount; m++) {
-                const phiFreq = (m / meridianCount) * 4.0; // Longitude
-                const meridianPoints = [];
-                
-                for (let p = 0; p <= parallelCount; p++) {
-                    const thetaFreq = (p / parallelCount) * 2.0; // Latitude
-                    
-                    // Apply semicircle integration influence
-                    const integralInfluence = semicircleIntegral(radius, a) / (radius * radius);
-                    const modifiedRadius = radius * (1 + 0.1 * freqRadSinCos(integralInfluence * 2.0).sin);
-                    
-                    // Spherical to Cartesian (radical angle trigonometry)
-                    const thetaTrig = freqRadSinCos(thetaFreq);
-                    const phiTrig = freqRadSinCos(phiFreq);
-                    
-                    const x = modifiedRadius * thetaTrig.sin * phiTrig.cos;
-                    const y = modifiedRadius * thetaTrig.cos;
-                    const z = modifiedRadius * thetaTrig.sin * phiTrig.sin;
-                    
-                    meridianPoints.push({ x, y, z });
-                }
-                points.push(meridianPoints);
-            }
-            
-            // Generate parallels
-            const parallelLines = [];
-            for (let p = 1; p < parallelCount; p++) { // Skip poles
-                const thetaFreq = (p / parallelCount) * 2.0;
-                const parallelPoints = [];
-                
-                for (let m = 0; m <= meridianCount; m++) {
-                    const phiFreq = (m / meridianCount) * 4.0;
-                    
-                    const integralInfluence = semicircleIntegral(radius, a) / (radius * radius);
-                    const modifiedRadius = radius * (1 + 0.1 * freqRadSinCos(integralInfluence * 2.0).sin);
-                    
-                    const thetaTrig = freqRadSinCos(thetaFreq);
-                    const phiTrig = freqRadSinCos(phiFreq);
-                    
-                    const x = modifiedRadius * thetaTrig.sin * phiTrig.cos;
-                    const y = modifiedRadius * thetaTrig.cos;
-                    const z = modifiedRadius * thetaTrig.sin * phiTrig.sin;
-                    
-                    parallelPoints.push({ x, y, z });
-                }
-                parallelLines.push(parallelPoints);
-            }
-            
-            return { meridians: points, parallels: parallelLines };
-        }
-        
-        // Drawing functions
-        function drawLine(from, to, color = '#00ff88', width = 1) {
-            ctx.strokeStyle = color;
-            ctx.lineWidth = width;
-            ctx.beginPath();
-            ctx.moveTo(from.x, from.y);
-            ctx.lineTo(to.x, to.y);
-            ctx.stroke();
-        }
-        
-        function drawPoint(point, color = '#ff4444', size = 3) {
-            ctx.fillStyle = color;
-            ctx.beginPath();
-            ctx.arc(point.x, point.y, size, 0, Math.PI * 2);
-            ctx.fill();
-        }
-        
-        // Main render function
-        function render() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            const rotXAngle = parseFloat(controls.rotX.value);
-            const rotYAngle = parseFloat(controls.rotY.value);
-            const integParam = parseFloat(controls.integParam.value) / 100;
-            const meridianCount = parseInt(controls.meridians.value);
-            const parallelCount = parseInt(controls.parallels.value);
-            const perspective = parseFloat(controls.perspective.value);
-            
-            const radius = 150;
-            const sphereData = generateSpherePoints(radius, meridianCount, parallelCount, integParam);
-            
-            // Transform and project meridians
-            sphereData.meridians.forEach((meridian, mIndex) => {
-                const projectedPoints = [];
-                
-                meridian.forEach(point => {
-                    let transformed = rotateX(point, rotXAngle);
-                    transformed = rotateY(transformed, rotYAngle);
-                    const projected = project3D(transformed, perspective);
-                    projectedPoints.push(projected);
-                });
-                
-                // Draw meridian lines
-                for (let i = 0; i < projectedPoints.length - 1; i++) {
-                    const brightness = Math.max(0.3, projectedPoints[i].scale);
-                    const color = `rgba(0, 255, 136, ${brightness})`;
-                    drawLine(projectedPoints[i], projectedPoints[i + 1], color, brightness);
-                }
-                
-                // Highlight special meridians affected by integration
-                if (mIndex === Math.floor(meridianCount * integParam)) {
-                    projectedPoints.forEach(point => {
-                        drawPoint(point, '#ff8800', 2);
-                    });
-                }
-            });
-            
-            // Transform and project parallels
-            sphereData.parallels.forEach(parallel => {
-                const projectedPoints = [];
-                
-                parallel.forEach(point => {
-                    let transformed = rotateX(point, rotXAngle);
-                    transformed = rotateY(transformed, rotYAngle);
-                    const projected = project3D(transformed, perspective);
-                    projectedPoints.push(projected);
-                });
-                
-                // Draw parallel lines
-                for (let i = 0; i < projectedPoints.length - 1; i++) {
-                    const brightness = Math.max(0.2, projectedPoints[i].scale * 0.7);
-                    const color = `rgba(136, 136, 255, ${brightness})`;
-                    drawLine(projectedPoints[i], projectedPoints[i + 1], color, brightness);
-                }
-            });
-        }
-        
-        // Animation system with controlled timing
-        let animating = false;
-        let lastFrameTime = 0;
-        let animationFrame = null;
-        
-        function step(currentTime) {
-            const frameDelay = parseFloat(controls.frameDelay.value);
-            
-            // Only proceed if enough time has passed
-            if (currentTime - lastFrameTime >= frameDelay) {
-                // Update rotation
-                controls.rotY.value = (parseFloat(controls.rotY.value) + 1) % 360;
-                values.rotYVal.textContent = controls.rotY.value + '°';
-                render();
-                
-                // Update last frame time
-                lastFrameTime = currentTime;
-            }
-            
-            // Continue animation if still animating
-            if (animating) {
-                animationFrame = requestAnimationFrame(step);
-            }
-        }
-        
-        function startAnimation() {
-            if (!animating) {
-                animating = true;
-                lastFrameTime = 0; // Reset timing
-                animationFrame = requestAnimationFrame(step);
-                toggleAnimBtn.textContent = 'Stop Animation';
-                toggleAnimBtn.classList.add('active');
-            }
-        }
-        
-        function stopAnimation() {
-            if (animating) {
-                animating = false;
-                if (animationFrame) {
-                    cancelAnimationFrame(animationFrame);
-                    animationFrame = null;
-                }
-                toggleAnimBtn.textContent = 'Start Animation';
-                toggleAnimBtn.classList.remove('active');
-            }
-        }
-        
-        function toggleAnimation() {
-            if (animating) {
-                stopAnimation();
-            } else {
-                startAnimation();
-            }
-        }
-        
-        function stepOnce() {
-            // Single step animation
-            controls.rotY.value = (parseFloat(controls.rotY.value) + 1) % 360;
-            values.rotYVal.textContent = controls.rotY.value + '°';
-            render();
-        }
-        
-        // Event listeners for controls
-        Object.keys(controls).forEach(key => {
-            controls[key].addEventListener('input', (e) => {
-                const value = e.target.value;
-                if (key === 'integParam') {
-                    values[key + 'Val'].textContent = (value / 100).toFixed(2);
-                } else if (key === 'rotX' || key === 'rotY') {
-                    values[key + 'Val'].textContent = value + '°';
-                } else if (key === 'frameDelay') {
-                    values[key + 'Val'].textContent = value + 'ms';
-                } else {
-                    values[key + 'Val'].textContent = value;
-                }
-                render();
-            });
-        });
-        
-        // Animation control event listeners
-        toggleAnimBtn.addEventListener('click', toggleAnimation);
-        stepAnimBtn.addEventListener('click', stepOnce);
-        
-        // Double-click canvas to toggle animation (legacy support)
-        canvas.addEventListener('dblclick', toggleAnimation);
-        
-        // Initial render
-        render();
-    </script>
+    <div style="margin-top:12px; background:#f5f5f5; padding:10px; border-radius:8px;">
+      <strong>The magic:</strong> the rational functions above produce coordinates that sit on the unit circle while using simpler algebraic expressions than trig.
+    </div>
+  </div>
+</section>
+
+<!-- Vector section -->
+<section id="section2">
+  <div class="card">
+    <h2 style="margin-top:6px;">Vector + RAU Angle Visualization</h2>
+
+    <div class="vector-grid">
+      <canvas id="canvas2" width="760" height="560"></canvas>
+
+      <div class="panel">
+        <h3 style="margin:0 0 8px 0;">Vector Controls</h3>
+
+        <div class="control-group">
+          <label for="uLength">u length:</label>
+          <input id="uLength" type="range" min="50" max="200" value="120">
+          <div class="value" id="uLengthVal">120</div>
+        </div>
+
+        <div class="control-group">
+          <label for="uAngle">u angle (°):</label>
+          <input id="uAngle" type="range" min="0" max="360" value="30">
+          <div class="value" id="uAngleVal">30°</div>
+        </div>
+
+        <div class="control-group">
+          <label for="vLength">v length:</label>
+          <input id="vLength" type="range" min="50" max="200" value="100">
+          <div class="value" id="vLengthVal">100</div>
+        </div>
+
+        <div class="control-group">
+          <label for="vAngle">v angle (°):</label>
+          <input id="vAngle" type="range" min="0" max="360" value="0">
+          <div class="value" id="vAngleVal">0°</div>
+        </div>
+
+        <div style="margin-top:10px;">
+          <h4 style="margin:6px 0;">Computation Results</h4>
+          <pre id="resultsContent" style="margin:0; font-family:monospace; font-size:13px; background:#fafafa; padding:8px; border-radius:6px;"></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+/* ---------------------------
+   Toggle between sections
+   --------------------------- */
+const toggleBtn = document.getElementById('toggleButton');
+const s1 = document.getElementById('section1');
+const s2 = document.getElementById('section2');
+toggleBtn.addEventListener('click', () => {
+  const showing1 = s1.classList.contains('active');
+  s1.classList.toggle('active', !showing1);
+  s2.classList.toggle('active', showing1);
+  toggleBtn.textContent = showing1 ? 'Switch to RAU System Explanation' : 'Switch to Vector Diagram';
+});
+
+/* ---------------------------
+   MathJax formula panel logic
+   - collapses to slim bar (still visible)
+   - expand/collapse toggles MathJax typeset
+   --------------------------- */
+const formulaPanel = document.getElementById('formulaPanel');
+const formulaHeader = document.getElementById('formulaHeader');
+const formulaChevron = document.getElementById('formulaChevron');
+
+let isSlim = false;
+function setSlimMode(slim) {
+  isSlim = !!slim;
+  if (isSlim) {
+    formulaPanel.classList.add('slim');
+    formulaChevron.textContent = '▶';
+  } else {
+    formulaPanel.classList.remove('slim');
+    formulaChevron.textContent = '◀';
+    // typeset MathJax when opened to ensure rendering
+    if (window.MathJax && MathJax.typesetPromise) {
+      MathJax.typesetPromise().catch(console.error);
+    }
+  }
+}
+formulaHeader.addEventListener('click', () => {
+  setSlimMode(!isSlim);
+});
+// start not slim (expanded) but you can click header to slim
+setSlimMode(false);
+
+/* ---------------------------
+   RAU canvas (section 1)
+   --------------------------- */
+(function() {
+  const canvas = document.getElementById('canvas1');
+  const ctx = canvas.getContext('2d');
+  const slider = document.getElementById('paramSlider');
+  const valueDisplay = document.getElementById('paramValue');
+
+  // rational components (matching provided formulas)
+  function getRAUComponents(t) {
+    // clamp t in [0,1)
+    const tt = Math.max(0, Math.min(0.999999, t));
+    const denom = 1.0 / Math.sqrt(1.0 - 2.0*tt + 2.0*tt*tt);
+    const rcos = (1.0 - tt) * denom;
+    const rsin = tt * denom;
+    return { cos: rcos, sin: rsin };
+  }
+
+  function getRotationComponents(param) {
+    // param is 0..4
+    let p = param;
+    if (!isFinite(p)) p = 0;
+    if (p < 0) p = 0;
+    const q = Math.floor(p) % 4;
+    const frac = p - Math.floor(p);
+    const { cos: c, sin: s } = getRAUComponents(frac);
+    let cos_val, sin_val;
+    switch (q) {
+      case 0: cos_val = c; sin_val = s; break;
+      case 1: cos_val = -s; sin_val = c; break;
+      case 2: cos_val = -c; sin_val = -s; break;
+      case 3: cos_val = s; sin_val = -c; break;
+    }
+    return { cos: cos_val, sin: sin_val, quadrant: q, fraction: frac };
+  }
+
+  // draw helpers
+  function drawGrid(cx, cy, w, h, scale=50) {
+    ctx.save();
+    ctx.strokeStyle = '#eee';
+    ctx.lineWidth = 1;
+    for (let i = -Math.floor(w/scale); i <= Math.floor(w/scale); i++) {
+      ctx.beginPath();
+      ctx.moveTo(cx + i*scale, 0);
+      ctx.lineTo(cx + i*scale, h);
+      ctx.stroke();
+    }
+    for (let j = -Math.floor(h/scale); j <= Math.floor(h/scale); j++) {
+      ctx.beginPath();
+      ctx.moveTo(0, cy + j*scale);
+      ctx.lineTo(w, cy + j*scale);
+      ctx.stroke();
+    }
+    // axes
+    ctx.strokeStyle = '#666';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(cx, 0); ctx.lineTo(cx, h);
+    ctx.moveTo(0, cy); ctx.lineTo(w, cy);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function draw() {
+    const W = canvas.width, H = canvas.height;
+    ctx.clearRect(0,0,W,H);
+    const cx = W/2, cy = H/2;
+    drawGrid(cx, cy, W, H, 40);
+
+    // circle
+    const radius = Math.min(W,H) * 0.34;
+    ctx.save();
+    ctx.strokeStyle = '#333';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(cx, cy, radius, 0, Math.PI*2);
+    ctx.stroke();
+    ctx.restore();
+
+    // diagonals for quadrants
+    ctx.save();
+    ctx.setLineDash([6,6]);
+    ctx.strokeStyle = '#888';
+    ctx.lineWidth = 1;
+    // Q0 diag: right -> top
+    ctx.beginPath();
+    ctx.moveTo(cx + radius, cy);
+    ctx.lineTo(cx, cy - radius);
+    ctx.moveTo(cx, cy - radius);
+    ctx.lineTo(cx - radius, cy);
+    ctx.moveTo(cx - radius, cy);
+    ctx.lineTo(cx, cy + radius);
+    ctx.moveTo(cx, cy + radius);
+    ctx.lineTo(cx + radius, cy);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.restore();
+
+    // draw RAU point and line
+    const param = parseFloat(slider.value);
+    const info = getRotationComponents(param);
+
+    const x = cx + info.cos * radius;
+    const y = cy - info.sin * radius;
+
+    // highlight diagonal for current quadrant
+    ctx.save();
+    ctx.strokeStyle = '#00aa00';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    switch (info.quadrant) {
+      case 0: ctx.moveTo(cx + radius, cy); ctx.lineTo(cx, cy - radius); break;
+      case 1: ctx.moveTo(cx, cy - radius); ctx.lineTo(cx - radius, cy); break;
+      case 2: ctx.moveTo(cx - radius, cy); ctx.lineTo(cx, cy + radius); break;
+      case 3: ctx.moveTo(cx, cy + radius); ctx.lineTo(cx + radius, cy); break;
+    }
+    ctx.stroke();
+    ctx.restore();
+
+    // radius line
+    ctx.save();
+    ctx.strokeStyle = '#ff4444';
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.lineTo(x, y);
+    ctx.stroke();
+
+    // point
+    ctx.fillStyle = '#ff4444';
+    ctx.beginPath();
+    ctx.arc(x, y, 7, 0, Math.PI*2);
+    ctx.fill();
+    ctx.restore();
+
+    // small info text
+    ctx.fillStyle = '#222';
+    ctx.font = '13px monospace';
+    ctx.fillText('Quadrant: ' + info.quadrant, 12, 20);
+    ctx.fillText('Fraction: ' + info.fraction.toFixed(3), 12, 38);
+    ctx.fillText('rsin: ' + (info.sin).toFixed(4), 12, 56);
+    ctx.fillText('rcos: ' + (info.cos).toFixed(4), 12, 74);
+
+    valueDisplay.textContent = param.toFixed(2);
+  }
+
+  slider.addEventListener('input', draw);
+  draw();
+
+  // ensure MathJax renders formulas initially
+  if (window.MathJax && MathJax.typesetPromise) {
+    MathJax.typesetPromise().catch(console.error);
+  }
+})();
+
+/* ---------------------------
+   Vector diagram (restored original)
+   --------------------------- */
+(function() {
+  const canvas = document.getElementById('canvas2');
+const ctx = canvas.getContext('2d');
+  const centerX = canvas.width/2;
+  const centerY = canvas.height/2;
+  
+  const controls = {
+      uLength: document.getElementById('uLength'),
+      uAngle: document.getElementById('uAngle'),
+      vLength: document.getElementById('vLength'),
+      vAngle: document.getElementById('vAngle')
+  };
+  const displays = {
+      uLengthVal: document.getElementById('uLengthVal'),
+      uAngleVal: document.getElementById('uAngleVal'),
+      vLengthVal: document.getElementById('vLengthVal'),
+      vAngleVal: document.getElementById('vAngleVal'),
+      resultsContent: document.getElementById('resultsContent')
+  };
+  
+  function degToRad(deg) { return deg * Math.PI/180; }
+  function radToDeg(rad) { return rad*180/Math.PI; }
+  
+  function drawArrow(ctx, fromX, fromY, toX, toY, color, width=2){
+      const headLen=12;
+      const dx=toX-fromX, dy=toY-fromY;
+      const angle=Math.atan2(dy,dx);
+      ctx.strokeStyle=color;
+      ctx.lineWidth=width;
+      ctx.beginPath();
+      ctx.moveTo(fromX,fromY);
+      ctx.lineTo(toX,toY);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(toX,toY);
+      ctx.lineTo(toX-headLen*Math.cos(angle-Math.PI/6),toY-headLen*Math.sin(angle-Math.PI/6));
+      ctx.moveTo(toX,toY);
+      ctx.lineTo(toX-headLen*Math.cos(angle+Math.PI/6),toY-headLen*Math.sin(angle+Math.PI/6));
+      ctx.stroke();
+  }
+  
+  function drawText(ctx,text,x,y,color='black',font='14px Arial'){
+      ctx.fillStyle=color;
+      ctx.font=font;
+      ctx.fillText(text,x,y);
+  }
+  
+  function drawGrid(ctx,width,height,scale=50){
+      ctx.strokeStyle='#ddd';
+      ctx.lineWidth=1;
+      for(let i=-Math.floor(width/scale);i<=Math.floor(width/scale);i++){
+          ctx.beginPath();
+          ctx.moveTo(centerX+i*scale,0);
+          ctx.lineTo(centerX+i*scale,height);
+          ctx.stroke();
+      }
+      for(let j=-Math.floor(height/scale);j<=Math.floor(height/scale);j++){
+          ctx.beginPath();
+          ctx.moveTo(0,centerY+j*scale);
+          ctx.lineTo(width,centerY+j*scale);
+          ctx.stroke();
+      }
+      // axes
+      ctx.strokeStyle='#666';
+      ctx.lineWidth=2;
+      ctx.beginPath();
+      ctx.moveTo(centerX,0); ctx.lineTo(centerX,height);
+      ctx.moveTo(0,centerY); ctx.lineTo(width,centerY);
+      ctx.stroke();
+  }
+  
+  function shadeQuadrant(ctx,uEnd,vEnd){
+      ctx.fillStyle='rgba(200,200,255,0.1)';
+      ctx.beginPath();
+      ctx.moveTo(centerX,centerY);
+      ctx.lineTo(uEnd.x,uEnd.y);
+      ctx.lineTo(vEnd.x,vEnd.y);
+      ctx.closePath();
+      ctx.fill();
+  }
+  
+  // --- RAU radical sine & cosine ---
+  function radicalSine(t){
+      t = t % 4;
+      const quadrant = Math.floor(t);
+      const lt = t - quadrant;
+      const a = 1 - 2*lt + 2*lt*lt;
+      switch(quadrant){
+          case 0: return lt/Math.sqrt(a);
+          case 1: return (1-lt)/Math.sqrt(a);
+          case 2: return -lt/Math.sqrt(a);
+          case 3: return -(1-lt)/Math.sqrt(a);
+      }
+  }
+  
+  function radicalCosine(t){
+      t = t % 4;
+      const quadrant = Math.floor(t);
+      const lt = t - quadrant;
+      const a = 1 - 2*lt + 2*lt*lt;
+      switch(quadrant){
+          case 0: return (1-lt)/Math.sqrt(a);
+          case 1: return -lt/Math.sqrt(a);
+          case 2: return -(1-lt)/Math.sqrt(a);
+          case 3: return lt/Math.sqrt(a);
+      }
+  }
+  
+  // --- Compute RAU phase from two vectors (0-4) ---
+  function computeRAUPhase(u,v){
+      const dot = u.x*v.x + u.y*v.y;
+      const cross = u.x*v.y - u.y*v.x;
+      if(dot === 0 && cross === 0) return 0;
+      let angle = Math.atan2(cross, dot);
+      if(angle < 0) angle += 2*Math.PI;
+      return (angle/(2*Math.PI))*4;
+  }
+  
+  // --- Compute traditional angle 0→2π ---
+  function vectorAngle(u,v){
+      const angle = Math.atan2(v.y,v.x) - Math.atan2(u.y,u.x);
+      return (angle + 2*Math.PI) % (2*Math.PI);
+  }
+  
+  function drawChordConnection(ctx, u, v, radius) {
+      // Normalize vectors to unit circle
+      const uNorm = {x: u.x / Math.sqrt(u.x*u.x + u.y*u.y), 
+                     y: u.y / Math.sqrt(u.x*u.x + u.y*u.y)};
+      const vNorm = {x: v.x / Math.sqrt(v.x*v.x + v.y*v.y), 
+                     y: v.y / Math.sqrt(v.x*v.x + v.y*v.y)};
+      
+      // Draw theoretical circle
+      ctx.strokeStyle = 'rgba(100, 200, 100, 0.3)';
+      ctx.setLineDash([5, 5]);
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      
+      // Triangle vertices
+      const O = {x: centerX, y: centerY};
+      const B = {x: centerX + radius * uNorm.x, y: centerY + radius * uNorm.y};
+      const A = {x: centerX + radius * vNorm.x, y: centerY + radius * vNorm.y};
+      
+      // Midpoint M (for mirror line)
+      const M = {x: (O.x + A.x) / 2, y: (O.y + A.y) / 2};
+      
+      // Draw triangle
+      ctx.strokeStyle = 'rgba(0, 150, 0, 0.5)';
+      ctx.fillStyle = 'rgba(0, 255, 0, 0.1)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(O.x, O.y);
+      ctx.lineTo(B.x, B.y);
+      ctx.lineTo(A.x, A.y);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+      
+      // Draw mirror line (vertical through M)
+      ctx.strokeStyle = 'rgba(0, 150, 0, 0.3)';
+      ctx.setLineDash([3, 3]);
+      ctx.beginPath();
+      ctx.moveTo(M.x, M.y - 50);
+      ctx.lineTo(M.x, M.y + 50);
+      ctx.stroke();
+      ctx.setLineDash([]);
+  
+      // label chord length
+      const chordLen = Math.hypot(A.x - B.x, A.y - B.y);
+      //drawText(ctx, `Chord = ${chordLen.toFixed(1)}`, (A.x+B.x)/2 + 10, (A.y+B.y)/2, '#060', '12px monospace');
+      
+      // mark the arc endpoints
+      ctx.fillStyle = '#060';
+      ctx.beginPath(); ctx.arc(A.x, A.y, 3, 0, 2*Math.PI); ctx.fill();
+      ctx.beginPath(); ctx.arc(B.x, B.y, 3, 0, 2*Math.PI); ctx.fill();
+  }
+  
+  function render(){
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+  
+      drawGrid(ctx,canvas.width,canvas.height,50);
+  
+      const uLen = parseInt(controls.uLength.value);
+      const uAng = degToRad(parseInt(controls.uAngle.value));
+      const vLen = parseInt(controls.vLength.value);
+      const vAng = degToRad(parseInt(controls.vAngle.value));
+  
+      displays.uLengthVal.textContent = uLen;
+      displays.uAngleVal.textContent = radToDeg(uAng).toFixed(0)+'°';
+      displays.vLengthVal.textContent = vLen;
+      displays.vAngleVal.textContent = radToDeg(vAng).toFixed(0)+'°';
+  
+      const u={x:uLen*Math.cos(uAng), y:-uLen*Math.sin(uAng)};
+      const v={x:vLen*Math.cos(vAng), y:-vLen*Math.sin(vAng)};
+  
+      const uEnd={x:centerX+u.x, y:centerY+u.y};
+      const vEnd={x:centerX+v.x, y:centerY+v.y};
+      const para={x:centerX+u.x+v.x, y:centerY+u.y+v.y};
+  
+      // lightly shade quadrant
+      shadeQuadrant(ctx,uEnd,vEnd);
+  
+      // parallelogram
+      ctx.strokeStyle='#aaa';
+      ctx.lineWidth=2;
+      ctx.beginPath();
+      ctx.moveTo(centerX,centerY);
+      ctx.lineTo(uEnd.x,uEnd.y);
+      ctx.lineTo(para.x,para.y);
+      ctx.lineTo(vEnd.x,vEnd.y);
+      ctx.closePath();
+      ctx.stroke();
+  
+      // vectors
+      drawArrow(ctx,centerX,centerY,uEnd.x,uEnd.y,'#ff4444',3);
+      drawArrow(ctx,centerX,centerY,vEnd.x,vEnd.y,'#4444ff',3);
+  
+      // angle arc
+      const arcRadius = Math.min(uLen, vLen);
+      const startAngle = Math.min(uAng,vAng);
+      const endAngle = Math.max(uAng,vAng);
+      ctx.strokeStyle='#666';
+      ctx.lineWidth=2;
+      ctx.beginPath();
+      ctx.arc(centerX,centerY,arcRadius,-endAngle,-startAngle);
+      ctx.stroke();
+      const midAngle = (startAngle+endAngle)/2;
+      const labelX=centerX+(arcRadius+15)*Math.cos(midAngle);
+      const labelY=centerY-(arcRadius+15)*Math.sin(midAngle);
+      drawText(ctx,'θ',labelX,labelY,'#666','bold 14px Arial');
+  
+      // cross, dot
+      const cross = u.x*v.y - u.y*v.x;
+      const dot = u.x*v.x + u.y*v.y;
+  
+      // traditional
+      const angleRad = vectorAngle(u,v);
+      const angleDeg = radToDeg(angleRad);
+      const tangent = dot!==0 ? Math.abs(cross/dot) : Infinity;
+  
+      // rau
+      const rauPhase = computeRAUPhase(u,v);
+      const rauSine = radicalSine(rauPhase);
+      const rauCos = radicalCosine(rauPhase);
+      const rauRad = Math.atan(Math.abs(cross/dot));
+      const rauDeg = radToDeg(rauRad);
+  
+      function formatNum(num, width=8, decimals=2){
+          return num.toFixed(decimals).padStart(width);
+      }
+      
+      function formatNum(num, width=8, decimals=2){
+          return num.toFixed(decimals).padStart(width);
+      }
+      
+      const uXStr = formatNum(u.x);
+      const uYStr = formatNum(u.y);
+      const vXStr = formatNum(v.x);
+      const vYStr = formatNum(v.y);
+      const crossStr = formatNum(cross);
+      const dotStr = formatNum(dot);
+      const angleRadStr = formatNum(angleRad,8,3);
+      const angleDegStr = formatNum(angleDeg,6,1);
+      const tangentStr = isFinite(tangent) ? formatNum(tangent,8,4) : '    ∞';
+      const rauPhaseStr = formatNum(rauPhase,6,3);
+      const rauSineStr = formatNum(rauSine,8,3);
+      const rauCosStr = formatNum(rauCos,8,3);
+      const rauRadStr = formatNum(rauRad,8,3);
+      const rauDegStr = formatNum(rauDeg,6,1);
+      
+      displays.resultsContent.textContent =
+      `Vector Information:
+      u = (${uXStr}, ${uYStr})
+      v = (${vXStr}, ${vYStr})
+      Cross = ${crossStr}, Dot = ${dotStr}
+      
+      Traditional Angle:
+      θ = ${angleRadStr} rad | ${angleDegStr}°
+      tan(θ) = ${tangentStr}
+      
+      RAU / Radical Angle:
+      Phase =     ${rauPhaseStr} (0–4)
+      radicalSine   = ${rauSineStr}
+      radicalCosine = ${rauCosStr}
+      θ = ${rauRadStr} rad | ${rauDegStr}°`;
+  
+      drawChordConnection(ctx, v, u, arcRadius);
+  }
+
+  // add listeners
+  Object.values(controls).forEach(c => c.addEventListener('input', render));
+  render();
+})();
+</script>
+
 </body>
 </html>
