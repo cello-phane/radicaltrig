@@ -567,15 +567,25 @@ const ctx = canvas.getContext('2d');
       return (angle + 2*Math.PI) % (2*Math.PI);
   }
 
-function vectorAngle(u, v) {
-    const cross = u.x * v.y - u.y * v.x;
-    const dot = u.x * v.x + u.y * v.y;
-    let angle = Math.atan2(cross, dot);
-    // Normalize to [0,2]
-    if (angle < 0) angle += 2.0;
-
-    return angle;
-}
+  function vectorAngle(u, v) {
+      const cross_uv_mag = u.x * v.y - u.y * v.x;
+      const dot_uv = u.x * v.x + u.y * v.y;
+      
+      let angle = Math.abs(cross_uv_mag) / (Math.abs(dot_uv) + Math.abs(cross_uv_mag));
+      
+	    // Quadrant adjustments
+      if (dot_uv < 0) {
+          angle = cross_uv_mag < 0 ? 2.0 - angle : angle + 1.0;
+      }
+      
+      if (cross_uv_mag < 0 && dot_uv < 0) {
+          angle = angle + 1.0;
+      }
+      if angle > 2.0 {
+		  angle = Math.sign(cross) * angle;
+	  }
+      return angle;
+  }
 
     return mix(
         mix(Math.sign(cross) * angle, angle, boolToFloat(cross > dot)),
