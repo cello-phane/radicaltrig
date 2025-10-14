@@ -561,9 +561,6 @@ const ctx = canvas.getContext('2d');
     if (cross_uv_mag < dot_uv && cross_uv_mag < 0 && dot_uv > 0) {
        return Math.sign(cross_uv_mag) * angle + 4.0;
     }
-    else if (cross_uv_mag < dot_uv && cross_uv_mag < 0 && dot_uv > 0) {
-	   return (angle + 3.0);
-    }
     // Helper for mix function: mix(a, b, t) = t ? b : a
     const mix = (a, b, condition) => condition ? b : a;
     angle = mix(angle, 
