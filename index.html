@@ -568,20 +568,26 @@ const ctx = canvas.getContext('2d');
   }
 
   function vectorAngle(u, v) {
-      const cross = u.x * v.y - u.y * v.x; // sin-like
-      const dot   = u.x * v.x + u.y * v.y; // cos-like
+    const cross = u.x * v.y - u.y * v.x;
+    const dot = u.x * v.x + u.y * v.y;
 
-      const t = Math.abs(cross) / (Math.abs(dot) + Math.abs(cross));
+    let angle = Math.abs(cross) / (Math.abs(dot) + Math.abs(cross));
 
-      let q = 0;
-      if (dot >= 0 && cross >= 0) q = 0;        // 0–90°
-      else if (dot < 0 && cross >= 0) q = 1;    // 90–180°
-      else if (dot < 0 && cross < 0) q = 2;     // 180–270°
-      else if (dot >= 0 && cross < 0) q = 3;    // 270–360°
+    // GLSL-style mix() with continuous blending
+    const mix = (a, b, t) => a * (1 - t) + b * t;
+    const boolToFloat = (cond) => cond ? 1.0 : 0.0;
 
-      // flip the progression in quadrant IV
-      const phase = (q === 3) ? (q + (1 - t)) : (q + t);
-      return phase;
+    angle = mix(
+        angle,
+        mix(2.0 - angle, angle + 1.0, boolToFloat(cross < 0)),
+        boolToFloat(dot < 0)
+    );
+
+    return mix(
+        mix(Math.sign(cross) * angle, angle, boolToFloat(cross > dot)),
+        angle + 1.0,
+        boolToFloat(cross < 0 && dot < 0)
+    );
   }
   
   function drawChordConnection(ctx, u, v, radius) {
