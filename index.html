@@ -568,31 +568,24 @@ const ctx = canvas.getContext('2d');
   }
 
 function vectorAngle(u, v) {
-    const cross_uv_mag = u.x * v.y - u.y * v.x;  // Keep sign!
+    const cross_uv_mag = u.x * v.y - u.y * v.x;  // Signed!
     const dot_uv = u.x * v.x + u.y * v.y;
     
     let angle = Math.abs(cross_uv_mag) / (Math.abs(dot_uv) + Math.abs(cross_uv_mag));
     
-    // Quadrant adjustments using mix-like ternary logic
-    // mix(a, b, condition) === condition ? b : a
+    // Helper for mix function: mix(a, b, t) = t ? b : a
+    const mix = (a, b, condition) => condition ? b : a;
     
-    // First adjustment: handle negative dot product
-    if (dot_uv < 0) {
-        angle = cross_uv_mag < 0 ? 2.0 - angle : angle + 1.0;
-    }
+    // Direct translation from GLSL
+    angle = mix(angle, 
+                mix(2.0 - angle, angle + 1.0, cross_uv_mag < 0), 
+                dot_uv < 0);
     
-    // Second adjustment: complex condition
-    const useSign = cross_uv_mag > dot_uv;
-    if (!useSign) {
-        angle = Math.sign(cross_uv_mag) * angle;
-    }
-    
-    // Third adjustment: both negative
-    if (cross_uv_mag < 0 && dot_uv < 0) {
-        angle = angle + 1.0;
-    }
-    
-    return angle;
+    return mix(
+        mix(Math.sign(cross_uv_mag) * angle, angle, cross_uv_mag > dot_uv),
+        angle + 1.0,
+        cross_uv_mag < 0 && dot_uv < 0
+    );
 }
   
   function drawChordConnection(ctx, u, v, radius) {
