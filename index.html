@@ -488,7 +488,7 @@ const ctx = canvas.getContext('2d');
       ctx.fillText(text,x,y);
   }
   
-  function drawGrid(ctx,width,height,scale=50){
+  function drawGrid(ctx,width,height,scale=100){
       ctx.strokeStyle='#ddd';
       ctx.lineWidth=1;
       for(let i=-Math.floor(width/scale);i<=Math.floor(width/scale);i++){
@@ -513,7 +513,7 @@ const ctx = canvas.getContext('2d');
   }
   
   function shadeQuadrant(ctx,uEnd,vEnd){
-      ctx.fillStyle='rgba(100,100,155,0.1)';
+      ctx.fillStyle='rgba(100,100,155,0.4)';
       ctx.beginPath();
       ctx.moveTo(centerX,centerY);
       ctx.lineTo(uEnd.x,uEnd.y);
