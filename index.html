@@ -67,10 +67,7 @@ window.MathJax = {
 
   /* vector section layout */
   .vector-grid {
-    display:flex;
-    gap:18px;
-    flex-wrap:wrap;
-    justify-content:center;
+    display:block;
     align-items:flex-start;
     margin-top:8px;
   }
@@ -81,7 +78,7 @@ window.MathJax = {
     padding:12px;
     border-radius:8px;
     box-shadow:0 2px 8px rgba(0,0,0,0.06);
-    font-size:14px;
+    font-size:16px;
   }
   .control-group { display:flex; align-items:center; gap:8px; margin:8px 0; }
   .control-group label { min-width:110px; font-weight:600; }
@@ -717,15 +714,16 @@ const ctx = canvas.getContext('2d');
       `
       u = (${uXStr}, ${uYStr})
       v = (${vXStr}, ${vYStr})
-      Cross = ${crossStr}, Dot = ${dotStr}
+      Cross = ${crossStr}
+      Dot   = ${dotStr}
       
       Radian(Traditional)
       θ = ${angleRadStr} rad | ${angleDegStr}°
-      ---------------------------------------
+      -----------------------------
       tan(θ) = ${tangentStr}
       sine  = ${rauSineStr}
       coine = ${rauCosStr}
-      ---------------------------------------
+      -----------------------------
       RadicalAngleUnit
       θ =   ${rauPhaseStr} `;
       //θ = ${rauRadStr} rad | ${rauDegStr}°
