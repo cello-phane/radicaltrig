@@ -76,7 +76,6 @@ window.MathJax = {
   }
   #canvas2 { border:2px solid #333; border-radius:8px; background:white; display:block; }
   .panel {
-    width:380px;
     min-width:260px;
     background:white;
     padding:12px;
@@ -170,10 +169,9 @@ window.MathJax = {
         \mathrm{rtan}(t) \;=\; \frac{t}{1.0 - t}
         \]
       </div>
-      <p style="margin-top:8px;font-size:13px;color:#444;">
-        These formulas are used for the RAU diagonal interpolation on each quadrant.
-      </p>
     </div>
+    <strong>Vector Information</strong>
+    <pre id="resultsContent" style="margin:0; font-family:monospace; font-size:13px; background:#fafafa; padding:8px; border-radius:6px;"></pre>
   </div>
 </div>
 
@@ -193,7 +191,7 @@ window.MathJax = {
     </div>
 
     <div style="margin-top:12px; background:#f5f5f5; padding:10px; border-radius:8px;">
-      <strong>The magic:</strong> the rational functions above produce coordinates that sit on the unit circle while using simpler algebraic expressions than trig.
+      The functions above produce coordinates that sit on the unit circle while using simpler algebraic expressions than trig.
     </div>
   </div>
 </section>
@@ -231,11 +229,6 @@ window.MathJax = {
           <label for="vAngle">v angle (°):</label>
           <input id="vAngle" type="range" min="0" max="360" value="0">
           <div class="value" id="vAngleVal">0°</div>
-        </div>
-
-        <div style="margin-top:10px;">
-          <h4 style="margin:6px 0;">Computation Results</h4>
-          <pre id="resultsContent" style="margin:0; font-family:monospace; font-size:13px; background:#fafafa; padding:8px; border-radius:6px;"></pre>
         </div>
       </div>
     </div>
@@ -443,7 +436,7 @@ setSlimMode(false);
 })();
 
 /* ---------------------------
-   Vector diagram (restored original)
+   Vector diagram
    --------------------------- */
 (function() {
   const canvas = document.getElementById('canvas2');
@@ -721,7 +714,7 @@ const ctx = canvas.getContext('2d');
       const rauDegStr = formatNum(rauDeg,6,1);
       
       displays.resultsContent.textContent =
-      `Vector Information:
+      `
       u = (${uXStr}, ${uYStr})
       v = (${vXStr}, ${vYStr})
       Cross = ${crossStr}, Dot = ${dotStr}
