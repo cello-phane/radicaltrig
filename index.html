@@ -581,7 +581,7 @@ const ctx = canvas.getContext('2d');
       if (cross_uv_mag < 0 && dot_uv < 0) {
           angle = angle + 1.0;
       }
-      if (angle > 2.0 && cross_uv_mag > dot_uv) {
+      if (angle >= 2.0 && cross_uv_mag < dot_uv) {
 		  angle = Math.sign(cross) * angle;
 	  }
       return angle;
