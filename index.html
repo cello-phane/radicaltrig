@@ -566,19 +566,15 @@ const ctx = canvas.getContext('2d');
   function vectorAngle(u, v) {
       const cross_uv_mag = u.x * v.y - u.y * v.x;
       const dot_uv = u.x * v.x + u.y * v.y;
-      
       let angle = Math.abs(cross_uv_mag) / (Math.abs(dot_uv) + Math.abs(cross_uv_mag));
-      
 	    // Quadrant adjustments
       if (dot_uv < 0) {
           angle = cross_uv_mag < 0 ? 2.0 - angle : angle + 1.0;
       }
-      
       if (cross_uv_mag < 0 && dot_uv < 0) {
           angle = angle + 1.0;
       }
-      
-      return angle;
+      return (angle + 2*Math.PI) % (2*Math.PI);
   }
   
   function drawChordConnection(ctx, u, v, radius) {
