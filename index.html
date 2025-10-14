@@ -566,26 +566,32 @@ const ctx = canvas.getContext('2d');
   //}
 
   function vectorAngle(u, v) {
-    const cross_uv_mag = u.x * v.y - u.y * v.x;
+	const cross_uv_mag = u.x * v.y - u.y * v.x;
     const dot_uv = u.x * v.x + u.y * v.y;
+
     let angle = Math.abs(cross_uv_mag) / (Math.abs(dot_uv) + Math.abs(cross_uv_mag));
-    const mix = (a, b, cond) => cond ? b : a;
-    const s = Math.sign(cross_uv_mag);
+
+    // mix(a, b, condition) → condition ? b : a
+    const mix = (a, b, condition) => condition ? b : a;
+
+    // --- first GLSL mix: quadrant correction for dot ---
+    // angle = mix(angle, mix(2.0 - angle, angle + 1.0, cross_uv_mag < 0.0), dot_uv < 0.0);
     angle = mix(
         angle,
         mix(2.0 - angle, angle + 1.0, cross_uv_mag < 0.0),
         dot_uv < 0.0
     );
-    const phase4 = mix(
+
+    // --- second GLSL mix: final wrap correction for Q4 ---
+    // return mix(mix(sign(cross_uv_mag)*(angle), angle, cross_uv_mag > dot_uv),
+    //            angle + 1.0,
+    //            cross_uv_mag < 0.0 && dot_uv < 0.0);
+    const s = Math.sign(cross_uv_mag);
+    return mix(
         mix(s * angle, angle, cross_uv_mag > dot_uv),
         angle + 1.0,
         cross_uv_mag < 0.0 && dot_uv < 0.0
     );
-    // Normalize → phase1 ∈ [0, 1)
-    const phase1 = (phase4 % 4.0) / 4.0;
-    // Convert to radians (0–2π)
-    const radians = phase1 * 2.0 * Math.PI;
-    return { phase4, phase1, radians };
   }
   
   function drawChordConnection(ctx, u, v, radius) {
