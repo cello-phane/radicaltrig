@@ -568,24 +568,21 @@ const ctx = canvas.getContext('2d');
   }
 
 function vectorAngle(u, v) {
-    const cross_uv_mag = u.x * v.y - u.y * v.x;  // Signed!
-    const dot_uv = u.x * v.x + u.y * v.y;
+    const cross = u.x * v.y - u.y * v.x; // sin-like
+    const dot   = u.x * v.x + u.y * v.y; // cos-like
     
-    let angle = Math.abs(cross_uv_mag) / (Math.abs(dot_uv) + Math.abs(cross_uv_mag));
-    
-    // Helper for mix function: mix(a, b, t) = t ? b : a
-    const mix = (a, b, condition) => condition ? b : a;
-    
-    // Direct translation from GLSL
-    angle = mix(angle, 
-                mix(2.0 - angle, angle + 1.0, cross_uv_mag < 0), 
-                dot_uv < 0);
-    
-    return mix(
-        mix(Math.sign(cross_uv_mag) * angle, angle, cross_uv_mag > dot_uv),
-        angle + 1.0,
-        cross_uv_mag < 0 && dot_uv < 0
-    );
+    // ratio for 0–1 mapping per quadrant
+    const t = Math.abs(cross) / (Math.abs(dot) + Math.abs(cross));
+
+    // Determine quadrant explicitly
+    let q = 0;
+    if (dot >= 0 && cross >= 0) q = 0;   // 0–90°
+    else if (dot < 0 && cross >= 0) q = 1;  // 90–180°
+    else if (dot < 0 && cross < 0) q = 2;   // 180–270°
+    else if (dot >= 0 && cross < 0) q = 3;  // 270–360°
+
+    // Return normalized 0–4 phase
+    return q + t;
 }
   
   function drawChordConnection(ctx, u, v, radius) {
