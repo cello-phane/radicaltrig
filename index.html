@@ -560,9 +560,28 @@ const ctx = canvas.getContext('2d');
   }
   
   // --- Compute traditional angle 0→2π ---
-  function vectorAngle(u,v){
-      const angle = Math.atan2(v.y,v.x) - Math.atan2(u.y,u.x);
-      return (angle + 2*Math.PI) % (2*Math.PI);
+  //function vectorAngle(u,v){
+  //    const angle = Math.atan2(v.y,v.x) - Math.atan2(u.y,u.x);
+  //    return (angle + 2*Math.PI) % (2*Math.PI);
+  //}
+
+  // atanVec implementation from GLSL
+  function vectorAngle(u, v) {
+      const cross_uv_mag = u.x * v.y - u.y * v.x;
+      const dot_uv = u.x * v.x + u.y * v.y;
+      
+      let angle = Math.abs(cross_uv_mag) / (Math.abs(dot_uv) + Math.abs(cross_uv_mag));
+      
+	    // Quadrant adjustments
+      if (dot_uv < 0) {
+          angle = cross_uv_mag < 0 ? 2.0 - angle : angle + 1.0;
+      }
+      
+      if (cross_uv_mag < 0 && dot_uv < 0) {
+          angle = angle + 1.0;
+      }
+      
+      return angle;
   }
   
   function drawChordConnection(ctx, u, v, radius) {
