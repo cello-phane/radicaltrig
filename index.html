@@ -180,9 +180,9 @@ window.MathJax = {
 <!-- RAU Section -->
 <section id="section1" class="active">
   <div class="card">
-    <h2 style="margin-top:6px;">Radical Angle Unit (RAU) — Explanation</h2>
+    <h2 style="margin-top:6px;">Rational Angle Unit (RAU) — Explanation</h2>
     <div class="desc">
-      <strong>Periodic by modular arthimetic</strong> The trigonometric formulae maps a parameter (0.0–1.0) to one quadrant, then is reflected/mirrored to have periodicity
+      <strong>Key insight:</strong> RAU maps a linear parameter (0.0–4.0) to circular motion by using rational functions on quadrant diagonals.
     </div>
 
     <canvas id="canvas1" width="420" height="420" style="display:block;margin:18px auto;"></canvas>
@@ -190,6 +190,10 @@ window.MathJax = {
     <div class="controls" style="text-align:center;">
       <label style="font-weight:700;">RAU Parameter: <span id="paramValue">0.00</span></label><br>
       <input type="range" id="paramSlider" min="0" max="4" step="0.01" value="0" />
+    </div>
+
+    <div style="margin-top:12px; background:#f5f5f5; padding:10px; border-radius:8px;">
+      <strong>The magic:</strong> the rational functions above produce coordinates that sit on the unit circle while using simpler algebraic expressions than trig.
     </div>
   </div>
 </section>
@@ -488,7 +492,7 @@ const ctx = canvas.getContext('2d');
       ctx.fillText(text,x,y);
   }
   
-  function drawGrid(ctx,width,height,scale=100){
+  function drawGrid(ctx,width,height,scale=50){
       ctx.strokeStyle='#ddd';
       ctx.lineWidth=1;
       for(let i=-Math.floor(width/scale);i<=Math.floor(width/scale);i++){
@@ -513,7 +517,7 @@ const ctx = canvas.getContext('2d');
   }
   
   function shadeQuadrant(ctx,uEnd,vEnd){
-      ctx.fillStyle='rgba(100,100,155,0.15)';
+      ctx.fillStyle='rgba(200,200,255,0.1)';
       ctx.beginPath();
       ctx.moveTo(centerX,centerY);
       ctx.lineTo(uEnd.x,uEnd.y);
@@ -560,38 +564,9 @@ const ctx = canvas.getContext('2d');
   }
   
   // --- Compute traditional angle 0→2π ---
-  //function vectorAngle(u,v){
-  //    const angle = Math.atan2(v.y,v.x) - Math.atan2(u.y,u.x);
-  //    return (angle + 2*Math.PI) % (2*Math.PI);
-  //}
-
-  function vectorAngle(u, v) {
-	const cross_uv_mag = u.x * v.y - u.y * v.x;
-    const dot_uv = u.x * v.x + u.y * v.y;
-
-    let angle = Math.abs(cross_uv_mag) / (Math.abs(dot_uv) + Math.abs(cross_uv_mag));
-
-    // mix(a, b, condition) → condition ? b : a
-    const mix = (a, b, condition) => condition ? b : a;
-
-    // --- first GLSL mix: quadrant correction for dot ---
-    // angle = mix(angle, mix(2.0 - angle, angle + 1.0, cross_uv_mag < 0.0), dot_uv < 0.0);
-    angle = mix(
-        angle,
-        mix(2.0 - angle, angle + 1.0, cross_uv_mag < 0.0),
-        dot_uv < 0.0
-    );
-
-    // --- second GLSL mix: final wrap correction for Q4 ---
-    // return mix(mix(sign(cross_uv_mag)*(angle), angle, cross_uv_mag > dot_uv),
-    //            angle + 1.0,
-    //            cross_uv_mag < 0.0 && dot_uv < 0.0);
-    const s = Math.sign(cross_uv_mag);
-    return mix(
-        mix(s * angle, angle, cross_uv_mag > dot_uv),
-        angle + 1.0,
-        cross_uv_mag < 0.0 && dot_uv < 0.0
-    );
+  function vectorAngle(u,v){
+      const angle = Math.atan2(v.y,v.x) - Math.atan2(u.y,u.x);
+      return (angle + 2*Math.PI) % (2*Math.PI);
   }
   
   function drawChordConnection(ctx, u, v, radius) {
@@ -712,8 +687,7 @@ const ctx = canvas.getContext('2d');
       const tangent = dot!==0 ? Math.abs(cross/dot) : Infinity;
   
       // rau
-      //const rauPhase = vectorAngle(u,v);
-	  const rauPhase = computeRAUPhase(u,v);
+      const rauPhase = computeRAUPhase(u,v);
       const rauSine = radicalSine(rauPhase);
       const rauCos = radicalCosine(rauPhase);
       const rauRad = Math.atan(Math.abs(cross/dot));
@@ -769,4 +743,3 @@ const ctx = canvas.getContext('2d');
 
 </body>
 </html>
-
