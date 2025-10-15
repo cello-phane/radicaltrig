@@ -13,6 +13,17 @@ window.MathJax = {
 };
 </script>
 <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+<script>
+	function changeFontSize(changeAmount, id_name) {
+		const element = document.getElementById(id_name);
+		if (element) {
+			let currentSize = parseInt(preElement.style.fontSize);
+			let newSize = currentSize + changeAmount;
+			if (newSize < 8) newSize = 8;
+			preElement.style.fontSize = newSize + 'px';
+		}
+	}
+</script>
 
 <style>
   :root {
@@ -143,6 +154,7 @@ window.MathJax = {
     display: block;
     margin: auto;
   }
+	
 </style>
 </head>
 <body>
@@ -182,6 +194,8 @@ window.MathJax = {
       </div>
     </div>
       <strong>Vector Information</strong>
+	  <button onclick="changeFontSize(2,"resultsContent")">+</button>
+      <button onclick="changeFontSize(-2,"resultsContent")">-</button>
       <pre id="resultsContent" style="margin:0; font-family:monospace; font-size:13px; background:#fafafa; padding:8px; border-radius:6px;"></pre>
       
    	<div class="control-group">
