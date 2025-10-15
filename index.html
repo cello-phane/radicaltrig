@@ -103,7 +103,7 @@ window.MathJax = {
   #formulaPanel {
     position:fixed;
     right:8px;
-    top:42px;
+    top:50px;
     width:420px;
     background:rgba(255,255,255,0.98);
     border:2px solid var(--accent);
@@ -753,17 +753,17 @@ const ctx = canvas.getContext('2d');
       v = (${vXStr}, ${vYStr})
       Cross = ${crossStr}
       Dot   = ${dotStr}
-      
+      ---------------
       Radian(Traditional)
       θ = ${angleRadStr} | ${angleDegStr}°
-      ---------------
-      tan(θ) = ${tangentStr}
-      sine  = ${rauSineStr}
-      coine = ${rauCosStr}
-      ---------------
-      RadicalAngleUnit
+      ...............
+	  RAU
       θ =   ${rauPhaseStr} `;
       //θ = ${rauRadStr} rad | ${rauDegStr}°
+      ---------------
+	  tan(θ) = ${tangentStr}
+      sin(θ) = ${rauSineStr}
+      cos(θ) = ${rauCosStr}
   
       drawChordConnection(ctx, v, u, arcRadius);
       currentPhase = rauPhase;
