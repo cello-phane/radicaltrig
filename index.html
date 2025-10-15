@@ -26,7 +26,7 @@ window.MathJax = {
     background:#333; color:white; padding:10px 16px; display:flex; align-items:center; justify-content:space-between;
   }
   header h1 { margin:0; font-size:18px; }
-  .top-controls { display:flex; gap:10px; align-items:center; }
+  .top-controls { display:flex; gap:2px; align-items:center; }
   .toggle-btn {
     background:var(--accent); color:white; border:none; padding:8px 12px; border-radius:6px; cursor:pointer; font-weight:600;
   }
@@ -202,8 +202,6 @@ window.MathJax = {
       <canvas id="canvas2" width="760" height="560"></canvas>
 
       <div class="panel">
-        <h3 style="margin:0 0 8px 0;">Vector Controls</h3>
-
         <div class="control-group">
           <label for="uLength">u length:</label>
           <input id="uLength" type="range" min="50" max="200" value="120">
@@ -543,14 +541,15 @@ const ctx = canvas.getContext('2d');
       }
   }
   
-  // --- Compute RAU phase from two vectors (0-4) using atan2 logic that is modified ---
+  // Compute RAU phase from two vectors (0-4) 
+  
   function computeRAUPhase(u,v) {
  	    const mix = (a, b, c) => c ? b : a;
  	    const cross = u.x * v.y - u.y * v.x;
  	    const dot = u.x * v.x + u.y * v.y;
  	    let angle = Math.abs(cross) / (Math.abs(dot) + Math.abs(cross));
-
- 	    // quadrant blending logic
+      /* Using atan2 logic that is modified */
+ 	    // Quadrant blending logic
  	    const q4fix = mix(Math.sign(cross) * angle, Math.sign(cross) * angle + 4.0, dot > 0 && cross < 0);
  	    const qblend = mix(mix(q4fix, angle, cross > dot), angle + 1.0, cross < 0 && dot < 0);
  	    const halfrot = mix(2.0 - angle, angle + 2.0, cross < 0);
