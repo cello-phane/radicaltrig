@@ -196,9 +196,9 @@ window.MathJax = {
 </div>
 
 <!-- RAU Section -->
-<section id="section1" class="active">
+<section id="section1" class="inactive">
   <div class="card">
-    <h2 style="margin-top:6px;">Rational Angle Unit (RAU) — Explanation</h2>
+    <h2 style="margin-top:6px;">RAU — Explanation</h2>
     <div class="desc">
       <strong>Key insight:</strong> RAU maps a linear parameter (0.0–4.0) to circular motion by using rational functions on quadrant diagonals.
     </div>
@@ -206,18 +206,18 @@ window.MathJax = {
     <canvas id="canvas1" width="420" height="420" style="display:block;margin:18px auto;"></canvas>
 
     <div class="controls" style="text-align:center;">
-      <label style="font-weight:700;">RAU Parameter: <span id="paramValue">0.00</span></label><br>
+      <label style="font-weight:700;">t Parameter: <span id="paramValue">0.00</span></label><br>
       <input type="range" id="paramSlider" min="0" max="4" step="0.01" value="0" />
     </div>
 
     <div style="margin-top:12px; background:#f5f5f5; padding:10px; border-radius:8px;">
-      The functions above produce coordinates that sit on the unit circle while using simpler algebraic expressions than trig.
+      More information @ https://www.youtube.com/watch?v=TJr4YfEgVuk
     </div>
   </div>
 </section>
 
 <!-- Vector section -->
-<section id="section2">
+<section id="section2" class="active">
   <div class="card">
     <h2 style="margin-top:6px;">Vector + RAU Angle Visualization</h2>
 
@@ -264,7 +264,7 @@ toggleBtn.addEventListener('click', () => {
   const showing1 = s1.classList.contains('active');
   s1.classList.toggle('active', !showing1);
   s2.classList.toggle('active', showing1);
-  toggleBtn.textContent = showing1 ? 'Switch to RAU System Explanation' : 'Switch to Vector Diagram';
+  toggleBtn.textContent = showing1 ? 'Switch to RAU Explanation' : 'Switch to Vector Diagram';
 });
 
 /* ---------------------------
