@@ -129,6 +129,20 @@ window.MathJax = {
     #formulaPanel.slim { width:56px; }
     .panel { width:320px; }
   }
+  .conversion-panel {
+    display: none;
+    background: #fff;
+    padding: 10px;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    margin-top: 10px;
+    text-align: center;
+  }
+  
+  #conversionCanvas {
+    display: block;
+    margin: auto;
+  }
 </style>
 </head>
 <body>
@@ -167,8 +181,17 @@ window.MathJax = {
         \]
       </div>
     </div>
-    <strong>Vector Information</strong>
-    <pre id="resultsContent" style="margin:0; font-family:monospace; font-size:13px; background:#fafafa; padding:8px; border-radius:6px;"></pre>
+      <strong>Vector Information</strong>
+      <pre id="resultsContent" style="margin:0; font-family:monospace; font-size:13px; background:#fafafa; padding:8px; border-radius:6px;"></pre>
+      
+   	<div class="control-group">
+   	  <label>Conversion Reference</label>
+   	  <input type="checkbox" id="showConversion" unchecked>
+   	</div>
+   
+   	<div id="conversionPanel" class="conversion-panel">
+   	  <canvas id="conversionCanvas" width="280" height="220"></canvas>
+   	</div>
   </div>
 </div>
 
@@ -728,8 +751,86 @@ const ctx = canvas.getContext('2d');
       //θ = ${rauRadStr} rad | ${rauDegStr}°
   
       drawChordConnection(ctx, v, u, arcRadius);
+      currentPhase = rauPhase;
+      if (showConv.checked) drawConversionDiagram(rauPhase);
   }
+	const convCanvas = document.getElementById("conversionCanvas");
+	const convCtx = convCanvas.getContext("2d");
+	const convPanel = document.getElementById("conversionPanel");
+	const showConv = document.getElementById("showConversion");
 
+	showConv.addEventListener("change", () => {
+	  convPanel.style.display = showConv.checked ? "block" : "none";
+	  if (showConv.checked) drawConversionDiagram(currentPhase);
+	});
+
+	let currentPhase = 0; // tracked globally
+
+	function drawConversionDiagram(rauPhase) {
+	  const ctx = convCtx;
+	  const w = convCanvas.width;
+	  const h = convCanvas.height;
+	  ctx.clearRect(0,0,w,h);
+
+	  const r = 60;
+	  const cx = w/2, cy = h/2 + 10;
+
+	  // Base circle + title
+	  ctx.strokeStyle = "#333";
+	  ctx.lineWidth = 2;
+	  ctx.beginPath();
+	  ctx.arc(cx, cy, r, 0, 2*Math.PI);
+	  ctx.stroke();
+
+	  ctx.fillStyle = "#000";
+	  ctx.font = "11px monospace";
+	  //ctx.fillText("RAU ↔ Degrees ↔ Radians", w/2 - 100, 20);
+
+	  // Quadrant labels
+	  const labels = [
+	    { t: 0, label: "0 RAU\n0°\n0" },
+	    { t: 1, label: "1 RAU\n90°\nπ/2" },
+	    { t: 2, label: "2 RAU\n180°\nπ" },
+	    { t: 3, label: "3 RAU\n270°\n3π/2" }
+	    //{ t: 4, label: "4 RAU\n360°\n2π" }
+	  ];
+	  ctx.fillStyle = "#333";
+	  labels.forEach(l => {
+	    const a = (l.t/4)*2*Math.PI - Math.PI/2;
+	    const x = cx + Math.cos(a)*(r + 28);
+	    const y = cy + Math.sin(a)*(r + 28);
+	    l.label.split("\n").forEach((line,i)=>{
+	      ctx.fillText(line, x - 18, y + i*12);
+	    });
+	  });
+
+	  // Draw arcs (quadrant highlighting)
+	  const quadColors = ["#5cc0ff","#ffb35c","#d28aff","#68e186"];
+	  for (let q = 0; q < 4; q++) {
+	    ctx.strokeStyle = quadColors[q];
+	    ctx.lineWidth = 3;
+	    ctx.beginPath();
+	    ctx.arc(cx, cy, r, (q/4)*2*Math.PI - Math.PI/2, ((q+1)/4)*2*Math.PI - Math.PI/2);
+	    ctx.stroke();
+	  }
+
+	  // Compute angle in radians (RAU → radians)
+	  const theta = (rauPhase / 4) * 2 * Math.PI;
+
+	  // Draw current phase marker
+	  const px = cx - Math.sin(theta - Math.PI/2) * r;
+	  const py = cy + Math.cos(theta + Math.PI/2) * r;
+	  ctx.fillStyle = "red";
+	  ctx.beginPath();
+	  ctx.arc(px, py, 6, 0, 2*Math.PI);
+	  ctx.fill();
+
+	  // Live readout
+	  const degrees = (rauPhase / 4) * 360;
+	  ctx.fillStyle = "#000";
+	  ctx.font = "12px monospace";
+	  //ctx.fillText(`Current → ${rauPhase.toFixed(3)} RAU | ${degrees.toFixed(1)}° | ${(theta).toFixed(3)} rad`, w/2 - 140, h - 15);
+	}
   // add listeners
   Object.values(controls).forEach(c => c.addEventListener('input', render));
   render();
