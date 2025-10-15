@@ -550,7 +550,7 @@ const ctx = canvas.getContext('2d');
  	    let angle = Math.abs(cross) / (Math.abs(dot) + Math.abs(cross));
       /* Using atan2 logic that is modified */
  	    // Quadrant blending logic
- 	    const q4fix = mix(Math.sign(cross) * angle, Math.sign(cross) * angle + 4.0, dot > 0 && cross < 0);
+ 	    const q4fix = mix(Math.sign(cross) * angle, 4.0 - angle, dot > 0 && cross < 0);
  	    const qblend = mix(mix(q4fix, angle, cross > dot), angle + 1.0, cross < 0 && dot < 0);
  	    const halfrot = mix(2.0 - angle, angle + 2.0, cross < 0);
  	    return mix(qblend, halfrot, dot < 0);
