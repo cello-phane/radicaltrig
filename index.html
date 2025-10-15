@@ -130,10 +130,10 @@ window.MathJax = {
   }
   #formulaHeader .title { font-weight:700; font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   #formulaHeader .chev { font-size:16px; opacity:0.95; }
-  #formulaBody { padding:12px 14px; font-size:15px; line-height:1.35; background:transparent; }
+  #formulaBody { padding:2px 4px; font-size:13px; background:transparent; }
   /* when slim, hide formula content but keep header visible */
   #formulaPanel.slim #formulaBody { display:none; }
-  #formulaPanel.slim #formulaHeader { justify-content:center; }
+  #formulaPanel.slim #formulaHeader { justify-content:left; }
 
   /* small responsive */
   @media (max-width:900px) {
@@ -756,11 +756,11 @@ const ctx = canvas.getContext('2d');
       
       Radian(Traditional)
       θ = ${angleRadStr} | ${angleDegStr}°
-      -----------------------------
+      ---------------
       tan(θ) = ${tangentStr}
       sine  = ${rauSineStr}
       coine = ${rauCosStr}
-      -----------------------------
+      ---------------
       RadicalAngleUnit
       θ =   ${rauPhaseStr} `;
       //θ = ${rauRadStr} rad | ${rauDegStr}°
