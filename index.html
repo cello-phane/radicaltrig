@@ -840,9 +840,9 @@ setSlimMode(false);
 
 	  // Draw current phase marker
 	  //const px = cx - Math.sin(theta - Math.PI/2) * r;
-	  const px = cx - radicalSine(rauPhase-1.0) * Math.PI/2 * r;
+	  const px = cx - radicalSine(rauPhase) * Math.PI/2;
 	  //const py = cy + Math.cos(theta + Math.PI/2) * r;
-	  const py = cx - radicalCosine(rauPhase+1.0) * Math.PI/2 * r;
+	  const py = cx - radicalCosine(rauPhase) * Math.PI/2;
 	  ctx.fillStyle = "red";
 	  ctx.beginPath();
 	  ctx.arc(px, py, 6, 0, 2*Math.PI);
