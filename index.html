@@ -845,7 +845,7 @@ setSlimMode(false);
 	  const py = cy + radicalCosine(currentPhase+1.0) * r;
 	  ctx.fillStyle = "red";
 	  ctx.beginPath();
-	  ctx.arc(px, py, r, (q/4)*2*Math.PI - Math.PI/2, ((q+1)/4)*2*Math.PI - Math.PI/2);
+	  ctx.arc(px, py, r, Math.PI/2, 2*Math.PI - Math.PI/2);
 	  ctx.fill();
 
 	  // Live readout
