@@ -578,20 +578,23 @@ const ctx = canvas.getContext('2d');
           case 3: return lt/Math.sqrt(a);
       }
   }
-  
+	
+  function radicalTangent(t){
+      return t/(1.0-t);
+  }
+	
   // Compute RAU phase from two vectors (0-4) 
-  
+  /* Using atan2 logic that is modified */
   function computeRAUPhase(u,v) {
- 	    const mix = (a, b, c) => c ? b : a;
- 	    const cross = u.x * v.y - u.y * v.x;
- 	    const dot = u.x * v.x + u.y * v.y;
- 	    let angle = Math.abs(cross) / (Math.abs(dot) + Math.abs(cross));
-      /* Using atan2 logic that is modified */
- 	    // Quadrant blending logic
- 	    const q4fix = mix(Math.sign(cross) * angle, 4.0 - angle, dot > 0 && cross < 0);
- 	    const qblend = mix(mix(q4fix, angle, cross > dot), angle + 1.0, cross < 0 && dot < 0);
- 	    const halfrot = mix(2.0 - angle, angle + 2.0, cross < 0);
- 	    return mix(qblend, halfrot, dot < 0);
+	 const mix = (a, b, c) => c ? b : a;
+	 const cross = u.x * v.y - u.y * v.x;
+	 const dot = u.x * v.x + u.y * v.y;
+	 let angle = Math.abs(cross) / (Math.abs(dot) + Math.abs(cross));
+	 // Quadrant blending logic
+	 const q4fix = mix(Math.sign(cross) * angle, 4.0 - angle, dot > 0 && cross < 0);
+	 const qblend = mix(mix(q4fix, angle, cross > dot), angle + 1.0, cross < 0 && dot < 0);
+	 const halfrot = mix(2.0 - angle, angle + 2.0, cross < 0);
+	 return mix(qblend, halfrot, dot < 0);
   }
   
   // --- Compute traditional angle 0→2π ---
@@ -721,7 +724,8 @@ const ctx = canvas.getContext('2d');
       const rauPhase = computeRAUPhase(u,v);
       const rauSine = radicalSine(rauPhase);
       const rauCos = radicalCosine(rauPhase);
-      const rauRad = Math.atan(Math.abs(cross/dot));
+      //const rauRad = Math.atan(Math.abs(cross/dot));
+	  const rauRad = computeRAUPhase(u,v) * (Math.PI / 2);
       const rauDeg = radToDeg(rauRad);
   
       function formatNum(num, width=8, decimals=2){
@@ -740,7 +744,7 @@ const ctx = canvas.getContext('2d');
       const dotStr = formatNum(dot);
       const angleRadStr = formatNum(angleRad,8,3);
       const angleDegStr = formatNum(angleDeg,6,1);
-      const tangentStr = isFinite(tangent) ? formatNum(tangent,8,4) : '    ∞';
+      const tangentStr = v == 0.0 ? formatNum(tangent,8,4) : '∞';
       const rauPhaseStr = formatNum(rauPhase,6,3);
       const rauSineStr = formatNum(rauSine,8,3);
       const rauCosStr = formatNum(rauCos,8,3);
