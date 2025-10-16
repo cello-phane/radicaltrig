@@ -744,7 +744,7 @@ const ctx = canvas.getContext('2d');
       const dotStr = formatNum(dot);
       const angleRadStr = formatNum(angleRad,8,3);
       const angleDegStr = formatNum(angleDeg,6,1);
-      const tangentStr = radicalTangent(u,v)>=16331239353195368 ? formatNum(tangent,8,4) : '∞';
+      const tangentStr = radicalTangent(u,v)>=16331239353195368 || radicalTangent===0.0 ? '∞' : formatNum(tangent,8,4);
       const rauPhaseStr = formatNum(rauPhase,6,3);
       const rauSineStr = formatNum(rauSine,8,3);
       const rauCosStr = formatNum(rauCos,8,3);
