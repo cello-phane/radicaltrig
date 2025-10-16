@@ -580,7 +580,7 @@ const ctx = canvas.getContext('2d');
   }
 	
   function radicalTangent(t){
-      return 1-t===0 ? t/(1-t) : 0;
+      return 1-t===0 ? 0 : t/(1-t);
   }
 	
   // Compute RAU phase from two vectors (0-4) 
