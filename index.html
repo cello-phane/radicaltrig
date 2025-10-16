@@ -838,9 +838,9 @@ setSlimMode(false);
 	  // Compute angle in radians (RAU → radians)
 	  const theta = currentPhase * (Math.PI/2);
 
-	  // Draw current phase marker
-	  const px = cx - Math.sin(theta - Math.PI/2) * r;
-	  const py = cy + Math.cos(theta - Math.PI/2) * r;
+	  // Draw current phase marker (going counter clockwise for u vector as reference)
+	  const px = cx - Math.sin(theta + Math.PI/2) * r;
+	  const py = cy + Math.cos(theta + Math.PI/2) * r;
 	  ctx.fillStyle = "red";
 	  ctx.beginPath();
 	  ctx.arc(px, py, r/20, 0, 2*Math.PI);
