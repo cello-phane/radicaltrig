@@ -472,7 +472,7 @@ setSlimMode(false);
    --------------------------- */
 (function() {
   const canvas = document.getElementById('canvas2');
-const ctx = canvas.getContext('2d');
+  const ctx = canvas.getContext('2d');
   const centerX = canvas.width/2;
   const centerY = canvas.height/2;
   
@@ -836,18 +836,20 @@ const ctx = canvas.getContext('2d');
 	  }
 
 	  // Compute angle in radians (RAU → radians)
-	  const theta = (rauPhase / 4) * 2 * Math.PI;
+	  // const theta = rauPhase * (Math.PI/2);
 
 	  // Draw current phase marker
-	  const px = cx - Math.sin(theta - Math.PI/2) * r;
-	  const py = cy + Math.cos(theta + Math.PI/2) * r;
+	  //const px = cx - Math.sin(theta - Math.PI/2) * r;
+	  const px = cx - radicalSine(rauPhase-0.5) * Math.PI/2 * r;
+	  //const py = cy + Math.cos(theta + Math.PI/2) * r;
+	  const py = cx - radicalSine(rauPhase+0.5) * Math.PI/2 * r;
 	  ctx.fillStyle = "red";
 	  ctx.beginPath();
 	  ctx.arc(px, py, 6, 0, 2*Math.PI);
 	  ctx.fill();
 
 	  // Live readout
-	  const degrees = (rauPhase / 4) * 360;
+	  const degrees = rauPhase * 180;
 	  ctx.fillStyle = "#000";
 	  ctx.font = "12px monospace";
 	  //ctx.fillText(`Current → ${rauPhase.toFixed(3)} RAU | ${degrees.toFixed(1)}° | ${(theta).toFixed(3)} rad`, w/2 - 140, h - 15);
