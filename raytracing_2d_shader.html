@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2D Pseudo-Raytracing Test</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: Arial, sans-serif;
+        }
+        canvas {
+            border: 1px solid #333;
+            cursor: crosshair;
+        }
+        .controls {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: white;
+            background: rgba(0,0,0,0.7);
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .controls label {
+            display: block;
+            margin: 5px 0;
+        }
+        .controls input {
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="controls">
+        <label>Ray Count: <input type="range" id="rayCount" min="8" max="64" value="16"></label>
+        <label>Ray Length: <input type="range" id="rayLength" min="0.1" max="2.0" step="0.1" value="1.0"></label>
+        <label>Ray Thickness: <input type="range" id="rayThickness" min="0.005" max="0.05" step="0.005" value="0.015"></label>
+        <label><input type="checkbox" id="showCircles" checked> Show Test Circles</label>
+        
+        <label><input type="checkbox" id="animateLight"> Animate Light</label>
+        <div style="margin-top: 10px; font-size: 12px;">
+            Mouse: Light Position<br>
+            Click: Add/Remove Circle
+        </div>
+    </div>
+    
+    <canvas id="canvas" width="800" height="600"></canvas>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+        
+        if (!gl) {
+            alert('WebGL not supported');
+        }
+
+        // Shader source code
+        const vertexShaderSource = `
+            attribute vec2 a_position;
+            void main() {
+                gl_Position = vec4(a_position, 0.0, 1.0);
+            }
+        `;
+
+        const fragmentShaderSource = `
+            precision mediump float;
+            uniform vec2 u_resolution;
+            uniform vec2 u_mouse;
+            uniform float u_time;
+            uniform int u_rayCount;
+            uniform float u_rayLength;
+            uniform float u_rayThickness;
+            uniform bool u_showCircles;
+            uniform bool u_showLines;
+            uniform bool u_animateLight;
+            uniform vec2 u_circles[8];
+            uniform int u_circleCount;
+
+            #define HALFPI 1.57079632679489661923
+            #define TAU (HALFPI*4.0)
+
+            // RAU (Radian Approximation Unit) system - your optimized trig functions
+            float rsin(float x) {
+                float x2 = x * x;
+                float a = 1.0 - 2.0 * x + 2.0 * x2;
+                return x * inversesqrt(a);
+            }
+
+            float rcos(float x) {
+                float x2 = x * x;
+                float a = 1.0 - 2.0 * x + 2.0 * x2;
+                return (1.0 - x) * inversesqrt(a);
+            }
+
+            float rpsin(float x) {
+                float x2 = x * x;
+                return (2.0 * x) / (1.0 + x2);
+            }
+
+            float rpcos(float x) {
+                float x2 = x * x;
+                return (1.0 - x2) / (1.0 + x2);
+            }
+
+            // RAU quadrant mapping - simplified and corrected
+            vec2 returnFreqVec(float s, float c, int quadrant) {
+                // Branchless quadrant mapping
+                float q0 = float(quadrant == 0);
+                float q1 = float(quadrant == 1);
+                float q2 = float(quadrant == 2);
+                float q3 = float(quadrant == 3);
+                
+                float sin_result = s * q0 + c * q1 - s * q2 - c * q3;
+                float cos_result = c * q0 - s * q1 - c * q2 + s * q3;
+                
+                return vec2(cos_result, sin_result);
+            }
+
+            // RAU frequency domain sine/cosine (period 4) - corrected
+            vec2 freqRAUSinCos(float freq) {
+                float phase = mod(freq, 4.0);
+                int quadrant = int(phase);
+                float t = phase - float(quadrant);
+                float s = rsin(t);
+                float c = rcos(t);
+                return returnFreqVec(s, c, quadrant);
+            }
+
+            // RAU position vector - simplified
+            vec2 freqRAUPos(float freq) {
+                return freqRAUSinCos(freq);
+            }
+
+            // Your radialVec function (optimized)
+            float radialVec(vec2 uv, vec2 pt, float thickness) {
+                float dist = distance(uv, pt * clamp(dot(uv, pt) / dot(pt, pt), 0.0, 1.0));
+                return 1.0 - smoothstep(0.0, thickness, dist);
+            }
+
+            // Circle SDF
+            float circleSDF(vec2 p, vec2 center, float radius) {
+                return length(p - center) - radius;
+            }
+
+            // Line segment SDF
+            float lineSDF(vec2 p, vec2 a, vec2 b) {
+                vec2 pa = p - a;
+                vec2 ba = b - a;
+                float h = clamp(dot(pa, ba) / dot(ba, ba), 0.0, 1.0);
+                return length(pa - ba * h);
+            }
+
+            // Ray-circle intersection test
+            bool rayCircleIntersect(vec2 rayStart, vec2 rayDir, vec2 circleCenter, float radius, out float t) {
+                vec2 oc = rayStart - circleCenter;
+                float b = dot(oc, rayDir);
+                float c = dot(oc, oc) - radius * radius;
+                float discriminant = b * b - c;
+                
+                if (discriminant < 0.0) return false;
+                
+                float t1 = -b - sqrt(discriminant);
+                float t2 = -b + sqrt(discriminant);
+                
+                t = (t1 > 0.0) ? t1 : t2;
+                return t > 0.0;
+            }
+
+            // Calculate shadow factor
+            float calculateShadow(vec2 pixel, vec2 lightPos) {
+                vec2 rayDir = normalize(pixel - lightPos);
+                float rayDist = distance(pixel, lightPos);
+                
+                // Test against all circles
+                for (int i = 0; i < 8; i++) {
+                    if (i >= u_circleCount) break;
+                    
+                    float t;
+                    if (rayCircleIntersect(lightPos, rayDir, u_circles[i], 0.08, t)) {
+                        if (t < rayDist) {
+                            return 0.3; // In shadow
+                        }
+                    }
+                }
+                
+                return 1.0; // Not in shadow
+            }
+
+            void main() {
+                vec2 uv = (gl_FragCoord.xy * 2.0 - u_resolution) / min(u_resolution.x, u_resolution.y);
+                
+                // Light position (mouse or animated using RAU)
+                vec2 lightPos;
+                if (u_animateLight) {
+                    // Use RAU system for smooth animated rotation
+                    float rauTime = u_time * 0.5; // Slower rotation
+                    vec2 rauPos = freqRAUPos(rauTime);
+                    lightPos = rauPos * 0.6; // Scale to keep within bounds
+                } else {
+                    lightPos = (u_mouse * 2.0 - u_resolution) / min(u_resolution.x, u_resolution.y);
+                }
+                
+                vec3 color = vec3(0.05, 0.05, 0.1); // Dark background
+                
+                // Draw rays from light source using RAU system
+                float rayIntensity = 0.0;
+                for (int i = 0; i < 64; i++) {
+                    if (i >= u_rayCount) break;
+                    
+                    // Use RAU frequency domain instead of traditional angles
+                    // Map ray index to RAU frequency (0-4 range for full rotation)
+                    float rauFreq = float(i) * 4.0 / float(u_rayCount);
+                    vec2 rayDir = freqRAUPos(rauFreq);
+                    vec2 rayEnd = lightPos + rayDir * u_rayLength;
+                    
+                    // Check for intersection with circles (simple occlusion)
+                    bool blocked = false;
+                    float minT = u_rayLength;
+                    
+                    for (int j = 0; j < 8; j++) {
+                        if (j >= u_circleCount) break;
+                        
+                        float t;
+                        if (rayCircleIntersect(lightPos, rayDir, u_circles[j], 0.08, t)) {
+                            if (t < minT) {
+                                minT = t;
+                                blocked = true;
+                            }
+                        }
+                    }
+                    
+                    // Draw ray (shortened if blocked) using your radialVec function
+                    vec2 actualRayEnd = lightPos + rayDir * minT;
+                    float rayVis = radialVec(uv - lightPos, actualRayEnd - lightPos, u_rayThickness);
+                    
+                    // Color rays differently if they hit something
+                    vec3 rayColor = blocked ? vec3(1.0, 0.3, 0.1) : vec3(0.1, 0.8, 1.0);
+                    rayIntensity += rayVis;
+                    color = mix(color, rayColor, rayVis * 0.6);
+                }
+                
+                // Add ambient lighting with shadows
+                float shadow = calculateShadow(uv, lightPos);
+                float distToLight = distance(uv, lightPos);
+                float ambient = shadow * (0.2 + 0.3 * exp(-distToLight * 2.0));
+                color += vec3(0.1, 0.15, 0.2) * ambient;
+                
+                // Draw test circles
+                if (u_showCircles) {
+                    for (int i = 0; i < 8; i++) {
+                        if (i >= u_circleCount) break;
+                        
+                        float circleDist = abs(circleSDF(uv, u_circles[i], 0.08));
+                        float circleEdge = 1.0 - smoothstep(0.0, 0.01, circleDist);
+                        color = mix(color, vec3(0.8, 0.4, 0.8), circleEdge * 0.8);
+                        
+                        // Fill circles slightly
+                        float circleFill = 1.0 - smoothstep(0.06, 0.08, length(uv - u_circles[i]));
+                        color = mix(color, vec3(0.3, 0.1, 0.3), circleFill * 0.3);
+                    }
+                }
+                
+                
+                // Draw light source
+                float lightDist = distance(uv, lightPos);
+                float lightVis = 1.0 - smoothstep(0.0, 0.03, lightDist);
+                color = mix(color, vec3(1.0, 1.0, 0.3), lightVis);
+                
+                gl_FragColor = vec4(color, 1.0);
+            }
+        `;
+
+        // Compile shader
+        function createShader(gl, type, source) {
+            const shader = gl.createShader(type);
+            gl.shaderSource(shader, source);
+            gl.compileShader(shader);
+            
+            if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+                console.error('Shader compilation error:', gl.getShaderInfoLog(shader));
+                gl.deleteShader(shader);
+                return null;
+            }
+            
+            return shader;
+        }
+
+        // Create program
+        function createProgram(gl, vertexShader, fragmentShader) {
+            const program = gl.createProgram();
+            gl.attachShader(program, vertexShader);
+            gl.attachShader(program, fragmentShader);
+            gl.linkProgram(program);
+            
+            if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+                console.error('Program linking error:', gl.getProgramInfoLog(program));
+                gl.deleteProgram(program);
+                return null;
+            }
+            
+            return program;
+        }
+
+        const vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
+        const fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource);
+        const program = createProgram(gl, vertexShader, fragmentShader);
+
+        // Set up geometry (full screen quad)
+        const positions = new Float32Array([
+            -1, -1,
+             1, -1,
+            -1,  1,
+             1,  1,
+        ]);
+
+        const buffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+        gl.bufferData(gl.ARRAY_BUFFER, positions, gl.STATIC_DRAW);
+
+        // Get uniform locations
+        const uniforms = {
+            resolution: gl.getUniformLocation(program, 'u_resolution'),
+            mouse: gl.getUniformLocation(program, 'u_mouse'),
+            time: gl.getUniformLocation(program, 'u_time'),
+            rayCount: gl.getUniformLocation(program, 'u_rayCount'),
+            rayLength: gl.getUniformLocation(program, 'u_rayLength'),
+            rayThickness: gl.getUniformLocation(program, 'u_rayThickness'),
+            showCircles: gl.getUniformLocation(program, 'u_showCircles'),
+            showLines: gl.getUniformLocation(program, 'u_showLines'),
+            animateLight: gl.getUniformLocation(program, 'u_animateLight'),
+            circles: gl.getUniformLocation(program, 'u_circles'),
+            circleCount: gl.getUniformLocation(program, 'u_circleCount'),
+        };
+
+        // Get attribute location
+        const positionLocation = gl.getAttribLocation(program, 'a_position');
+
+        // State
+        let mouse = { x: canvas.width / 2, y: canvas.height / 2 };
+        let circles = [
+            { x: 0.3, y: 0.2 },
+            { x: -0.4, y: -0.1 },
+            { x: 0.1, y: -0.4 }
+        ];
+
+        // Mouse handling
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            mouse.x = e.clientX - rect.left;
+            mouse.y = canvas.height - (e.clientY - rect.top); // Reversed Y
+        });
+
+        canvas.addEventListener('click', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const x = ((e.clientX - rect.left) * 2 - canvas.width) / Math.min(canvas.width, canvas.height);
+            const y = ((canvas.height - (e.clientY - rect.top)) * 2 - canvas.height) / Math.min(canvas.width, canvas.height); // Reversed Y
+            
+            // Check if clicking near existing circle to remove it
+            let removed = false;
+            for (let i = circles.length - 1; i >= 0; i--) {
+                const dist = Math.sqrt((circles[i].x - x) ** 2 + (circles[i].y - y) ** 2);
+                if (dist < 0.15) {
+                    circles.splice(i, 1);
+                    removed = true;
+                    break;
+                }
+            }
+            
+            // Add new circle if didn't remove one and have space
+            if (!removed && circles.length < 8) {
+                circles.push({ x, y });
+            }
+        });
+
+        // Controls
+        const controls = {
+            rayCount: document.getElementById('rayCount'),
+            rayLength: document.getElementById('rayLength'),
+            rayThickness: document.getElementById('rayThickness'),
+            showCircles: document.getElementById('showCircles'),
+            showLines: document.getElementById('showLines'),
+            animateLight: document.getElementById('animateLight'),
+        };
+
+        // Render loop
+        function render(time) {
+            time *= 0.001;
+
+            gl.viewport(0, 0, canvas.width, canvas.height);
+            gl.clear(gl.COLOR_BUFFER_BIT);
+
+            gl.useProgram(program);
+
+            // Set up attributes
+            gl.enableVertexAttribArray(positionLocation);
+            gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+            gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
+
+            // Set uniforms
+            gl.uniform2f(uniforms.resolution, canvas.width, canvas.height);
+            gl.uniform2f(uniforms.mouse, mouse.x, mouse.y);
+            gl.uniform1f(uniforms.time, time);
+            gl.uniform1i(uniforms.rayCount, parseInt(controls.rayCount.value));
+            gl.uniform1f(uniforms.rayLength, parseFloat(controls.rayLength.value));
+            gl.uniform1f(uniforms.rayThickness, parseFloat(controls.rayThickness.value));
+            gl.uniform1i(uniforms.showCircles, controls.showCircles.checked);
+            
+            gl.uniform1i(uniforms.animateLight, controls.animateLight.checked);
+            
+            // Set circle positions
+            const circleData = new Float32Array(16); // 8 circles * 2 components
+            for (let i = 0; i < Math.min(circles.length, 8); i++) {
+                circleData[i * 2] = circles[i].x;
+                circleData[i * 2 + 1] = circles[i].y;
+            }
+            gl.uniform2fv(uniforms.circles, circleData);
+            gl.uniform1i(uniforms.circleCount, circles.length);
+
+            // Draw
+            gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+
+            requestAnimationFrame(render);
+        }
+
+        requestAnimationFrame(render);
+    </script>
+</body>
+</html>
