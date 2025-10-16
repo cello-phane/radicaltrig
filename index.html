@@ -580,7 +580,7 @@ const ctx = canvas.getContext('2d');
   }
 	
   function radicalTangent(t){
-      return t===1 ? 0 : t/(1-t);
+      return t==1 ? 0 : t/(1-t);
   }
 	
   // Compute RAU phase from two vectors (0-4) 
@@ -726,7 +726,8 @@ const ctx = canvas.getContext('2d');
       //const rauRad = Math.atan(Math.abs(cross/dot));
 	  const rauRad = computeRAUPhase(u,v) * (Math.PI / 2);
       const rauDeg = radToDeg(rauRad);
-  	  const tangent = radicalTangent(computeRAUPhase(u,v));
+	  // compute the mod % 4 in fractional form to use the rtan formula
+  	  const tangent = radicalTangent(rauPhase % 4 - (rauPhase - Math.floor(rauPhase)));
 
       function formatNum(num, width=8, decimals=2){
           return num.toFixed(decimals).padStart(width);
