@@ -578,9 +578,11 @@ const ctx = canvas.getContext('2d');
           case 3: return lt/Math.sqrt(a);
       }
   }
-	
-  function radicalTangent(t){
-      return t==1 ? 0 : t/(1-t);
+
+  // compute the mod % 4 in fractional form to use the rtan formula	
+  function radicalTan(t) {
+	  let lt = ((t % 4) + 4) % 4 - Math.floor((t % 4) + 4) % 4)) * Math.sign(t);
+      return lt==1 ? 0 : lt/(1-lt);
   }
 	
   // Compute RAU phase from two vectors (0-4) 
@@ -721,13 +723,13 @@ const ctx = canvas.getContext('2d');
   
       // rau
       const rauPhase = computeRAUPhase(u,v);
-      const rauSine = radicalSine(rauPhase);
+      const rauTan = radicalTan(rauPhase);
+	  const rauSine = radicalSine(rauPhase);
       const rauCos = radicalCosine(rauPhase);
       //const rauRad = Math.atan(Math.abs(cross/dot));
 	  const rauRad = computeRAUPhase(u,v) * (Math.PI / 2);
       const rauDeg = radToDeg(rauRad);
-	  // compute the mod % 4 in fractional form to use the rtan formula
-  	  const tangent = radicalTangent(((rauPhase % 4) + 4) % 4 - Math.floor(((rauPhase % 4) + 4) % 4));
+  	  
 
       function formatNum(num, width=8, decimals=2){
           return num.toFixed(decimals).padStart(width);
@@ -745,7 +747,7 @@ const ctx = canvas.getContext('2d');
       const dotStr = formatNum(dot);
       const angleRadStr = formatNum(angleRad,8,3);
       const angleDegStr = formatNum(angleDeg,6,1);
-      const tangentStr =  tangent===0 ? 'undefined' : formatNum(tangent,8,4);
+      const tangentStr =  rauTan===0 ? 'undefined' : formatNum(tangent,8,4);
       const rauPhaseStr = formatNum(rauPhase,6,3);
       const rauSineStr = formatNum(rauSine,8,3);
       const rauCosStr = formatNum(rauCos,8,3);
