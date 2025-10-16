@@ -754,16 +754,14 @@ const ctx = canvas.getContext('2d');
       Cross = ${crossStr}
       Dot   = ${dotStr}
       ---------------
-         =Radian=
-      θ = ${angleRadStr} | ${angleDegStr}°
-	      =RAU=
-      θ = ${rauPhaseStr}
+	  Radian = ${angleRadStr} | ${angleDegStr}°
+	  RAU    = ${rauPhaseStr}
       ---------------
 	  tan(θ) = ${tangentStr}
-      sin(θ) = ${rauSineStr}
-      cos(θ) = ${rauCosStr}
-	  `;
+	  sin(θ) = ${rauSineStr}
+	  cos(θ) = ${rauCosStr}`;
       //θ = ${rauRadStr} rad | ${rauDegStr}°
+
       drawChordConnection(ctx, v, u, arcRadius);
       currentPhase = rauPhase;
       if (showConv.checked) drawConversionDiagram(rauPhase);
