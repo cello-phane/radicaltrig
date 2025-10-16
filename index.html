@@ -580,7 +580,7 @@ const ctx = canvas.getContext('2d');
   }
 	
   function radicalTangent(t){
-      return 1-t===0 ? 0 : t/(1-t);
+      return t===1 ? 0 : t/(1-t);
   }
 	
   // Compute RAU phase from two vectors (0-4) 
@@ -718,7 +718,6 @@ const ctx = canvas.getContext('2d');
       // traditional
       const angleRad = vectorAngle(u,v);
       const angleDeg = radToDeg(angleRad);
-      const tangent = radicalTangent(u,v);
   
       // rau
       const rauPhase = computeRAUPhase(u,v);
@@ -727,7 +726,8 @@ const ctx = canvas.getContext('2d');
       //const rauRad = Math.atan(Math.abs(cross/dot));
 	  const rauRad = computeRAUPhase(u,v) * (Math.PI / 2);
       const rauDeg = radToDeg(rauRad);
-  
+  	  const tangent = radicalTangent(computeRAUPhase(u,v));
+
       function formatNum(num, width=8, decimals=2){
           return num.toFixed(decimals).padStart(width);
       }
@@ -744,7 +744,7 @@ const ctx = canvas.getContext('2d');
       const dotStr = formatNum(dot);
       const angleRadStr = formatNum(angleRad,8,3);
       const angleDegStr = formatNum(angleDeg,6,1);
-      const tangentStr =  Number.isNaN(tangent) ? formatNum(tangent,8,4) : 'undefined';
+      const tangentStr =  tangent===0 ? 'undefined' : formatNum(tangent,8,4);
       const rauPhaseStr = formatNum(rauPhase,6,3);
       const rauSineStr = formatNum(rauSine,8,3);
       const rauCosStr = formatNum(rauCos,8,3);
