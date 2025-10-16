@@ -836,23 +836,15 @@ setSlimMode(false);
 	  }
 
 	  // Compute angle in radians (RAU → radians)
-	  // const theta = currentPhase * (Math.PI/2);
+	  const theta = currentPhase * (Math.PI/2);
 
 	  // Draw current phase marker
-	  //const px = cx - Math.sin(theta - Math.PI/2) * r;
-	  const px = cx - radicalSine(currentPhase-1.0) * r;
-	  //const py = cy + Math.cos(theta + Math.PI/2) * r;
-	  const py = cy + radicalCosine(currentPhase+1.0) * r;
+	  const px = cx - Math.sin(theta - Math.PI/2) * r;
+	  const py = cy + Math.cos(theta + Math.PI/2) * r;
 	  ctx.fillStyle = "red";
 	  ctx.beginPath();
-	  ctx.arc(px, py, 6, Math.PI/2, 2*Math.PI - (Math.PI/2));
+	  ctx.arc(px, py, r, 0, 2*Math.PI);
 	  ctx.fill();
-
-	  // Live readout
-	  const degrees = currentPhase * 180;
-	  ctx.fillStyle = "#000";
-	  ctx.font = "9px monospace";
-	  ctx.fillText(`Current → ${currentPhase.toFixed(3)} RAU | ${degrees.toFixed(1)}° | ${(theta).toFixed(3)} rad`, w/2 - 140, h - 15);
 	}
   // add listeners
   Object.values(controls).forEach(c => c.addEventListener('input', render));
