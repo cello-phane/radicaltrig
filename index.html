@@ -727,7 +727,7 @@ const ctx = canvas.getContext('2d');
 	  const rauRad = computeRAUPhase(u,v) * (Math.PI / 2);
       const rauDeg = radToDeg(rauRad);
 	  // compute the mod % 4 in fractional form to use the rtan formula
-  	  const tangent = radicalTangent(rauPhase % 4 - (rauPhase - Math.floor(rauPhase)));
+  	  const tangent = radicalTangent(((rauPhase % 4) + 4) % 4 - Math.floor(((rauPhase % 4) + 4) % 4));
 
       function formatNum(num, width=8, decimals=2){
           return num.toFixed(decimals).padStart(width);
