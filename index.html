@@ -579,10 +579,13 @@ const ctx = canvas.getContext('2d');
       }
   }
 
-  // compute the mod % 4 in fractional form to use the rtan formula	
+  // compute the mod % 4 in fractional form (in 0-1) to use the rtan formula
   function radicalTan(t) {
-	  let lt = (((t % 4) + 4) % 4 - (Math.floor((t % 4) + 4) % 4)) * Math.sign(t);
-      return Math.abs(lt)==1 ? 0 : lt/(1-lt);
+    t = ((t % 4) + 4) % 4; // ensure 0–4
+    const q = Math.floor(t);
+    const f = t - q;
+    const base = f / (1.0 - f);
+    return (q === 1 || q === 3) ? -1.0 / base : base; // flip appropriately
   }
 	
   // Compute RAU phase from two vectors (0-4) 
