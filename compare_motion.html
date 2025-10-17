@@ -136,12 +136,12 @@ function drawCircle(ctx, label, theta, showLabels) {
 function rauToTheta(t) {
     const tau = Math.tan(t * Math.PI / 2);
     const rauPhase = 4 * (tau / (1 + tau));
-    return (rauPhase / 4) * 2 * Math.PI;
+    return -((rauPhase / 4) * 2 * Math.PI);
 }
 
 function render() {
-    const thetaRad = -(t) * 2 * Math.PI;     // uniform
-    const thetaRau = rauToTheta(-(t));       // nonlinear
+    const thetaRad = -(t * 2 * Math.PI);     // uniform
+    const thetaRau = rauToTheta(t);       // nonlinear
 
     drawCircle(rctx, "Radian", thetaRad, labelCheck.checked);
     drawCircle(ractx, "RAU", thetaRau, labelCheck.checked);
