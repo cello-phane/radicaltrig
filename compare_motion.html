@@ -101,8 +101,8 @@ function drawCircle(ctx, label, theta, showLabels) {
     ctx.stroke();
 
     // marker dot
-    const x = cx + radius * Math.cos(theta);
-    const y = cy + radius * Math.sin(theta);
+    const x = cx - radius * Math.cos(theta);
+    const y = cy - radius * Math.sin(theta);
     ctx.fillStyle = "red";
     ctx.beginPath();
     ctx.arc(x, y, 6, 0, 2 * Math.PI);
@@ -115,8 +115,8 @@ function drawCircle(ctx, label, theta, showLabels) {
         const keyAngles = [270, 180, 150, 120, 90, 60, 45, 30, 0];
         keyAngles.forEach(a => {
             const rad = -(a * Math.PI / 180);
-            const lx = cx - (radius + 18) * Math.cos(rad);
-            const ly = cy - (radius + 18) * Math.sin(rad);
+            const lx = cx + (radius + 18) * Math.cos(rad);
+            const ly = cy + (radius + 18) * Math.sin(rad);
             ctx.fillText(a.toString(), lx - 10, ly + 4);
         });
     }
