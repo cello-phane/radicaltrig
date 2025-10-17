@@ -140,8 +140,8 @@ function rauToTheta(t) {
 }
 
 function render() {
-    const thetaRad = -(t * 2 * Math.PI);     // uniform
-    const thetaRau = rauToTheta(t);       // nonlinear
+    const thetaRad = -(t * 2 * Math.PI)+Math.PI;     // uniform
+    const thetaRau = rauToTheta(t)+Math.PI;       // nonlinear
 
     drawCircle(rctx, "Radian", thetaRad, labelCheck.checked);
     drawCircle(ractx, "RAU", thetaRau, labelCheck.checked);
