@@ -126,6 +126,9 @@ pre#resultsContent { background:#f5f5f5; padding:10px; border-radius:6px; white-
 #conversionCanvas {
   display: block;
   margin: auto;
+  width: 100%;
+  height: auto;
+  max-width: 280px; /* match your sidebar width */
 }
 
 #mathBlock {
