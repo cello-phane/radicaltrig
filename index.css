@@ -47,10 +47,8 @@ canvas {
   height: auto;
   display: block;
 }
-#canvas1 {
-  margin: 0 auto;
-  margin-top: 8px;
-}
+#canvas1 { border:2px solid #333; border-radius:8px; background:white; display:block; width: 60%; height: 40%;}
+#canvas2 { border:2px solid #333; border-radius:8px; background:white; display:block; width: 60%; height: 40%;}
 .desc { background:#e8f4f8; border-left:4px solid var(--accent); border-radius:2px; }
 .controls { margin-top:12px; text-align:center; }
 input[type=range] { width:320px; margin-top:8px; }
@@ -60,7 +58,7 @@ input[type=range] { width:320px; margin-top:8px; }
   align-items:flex-start;
   margin-top:8px;
 }
-#canvas2 { border:2px solid #333; border-radius:8px; background:white; display:block; }
+
 .panel {
   width:62%;
   background:white;
