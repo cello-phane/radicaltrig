@@ -60,7 +60,7 @@ function updateResultsDisplay() {
     const rauSin = radicalSineGlobal(phase);
     const rauCos = radicalCosineGlobal(phase);
     const rauTan = radicalTanGlobal(phase);
-    const rauRad = (phase / 4) * Math.PI;
+    const rauRad = (phase / 4) * 2.0 * Math.PI;
     const rauDeg = (phase / 4) * 360;
     
     resultsContent.textContent = `RAU Phase = ${phase.toFixed(3)}
@@ -79,7 +79,7 @@ cos(θ) = ${rauCos.toFixed(3)}`;
     const rauSin = radicalSineGlobal(phase);
     const rauCos = radicalCosineGlobal(phase);
     const rauTan = radicalTanGlobal(phase);
-    const rauRad = (phase / 4) * Math.PI;
+    const rauRad = (phase / 4) * 2.0 * Math.PI;
     const rauDeg = (phase / 4) * 360;
     
     const formatNum = (num, width=8, decimals=2) => num.toFixed(decimals).padStart(width);
