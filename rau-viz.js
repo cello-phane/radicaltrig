@@ -565,7 +565,22 @@ document.addEventListener('DOMContentLoaded', () => {
     Object.values(controls).forEach(c => c.addEventListener('input', render));
     render();
   })();
+  
+  function setupResponsiveCanvas(canvasId, aspectRatio = 1) {
+    const canvas = document.getElementById(canvasId);
+    const container = canvas.parentElement;
+    
+    function resize() {
+      canvas.width = container.clientWidth;
+      canvas.height = container.clientWidth * aspectRatio;
 
+    }
+    
+    window.addEventListener('resize', resize);
+    resize();
+  }
+  
+  /////////////////////////////////////////////////////////////////////
   showConv.addEventListener("change", () => {
     convPanel.style.display = showConv.checked ? "block" : "none";
     updateConversionDisplay();
@@ -574,5 +589,11 @@ document.addEventListener('DOMContentLoaded', () => {
   // Call on page load and when window resizes
   window.addEventListener('resize', resizeConversionCanvas);
   document.addEventListener('DOMContentLoaded', resizeConversionCanvas);
+  ///////////////////////////////////////////////////////////////////////
+  
+  // Call for each canvas
+  setupResponsiveCanvas('canvas1', 0.642);
+  setupResponsiveCanvas('canvas2', 0.642);
+
 
 });
