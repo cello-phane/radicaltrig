@@ -126,14 +126,18 @@ function drawCircle(ctx, theta, showLabels, showTrail) {
   }
 }
 
-// RAU → radian mapping (nonlinear)
-function rauToTheta(t) {
-  return -(t * 2 * Math.PI);
+// RAU → radian mapping
+function rauFromTeta(t) {
+  const eps = 1e-6;
+  phi = Math.min(Math.max(t, 0), Math.PI/2 - eps);
+  const s = Math.sin(t);
+  const c = Math.cos(t);
+  return s / (s + c);
 }
-
+  
 function render() {
   const thetaRad = -(t * 2 * Math.PI);
-  const thetaRau = rauToTheta(t);
+  const thetaRau = rauToTheta(-t);
 
   drawCircle(rctx, thetaRad, labelCheck.checked, trailCheck.checked);
   drawCircle(ractx, thetaRau, labelCheck.checked, trailCheck.checked);
