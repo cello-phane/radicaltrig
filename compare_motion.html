@@ -112,24 +112,24 @@ function drawCircle(ctx, label, theta, showLabels) {
     if (showLabels) {
         ctx.fillStyle = "#000";
         ctx.font = "12px monospace";
-        const keyAngles = [0, 30, 45, 60, 90, 120, 150, 180, 270, 360];
+        const keyAngles = [0, 30, 45, 60, 90, 120, 150, 180, 270];
         keyAngles.forEach(a => {
             const rad = a * Math.PI / 180;
-            const lx = cx + (radius + 18) * Math.cos(rad);
-            const ly = cy + (radius + 18) * Math.sin(rad);
+            const lx = cx - (radius + 18) * Math.cos(rad);
+            const ly = cy - (radius + 18) * Math.sin(rad);
             ctx.fillText(a.toString(), lx - 10, ly + 4);
         });
     }
 
     // snapping highlight
-    const deg = (theta * 180 / Math.PI + 360) % 360;
-    const snapAngles = [0, 30, 45, 60, 90, 120, 150, 180, 270, 360];
-    const near = snapAngles.find(a => Math.abs(deg - a) < 1);
-    if (near !== undefined) {
-        ctx.fillStyle = "#000";
-        ctx.font = "bold 14px monospace";
-        ctx.fillText(near + "°", cx - 15, 25);
-    }
+    //const deg = (theta * 180 / Math.PI + 360) % 360;
+    //const snapAngles = [0, 30, 45, 60, 90, 120, 150, 180, 270];
+    //const near = snapAngles.find(a => Math.abs(deg - a) < 1);
+    //if (near !== undefined) {
+    //    ctx.fillStyle = "#000";
+    //    ctx.font = "bold 14px monospace";
+    //    ctx.fillText(near + "°", cx - 15, 25);
+    //}
 }
 
 // RAU → radian mapping
