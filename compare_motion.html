@@ -112,9 +112,9 @@ function drawCircle(ctx, label, theta, showLabels) {
     if (showLabels) {
         ctx.fillStyle = "#000";
         ctx.font = "12px monospace";
-        const keyAngles = [0, 30, 45, 60, 90, 120, 150, 180, 270];
+        const keyAngles = [270, 180, 150, 120, 90, 60, 45, 30, 0];
         keyAngles.forEach(a => {
-            const rad = a * Math.PI / 180;
+            const rad = -(a * Math.PI / 180);
             const lx = cx - (radius + 18) * Math.cos(rad);
             const ly = cy - (radius + 18) * Math.sin(rad);
             ctx.fillText(a.toString(), lx - 10, ly + 4);
