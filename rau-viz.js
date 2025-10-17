@@ -180,22 +180,7 @@ function resizeConversionCanvas() {
     updateConversionDisplay();
   }
 }
-  
-function setupResponsiveCanvas(canvasId, aspectRatio = 1, redrawCallback) {
-  const canvas = document.getElementById(canvasId);
-  const container = canvas.parentElement;
-  
-  function resize() {
-    canvas.width = container.clientWidth;
-    canvas.height = container.clientWidth * aspectRatio;
-    // Call the redraw callback after resize
-    if (redrawCallback) redrawCallback();
-  }
-  
-  window.addEventListener('resize', resize);
-  resize(); // Initial resize
-}
-  
+
 // ============================================
 // Section Toggle Logic
 // ============================================
