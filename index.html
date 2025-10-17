@@ -5,9 +5,15 @@
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>RAU System & Vector Visualization — Full</title>
 <link rel="stylesheet" type="text/css" href="index.css">
-<script src="preload.js"></script>
-
+<!-- MathJax -->
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] },
+  svg: { fontCache: 'global' }
+};
+</script>
 <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+
 </head>
 <body>
 
@@ -17,7 +23,82 @@
     <button id="toggleButton" class="toggle-btn">Switch to Vector Diagram</button>
   </div>
 </header>
+<script>
+// Global Utilities
+// ============================================
+function setupResponsiveCanvas(canvasId, aspectRatio = 1) {
+  const canvas = document.getElementById(canvasId);
+  const container = canvas.parentElement;
+  
+  function resize() {
+    canvas.width = container.clientWidth;
+    canvas.height = container.clientWidth * aspectRatio;
+    // Redraw here
+  }
+  
+  window.addEventListener('resize', resize);
+  resize();
+}
 
+// Call for each canvas
+setupResponsiveCanvas('canvas1', 0.842);
+setupResponsiveCanvas('canvas2', 0.842);
+  
+function changeFontSize(changeAmount, id_name) {
+  let element = document.getElementById(id_name);
+  if (element) {
+    let currentSize = parseInt(element.style.fontSize) || 13;
+    let newSize = currentSize + changeAmount;
+    if (newSize < 8) newSize = 8;
+    element.style.fontSize = newSize + 'px';
+  }
+}
+
+function dragElement(elmnt) {
+  var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+  if (document.getElementById(elmnt.id + "header")) {
+    document.getElementById(elmnt.id + "header").onmousedown = dragMouseDown;
+  } else {
+    elmnt.onmousedown = dragMouseDown;
+  }
+
+  function dragMouseDown(e) {
+    e = e || window.event;
+    e.preventDefault();
+    pos3 = e.clientX;
+    pos4 = e.clientY;
+    document.onmouseup = closeDragElement;
+    document.onmousemove = elementDrag;
+  }
+
+  function elementDrag(e) {
+    e = e || window.event;
+    e.preventDefault();
+    pos1 = pos3 - e.clientX;
+    pos2 = pos4 - e.clientY;
+    pos3 = e.clientX;
+    pos4 = e.clientY;
+    elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
+    elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
+  }
+
+  function closeDragElement() {
+    document.onmouseup = null;
+    document.onmousemove = null;
+  }
+
+}
+function toggleMathBlock() {
+  const mathBlock = document.getElementById('mathBlock');
+  if (mathBlock.classList.contains('collapsed')) {
+    mathBlock.classList.remove('collapsed');
+    mathBlock.style.maxHeight = mathBlock.scrollHeight + 'px';
+  } else {
+    mathBlock.style.maxHeight = '0';
+    mathBlock.classList.add('collapsed');
+  }
+}
+</script>
 <!-- Floating Formula Panel -->
 <div id="formulaPanel" aria-hidden="false">
   <div id="formulaHeader" title="Click and hold to move around">
@@ -66,10 +147,11 @@
 <!-- Section 1: RAU Explanation -->
 <section id="section1" class="inactive">
   <div class="card">
-    <h2 style="margin-top:2px;">RAU — Explanation</h2>
+    <h2 style="margin-top:6px;">RAU — Explanation</h2>
     <div class="desc">
       <strong>Key insight:</strong> RAU maps a linear parameter (0.0–4.0) to circular motion by using rational functions on quadrant diagonals.
     </div>
+  <canvas id="myCanvas"></canvas>
     <canvas id="canvas1"></canvas>
 
     <div class="controls" style="text-align:center;">
@@ -118,9 +200,9 @@
       </div>
     </div>
   </div>
-  
 </section>
 </div>
+<!-- Load external JavaScript -->
 <script src="rau-viz.js"></script>
 
 </body>
