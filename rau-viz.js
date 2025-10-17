@@ -579,12 +579,10 @@ document.addEventListener('DOMContentLoaded', () => {
       updateConversionDisplay();
     }
   }
-document.addEventListener('DOMContentLoaded', () => {
   // Call for each canvas
   setupResponsiveCanvas('canvas1', 0.642);
   setupResponsiveCanvas('canvas2', 0.542);
-  
-});
+
 
 
 });
