@@ -128,8 +128,9 @@ function drawCircle(ctx, theta, showLabels, showTrail) {
 
 // RAU → radian mapping (nonlinear)
 function rauToTheta(t) {
-  const ratio = Math.tan(t * Math.PI / 2);
-  return -((ratio / (1 + ratio)) * 2 * Math.PI);
+  const s = (t * 4) % 4;
+  const f = s / (s + 1);
+  return -(f * 2 * Math.PI);
 }
 
 function render() {
