@@ -125,7 +125,8 @@ function toggleMathBlock() {
     </div>
   </div>
 </div>
-
+  
+<div id="canvasContainer" style="width: 100%; max-width: 800px; margin: 0 auto;">
 <!-- Section 1: RAU Explanation -->
 <section id="section1" class="inactive">
   <div class="card">
@@ -133,8 +134,8 @@ function toggleMathBlock() {
     <div class="desc">
       <strong>Key insight:</strong> RAU maps a linear parameter (0.0–4.0) to circular motion by using rational functions on quadrant diagonals.
     </div>
-
-    <canvas id="canvas1" width="420" height="420" style="display:block;margin:18px auto;"></canvas>
+  <canvas id="myCanvas"></canvas>
+    <canvas id="canvas1"></canvas>
 
     <div class="controls" style="text-align:center;">
       <label style="font-weight:700;">t Parameter: <span id="paramValue">0.00</span></label><br>
@@ -153,7 +154,7 @@ function toggleMathBlock() {
     <h2 style="margin-top:6px;">Vector + RAU Angle Visualization</h2>
 
     <div class="vector-grid">
-      <canvas id="canvas2" width="760" height="560"></canvas>
+      <canvas id="canvas2"></canvas>
 
       <div class="panel">
         <div class="control-group">
@@ -183,7 +184,7 @@ function toggleMathBlock() {
     </div>
   </div>
 </section>
-
+</div>
 <!-- Load external JavaScript -->
 <script src="rau-viz.js"></script>
 
