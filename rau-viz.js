@@ -109,13 +109,12 @@ cos(θ) = ${rauCos.toFixed(3)}`;
 
 function drawConversionDiagram(rauPhase) {
     const ctx = convCtx;
-    const w = convCanvas.width;
-    const h = convCanvas.height;
+    const w = convCanvas.width;  // use actual width
+    const h = convCanvas.height; // use actual height
     ctx.clearRect(0, 0, w, h);
-
-    const r = 60;
-    const cx = w/2, cy = h/2 + 10;
-
+  
+    const r = Math.min(w, h) * 0.3; // radius scales with canvas size
+    const cx = w/2, cy = h/2;
     ctx.strokeStyle = "#333";
     ctx.lineWidth = 2;
     ctx.beginPath();
@@ -158,13 +157,29 @@ function drawConversionDiagram(rauPhase) {
     ctx.arc(px, py, 6, 0, 2*Math.PI);
     ctx.fill();
   }
-function updateConversionDisplay() {
-  const s1 = document.getElementById('section1');
-  const isSection1Active = s1.classList.contains('active');
-  const phase = isSection1Active ? currentPhaseSection1 : currentPhaseSection2;
+  function updateConversionDisplay() {
+    const s1 = document.getElementById('section1');
+    const isSection1Active = s1.classList.contains('active');
+    const phase = isSection1Active ? currentPhaseSection1 : currentPhaseSection2;
+    const showConv = document.getElementById('showConversion');
+    if (showConv.checked) {
+      drawConversionDiagram(phase);
+    }
+}
+
+function resizeConversionCanvas() {
+  const canvas = document.getElementById('conversionCanvas');
+  const container = document.getElementById('conversionPanel');
+  
+  // Set canvas resolution to match container
+  const width = container.clientWidth - 6; // subtract padding (3px each side)
+  canvas.width = width;
+  canvas.height = width; // square canvas
+  
+  // Redraw if it's visible
   const showConv = document.getElementById('showConversion');
   if (showConv.checked) {
-    drawConversionDiagram(phase);
+    updateConversionDisplay();
   }
 }
 
@@ -556,5 +571,8 @@ document.addEventListener('DOMContentLoaded', () => {
     updateConversionDisplay();
   });
 
-  
+  // Call on page load and when window resizes
+  window.addEventListener('resize', resizeConversionCanvas);
+  document.addEventListener('DOMContentLoaded', resizeConversionCanvas);
+
 });
