@@ -117,18 +117,18 @@ pre#resultsContent { background:#f5f5f5; padding:10px; border-radius:6px; white-
 .conversion-panel {
   display: none;
   background:rgba(255,255,255,0.98);
-  padding: 3px;
-  border-radius: 8px;
+  padding: 0px;
+  border-radius: 2px;
   box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-  text-align: center;
+  text-align: left;
 }
 
 #conversionCanvas {
   display: block;
   margin: auto;
-  width: 100%;
+  width: 40%;
   height: auto;
-  max-width: 280px; /* match your sidebar width */
+  max-width: 380px; /* match your sidebar width */
 }
 
 #mathBlock {
