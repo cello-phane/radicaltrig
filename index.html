@@ -135,6 +135,16 @@ window.MathJax = {
     display: block;
     margin: auto;
   }
+
+  #mathBlock {
+    max-height: 500px; /* adjust to fit your content */
+    overflow: hidden;
+    transition: max-height 0.4s ease;
+  }
+  
+  #mathBlock.collapsed {
+    max-height: 0;
+  }
 </style>
 </head>
 <body>
@@ -190,19 +200,30 @@ function dragElement(elmnt) {
     document.onmouseup = null;
     document.onmousemove = null;
   }
-}
 
+}
+function toggleMathBlock() {
+  const mathBlock = document.getElementById('mathBlock');
+  if (mathBlock.classList.contains('collapsed')) {
+    mathBlock.classList.remove('collapsed');
+    mathBlock.style.maxHeight = mathBlock.scrollHeight + 'px';
+  } else {
+    mathBlock.style.maxHeight = '0';
+    mathBlock.classList.add('collapsed');
+  }
+}
 </script>
 <!-- Floating Formula Panel -->
 <div id="formulaPanel" aria-hidden="false">
   <div id="formulaHeader" title="Click and hold to move around">
-    <div class="title">RAU Formulas</div>
+    <div class="title">RAU information</div>
     <div class="chev" id="formulaChevron" title="Click to expand/collapse">◀</div>
   </div>
   <div id="formulaBody">
-    <p style="margin:0 0 8px 0; font-weight:600;">For parameter \(0.0 < t < 1.0\):</p>
+  <button onclick="toggleMathBlock()">Show/Hide Formulas</button>
 
-    <div id="mathBlock">
+    <div id="mathBlock" class="collapsed">
+      <p style="margin:0 0 8px 0; font-weight:600;">For parameter \(0.0 < t < 1.0\):</p>
       <div>
         \[
         \mathrm{rsin}(t) \;=\; \frac{t}{\sqrt{\,1.0 - 2.0t + 2.0t^{2.0}\,}}
