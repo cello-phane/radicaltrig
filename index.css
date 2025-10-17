@@ -37,7 +37,16 @@ section.active {
   margin:0 auto;
   box-shadow:0 6px 18px rgba(0,0,0,0.06);
 }
+#canvasContainer {
+  width: 100%;
+  max-width: 800px;
+}
 
+canvas {
+  width: 100%;
+  height: auto;
+  display: block;
+}
 #canvas1 { border:2px solid #333; border-radius:8px; background:white; display:block; margin:16px auto; }
 
 .desc { background:#e8f4f8; border-left:4px solid var(--accent); padding:12px; margin-top:12px; border-radius:6px; }
