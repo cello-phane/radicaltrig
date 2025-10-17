@@ -129,7 +129,7 @@ function drawCircle(ctx, theta, showLabels, showTrail) {
 // RAU → radian mapping
 function rauFromTeta(t) {
   const eps = 1e-6;
-  phi = Math.min(Math.max(t, 0), Math.PI/2 - eps);
+  t = Math.min(Math.max(t, 0), Math.PI/2 - eps);
   const s = Math.sin(t);
   const c = Math.cos(t);
   return s / (s + c);
