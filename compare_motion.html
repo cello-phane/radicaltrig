@@ -128,13 +128,11 @@ function drawCircle(ctx, theta, showLabels, showTrail) {
 
 // RAU → radian mapping (nonlinear)
 function rauToTheta(t) {
-  const s = (t * 4) % 4;
-  const f = s / (s + 1);
-  return -(f * 2 * Math.PI);
+  return -(t * 2 * Math.PI);
 }
 
 function render() {
-  const thetaRad = (t * 2 * Math.PI);
+  const thetaRad = -(t * 2 * Math.PI);
   const thetaRau = rauToTheta(t);
 
   drawCircle(rctx, thetaRad, labelCheck.checked, trailCheck.checked);
