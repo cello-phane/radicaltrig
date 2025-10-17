@@ -2,123 +2,174 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>RAU Motion Comparison — Non-Uniform vs Uniform</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Radian vs RAU Rotation Demo</title>
 <style>
-  body {
-    background: #f7f7f7;
-    font-family: Arial, sans-serif;
-    text-align: center;
-    margin: 0;
-    padding: 20px;
-  }
-  canvas {
-    background: #fff;
-    border: 2px solid #333;
-    border-radius: 8px;
-    margin: 10px;
-  }
-  .row {
-    display: flex;
-    justify-content: center;
-    gap: 40px;
-    flex-wrap: wrap;
-  }
-  .label {
-    font-weight: bold;
-    margin-top: 6px;
-  }
+    body {
+        font-family: Arial, sans-serif;
+        background: #fff;
+        color: #222;
+        text-align: center;
+        margin: 0;
+        padding: 20px;
+    }
+    h2 {
+        margin: 8px 0;
+    }
+    .container {
+        display: flex;
+        justify-content: center;
+        gap: 40px;
+        margin-top: 20px;
+    }
+    canvas {
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        background: #fff;
+    }
+    .controls {
+        margin-top: 20px;
+    }
+    .controls label {
+        margin: 0 10px;
+    }
 </style>
 </head>
 <body>
 
-<h2>RAU vs Angle-Uniform Motion</h2>
-<p>Left: RAU parameter <code>t</code> advances linearly → non-uniform speed.<br>
-Right: true angle φ advances linearly, converted to RAU <code>t = tan(φ)/(1+tan(φ))</code> → uniform speed.</p>
+<h1>Uniform (Radian) vs Non-Uniform (RAU) Rotation</h1>
+<div class="container">
+    <div>
+        <h2>Radian</h2>
+        <canvas id="radianCanvas" width="300" height="300"></canvas>
+    </div>
+    <div>
+        <h2>RAU</h2>
+        <canvas id="rauCanvas" width="300" height="300"></canvas>
+    </div>
+</div>
 
-<div class="row">
-  <div>
-    <canvas id="canvasRau" width="260" height="260"></canvas>
-    <div class="label">Linear t (Non-uniform)</div>
-  </div>
-  <div>
-    <canvas id="canvasUniform" width="260" height="260"></canvas>
-    <div class="label">Linear φ (Uniform)</div>
-  </div>
+<div class="controls">
+    <label>Phase:
+        <input type="range" id="phaseSlider" min="0" max="1" step="0.001" value="0">
+    </label>
+    <label><input type="checkbox" id="autoCheck"> Auto Rotate</label>
+    <label>Speed:
+        <input type="range" id="speedSlider" min="0.1" max="2" step="0.1" value="1">
+    </label>
+    <label><input type="checkbox" id="labelCheck" checked> Show Labels</label>
 </div>
 
 <script>
-function drawCircle(ctx, cx, cy, r) {
-  ctx.beginPath();
-  ctx.arc(cx, cy, r, 0, 2*Math.PI);
-  ctx.strokeStyle = "#444";
-  ctx.lineWidth = 2;
-  ctx.stroke();
+const radianCanvas = document.getElementById("radianCanvas");
+const rauCanvas = document.getElementById("rauCanvas");
+const rctx = radianCanvas.getContext("2d");
+const ractx = rauCanvas.getContext("2d");
+const slider = document.getElementById("phaseSlider");
+const autoCheck = document.getElementById("autoCheck");
+const speedSlider = document.getElementById("speedSlider");
+const labelCheck = document.getElementById("labelCheck");
+
+let t = 0;
+let lastTime = 0;
+
+function drawCircle(ctx, label, theta, showLabels) {
+    const W = ctx.canvas.width;
+    const H = ctx.canvas.height;
+    const cx = W / 2;
+    const cy = H / 2;
+    const radius = 100;
+
+    ctx.clearRect(0, 0, W, H);
+
+    // grid lines
+    ctx.strokeStyle = "#eee";
+    for (let i = -2; i <= 2; i++) {
+        ctx.beginPath();
+        ctx.moveTo(0, cy + i * 50);
+        ctx.lineTo(W, cy + i * 50);
+        ctx.moveTo(cx + i * 50, 0);
+        ctx.lineTo(cx + i * 50, H);
+        ctx.stroke();
+    }
+
+    // circle
+    ctx.strokeStyle = "#555";
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.arc(cx, cy, radius, 0, 2 * Math.PI);
+    ctx.stroke();
+
+    // marker dot
+    const x = cx + radius * Math.cos(theta);
+    const y = cy + radius * Math.sin(theta);
+    ctx.fillStyle = "red";
+    ctx.beginPath();
+    ctx.arc(x, y, 6, 0, 2 * Math.PI);
+    ctx.fill();
+
+    // labels if enabled
+    if (showLabels) {
+        ctx.fillStyle = "#000";
+        ctx.font = "12px monospace";
+        const keyAngles = [0, 30, 45, 60, 90, 120, 150, 180, 270, 360];
+        keyAngles.forEach(a => {
+            const rad = a * Math.PI / 180;
+            const lx = cx + (radius + 18) * Math.cos(rad);
+            const ly = cy + (radius + 18) * Math.sin(rad);
+            ctx.fillText(a.toString(), lx - 10, ly + 4);
+        });
+    }
+
+    // snapping highlight
+    const deg = (theta * 180 / Math.PI + 360) % 360;
+    const snapAngles = [0, 30, 45, 60, 90, 120, 150, 180, 270, 360];
+    const near = snapAngles.find(a => Math.abs(deg - a) < 1);
+    if (near !== undefined) {
+        ctx.fillStyle = "#000";
+        ctx.font = "bold 14px monospace";
+        ctx.fillText(near + "°", cx - 15, 25);
+    }
 }
 
-function drawDot(ctx, x, y, color="#f00") {
-  ctx.beginPath();
-  ctx.arc(x, y, 6, 0, 2*Math.PI);
-  ctx.fillStyle = color;
-  ctx.fill();
+// RAU → radian mapping
+function rauToTheta(t) {
+    const tau = Math.tan(t * Math.PI / 2);
+    const rauPhase = 4 * (tau / (1 + tau));
+    return (rauPhase / 4) * 2 * Math.PI;
 }
 
-function rsin(t) { return t / Math.sqrt(1 - 2*t + 2*t*t); }
-function rcos(t) { return (1 - t) / Math.sqrt(1 - 2*t + 2*t*t); }
+function render() {
+    const thetaRad = t * 2 * Math.PI;     // uniform
+    const thetaRau = rauToTheta(t);       // nonlinear
 
-function drawRAUCircle(ctx, tGlobal, cx, cy, r) {
-  let t = tGlobal % 4;
-  let q = Math.floor(t);
-  let lt = t - q;
-  let s = rsin(lt);
-  let c = rcos(lt);
-  let sin, cos;
-  switch(q) {
-    case 0: cos=c; sin=s; break;
-    case 1: cos=-s; sin=c; break;
-    case 2: cos=-c; sin=-s; break;
-    case 3: cos=s; sin=-c; break;
-  }
-  let x = cx + r*cos;
-  let y = cy - r*sin;
-  drawDot(ctx, x, y);
+    drawCircle(rctx, "Radian", thetaRad, labelCheck.checked);
+    drawCircle(ractx, "RAU", thetaRau, labelCheck.checked);
 }
 
-function rauFromAngle(phi) {
-  const eps = 1e-6;
-  phi = Math.min(Math.max(phi, 0), Math.PI/2 - eps);
-  const s = Math.sin(phi);
-  const c = Math.cos(phi);
-  return s / (s + c);
+function animate(timestamp) {
+    if (lastTime === 0) lastTime = timestamp;
+    const dt = (timestamp - lastTime) / 1000;
+    lastTime = timestamp;
+
+    if (autoCheck.checked) {
+        const speed = parseFloat(speedSlider.value);
+        t += dt * 0.1 * speed;
+        t %= 1;
+        slider.value = t;
+    }
+    render();
+    requestAnimationFrame(animate);
 }
 
-const c1 = document.getElementById("canvasRau");
-const c2 = document.getElementById("canvasUniform");
-const ctx1 = c1.getContext("2d");
-const ctx2 = c2.getContext("2d");
-const r = 80, cx = 130, cy = 130;
-let time = 0;
+slider.addEventListener("input", () => {
+    t = parseFloat(slider.value);
+    render();
+});
 
-function loop() {
-  ctx1.clearRect(0,0,c1.width,c1.height);
-  ctx2.clearRect(0,0,c2.width,c2.height);
-  drawCircle(ctx1, cx, cy, r);
-  drawCircle(ctx2, cx, cy, r);
-
-  // Left: RAU parameter advances linearly
-  let tRau = (time * 0.02) % 4;
-  drawRAUCircle(ctx1, tRau, cx, cy, r);
-
-  // Right: true angle advances linearly
-  let phi = (time * 0.02 * Math.PI/2) % (2*Math.PI);
-  let q = Math.floor(phi / (Math.PI/2));
-  let localPhi = phi % (Math.PI/2);
-  let tLocal = rauFromAngle(localPhi);
-  drawRAUCircle(ctx2, q + tLocal, cx, cy, r);
-
-  time += 1;
-  requestAnimationFrame(loop);
-}
-loop();
+render();
+requestAnimationFrame(animate);
 </script>
+
 </body>
 </html>
