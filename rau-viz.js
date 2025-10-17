@@ -1,4 +1,4 @@
-// ============================================
+// ============================================up
 // Global State
 // ============================================
 let currentPhaseSection1 = 0;
@@ -181,19 +181,20 @@ function resizeConversionCanvas() {
   }
 }
   
-  function setupResponsiveCanvas(canvasId, aspectRatio = 1) {
-    const canvas = document.getElementById(canvasId);
-    const container = canvas.parentElement;
-    
-    function resize() {
-      canvas.width = container.clientWidth;
-      canvas.height = container.clientWidth * aspectRatio;
-      // Redraw here
-    }
-    
-    window.addEventListener('resize', resize);
-    resize();
+function setupResponsiveCanvas(canvasId, aspectRatio = 1, redrawCallback) {
+  const canvas = document.getElementById(canvasId);
+  const container = canvas.parentElement;
+  
+  function resize() {
+    canvas.width = container.clientWidth;
+    canvas.height = container.clientWidth * aspectRatio;
+    // Call the redraw callback after resize
+    if (redrawCallback) redrawCallback();
   }
+  
+  window.addEventListener('resize', resize);
+  resize(); // Initial resize
+}
   
 // ============================================
 // Section Toggle Logic
@@ -374,10 +375,13 @@ document.addEventListener('DOMContentLoaded', () => {
     slider.addEventListener('input', draw);
     draw();
 
-    if (window.MathJax && MathJax.typesetPromise) {
-      MathJax.typesetPromise().catch(console.error);
-    }
-  })();
+    // Setup responsive canvas with redraw callback
+    setupResponsiveCanvas('canvas1', 0.642, draw);
+    
+      if (window.MathJax && MathJax.typesetPromise) {
+        MathJax.typesetPromise().catch(console.error);
+      }
+    })();
 
   // ============================================
   // Section 2: Vector Diagram
@@ -576,17 +580,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     Object.values(controls).forEach(c => c.addEventListener('input', render));
     render();
+    // Setup responsive canvas with redraw callback
+    setupResponsiveCanvas('canvas1', 0.642, render);
   })();
-  
-  // Call for each canvas
-  setupResponsiveCanvas('canvas1', 0.642);
-  setupResponsiveCanvas('canvas2', 0.642);
 
   showConv.addEventListener("change", () => {
     convPanel.style.display = showConv.checked ? "block" : "none";
     updateConversionDisplay();
   });
-
-
 
 });
