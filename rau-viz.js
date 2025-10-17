@@ -596,7 +596,7 @@ document.addEventListener('DOMContentLoaded', () => {
   
   // Call for each canvas
   setupResponsiveCanvas('canvas1', 0.642);
-  setupResponsiveCanvas('canvas2', 1.0);
+  setupResponsiveCanvas('canvas2', 0.642);
 
 
 
