@@ -246,7 +246,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Section 1: RAU Canvas
   // ============================================
   (function() {
-    const canvas = document.getElementById('canvas1');
+    const canvas = document.getElementById('vectorCanvas');
     const ctx = canvas.getContext('2d');
     const slider = document.getElementById('paramSlider');
     const valueDisplay = document.getElementById('paramValue');
@@ -376,7 +376,7 @@ document.addEventListener('DOMContentLoaded', () => {
     draw();
 
     // Setup responsive canvas with redraw callback
-    setupResponsiveCanvas('canvas1', 0.642, draw);
+    setupResponsiveCanvas('vectorCanvas', 0.642, draw);
     
       if (window.MathJax && MathJax.typesetPromise) {
         MathJax.typesetPromise().catch(console.error);
@@ -387,7 +387,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Section 2: Vector Diagram
   // ============================================
   (function() {
-    const canvas = document.getElementById('canvas2');
+    const canvas = document.getElementById('simpleCanvas');
     const ctx = canvas.getContext('2d');
     const centerX = canvas.width/2;
     const centerY = canvas.height/2;
@@ -581,7 +581,7 @@ document.addEventListener('DOMContentLoaded', () => {
     Object.values(controls).forEach(c => c.addEventListener('input', render));
     render();
     // Setup responsive canvas with redraw callback
-    setupResponsiveCanvas('canvas1', 0.642, render);
+    setupResponsiveCanvas('simpleCanvas', 0.642, render);
   })();
 
   showConv.addEventListener("change", () => {
