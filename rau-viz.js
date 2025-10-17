@@ -579,6 +579,21 @@ document.addEventListener('DOMContentLoaded', () => {
       updateConversionDisplay();
     }
   }
+
+  function setupResponsiveCanvas(canvasId, aspectRatio = 1) {
+    const canvas = document.getElementById(canvasId);
+    const container = canvas.parentElement;
+    
+    function resize() {
+      canvas.width = container.clientWidth;
+      canvas.height = container.clientWidth * aspectRatio;
+      // Redraw here
+    }
+    
+    window.addEventListener('resize', resize);
+    resize();
+  }
+  
   // Call for each canvas
   setupResponsiveCanvas('canvas1', 0.642);
   setupResponsiveCanvas('canvas2', 0.542);
