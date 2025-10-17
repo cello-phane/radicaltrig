@@ -12,20 +12,7 @@ window.MathJax = {
   tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] },
   svg: { fontCache: 'global' }
 };
-</script>
-<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
 
-
-</head>
-<body>
-
-<header>
-  <h1>RAU Interactive Visualizations</h1>
-  <div class="top-controls">
-    <button id="toggleButton" class="toggle-btn">Switch to Vector Diagram</button>
-  </div>
-</header>
-<script>
 // Global Utilities
 // ============================================
 function setupResponsiveCanvas(canvasId, aspectRatio = 1) {
@@ -101,6 +88,17 @@ function toggleMathBlock() {
   }
 }
 </script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+</head>
+<body>
+
+<header>
+  <h1>RAU Interactive Visualizations</h1>
+  <div class="top-controls">
+    <button id="toggleButton" class="toggle-btn">Switch to Vector Diagram</button>
+  </div>
+</header>
+
 <!-- Floating Formula Panel -->
 <div id="formulaPanel" aria-hidden="false">
   <div id="formulaHeader" title="Click and hold to move around">
