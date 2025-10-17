@@ -126,22 +126,9 @@ window.MathJax = {
   </div>
 </section>
 </div>
-  <script>
+<script>
 // Global Utilities
 // ============================================
-function setupResponsiveCanvas(canvasId, aspectRatio = 1) {
-  const canvas = document.getElementById(canvasId);
-  const container = canvas.parentElement;
-  
-  function resize() {
-    canvas.width = container.clientWidth;
-    canvas.height = container.clientWidth * aspectRatio;
-    // Redraw here
-  }
-  
-  window.addEventListener('resize', resize);
-  resize();
-}
 
 // Call for each canvas
 setupResponsiveCanvas('vectorCanvas', 0.642);
@@ -202,6 +189,7 @@ function toggleMathBlock() {
   }
 }
 </script>
+  
 <!-- Load external JavaScript -->
 <script src="rau-viz.js"></script>
 
