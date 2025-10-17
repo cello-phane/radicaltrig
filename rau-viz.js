@@ -163,7 +163,7 @@ function drawConversionDiagram(rauPhase) {
     if (showConv.checked) {
       drawConversionDiagram(phase);
     }
-}
+  }
 
 function resizeConversionCanvas() {
   const canvas = document.getElementById('conversionCanvas');
@@ -180,7 +180,21 @@ function resizeConversionCanvas() {
     updateConversionDisplay();
   }
 }
-
+  
+  function setupResponsiveCanvas(canvasId, aspectRatio = 1) {
+    const canvas = document.getElementById(canvasId);
+    const container = canvas.parentElement;
+    
+    function resize() {
+      canvas.width = container.clientWidth;
+      canvas.height = container.clientWidth * aspectRatio;
+      // Redraw here
+    }
+    
+    window.addEventListener('resize', resize);
+    resize();
+  }
+  
 // ============================================
 // Section Toggle Logic
 // ============================================
@@ -564,39 +578,14 @@ document.addEventListener('DOMContentLoaded', () => {
     render();
   })();
   
-  function resizeConversionCanvas() {
-    const canvas = document.getElementById('conversionCanvas');
-    const container = document.getElementById('conversionPanel');
-    
-    // Set canvas resolution to match container
-    const width = container.clientWidth - 6; // subtract padding (3px each side)
-    canvas.width = width;
-    canvas.height = width; // square canvas
-    
-    // Redraw if it's visible
-    const showConv = document.getElementById('showConversion');
-    if (showConv.checked) {
-      updateConversionDisplay();
-    }
-  }
-
-  function setupResponsiveCanvas(canvasId, aspectRatio = 1) {
-    const canvas = document.getElementById(canvasId);
-    const container = canvas.parentElement;
-    
-    function resize() {
-      canvas.width = container.clientWidth;
-      canvas.height = container.clientWidth * aspectRatio;
-      // Redraw here
-    }
-    
-    window.addEventListener('resize', resize);
-    resize();
-  }
-  
   // Call for each canvas
   setupResponsiveCanvas('canvas1', 0.642);
   setupResponsiveCanvas('canvas2', 0.642);
+
+  showConv.addEventListener("change", () => {
+    convPanel.style.display = showConv.checked ? "block" : "none";
+    updateConversionDisplay();
+  });
 
 
 
