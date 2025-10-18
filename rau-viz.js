@@ -454,7 +454,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
-    function computeRAUPhase(u,v) {
+    function atanVec(u,v) {
       const mix = (a, b, c) => c ? b : a;
       const cross = u.x * v.y - u.y * v.x;
       const dot = u.x * v.x + u.y * v.y;
@@ -555,7 +555,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const cross = u.x*v.y - u.y*v.x;
       const dot = u.x*v.x + u.y*v.y;
-      const rauPhase = computeRAUPhase(u, v);
+      const rauPhase = atanVec(u, v);
       
       currentPhaseSection2 = rauPhase;
       updateResultsDisplay();
