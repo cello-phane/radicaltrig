@@ -193,7 +193,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const showing1 = s1.classList.contains('active');
     s1.classList.toggle('active', !showing1);
     s2.classList.toggle('active', showing1);
-    toggleBtn.textContent = showing1 ? 'Switch to Vector Diagram' : 'Switch to introduction';
+    toggleBtn.textContent = showing1 ? 'Switch to Introduction' : 'Switch to Vector Diagram';
     updateResultsDisplay();
     updateConversionDisplay();
   });
