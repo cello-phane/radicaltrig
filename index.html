@@ -1,387 +1,213 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>RAU Axis Reflection with Endpoint Labels</title>
-<style>
-  body {
-    background: #fff;
-    color: #222;
-    text-align: center;
-    font-family: monospace;
-    margin: 0;
-    padding: 10px;
-  }
-  canvas {
-    border: 1px solid #ccc;
-    margin-top: 10px;
-    border-radius: 8px;
-    background: #fff;
-  }
-  label { margin: 0 8px; }
-</style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Radical Angle Unit - Closed-form Trigonometry</title>
+<link rel="stylesheet" type="text/css" href="index.css">
+<!-- MathJax -->
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] },
+  svg: { fontCache: 'global' }
+};
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+
 </head>
 <body>
-<h2>RAU Axis Reflection — Symmetry Mapping</h2>
-<canvas id="canvas" width="500" height="500"></canvas>
-<br>
-<label>Phase:
-  <input type="range" id="slider" min="0" max="4" step="0.0005" value="0">
-</label>
-<label><input type="checkbox" id="auto" unchecked> Auto</label>
-<label>Speed:
-  <input type="range" id="speed" min="0.1" max="2" step="0.1" value="0.1">
-</label>
 
+<header>
+  <h1>Radical Angle Unit</h1>
+  <div class="top-controls">
+    <button id="toggleButton" class="toggle-btn">Switch to...</button>
+  </div>
+</header>
+
+<!-- Floating Formula Panel -->
+<div id="formulaPanel" aria-hidden="false">
+  <div id="formulaHeader" title="Click and hold to move around">
+    <div class="title">Information Sidebar</div>
+    <div class="chev" id="formulaChevron" title="Click to expand/collapse">◀</div>
+  </div>
+  <div id="formulaBody">
+  <button onclick="toggleMathBlock()">Show/Hide Formulas</button>
+
+    <div id="mathBlock" class="collapsed">
+      <p style="margin:0 0 8px 0; font-weight:600;">For parameter \(0.0 < t < 1.0\):</p>
+      <div>
+        \[
+        \mathrm{rsin}(t) \;=\; \frac{t}{\sqrt{\,1.0 - 2.0t + 2.0t^{2.0}\,}}
+        \]
+      </div>
+      <div>
+        \[
+        \mathrm{rcos}(t) \;=\; \frac{1.0 - t}{\sqrt{\,1.0 - 2.0t + 2.0t^{2.0}\,}}
+        \]
+      </div>
+      <div>
+        \[
+        \mathrm{rtan}(t) \;=\; \frac{t}{1.0 - t}
+        \]
+      </div>
+    </div>
+    
+    <strong>Vector Info</strong>
+    <button onclick="changeFontSize(2,'resultsContent')">+</button>
+    <button onclick="changeFontSize(-2,'resultsContent')">-</button>
+    <pre id="resultsContent" style="margin:0; font-family:monospace; font-size:13px; background:#fafafa; padding:8px; border-radius:6px;"></pre>
+      
+    <div class="control-group">
+      <label>Conversion Reference</label>
+      <input type="checkbox" id="showConversion">
+    </div>
+   
+    <div id="conversionPanel" class="conversion-panel">
+      <canvas id="conversionCanvas" width="280" height="220"></canvas>
+    </div>
+  </div>
+</div>
+  
+<div id="canvasContainer" style="width: 100%; max-width: 800px; margin: 0 auto;">
+<!-- Section 1: RAU Explanation -->
+<section id="section1" class="inactive">
+  <div class="card">
+    <h2 style="margin-top:6px;">Introduction</h2>
+    <div class="desc">
+      <strong>Quadrant-aware modular arithmetic</strong> RAU maps a linear parameter (0.0–4.0) to circle using integer and fractional parts.
+    </div>
+    <canvas id="vectorCanvas"></canvas>
+
+    <div class="controls" style="text-align:center;">
+      <label style="font-weight:700;">t parameter: <span id="paramValue">0.00</span></label><br>
+      <input type="range" id="paramSlider" min="0" max="4" step="0.01" value="0" />
+    </div>
+
+    <div style="margin-top:12px; background:#f5f5f5; padding:10px; border-radius:8px;">
+      <a href="https://www.youtube.com/watch?v=TJr4YfEgVuk">More Information</a><br />
+      <a href="https://cello-phane.github.io/radicaltrig/rau_rotating_axes.html">Rotating axes and circle symmetry</a>
+    </div>
+  </div>
+</section>
+
+<!-- Section 2: Vector Diagram -->
+<section id="section2" class="active">
+  <div class="card">
+    <h2 style="margin-top:6px;">Vector + Radical Angle Unit</h2>
+
+    <div class="vector-grid">
+      <canvas id="simpleCanvas"></canvas>
+
+      <div class="panel">
+        <div class="control-group">
+          <label for="uLength">u length:</label>
+          <input id="uLength" type="range" min="50" max="200" value="120">
+          <div class="value" id="uLengthVal">120</div>
+        </div>
+
+        <div class="control-group">
+          <label for="uAngle">u angle (°):</label>
+          <input id="uAngle" type="range" min="0" max="360" value="30">
+          <div class="value" id="uAngleVal">30°</div>
+        </div>
+
+        <div class="control-group">
+          <label for="vLength">v length:</label>
+          <input id="vLength" type="range" min="50" max="200" value="100">
+          <div class="value" id="vLengthVal">100</div>
+        </div>
+
+        <div class="control-group">
+          <label for="vAngle">v angle (°):</label>
+          <input id="vAngle" type="range" min="0" max="360" value="0">
+          <div class="value" id="vAngleVal">0°</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+</div>
 <script>
-const canvas = document.getElementById('canvas');
-const ctx = canvas.getContext('2d');
-const slider = document.getElementById('slider');
-const auto = document.getElementById('auto');
-const speedSlider = document.getElementById('speed');
-
-let t = 0, lastTime = 0;
-let selectedPoint = null;
-let hoveredPoint = null;
-const points = [];
-
-function getRAUComponents(f) {
-  const a = 1 - 2*f + 2*f*f;
-  const denom = 1 / Math.sqrt(a);
-  const c = (1 - f) * denom;
-  const s = f * denom;
-  return { c, s };
-}
-
-function getRotationComponents(param) {
-  if (typeof param !== "number") param = 0;
-
-  const absVal = Math.abs(param);
-  const quadrant = Math.floor(absVal) % 4;
-  const fraction = absVal - quadrant;
-
-  // RAU components
-  const { c: rauC, s: rauS } = getRAUComponents(fraction);
-  let c = rauC;
-  let s = rauS;
-
-  // Quadrant rotation
-  switch (quadrant) {
-    case 0:
-      break; // c,s stay
-    case 1:
-      [c, s] = [-s, c];
-      break;
-    case 2:
-      [c, s] = [-c, -s];
-      break;
-    case 3:
-      [c, s] = [s, -c];
-      break;
+// Global Utilities
+// ============================================
+  
+function setupResponsiveCanvas(canvasId, aspectRatio = 1, redrawCallback) {
+  const canvas = document.getElementById(canvasId);
+  const container = canvas.parentElement;
+  
+  function resize() {
+    canvas.width = container.clientWidth;
+    canvas.height = container.clientWidth * aspectRatio;
+    // Call the redraw callback after resize
+    if (redrawCallback) redrawCallback();
   }
-
-  // Preserve sign of original param
-  s *= Math.sign(param);
-
-  return { c, s, quadrant };
+  
+  window.addEventListener('resize', resize);
+  resize(); // Initial resize
 }
 
-function generateRAUPoints(cx, cy, radius, cos, sin) {
-  // Four endpoints with correct signs for cos/sin
-  const offsets = [
-    [ 1,  1, "#e74c3c", 0, "X"], // X+ endpoint
-    [-1, -1, "#e74c3c", 1, "X"], // X- endpoint
-    [ 1, -1, "#3498db", 2, "Y"], // Y+ endpoint
-    [-1,  1, "#3498db", 3, "Y"], // Y- endpoint
-  ];
-
-  return offsets.map(([cMul, sMul, color, id, axis]) => {
-    const x = cx + cMul * (axis === "X" ? cos : sin) * radius;
-    const y = cy - sMul * (axis === "X" ? sin : cos) * radius; // flip sin for canvas
-
-    const cosVal = (axis === "X" ? cMul * cos : cMul * sin).toFixed(3);
-    const sinVal = (axis === "X" ? sMul * sin : sMul * cos).toFixed(3);
-
-    return { x, y, color, cosVal, sinVal, id, axis };
-  });
+// Call for each canvas
+setupResponsiveCanvas('vectorCanvas', 0.642);
+setupResponsiveCanvas('simpleCanvas', 0.642);
+  
+function changeFontSize(changeAmount, id_name) {
+  let element = document.getElementById(id_name);
+  if (element) {
+    let currentSize = parseInt(element.style.fontSize) || 13;
+    let newSize = currentSize + changeAmount;
+    if (newSize < 8) newSize = 8;
+    element.style.fontSize = newSize + 'px';
+  }
 }
-  
-function calculateRelationship(p1, p2) {
-  // RAU parameters for each point (0-4 range)
-  const rauP1 = p1.id;
-  const rauP2 = p2.id;
-  
-  // For a cross (4 points), relationships are simple:
-  // Same axis (0-1 or 2-3): opposite, 2 quadrants (180°)
-  // Different axis (0-2, 0-3, 1-2, 1-3): adjacent, 1 quadrant (90°)
-  const sameAxis = (rauP1 < 2 && rauP2 < 2) || (rauP1 >= 2 && rauP2 >= 2);
-  const shift = sameAxis ? 2 : 1;
-  const amount = shift;
-  
-  // Direction: clockwise vs counter-clockwise
-  // Counter-clockwise: 0→2, 2→1, 1→3, 3→0
-  // Clockwise: 0→3, 3→1, 1→2, 2→0
-  const ccwPairs = [[0,2], [2,1], [1,3], [3,0]];
-  const isCounterClockwise = ccwPairs.some(pair => pair[0] === rauP1 && pair[1] === rauP2);
-  const direction = isCounterClockwise ? "counter-clockwise" : "clockwise";
-  
-  // Describe the coordinate transformation
-  const cos1 = parseFloat(p1.cosVal);
-  const sin1 = parseFloat(p1.sinVal);
-  const cos2 = parseFloat(p2.cosVal);
-  const sin2 = parseFloat(p2.sinVal);
-  
-  let transform = "";
-  
-  // Check for common transformations
-  if (Math.abs(cos1 - cos2) < 0.01 && Math.abs(sin1 + sin2) < 0.01) {
-    transform = `cos stays ${cos1.toFixed(2)}, sin → -sin`;
-  } else if (Math.abs(cos1 + cos2) < 0.01 && Math.abs(sin1 - sin2) < 0.01) {
-    transform = `cos → -cos, sin stays ${sin1.toFixed(2)}`;
-  } else if (Math.abs(cos1 - sin2) < 0.01 && Math.abs(sin1 - cos2) < 0.01) {
-    transform = `cos → sin, sin → cos`;
-  } else if (Math.abs(cos1 + sin2) < 0.01 && Math.abs(sin1 + cos2) < 0.01) {
-    transform = `cos → -sin, sin → -cos`;
-  } else if (Math.abs(cos1 + cos2) < 0.01 && Math.abs(sin1 + sin2) < 0.01) {
-    transform = `cos → -cos, sin → -sin`;
-  } else if (Math.abs(cos1 - sin2) < 0.01 && Math.abs(sin1 + cos2) < 0.01) {
-    transform = `cos → sin, sin → -cos`;
+
+function dragElement(elmnt) {
+  var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+  if (document.getElementById(elmnt.id + "header")) {
+    document.getElementById(elmnt.id + "header").onmousedown = dragMouseDown;
   } else {
-    transform = `(cos: ${cos1.toFixed(2)} → ${cos2.toFixed(2)}, sin: ${sin1.toFixed(2)} → ${sin2.toFixed(2)})`;
+    elmnt.onmousedown = dragMouseDown;
   }
-  
-  return { 
-    rauP1: rauP1.toFixed(1), 
-    rauP2: rauP2.toFixed(1),
-    shift: amount,
-    direction,
-    transform
-  };
+
+  function dragMouseDown(e) {
+    e = e || window.event;
+    e.preventDefault();
+    pos3 = e.clientX;
+    pos4 = e.clientY;
+    document.onmouseup = closeDragElement;
+    document.onmousemove = elementDrag;
+  }
+
+  function elementDrag(e) {
+    e = e || window.event;
+    e.preventDefault();
+    pos1 = pos3 - e.clientX;
+    pos2 = pos4 - e.clientY;
+    pos3 = e.clientX;
+    pos4 = e.clientY;
+    elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
+    elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
+  }
+
+  function closeDragElement() {
+    document.onmouseup = null;
+    document.onmousemove = null;
+  }
+
 }
-
-function drawAxes(param) {
-  const W = canvas.width, H = canvas.height;
-  const cx = W / 2, cy = H / 2, radius = 150;
-
-  ctx.clearRect(0, 0, W, H);
-
-  // --- Grid ---
-  ctx.strokeStyle = "#f0f0f0";
-  ctx.lineWidth = 1;
-  for (let i = -4; i <= 4; i++) {
-    ctx.beginPath();
-    ctx.moveTo(0, cy + i * 40);
-    ctx.lineTo(W, cy + i * 40);
-    ctx.stroke();
-
-    ctx.beginPath();
-    ctx.moveTo(cx + i * 40, 0);
-    ctx.lineTo(cx + i * 40, H);
-    ctx.stroke();
-  }
-
-  // --- Circle ---
-  ctx.strokeStyle = "#ddd";
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  ctx.arc(cx, cy, radius, 0, Math.PI * 2);
-  ctx.stroke();
-
-  // --- Rotation ---
-  const { c, s } = getRotationComponents(param % 4);
-  const cos = typeof c === "number" ? c : 0;
-  const sin = typeof s === "number" ? s : 0;
-
-  // --- Generate points ---
-  points.length = 0;
-  points.push(...generateRAUPoints(cx, cy, radius, cos, sin));
-
-  // --- Draw axes dynamically ---
-  const axes = { "X": [], "Y": [] };
-  points.forEach(p => axes[p.axis].push(p));
-
-  for (const axis in axes) {
-    const [p1, p2] = axes[axis];
-    ctx.strokeStyle = p1.color;
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    ctx.moveTo(p1.x, p1.y);
-    ctx.lineTo(p2.x, p2.y);
-    ctx.stroke();
-  }
-
-  // --- Connection line ---
-  if (selectedPoint !== null && hoveredPoint !== null && selectedPoint !== hoveredPoint) {
-    ctx.strokeStyle = "rgba(100,100,100,0.5)";
-    ctx.lineWidth = 2;
-    ctx.setLineDash([5, 5]);
-    ctx.beginPath();
-    ctx.moveTo(points[selectedPoint].x, points[selectedPoint].y);
-    ctx.lineTo(points[hoveredPoint].x, points[hoveredPoint].y);
-    ctx.stroke();
-    ctx.setLineDash([]);
-  }
-
-  // --- Draw points ---
-  points.forEach((p, idx) => {
-    const isSelected = selectedPoint === idx;
-    const isHovered = hoveredPoint === idx;
-
-    ctx.fillStyle = p.color;
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, isSelected ? 10 : isHovered ? 8 : 6, 0, Math.PI * 2);
-    ctx.fill();
-
-    if (isSelected) {
-      ctx.strokeStyle = "#000";
-      ctx.lineWidth = 2;
-      ctx.stroke();
-    }
-  });
-
-  // --- Labels with hover/selection coloring ---
-  const labelOffset = 50;
-
-  points.forEach(p => {
-    const dx = p.x - cx;
-    const dy = p.y - cy;
-    const dist = Math.sqrt(dx * dx + dy * dy);
-    const dirX = dx / dist;
-    const dirY = dy / dist;
-    const labelX = p.x + dirX * labelOffset;
-    const labelY = p.y + dirY * labelOffset;
-
-    let cosColor = "#e74c3c";
-    let sinColor = "#3498db";
-
-    if (selectedPoint !== null && hoveredPoint !== null && selectedPoint !== hoveredPoint) {
-      const sel = points[selectedPoint];
-      const hov = points[hoveredPoint];
-      const cosP = parseFloat(p.cosVal);
-      const sinP = parseFloat(p.sinVal);
-      const cosSel = parseFloat(sel.cosVal);
-      const sinSel = parseFloat(sel.sinVal);
-      const cosHov = parseFloat(hov.cosVal);
-      const sinHov = parseFloat(hov.sinVal);
-
-      if (p.id === selectedPoint) {
-        if (Math.abs(Math.abs(cosP) - Math.abs(cosHov)) < 0.01) {
-          cosColor = "#27ae60";
-        } else if (Math.abs(Math.abs(cosP) - Math.abs(sinHov)) < 0.01) {
-          cosColor = "#9b59b6";
-        }
-        
-        if (Math.abs(Math.abs(sinP) - Math.abs(sinHov)) < 0.01) {
-          sinColor = "#27ae60";
-        } else if (Math.abs(Math.abs(sinP) - Math.abs(cosHov)) < 0.01) {
-          sinColor = "#f39c12";
-        }
-      } else if (p.id === hoveredPoint) {
-        if (Math.abs(Math.abs(cosP) - Math.abs(cosSel)) < 0.01) {
-          cosColor = "#27ae60";
-        } else if (Math.abs(Math.abs(cosP) - Math.abs(sinSel)) < 0.01) {
-          cosColor = "#9b59b6";
-        }
-        
-        if (Math.abs(Math.abs(sinP) - Math.abs(sinSel)) < 0.01) {
-          sinColor = "#27ae60";
-        } else if (Math.abs(Math.abs(sinP) - Math.abs(cosSel)) < 0.01) {
-          sinColor = "#f39c12";
-        }
-      }
-    }
-
-    ctx.font = "bold 12px monospace";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-
-    ctx.fillStyle = cosColor;
-    ctx.fillText(`cos: ${p.cosVal}`, labelX, labelY - 8);
-
-    ctx.fillStyle = sinColor;
-    ctx.fillText(`sin: ${p.sinVal}`, labelX, labelY + 8);
-  });
-
-  // --- Center ---
-  ctx.fillStyle = "#999";
-  ctx.beginPath();
-  ctx.arc(cx, cy, 3, 0, Math.PI * 2);
-  ctx.fill();
-
-  // --- Info ---
-  ctx.fillStyle = "#000";
-  ctx.font = "14px monospace";
-  ctx.textAlign = "left";
-  ctx.fillText(`RAU param: ${param.toFixed(3)}`, 15, 25);
-
-  if (selectedPoint !== null && hoveredPoint !== null && selectedPoint !== hoveredPoint) {
-    const rel = calculateRelationship(points[selectedPoint], points[hoveredPoint]);
-    ctx.font = "12px monospace";
-    ctx.fillStyle = "#333";
-    ctx.fillText(`RAU Point ${rel.rauP1} → RAU Point ${rel.rauP2}`, 15, 45);
-    ctx.fillText(`Shift: ${rel.shift} quadrant(s) ${rel.direction}`, 15, 60);
-    ctx.fillText(`Transform: ${rel.transform}`, 15, 75);
+function toggleMathBlock() {
+  const mathBlock = document.getElementById('mathBlock');
+  if (mathBlock.classList.contains('collapsed')) {
+    mathBlock.classList.remove('collapsed');
+    mathBlock.style.maxHeight = mathBlock.scrollHeight + 'px';
+  } else {
+    mathBlock.style.maxHeight = '0';
+    mathBlock.classList.add('collapsed');
   }
 }
-
-function animate(timestamp) {
-  if (!lastTime) lastTime = timestamp;
-  const dt = (timestamp - lastTime) / 1000;
-  lastTime = timestamp;
-
-  if (auto.checked) {
-    const speed = parseFloat(speedSlider.value);
-    t = (t + dt * speed) % 4;
-    slider.value = t;
-  }
-
-  drawAxes(t);
-  requestAnimationFrame(animate);
-}
-
-slider.addEventListener('input', () => {
-  t = parseFloat(slider.value);
-  drawAxes(t);
-});
-
-canvas.addEventListener('click', e => {
-  const rect = canvas.getBoundingClientRect();
-  const mouseX = e.clientX - rect.left;
-  const mouseY = e.clientY - rect.top;
-
-  for (let i = 0; i < points.length; i++) {
-    const dx = mouseX - points[i].x;
-    const dy = mouseY - points[i].y;
-    if (Math.sqrt(dx * dx + dy * dy) < 15) {
-      selectedPoint = selectedPoint === i ? null : i;
-      break;
-    }
-  }
-});
-
-canvas.addEventListener('mousemove', e => {
-  const rect = canvas.getBoundingClientRect();
-  const mouseX = e.clientX - rect.left;
-  const mouseY = e.clientY - rect.top;
-
-  hoveredPoint = null;
-  for (let i = 0; i < points.length; i++) {
-    const dx = mouseX - points[i].x;
-    const dy = mouseY - points[i].y;
-    if (Math.sqrt(dx * dx + dy * dy) < 15) {
-      hoveredPoint = i;
-      canvas.style.cursor = 'pointer';
-      break;
-    }
-  }
-
-  if (hoveredPoint === null) canvas.style.cursor = 'default';
-});
-
-canvas.addEventListener('mouseleave', () => hoveredPoint = null);
-
-drawAxes(t);
-requestAnimationFrame(animate);
 </script>
+  
+<!-- Load external JavaScript -->
+<script src="rau-viz.js"></script>
+
 </body>
 </html>
