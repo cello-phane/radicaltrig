@@ -306,14 +306,16 @@ document.addEventListener('DOMContentLoaded', () => {
       ctx.strokeStyle = '#888';
       ctx.lineWidth = 1;
       ctx.beginPath();
-      ctx.moveTo(cx + radius, cy);
+      //
+      ctx.moveTo(cx + radius*2.0, cy);
       ctx.lineTo(cx, cy - radius);
-      ctx.moveTo(cx, cy - radius);
+      ctx.moveTo(cx, cy - radius*2.0);
       ctx.lineTo(cx - radius, cy);
-      ctx.moveTo(cx - radius, cy);
+      ctx.moveTo(cx - radius*2.0, cy);
       ctx.lineTo(cx, cy + radius);
-      ctx.moveTo(cx, cy + radius);
+      ctx.moveTo(cx, cy + radius*2.0);
       ctx.lineTo(cx + radius, cy);
+      //
       ctx.stroke();
       ctx.setLineDash([]);
       ctx.restore();
