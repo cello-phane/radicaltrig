@@ -9,7 +9,7 @@ let currentV = { x: 100, y: 0 };
 // ============================================
 // RAU Math Functions
 // ============================================
-function radicalSineGlobal(t) {
+function radicalSine(t) {
   t = t % 4;
   const quadrant = Math.floor(t);
   const lt = t - quadrant;
@@ -22,7 +22,7 @@ function radicalSineGlobal(t) {
   }
 }
 
-function radicalCosineGlobal(t) {
+function radicalCosine(t) {
   t = t % 4;
   const quadrant = Math.floor(t);
   const lt = t - quadrant;
@@ -35,7 +35,7 @@ function radicalCosineGlobal(t) {
   }
 }
 
-function radicalTanGlobal(t) {
+function radicalTan(t) {
   t = ((t % 4) + 4) % 4;
   const q = Math.floor(t);
   const f = t - q;
@@ -43,7 +43,20 @@ function radicalTanGlobal(t) {
   const base = f / (1.0 - f);
   return (q === 1 || q === 3) ? -1.0 / base : base;
 }
+function degToRad(deg) { return deg * Math.PI/180; }
 
+function radToDeg(rad) { return rad*180/Math.PI; }
+
+function atanVec(u,v) {
+  const mix = (a, b, c) => c ? b : a;
+  const cross = u.x * v.y - u.y * v.x;
+  const dot = u.x * v.x + u.y * v.y;
+  let angle = Math.abs(cross) / (Math.abs(dot) + Math.abs(cross));
+  const q4fix = mix(Math.sign(cross) * angle, 4.0 - angle, dot > 0 && cross < 0);
+  const qblend = mix(mix(q4fix, angle, cross > dot), angle + 1.0, cross < 0 && dot < 0);
+  const halfrot = mix(2.0 - angle, angle + 2.0, cross < 0);
+  return mix(qblend, halfrot, dot < 0);
+}
 // ============================================
 // Display Update Function
 // ============================================
@@ -55,9 +68,9 @@ function updateResultsDisplay() {
   if (isSection1Active) {
     // Section 1: Only show RAU phase and trig values
     const phase = currentPhaseSection1;
-    const rauSin = radicalSineGlobal(phase);
-    const rauCos = radicalCosineGlobal(phase);
-    const rauTan = radicalTanGlobal(phase);
+    const rauSin = radicalSine(phase);
+    const rauCos = radicalCosine(phase);
+    const rauTan = radicalTan(phase);
     const rauRad = (phase / 4) * 2.0 * Math.PI;
     const rauDeg = (phase / 4) * 360;
     
@@ -74,9 +87,9 @@ cos(θ) = ${rauCos.toFixed(3)}`;
     const v = currentV;
     const cross = u.x * v.y - u.y * v.x;
     const dot = u.x * v.x + u.y * v.y;
-    const rauSin = radicalSineGlobal(phase);
-    const rauCos = radicalCosineGlobal(phase);
-    const rauTan = radicalTanGlobal(phase);
+    const rauSin = radicalSine(phase);
+    const rauCos = radicalCosine(phase);
+    const rauTan = radicalTan(phase);
     const rauRad = (phase / 4) * 2.0 * Math.PI;
     const rauDeg = (phase / 4) * 360;
     
@@ -96,14 +109,13 @@ cos(θ) = ${rauCos.toFixed(3)}`;
   }
 }
 
-  // ============================================
-  // Conversion Diagram
-  // ============================================
-  const convCanvas = document.getElementById("conversionCanvas");
-  const convCtx = convCanvas.getContext("2d");
-  const convPanel = document.getElementById("conversionPanel");
-  const showConv = document.getElementById("showConversion");
-
+// ============================================
+// Conversion Diagram
+// ============================================
+const convCanvas = document.getElementById("conversionCanvas");
+const convCtx = convCanvas.getContext("2d");
+const convPanel = document.getElementById("conversionPanel");
+const showConv = document.getElementById("showConversion");
 
 function drawConversionDiagram(rauPhase) {
     const ctx = convCtx;
@@ -154,16 +166,16 @@ function drawConversionDiagram(rauPhase) {
     ctx.beginPath();
     ctx.arc(px, py, 6, 0, 2*Math.PI);
     ctx.fill();
+}
+function updateConversionDisplay() {
+  const s1 = document.getElementById('section1');
+  const isSection1Active = s1.classList.contains('active');
+  const phase = isSection1Active ? currentPhaseSection1 : currentPhaseSection2;
+  const showConv = document.getElementById('showConversion');
+  if (showConv.checked) {
+    drawConversionDiagram(phase);
   }
-  function updateConversionDisplay() {
-    const s1 = document.getElementById('section1');
-    const isSection1Active = s1.classList.contains('active');
-    const phase = isSection1Active ? currentPhaseSection1 : currentPhaseSection2;
-    const showConv = document.getElementById('showConversion');
-    if (showConv.checked) {
-      drawConversionDiagram(phase);
-    }
-  }
+}
 
 function resizeConversionCanvas() {
   const canvas = document.getElementById('conversionCanvas');
@@ -306,16 +318,16 @@ document.addEventListener('DOMContentLoaded', () => {
       ctx.strokeStyle = '#888';
       ctx.lineWidth = 1;
       ctx.beginPath();
-      //
-      ctx.moveTo(cx + radius*2.0, cy);
-      ctx.lineTo(cx, cy - radius*2.0);
-      ctx.moveTo(cx, cy - radius*2.0);
-      ctx.lineTo(cx - radius*2.0, cy);
-      ctx.moveTo(cx - radius*2.0, cy);
-      ctx.lineTo(cx, cy + radius*2.0);
-      ctx.moveTo(cx, cy + radius*2.0);
-      ctx.lineTo(cx + radius*2.0, cy);
-      //
+
+      ctx.moveTo(cx + radius, cy);
+      ctx.lineTo(cx, cy - radius);
+      ctx.moveTo(cx, cy - radius);
+      ctx.lineTo(cx - radius, cy);
+      ctx.moveTo(cx - radius, cy);
+      ctx.lineTo(cx, cy + radius);
+      ctx.moveTo(cx, cy + radius);
+      ctx.lineTo(cx + radius, cy);
+
       ctx.stroke();
       ctx.setLineDash([]);
       ctx.restore();
@@ -385,10 +397,7 @@ document.addEventListener('DOMContentLoaded', () => {
       vLength: document.getElementById('vLength'),
       vAngle: document.getElementById('vAngle')
     };
-    
-    function degToRad(deg) { return deg * Math.PI/180; }
-    function radToDeg(rad) { return rad*180/Math.PI; }
-    
+
     function drawArrow(ctx, fromX, fromY, toX, toY, color, width=2){
       const headLen = 12;
       const dx = toX - fromX, dy = toY - fromY;
@@ -429,44 +438,7 @@ document.addEventListener('DOMContentLoaded', () => {
       ctx.moveTo(0, centerY); ctx.lineTo(width, centerY);
       ctx.stroke();
     }
-    
-    function radicalSine(t){
-      t = t % 4;
-      const quadrant = Math.floor(t);
-      const lt = t - quadrant;
-      const a = 1 - 2*lt + 2*lt*lt;
-      switch(quadrant){
-        case 0: return lt/Math.sqrt(a);
-        case 1: return (1-lt)/Math.sqrt(a);
-        case 2: return -lt/Math.sqrt(a);
-        case 3: return -(1-lt)/Math.sqrt(a);
-      }
-    }
-    
-    function radicalCosine(t){
-      t = t % 4;
-      const quadrant = Math.floor(t);
-      const lt = t - quadrant;
-      const a = 1 - 2*lt + 2*lt*lt;
-      switch(quadrant){
-        case 0: return (1-lt)/Math.sqrt(a);
-        case 1: return -lt/Math.sqrt(a);
-        case 2: return -(1-lt)/Math.sqrt(a);
-        case 3: return lt/Math.sqrt(a);
-      }
-    }
 
-    function atanVec(u,v) {
-      const mix = (a, b, c) => c ? b : a;
-      const cross = u.x * v.y - u.y * v.x;
-      const dot = u.x * v.x + u.y * v.y;
-      let angle = Math.abs(cross) / (Math.abs(dot) + Math.abs(cross));
-      const q4fix = mix(Math.sign(cross) * angle, 4.0 - angle, dot > 0 && cross < 0);
-      const qblend = mix(mix(q4fix, angle, cross > dot), angle + 1.0, cross < 0 && dot < 0);
-      const halfrot = mix(2.0 - angle, angle + 2.0, cross < 0);
-      return mix(qblend, halfrot, dot < 0);
-    }
-    
     function drawChordConnection(ctx, u, v, radius) {
       const uMag = Math.sqrt(u.x*u.x + u.y*u.y);
       const vMag = Math.sqrt(v.x*v.x + v.y*v.y);
