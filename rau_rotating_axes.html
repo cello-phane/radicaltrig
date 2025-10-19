@@ -30,7 +30,7 @@
 </label>
 <label><input type="checkbox" id="auto" checked> Auto</label>
 <label>Speed:
-  <input type="range" id="speed" min="0.1" max="2" step="0.1" value="0.25">
+  <input type="range" id="speed" min="0.1" max="2" step="0.1" value="0.15">
 </label>
 
 <script>
@@ -41,6 +41,9 @@ const auto = document.getElementById('auto');
 const speedSlider = document.getElementById('speed');
 
 let t = 0, lastTime = 0;
+let selectedPoint = null;
+let hoveredPoint = null;
+const points = [];
 
 function getRAUComponents(f) {
   const a = 1 - 2*f + 2*f*f;
@@ -61,6 +64,33 @@ function getRotationComponents(param) {
   if (quadrant === 2) { cos = -c; sin = -s; }
   if (quadrant === 3) { cos = s; sin = -c; }
   return { cos, sin, quadrant };
+}
+
+function calculateRelationship(p1, p2) {
+  // Angle between points
+  const dx = p2.x - p1.x;
+  const dy = p2.y - p1.y;
+  const distance = Math.sqrt(dx*dx + dy*dy);
+  const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+  
+  // Determine relationship type
+  let relationship = "unknown";
+  const cosDiff = Math.abs(parseFloat(p1.cosVal) - parseFloat(p2.cosVal));
+  const sinDiff = Math.abs(parseFloat(p1.sinVal) - parseFloat(p2.sinVal));
+  
+  if (cosDiff < 0.01 && sinDiff < 0.01) {
+    relationship = "same point";
+  } else if (cosDiff < 0.01) {
+    relationship = "reflected (cos)";
+  } else if (sinDiff < 0.01) {
+    relationship = "reflected (sin)";
+  } else if (p1.color === p2.color) {
+    relationship = "opposite (180°)";
+  } else {
+    relationship = "perpendicular (90°)";
+  }
+  
+  return { angle: angle.toFixed(1), distance: distance.toFixed(1), relationship };
 }
 
 function drawAxes(param) {
@@ -99,29 +129,36 @@ function drawAxes(param) {
     y: cy - sin*radius, 
     color: "#e74c3c",
     cosVal: cos.toFixed(3),
-    sinVal: sin.toFixed(3)
+    sinVal: sin.toFixed(3),
+    id: 0
   };
   const p2 = { 
     x: cx - cos*radius, 
     y: cy + sin*radius, 
     color: "#e74c3c",
     cosVal: (-cos).toFixed(3),
-    sinVal: (-sin).toFixed(3)
+    sinVal: (-sin).toFixed(3),
+    id: 1
   };
   const p3 = { 
     x: cx + sin*radius, 
     y: cy + cos*radius, 
     color: "#3498db",
     cosVal: sin.toFixed(3),
-    sinVal: cos.toFixed(3)
+    sinVal: cos.toFixed(3),
+    id: 2
   };
   const p4 = { 
     x: cx - sin*radius, 
     y: cy - cos*radius, 
     color: "#3498db",
     cosVal: (-sin).toFixed(3),
-    sinVal: (-cos).toFixed(3)
+    sinVal: (-cos).toFixed(3),
+    id: 3
   };
+  
+  points.length = 0;
+  points.push(p1, p2, p3, p4);
   
   // X-axis line (red)
   ctx.strokeStyle = "#e74c3c";
@@ -139,26 +176,45 @@ function drawAxes(param) {
   ctx.lineTo(p3.x, p3.y);
   ctx.stroke();
   
+  // Draw connection line if selected and hovering
+  if (selectedPoint !== null && hoveredPoint !== null && selectedPoint !== hoveredPoint) {
+    ctx.strokeStyle = "rgba(100, 100, 100, 0.5)";
+    ctx.lineWidth = 2;
+    ctx.setLineDash([5, 5]);
+    ctx.beginPath();
+    ctx.moveTo(points[selectedPoint].x, points[selectedPoint].y);
+    ctx.lineTo(points[hoveredPoint].x, points[hoveredPoint].y);
+    ctx.stroke();
+    ctx.setLineDash([]);
+  }
+  
   // Draw points
-  [p1, p2, p3, p4].forEach(p => {
+  [p1, p2, p3, p4].forEach((p, idx) => {
+    const isSelected = selectedPoint === idx;
+    const isHovered = hoveredPoint === idx;
+    
     ctx.fillStyle = p.color;
     ctx.beginPath();
-    ctx.arc(p.x, p.y, 6, 0, Math.PI*2);
+    ctx.arc(p.x, p.y, isSelected ? 10 : (isHovered ? 8 : 6), 0, Math.PI*2);
     ctx.fill();
+    
+    if (isSelected) {
+      ctx.strokeStyle = "#000";
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    }
   });
   
   // Position labels outside the circle
   const labelOffset = 50;
   
   [p1, p2, p3, p4].forEach(p => {
-    // Direction from center to point
     const dx = p.x - cx;
     const dy = p.y - cy;
     const dist = Math.sqrt(dx*dx + dy*dy);
     const dirX = dx / dist;
     const dirY = dy / dist;
     
-    // Place label outside the point
     const labelX = p.x + dirX * labelOffset;
     const labelY = p.y + dirY * labelOffset;
     
@@ -181,6 +237,15 @@ function drawAxes(param) {
   ctx.font = "14px monospace";
   ctx.textAlign = "left";
   ctx.fillText(`RAU param: ${param.toFixed(3)}`, 15, 25);
+  
+  // Show relationship info
+  if (selectedPoint !== null && hoveredPoint !== null && selectedPoint !== hoveredPoint) {
+    const rel = calculateRelationship(points[selectedPoint], points[hoveredPoint]);
+    ctx.font = "12px monospace";
+    ctx.fillStyle = "#333";
+    ctx.fillText(`Angle: ${rel.angle}°  Distance: ${rel.distance}`, 15, 45);
+    ctx.fillText(`Relationship: ${rel.relationship}`, 15, 60);
+  }
 }
 
 function animate(timestamp) {
@@ -201,6 +266,47 @@ function animate(timestamp) {
 slider.addEventListener('input', () => {
   t = parseFloat(slider.value);
   drawAxes(t);
+});
+
+// Mouse click to select point
+canvas.addEventListener('click', (e) => {
+  const rect = canvas.getBoundingClientRect();
+  const mouseX = e.clientX - rect.left;
+  const mouseY = e.clientY - rect.top;
+  
+  for (let i = 0; i < points.length; i++) {
+    const dx = mouseX - points[i].x;
+    const dy = mouseY - points[i].y;
+    const dist = Math.sqrt(dx*dx + dy*dy);
+    if (dist < 15) {
+      selectedPoint = selectedPoint === i ? null : i;
+      break;
+    }
+  }
+});
+
+// Mouse move to hover over points
+canvas.addEventListener('mousemove', (e) => {
+  const rect = canvas.getBoundingClientRect();
+  const mouseX = e.clientX - rect.left;
+  const mouseY = e.clientY - rect.top;
+  
+  hoveredPoint = null;
+  for (let i = 0; i < points.length; i++) {
+    const dx = mouseX - points[i].x;
+    const dy = mouseY - points[i].y;
+    const dist = Math.sqrt(dx*dx + dy*dy);
+    if (dist < 15) {
+      hoveredPoint = i;
+      canvas.style.cursor = 'pointer';
+      break;
+    }
+  }
+  if (hoveredPoint === null) canvas.style.cursor = 'default';
+});
+
+canvas.addEventListener('mouseleave', () => {
+  hoveredPoint = null;
 });
 
 drawAxes(t);
