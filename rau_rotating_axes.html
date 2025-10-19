@@ -58,13 +58,13 @@ function getRotationComponents(param) {
   const quadrant = Math.floor(absVal) % 4;
   const fraction = absVal - quadrant;
   const { c, s } = getRAUComponents(fraction);
-  let cos = 0, sin = 0;
-  if (quadrant === 0) { cos = c; sin = s; }
-  if (quadrant === 1) { cos = -s; sin = c; }
-  if (quadrant === 2) { cos = -c; sin = -s; }
-  if (quadrant === 3) { cos = s; sin = -c; }
-  sin = Math.sign(param) * sin;
-  return { cos, sin, quadrant };
+  float q0 = (quadrant === 0);
+  float q1 = (quadrant === 1);
+  float q2 = (quadrant === 2);
+  float q3 = (quadrant === 3);
+  c = c*q0-s*q1-c*q2​+s*q3​;
+  s = (s*q0​+c*q1​-s*q2​-c*q3​)*Math.sign(t);
+  return { c, s, quadrant };
 }
 
 function calculateRelationship(p1, p2) {
