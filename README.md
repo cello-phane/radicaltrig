@@ -1,5 +1,5 @@
 # radicaltrig
-Radical Angle Units for a formula to compute sin(angle) and cos(angle)
+Radical Angle Units for a formula to compute sin(angle) and cos(angle)  
 <img width="424" height="217" alt="image" src="https://github.com/user-attachments/assets/bfd17458-9a9a-40ed-b22f-305bd0e7a4f8" />
 
 ## GPU shaders that use radical angle units for rotation:
@@ -13,9 +13,11 @@ https://www.shadertoy.com/view/wcXyzB (3D demo that uses traditional sin/cos)
 https://cello-phane.github.io/radicaltrig/rau_rotating_axes.html
 After a 90 degree sweep, every point(all 4) has sweeped the circle, which is why this system works.
 ```
-After a 90° sweep, every point (all 4 quadrants) completes one full rotation around the circle — which is why this system works.
+After a 90° sweep, every point (all 4 quadrants) completes one full
+rotation around the circle — which is why this system works.
 Since the formula for t covers only a quarter of a circle (1.0),
-we define the Radical Angle Unit (RAU) to be periodic by using an integer 0,1,2,3 combined with mod 4 arithmetic(the % operator).
+we define the Radical Angle Unit (RAU) to be periodic by using an
+integer 0, 1, 2, and 3 combined with mod 4 arithmetic(the % operator).
 
 c = x coordinate
 s = y coordinate
