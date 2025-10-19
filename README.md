@@ -9,6 +9,7 @@ https://www.shadertoy.com/view/WXVXDR (3D demo that uses radical trig)
 https://www.shadertoy.com/view/wcXyzB (3D demo that uses traditional sin/cos)
 
 ## Explanation of the handrolled periodicity/continuity:
+https://cello-phane.github.io/radicaltrig/rau_rotating_axes.html
 ```
 Since the formula for t is for a quarter of a circle(1.0) we have to make the radical angle unit
 periodic covering 4.0 in the cartersian coordinate system.
