@@ -10,7 +10,7 @@ https://www.shadertoy.com/view/wcXyzB (3D demo that uses traditional sin/cos)
 
 ## Explanation of the handrolled periodicity/continuity:
 ```
-Since the formula for t is for a quarter of a circle(1.0) we have to make the angle t
+Since the formula for t is for a quarter of a circle(1.0) we have to make the radical angle unit
 periodic covering 4.0 in the cartersian coordinate system.
 
 c = x coordinate
