@@ -63,7 +63,7 @@ function getRotationComponents(param) {
   if (quadrant === 1) { cos = -s; sin = c; }
   if (quadrant === 2) { cos = -c; sin = -s; }
   if (quadrant === 3) { cos = s; sin = -c; }
-  return { cos, sin, quadrant };
+  return { cos, Math.sign(param)*sin, quadrant };
 }
 
 function calculateRelationship(p1, p2) {
