@@ -2,14 +2,6 @@
 Radical Angle Units for a formula to compute sin(angle) and cos(angle)  
 <img width="424" height="217" alt="image" src="https://github.com/user-attachments/assets/bfd17458-9a9a-40ed-b22f-305bd0e7a4f8" />
 
-## GPU shaders that use radical angle units for rotation:
-
-https://www.shadertoy.com/view/M3cfRN (2D demo that uses both kinds of trig (blue and pink))
-
-https://www.shadertoy.com/view/WXVXDR (3D demo that uses radical trig)  
-
-https://www.shadertoy.com/view/wcXyzB (3D demo that uses traditional sin/cos)
-
 ## Explanation of the handrolled periodicity/continuity:
 https://cello-phane.github.io/radicaltrig/rau_rotating_axes.html
 After a 90 degree sweep, every point(all 4) has swept the circle, which is why this system works.
@@ -52,5 +44,13 @@ c = cos(0.5)  0.5/sqrt(1-2*0.5+2*(0.5^2)) =        sqrt(2)/2
 cos = cx0 - sx1 - cx0 + sx0 = -s                       ||                 
 s = sin(0.5)  (1.0-0.5)/sqrt(1-2*0.5+2*(0.5^2)) =  sqrt(2)/2       Point (-s, +c)
 sin = (sx0 + cx1 - sx0 - cx0) x (+1) = +c        Point(cos,sin) = (-0.707106, 0.707106)
-```   
+```
+## GPU shaders and other things that use radical angle units for rotation:
+
+https://www.shadertoy.com/view/M3cfRN (2D demo that uses both kinds of trig (blue and pink))
+
+https://www.shadertoy.com/view/WXVXDR (3D demo that uses radical trig)  
+
+https://www.shadertoy.com/view/wcXyzB (3D demo that uses traditional sin/cos)
+
 https://www.geogebra.org/classic/tepm6wcn - Geogebra applet(if you like graphing calculators instead)
