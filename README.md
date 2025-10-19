@@ -34,7 +34,7 @@ For every Point(x,y)
 └───────────────────────────────────────────────────┘
 So the algorithm(for the coordinates) for any parameter 0.0 - 4.0:      
 Q0: 0 ≤ t < 1	both stay +	 (+c, +s) | 0°–90°
-Q1:	1 ≤ t < 2	mirror X↔Y	 (-s, +c) | 90°–180° 
+Q1:	1 ≤ t < 2	mirror X↔Y	  (-s, +c) | 90°–180° 
 Q2:	2 ≤ t < 3	both negated (-c, -s) | 180°–270°
 Q3:	3 ≤ t < 4	mirror X↔Y 	 (+s, -c) | 270°–360°
 
@@ -42,15 +42,15 @@ Make the parameter % 4 minus fraction(after decimal point)
 equal q# integer for each quadrant.
 For every integer q# as boolean q0==0, q1==1, q2==2, q3==3
 that becomes 0.0(false) or 1.0(true) for every quadrant 0-3.
-c = c x q0​ - s x q1​ - c x q2 + s x q3​
-s = (s x q0 + c x q1​ - s x q2​ - c x q3​) x sign(parameter)​  ----> Point(c,s)
+cos = c x q0​ - s x q1​ - c x q2 + s x q3​
+sin = (s x q0 + c x q1​ - s x q2​ - c x q3​) x sign(parameter)​  ----> Point(c,s)
 
 
 #An example with 135 degrees
 1.5 radical angle unit === 135 deg
  1.5 - 0.5 = 1 so mapped to Q1
 c = cos(0.5)  0.5/sqrt(1-2*0.5+2*(0.5^2)) =      sqrt(2)/2
-c = cx0 - sx1 - cx0 + sx0 = -s                      ||         Point
-s = sin(0.5)  1.0-0.5)/sqrt(1-2*0.5+2*(0.5^2))   sqrt(2)/2     (-0.707106, 0.707106)
-s = (sx0 + cx1 - sx0 - cx0) x (+1) = +c                        (-s, +c) | 90°–180°
+cos = cx0 - sx1 - cx0 + sx0 = -s                      ||                Point
+s = sin(0.5)  1.0-0.5)/sqrt(1-2*0.5+2*(0.5^2))   sqrt(2)/2       (-0.707106, 0.707106)
+sin = (sx0 + cx1 - sx0 - cx0) x (+1) = +c                        (-s, +c) | 90°–180°
 ```
