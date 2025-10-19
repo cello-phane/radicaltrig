@@ -1,5 +1,6 @@
 # radicaltrig
 Radical Angle Units for a formula to compute sin(angle) and cos(angle)
+<img width="424" height="217" alt="image" src="https://github.com/user-attachments/assets/bfd17458-9a9a-40ed-b22f-305bd0e7a4f8" />
 
 ## GPU shaders that use radical angle units for rotation:
 
@@ -39,4 +40,13 @@ For every integer q# as boolean q0==0, q1==1, q2==2, q3==3
 that becomes 0.0(false) or 1.0(true) for every quadrant 0-3.
 c = c x q0​ - s x q1​ - c x q2 + s x q3​
 s = (s x q0 + c x q1​ - s x q2​ - c x q3​) x sign(parameter)​  ----> Point(c,s)
+
+
+#An example with 135 degrees
+1.5 radical angle unit === 135 deg
+ 1.5 - 0.5 = 1 so mapped to Q1
+c = cos(0.5)  0.5/sqrt(1-2*0.5+2*(0.5^2)) =      sqrt(2)/2
+c = cx0 - sx1 - cx0 + sx0 = -s                      ||         Point
+s = sin(0.5)  1.0-0.5)/sqrt(1-2*0.5+2*(0.5^2))   sqrt(2)/2     (-0.707106, 0.707106)
+s = (sx0 + cx1 - sx0 - cx0) x (+1) = +c                        (-s, +c) | 90°–180°
 ```
