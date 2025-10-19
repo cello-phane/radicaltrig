@@ -54,38 +54,20 @@ function getRAUComponents(f) {
 }
 
 function getRotationComponents(param) {
-  if (typeof param !== "number") param = 0;
-
   const absVal = Math.abs(param);
   const quadrant = Math.floor(absVal) % 4;
   const fraction = absVal - quadrant;
+  const { c, s } = getRAUComponents(fraction);
 
-  // RAU components
-  const { c: rauC, s: rauS } = getRAUComponents(fraction);
-  let c = rauC;
-  let s = rauS;
+  let cos = 0, sin = 0;
+  if (quadrant === 0) { cos = c; sin = s; }
+  if (quadrant === 1) { cos = -s; sin = c; }
+  if (quadrant === 2) { cos = -c; sin = -s; }
+  if (quadrant === 3) { cos = s; sin = -c; }
 
-  // Quadrant rotation
-  switch (quadrant) {
-    case 0:
-      break; // c,s stay
-    case 1:
-      [c, s] = [-s, c];
-      break;
-    case 2:
-      [c, s] = [-c, -s];
-      break;
-    case 3:
-      [c, s] = [s, -c];
-      break;
-  }
-
-  // Preserve sign of original param
-  s *= Math.sign(param);
-
-  return { c, s, quadrant };
+  return { cos, sin, quadrant };
 }
-
+  
 function generateRAUPoints(cx, cy, radius, cos, sin) {
   // Four endpoints with correct signs for cos/sin
   const offsets = [
@@ -181,7 +163,8 @@ function drawAxes(param) {
   ctx.stroke();
 
   // --- Rotation ---
-  const { c, s } = getRotationComponents(param % 4);
+  // Get rotating axes
+  const { c, s, quadrant } = getRotationComponents(param % 4);
   const cos = typeof c === "number" ? c : 0;
   const sin = typeof s === "number" ? s : 0;
 
