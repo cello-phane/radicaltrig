@@ -12,7 +12,7 @@ https://www.shadertoy.com/view/wcXyzB (3D demo that uses traditional sin/cos)
 
 ## Explanation of the handrolled periodicity/continuity:
 https://cello-phane.github.io/radicaltrig/rau_rotating_axes.html
-After a 90 degree sweep, every point(all 4) has sweeped the circle, which is why this system works.
+After a 90 degree sweep, every point(all 4) has swept the circle, which is why this system works.
 ```
 After a 90° sweep, every point (all 4 quadrants) completes one full
 rotation around the circle — which is why this system works.
