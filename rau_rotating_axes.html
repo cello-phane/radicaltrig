@@ -287,7 +287,23 @@ function drawAxes(param) {
   ctx.beginPath();
   ctx.arc(cx, cy, 3, 0, Math.PI * 2);
   ctx.fill();
+  
+  // Quadrant rule labels
+  ctx.fillStyle = "#000";
+  ctx.font = "12px monospace";
 
+  const labels = [
+    { q: 0, txt: "Q0: cos=+c, sin=+s", x: cx+radius/3, y: cy-radius/2 },
+    { q: 1, txt: "Q1: cos=-s, sin=+c", x: cx-radius/1.5, y: cy-radius/2 },
+    { q: 2, txt: "Q2: cos=-c, sin=-s", x: cx-radius/1.5, y: cy+radius/2 },
+    { q: 3, txt: "Q3: cos=+s, sin=-c", x: cx+radius/3, y: cy+radius/2 },
+  ];
+
+  labels.forEach(l => {
+    ctx.fillStyle = l.q === quadrant ? "#e74c3c" : "#555";
+    ctx.fillText(l.txt, l.x, l.y);
+  });
+  
   // --- Info ---
   ctx.fillStyle = "#000";
   ctx.font = "14px monospace";
