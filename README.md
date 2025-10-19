@@ -9,6 +9,7 @@ https://www.shadertoy.com/view/WXVXDR (3D demo that uses radical trig)
 https://www.shadertoy.com/view/wcXyzB (3D demo that uses traditional sin/cos)
 
 ```
+Since the parameter t is only for a single quadrant of a circle we have to make the angle t periodic:
 c = x coordinate
 s = y coordinate
 For every Point(x,y)
@@ -20,7 +21,7 @@ For every Point(x,y)
           Q2         |        Q3
         (-c,-s)      |     (+c,-s)
 So the algorithm must be the following for any parameter t 0.0 - 4.0      
-Q0: 0 ≤ t < 1	none	       (+c, +s)
+Q0: 0 ≤ t < 1	none	      (+c, +s)
 Q1:	1 ≤ t < 2	mirror X↔Y	 (-s, +c)
 Q2:	2 ≤ t < 3	both negated (-c, -s)
 Q3:	3 ≤ t < 4	mirror X↔Y 	 (+s, -c)
