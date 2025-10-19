@@ -6,7 +6,7 @@ Radical Angle Units for a formula to compute sin(angle) and cos(angle)
 
 https://www.shadertoy.com/view/M3cfRN (2D demo that uses both kinds of trig (blue and pink))
 
-https://www.shadertoy.com/view/WXVXDR (3D demo that uses radical trig)
+https://www.shadertoy.com/view/WXVXDR (3D demo that uses radical trig) 
 https://www.shadertoy.com/view/wcXyzB (3D demo that uses traditional sin/cos)
 
 ## Explanation of the handrolled periodicity/continuity:
