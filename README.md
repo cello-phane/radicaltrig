@@ -8,7 +8,7 @@ https://www.shadertoy.com/view/M3cfRN (2D demo that uses both kinds of trig (blu
 https://www.shadertoy.com/view/WXVXDR (3D demo that uses radical trig)
 https://www.shadertoy.com/view/wcXyzB (3D demo that uses traditional sin/cos)
 
-c = x coordinate
+`c = x coordinate
 s = y coordinate
 For every Point(x,y)
                     +y
@@ -18,7 +18,7 @@ For every Point(x,y)
   -x-----------------+------------------> +x
           Q2         |        Q3
         (-c,-s)      |     (+c,-s)
-So the algorithm must be the following for any parameter `t` 0.0 - 4.0:        
+So the algorithm must be the following for any parameter t 0.0 - 4.0      
 Q0:  0 ≤ t < 1	none	       (+c, +s)
 Q1:	1 ≤ t < 2	mirror X↔Y	 (-s, +c)
 Q2:	2 ≤ t < 3	both negated (-c, -s)
@@ -30,4 +30,4 @@ t progression (0→4) as angle increases:
 │ Q1 : ( -s, +c )  → rotate 90°–180°    │
 │ Q2 : ( -c, -s )  → rotate 180°–270°   │
 │ Q3 : ( +s, -c )  → rotate 270°–360°   │
-└────────────────────────────────────────────┘
+└────────────────────────────────────────────┘`
