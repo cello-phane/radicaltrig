@@ -14,8 +14,7 @@ https://www.shadertoy.com/view/wcXyzB (3D demo that uses traditional sin/cos)
 https://cello-phane.github.io/radicaltrig/rau_rotating_axes.html
 After a 90 degree sweep, every point(all 4) has swept the circle, which is why this system works.
 ```
-After a 90° sweep, every point (all 4 quadrants) completes one full
-rotation around the circle — which is why this system works.
+
 Since the formula for t covers only a quarter of a circle (1.0),
 we define the Radical Angle Unit (RAU) to be periodic by using an
 integer 0, 1, 2, and 3 combined with mod 4 arithmetic(the % operator).
