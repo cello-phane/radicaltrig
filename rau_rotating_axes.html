@@ -135,9 +135,9 @@ function calculateRelationship(p1, p2) {
 function drawAxes(param) {
   const W = canvas.width, H = canvas.height;
   const cx = W/2, cy = H/2, radius = 150;
-  
+
   ctx.clearRect(0, 0, W, H);
-  
+
   // Grid
   ctx.strokeStyle = "#f0f0f0";
   ctx.lineWidth = 1;
@@ -151,71 +151,44 @@ function drawAxes(param) {
     ctx.lineTo(cx + i*40, H);
     ctx.stroke();
   }
-  
+
   // Circle outline
   ctx.strokeStyle = "#ddd";
   ctx.lineWidth = 2;
   ctx.beginPath();
   ctx.arc(cx, cy, radius, 0, Math.PI*2);
   ctx.stroke();
-  
+
   // Get rotating axes
-  const { cos, sin } = getRotationComponents(param % 4);
-  
-  // Four endpoints of perpendicular axes with computed coordinates
-  const p1 = { 
-    x: cx + cos*radius, 
-    y: cy - sin*radius, 
-    color: "#e74c3c",
-    cosVal: cos.toFixed(3),
-    sinVal: sin.toFixed(3),
-    id: 0
-  };
-  const p2 = { 
-    x: cx - cos*radius, 
-    y: cy + sin*radius, 
-    color: "#e74c3c",
-    cosVal: (-cos).toFixed(3),
-    sinVal: (-sin).toFixed(3),
-    id: 1
-  };
-  const p3 = { 
-    x: cx + sin*radius, 
-    y: cy + cos*radius, 
-    color: "#3498db",
-    cosVal: sin.toFixed(3),
-    sinVal: cos.toFixed(3),
-    id: 2
-  };
-  const p4 = { 
-    x: cx - sin*radius, 
-    y: cy - cos*radius, 
-    color: "#3498db",
-    cosVal: (-sin).toFixed(3),
-    sinVal: (-cos).toFixed(3),
-    id: 3
-  };
-  
+  const { c, s } = getRotationComponents(param % 4);
+  const cos = typeof c === "number" ? c : 0;
+  const sin = typeof s === "number" ? s : 0;
+
+  // Four endpoints of perpendicular axes
+  const p1 = { x: cx + cos*radius, y: cy - sin*radius, color: "#e74c3c", cosVal: cos.toFixed(3), sinVal: sin.toFixed(3), id: 0 };
+  const p2 = { x: cx - cos*radius, y: cy + sin*radius, color: "#e74c3c", cosVal: (-cos).toFixed(3), sinVal: (-sin).toFixed(3), id: 1 };
+  const p3 = { x: cx + sin*radius, y: cy + cos*radius, color: "#3498db", cosVal: sin.toFixed(3), sinVal: cos.toFixed(3), id: 2 };
+  const p4 = { x: cx - sin*radius, y: cy - cos*radius, color: "#3498db", cosVal: (-sin).toFixed(3), sinVal: (-cos).toFixed(3), id: 3 };
+
   points.length = 0;
   points.push(p1, p2, p3, p4);
-  
-  // X-axis line (red)
-  ctx.strokeStyle = "#e74c3c";
+
+  // Draw axes
   ctx.lineWidth = 3;
+
+  ctx.strokeStyle = "#e74c3c"; // X-axis
   ctx.beginPath();
   ctx.moveTo(p2.x, p2.y);
   ctx.lineTo(p1.x, p1.y);
   ctx.stroke();
-  
-  // Y-axis line (blue)
-  ctx.strokeStyle = "#3498db";
-  ctx.lineWidth = 3;
+
+  ctx.strokeStyle = "#3498db"; // Y-axis
   ctx.beginPath();
   ctx.moveTo(p4.x, p4.y);
   ctx.lineTo(p3.x, p3.y);
   ctx.stroke();
-  
-  // Draw connection line if selected and hovering
+
+  // Connection line if selecting
   if (selectedPoint !== null && hoveredPoint !== null && selectedPoint !== hoveredPoint) {
     ctx.strokeStyle = "rgba(100, 100, 100, 0.5)";
     ctx.lineWidth = 2;
@@ -226,106 +199,89 @@ function drawAxes(param) {
     ctx.stroke();
     ctx.setLineDash([]);
   }
-  
+
   // Draw points
-  [p1, p2, p3, p4].forEach((p, idx) => {
+  points.forEach((p, idx) => {
     const isSelected = selectedPoint === idx;
     const isHovered = hoveredPoint === idx;
-    
+
     ctx.fillStyle = p.color;
     ctx.beginPath();
     ctx.arc(p.x, p.y, isSelected ? 10 : (isHovered ? 8 : 6), 0, Math.PI*2);
     ctx.fill();
-    
+
     if (isSelected) {
       ctx.strokeStyle = "#000";
       ctx.lineWidth = 2;
       ctx.stroke();
     }
   });
-  
-  // Position labels outside the circle
+
+  // Labels outside the circle
   const labelOffset = 50;
-  
-  [p1, p2, p3, p4].forEach(p => {
+  points.forEach(p => {
     const dx = p.x - cx;
     const dy = p.y - cy;
     const dist = Math.sqrt(dx*dx + dy*dy);
     const dirX = dx / dist;
     const dirY = dy / dist;
-    
+
     const labelX = p.x + dirX * labelOffset;
     const labelY = p.y + dirY * labelOffset;
-    
-    let cosColor = "#e74c3c"; // default red for cos
-    let sinColor = "#3498db"; // default blue for sin
-    
-    // If hovering over a point, color code based on pairing with selected point
+
+    let cosColor = "#e74c3c";
+    let sinColor = "#3498db";
+
+    // Color code mapping if hovering & selecting
     if (selectedPoint !== null && hoveredPoint !== null && selectedPoint !== hoveredPoint) {
       const selectedPt = points[selectedPoint];
-      const selectedCos = parseFloat(selectedPt.cosVal);
-      const selectedSin = parseFloat(selectedPt.sinVal);
-      
-      const cos = parseFloat(p.cosVal);
-      const sin = parseFloat(p.sinVal);
-      
-      const hoveredCos = parseFloat(points[hoveredPoint].cosVal);
-      const hoveredSin = parseFloat(points[hoveredPoint].sinVal);
-      
-      // Only color the hovered point and selected point
+      const hoveredPt = points[hoveredPoint];
+
+      const cosSel = parseFloat(selectedPt.cosVal);
+      const sinSel = parseFloat(selectedPt.sinVal);
+      const cosHov = parseFloat(hoveredPt.cosVal);
+      const sinHov = parseFloat(hoveredPt.sinVal);
+
+      const cosP = parseFloat(p.cosVal);
+      const sinP = parseFloat(p.sinVal);
+
       if (p.id === selectedPoint) {
-        // Selected point: color based on what it maps to in hovered point
-        if (Math.abs(Math.abs(cos) - Math.abs(hoveredCos)) < 0.01) {
-          cosColor = "#27ae60"; // green: cos→cos match (same magnitude)
-        } else if (Math.abs(Math.abs(cos) - Math.abs(hoveredSin)) < 0.01) {
-          cosColor = "#9b59b6"; // purple: cos→sin match
-        }
-        
-        if (Math.abs(Math.abs(sin) - Math.abs(hoveredSin)) < 0.01) {
-          sinColor = "#27ae60"; // green: sin→sin match (same magnitude)
-        } else if (Math.abs(Math.abs(sin) - Math.abs(hoveredCos)) < 0.01) {
-          sinColor = "#f39c12"; // orange: sin→cos match
-        }
+        cosColor = Math.abs(Math.abs(cosP) - Math.abs(cosHov)) < 0.01 ? "#27ae60" :
+                   Math.abs(Math.abs(cosP) - Math.abs(sinHov)) < 0.01 ? "#9b59b6" : cosColor;
+        sinColor = Math.abs(Math.abs(sinP) - Math.abs(sinHov)) < 0.01 ? "#27ae60" :
+                   Math.abs(Math.abs(sinP) - Math.abs(cosHov)) < 0.01 ? "#f39c12" : sinColor;
       } else if (p.id === hoveredPoint) {
-        // Hovered point: color based on where it comes from selected point
-        if (Math.abs(Math.abs(cos) - Math.abs(selectedCos)) < 0.01) {
-          cosColor = "#27ae60"; // green: cos from cos
-        } else if (Math.abs(Math.abs(cos) - Math.abs(selectedSin)) < 0.01) {
-          cosColor = "#9b59b6"; // purple: cos from sin
-        }
-        
-        if (Math.abs(Math.abs(sin) - Math.abs(selectedSin)) < 0.01) {
-          sinColor = "#27ae60"; // green: sin from sin
-        } else if (Math.abs(Math.abs(sin) - Math.abs(selectedCos)) < 0.01) {
-          sinColor = "#f39c12"; // orange: sin from cos
-        }
+        cosColor = Math.abs(Math.abs(cosP) - Math.abs(cosSel)) < 0.01 ? "#27ae60" :
+                   Math.abs(Math.abs(cosP) - Math.abs(sinSel)) < 0.01 ? "#9b59b6" : cosColor;
+        sinColor = Math.abs(Math.abs(sinP) - Math.abs(sinSel)) < 0.01 ? "#27ae60" :
+                   Math.abs(Math.abs(sinP) - Math.abs(cosSel)) < 0.01 ? "#f39c12" : sinColor;
       }
     }
-    
+
     ctx.font = "bold 12px monospace";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    
+
     ctx.fillStyle = cosColor;
     ctx.fillText(`cos: ${p.cosVal}`, labelX, labelY - 8);
-    
+
     ctx.fillStyle = sinColor;
     ctx.fillText(`sin: ${p.sinVal}`, labelX, labelY + 8);
   });
-  
+
   // Center origin
   ctx.fillStyle = "#999";
   ctx.beginPath();
   ctx.arc(cx, cy, 3, 0, Math.PI*2);
   ctx.fill();
-  
+
   // Info
   ctx.fillStyle = "#000";
   ctx.font = "14px monospace";
   ctx.textAlign = "left";
   ctx.fillText(`RAU param: ${param.toFixed(3)}`, 15, 25);
-  
-  // Show relationship info
+
+  // Relationship info
   if (selectedPoint !== null && hoveredPoint !== null && selectedPoint !== hoveredPoint) {
     const rel = calculateRelationship(points[selectedPoint], points[hoveredPoint]);
     ctx.font = "12px monospace";
@@ -335,6 +291,7 @@ function drawAxes(param) {
     ctx.fillText(`Transform: ${rel.transform}`, 15, 75);
   }
 }
+
 
 function animate(timestamp) {
   if (!lastTime) lastTime = timestamp;
