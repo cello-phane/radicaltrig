@@ -306,69 +306,73 @@ function drawAxes(param) {
 }
 
 
+let t = 0;
+let lastTime = 0;
+
+// Auto-animation frame
 function animate(timestamp) {
   if (!lastTime) lastTime = timestamp;
-  const dt = (timestamp - lastTime) / 1000;
+  const dt = (timestamp - lastTime) / 1000; // delta in seconds
   lastTime = timestamp;
-  
+
   if (auto.checked) {
     const speed = parseFloat(speedSlider.value);
-    t = (t + dt * 0.5 * speed) % 4;
+    t = (t + dt * speed) % 4; // Keep t in [0,4)
     slider.value = t;
   }
-  
+
   drawAxes(t);
   requestAnimationFrame(animate);
 }
 
+// Slider input
 slider.addEventListener('input', () => {
   t = parseFloat(slider.value);
   drawAxes(t);
 });
 
 // Mouse click to select point
-canvas.addEventListener('click', (e) => {
+canvas.addEventListener('click', e => {
   const rect = canvas.getBoundingClientRect();
   const mouseX = e.clientX - rect.left;
   const mouseY = e.clientY - rect.top;
-  
+
   for (let i = 0; i < points.length; i++) {
     const dx = mouseX - points[i].x;
     const dy = mouseY - points[i].y;
-    const dist = Math.sqrt(dx*dx + dy*dy);
-    if (dist < 15) {
+    if (Math.sqrt(dx * dx + dy * dy) < 15) {
       selectedPoint = selectedPoint === i ? null : i;
       break;
     }
   }
 });
 
-// Mouse move to hover over points
-canvas.addEventListener('mousemove', (e) => {
+// Mouse move to hover
+canvas.addEventListener('mousemove', e => {
   const rect = canvas.getBoundingClientRect();
   const mouseX = e.clientX - rect.left;
   const mouseY = e.clientY - rect.top;
-  
+
   hoveredPoint = null;
   for (let i = 0; i < points.length; i++) {
     const dx = mouseX - points[i].x;
     const dy = mouseY - points[i].y;
-    const dist = Math.sqrt(dx*dx + dy*dy);
-    if (dist < 15) {
+    if (Math.sqrt(dx * dx + dy * dy) < 15) {
       hoveredPoint = i;
       canvas.style.cursor = 'pointer';
       break;
     }
   }
+
   if (hoveredPoint === null) canvas.style.cursor = 'default';
 });
 
-canvas.addEventListener('mouseleave', () => {
-  hoveredPoint = null;
-});
+canvas.addEventListener('mouseleave', () => hoveredPoint = null);
 
+// --- Start ---
 drawAxes(t);
 requestAnimationFrame(animate);
+
 </script>
 </body>
 </html>
