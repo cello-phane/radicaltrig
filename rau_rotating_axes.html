@@ -168,65 +168,61 @@ function calculateRelationship(p1, p2) {
 
 function drawAxes(param) {
   const W = canvas.width, H = canvas.height;
-  const cx = W/2, cy = H/2, radius = 150;
+  const cx = W / 2, cy = H / 2, radius = 150;
 
   ctx.clearRect(0, 0, W, H);
 
-  // Grid
+  // --- Grid ---
   ctx.strokeStyle = "#f0f0f0";
   ctx.lineWidth = 1;
   for (let i = -4; i <= 4; i++) {
     ctx.beginPath();
-    ctx.moveTo(0, cy + i*40);
-    ctx.lineTo(W, cy + i*40);
+    ctx.moveTo(0, cy + i * 40);
+    ctx.lineTo(W, cy + i * 40);
     ctx.stroke();
+
     ctx.beginPath();
-    ctx.moveTo(cx + i*40, 0);
-    ctx.lineTo(cx + i*40, H);
+    ctx.moveTo(cx + i * 40, 0);
+    ctx.lineTo(cx + i * 40, H);
     ctx.stroke();
   }
 
-  // Circle outline
+  // --- Circle outline ---
   ctx.strokeStyle = "#ddd";
   ctx.lineWidth = 2;
   ctx.beginPath();
-  ctx.arc(cx, cy, radius, 0, Math.PI*2);
+  ctx.arc(cx, cy, radius, 0, Math.PI * 2);
   ctx.stroke();
 
-  // Get rotating axes
+  // --- RAU rotation components ---
   const { c, s } = getRotationComponents(param % 4);
   const cos = typeof c === "number" ? c : 0;
   const sin = typeof s === "number" ? s : 0;
 
-  // Four endpoints of perpendicular axes
-  const p1 = { x: cx + cos*radius, y: cy - sin*radius, color: "#e74c3c", cosVal: cos.toFixed(3), sinVal: sin.toFixed(3), id: 0 };
-  const p2 = { x: cx - cos*radius, y: cy + sin*radius, color: "#e74c3c", cosVal: (-cos).toFixed(3), sinVal: (-sin).toFixed(3), id: 1 };
-  const p3 = { x: cx + sin*radius, y: cy + cos*radius, color: "#3498db", cosVal: sin.toFixed(3), sinVal: cos.toFixed(3), id: 2 };
-  const p4 = { x: cx - sin*radius, y: cy - cos*radius, color: "#3498db", cosVal: (-sin).toFixed(3), sinVal: (-cos).toFixed(3), id: 3 };
-
-  //points.length = 0;
-  //points.push(p1, p2, p3, p4);
+  // --- Generate points consistently ---
+  points.length = 0;
   points.push(...generateRAUPoints(cx, cy, radius, cos, sin));
-  
 
-  // Draw axes
+  // --- Draw axes ---
   ctx.lineWidth = 3;
 
-  ctx.strokeStyle = "#e74c3c"; // X-axis
+  // X-axis (red)
+  ctx.strokeStyle = "#e74c3c";
   ctx.beginPath();
-  ctx.moveTo(p2.x, p2.y);
-  ctx.lineTo(p1.x, p1.y);
+  ctx.moveTo(points[1].x, points[1].y);
+  ctx.lineTo(points[0].x, points[0].y);
   ctx.stroke();
 
-  ctx.strokeStyle = "#3498db"; // Y-axis
+  // Y-axis (blue)
+  ctx.strokeStyle = "#3498db";
   ctx.beginPath();
-  ctx.moveTo(p4.x, p4.y);
-  ctx.lineTo(p3.x, p3.y);
+  ctx.moveTo(points[3].x, points[3].y);
+  ctx.lineTo(points[2].x, points[2].y);
   ctx.stroke();
 
-  // Connection line if selecting
+  // --- Connection line if selecting ---
   if (selectedPoint !== null && hoveredPoint !== null && selectedPoint !== hoveredPoint) {
-    ctx.strokeStyle = "rgba(100, 100, 100, 0.5)";
+    ctx.strokeStyle = "rgba(100,100,100,0.5)";
     ctx.lineWidth = 2;
     ctx.setLineDash([5, 5]);
     ctx.beginPath();
@@ -236,14 +232,14 @@ function drawAxes(param) {
     ctx.setLineDash([]);
   }
 
-  // Draw points
+  // --- Draw points ---
   points.forEach((p, idx) => {
     const isSelected = selectedPoint === idx;
     const isHovered = hoveredPoint === idx;
 
     ctx.fillStyle = p.color;
     ctx.beginPath();
-    ctx.arc(p.x, p.y, isSelected ? 10 : (isHovered ? 8 : 6), 0, Math.PI*2);
+    ctx.arc(p.x, p.y, isSelected ? 10 : isHovered ? 8 : 6, 0, Math.PI * 2);
     ctx.fill();
 
     if (isSelected) {
@@ -253,44 +249,43 @@ function drawAxes(param) {
     }
   });
 
-  // Labels outside the circle
+  // --- Labels with simplified hover/selection coloring ---
   const labelOffset = 50;
+
+  function mapColor(val1, val2, matchColor = "#27ae60", altColor = "#f39c12") {
+    if (Math.abs(Math.abs(val1) - Math.abs(val2)) < 0.01) return matchColor;
+    return null;
+  }
+
   points.forEach(p => {
     const dx = p.x - cx;
     const dy = p.y - cy;
-    const dist = Math.sqrt(dx*dx + dy*dy);
+    const dist = Math.sqrt(dx * dx + dy * dy);
     const dirX = dx / dist;
     const dirY = dy / dist;
-
     const labelX = p.x + dirX * labelOffset;
     const labelY = p.y + dirY * labelOffset;
 
-    let cosColor = "#e74c3c";
-    let sinColor = "#3498db";
+    let cosColor = p.color;
+    let sinColor = p.color === "#e74c3c" ? "#3498db" : "#e74c3c";
 
-    // Color code mapping if hovering & selecting
     if (selectedPoint !== null && hoveredPoint !== null && selectedPoint !== hoveredPoint) {
-      const selectedPt = points[selectedPoint];
-      const hoveredPt = points[hoveredPoint];
-
-      const cosSel = parseFloat(selectedPt.cosVal);
-      const sinSel = parseFloat(selectedPt.sinVal);
-      const cosHov = parseFloat(hoveredPt.cosVal);
-      const sinHov = parseFloat(hoveredPt.sinVal);
+      const sel = points[selectedPoint];
+      const hov = points[hoveredPoint];
 
       const cosP = parseFloat(p.cosVal);
       const sinP = parseFloat(p.sinVal);
+      const cosSel = parseFloat(sel.cosVal);
+      const sinSel = parseFloat(sel.sinVal);
+      const cosHov = parseFloat(hov.cosVal);
+      const sinHov = parseFloat(hov.sinVal);
 
       if (p.id === selectedPoint) {
-        cosColor = Math.abs(Math.abs(cosP) - Math.abs(cosHov)) < 0.01 ? "#27ae60" :
-                   Math.abs(Math.abs(cosP) - Math.abs(sinHov)) < 0.01 ? "#9b59b6" : cosColor;
-        sinColor = Math.abs(Math.abs(sinP) - Math.abs(sinHov)) < 0.01 ? "#27ae60" :
-                   Math.abs(Math.abs(sinP) - Math.abs(cosHov)) < 0.01 ? "#f39c12" : sinColor;
+        cosColor = mapColor(cosP, cosHov) || mapColor(cosP, sinHov) || cosColor;
+        sinColor = mapColor(sinP, sinHov) || mapColor(sinP, cosHov, "#f39c12") || sinColor;
       } else if (p.id === hoveredPoint) {
-        cosColor = Math.abs(Math.abs(cosP) - Math.abs(cosSel)) < 0.01 ? "#27ae60" :
-                   Math.abs(Math.abs(cosP) - Math.abs(sinSel)) < 0.01 ? "#9b59b6" : cosColor;
-        sinColor = Math.abs(Math.abs(sinP) - Math.abs(sinSel)) < 0.01 ? "#27ae60" :
-                   Math.abs(Math.abs(sinP) - Math.abs(cosSel)) < 0.01 ? "#f39c12" : sinColor;
+        cosColor = mapColor(cosP, cosSel) || mapColor(cosP, sinSel) || cosColor;
+        sinColor = mapColor(sinP, sinSel) || mapColor(sinP, cosSel, "#f39c12") || sinColor;
       }
     }
 
@@ -305,19 +300,18 @@ function drawAxes(param) {
     ctx.fillText(`sin: ${p.sinVal}`, labelX, labelY + 8);
   });
 
-  // Center origin
+  // --- Center origin ---
   ctx.fillStyle = "#999";
   ctx.beginPath();
-  ctx.arc(cx, cy, 3, 0, Math.PI*2);
+  ctx.arc(cx, cy, 3, 0, Math.PI * 2);
   ctx.fill();
 
-  // Info
+  // --- Info ---
   ctx.fillStyle = "#000";
   ctx.font = "14px monospace";
   ctx.textAlign = "left";
   ctx.fillText(`RAU param: ${param.toFixed(3)}`, 15, 25);
 
-  // Relationship info
   if (selectedPoint !== null && hoveredPoint !== null && selectedPoint !== hoveredPoint) {
     const rel = calculateRelationship(points[selectedPoint], points[hoveredPoint]);
     ctx.font = "12px monospace";
@@ -327,7 +321,6 @@ function drawAxes(param) {
     ctx.fillText(`Transform: ${rel.transform}`, 15, 75);
   }
 }
-
 
 function animate(timestamp) {
   if (!lastTime) lastTime = timestamp;
