@@ -30,7 +30,7 @@
 </label>
 <label><input type="checkbox" id="auto" checked> Auto</label>
 <label>Speed:
-  <input type="range" id="speed" min="0.1" max="2" step="0.1" value="0.15">
+  <input type="range" id="speed" min="0.1" max="2" step="0.1" value="1">
 </label>
 
 <script>
@@ -67,30 +67,49 @@ function getRotationComponents(param) {
 }
 
 function calculateRelationship(p1, p2) {
-  // Angle between points
-  const dx = p2.x - p1.x;
-  const dy = p2.y - p1.y;
-  const distance = Math.sqrt(dx*dx + dy*dy);
-  const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+  // RAU parameters for each point (0-4 range)
+  const rauP1 = p1.id;
+  const rauP2 = p2.id;
   
-  // Determine relationship type
-  let relationship = "unknown";
-  const cosDiff = Math.abs(parseFloat(p1.cosVal) - parseFloat(p2.cosVal));
-  const sinDiff = Math.abs(parseFloat(p1.sinVal) - parseFloat(p2.sinVal));
+  // Calculate shift needed (accounting for circular nature 0-4)
+  let shift = (rauP2 - rauP1) % 4;
+  if (shift < 0) shift += 4;
   
-  if (cosDiff < 0.01 && sinDiff < 0.01) {
-    relationship = "same point";
-  } else if (cosDiff < 0.01) {
-    relationship = "reflected (cos)";
-  } else if (sinDiff < 0.01) {
-    relationship = "reflected (sin)";
-  } else if (p1.color === p2.color) {
-    relationship = "opposite (180°)";
+  const direction = shift === 0 ? "same" : shift <= 2 ? "counter-clockwise" : "clockwise";
+  const amount = shift === 0 ? 0 : shift <= 2 ? shift : 4 - shift;
+  
+  // Describe the coordinate transformation
+  const cos1 = parseFloat(p1.cosVal);
+  const sin1 = parseFloat(p1.sinVal);
+  const cos2 = parseFloat(p2.cosVal);
+  const sin2 = parseFloat(p2.sinVal);
+  
+  let transform = "";
+  
+  // Check for common transformations
+  if (Math.abs(cos1 - cos2) < 0.01 && Math.abs(sin1 + sin2) < 0.01) {
+    transform = `cos stays ${cos1.toFixed(2)}, sin → -sin`;
+  } else if (Math.abs(cos1 + cos2) < 0.01 && Math.abs(sin1 - sin2) < 0.01) {
+    transform = `cos → -cos, sin stays ${sin1.toFixed(2)}`;
+  } else if (Math.abs(cos1 - sin2) < 0.01 && Math.abs(sin1 - cos2) < 0.01) {
+    transform = `cos → sin, sin → cos`;
+  } else if (Math.abs(cos1 + sin2) < 0.01 && Math.abs(sin1 + cos2) < 0.01) {
+    transform = `cos → -sin, sin → -cos`;
+  } else if (Math.abs(cos1 + cos2) < 0.01 && Math.abs(sin1 + sin2) < 0.01) {
+    transform = `cos → -cos, sin → -sin`;
+  } else if (Math.abs(cos1 - sin2) < 0.01 && Math.abs(sin1 + cos2) < 0.01) {
+    transform = `cos → sin, sin → -cos`;
   } else {
-    relationship = "perpendicular (90°)";
+    transform = `(cos: ${cos1.toFixed(2)} → ${cos2.toFixed(2)}, sin: ${sin1.toFixed(2)} → ${sin2.toFixed(2)})`;
   }
   
-  return { angle: angle.toFixed(1), distance: distance.toFixed(1), relationship };
+  return { 
+    rauP1: rauP1.toFixed(1), 
+    rauP2: rauP2.toFixed(1),
+    shift: amount,
+    direction,
+    transform
+  };
 }
 
 function drawAxes(param) {
@@ -218,11 +237,59 @@ function drawAxes(param) {
     const labelX = p.x + dirX * labelOffset;
     const labelY = p.y + dirY * labelOffset;
     
-    ctx.fillStyle = p.color;
+    let cosColor = "#e74c3c"; // default red for cos
+    let sinColor = "#3498db"; // default blue for sin
+    
+    // If hovering over a point, color code based on pairing with selected point
+    if (selectedPoint !== null && hoveredPoint !== null && selectedPoint !== hoveredPoint) {
+      const selectedPt = points[selectedPoint];
+      const selectedCos = Math.abs(parseFloat(selectedPt.cosVal));
+      const selectedSin = Math.abs(parseFloat(selectedPt.sinVal));
+      
+      const cos = Math.abs(parseFloat(p.cosVal));
+      const sin = Math.abs(parseFloat(p.sinVal));
+      
+      const hoveredCos = Math.abs(parseFloat(points[hoveredPoint].cosVal));
+      const hoveredSin = Math.abs(parseFloat(points[hoveredPoint].sinVal));
+      
+      // Only color the hovered point and selected point
+      if (p.id === selectedPoint) {
+        // Selected point: color based on what it maps to in hovered point
+        if (Math.abs(cos - hoveredCos) < 0.01) {
+          cosColor = "#27ae60"; // green: cos→cos match
+        } else if (Math.abs(cos - hoveredSin) < 0.01) {
+          cosColor = "#9b59b6"; // purple: cos→sin match
+        }
+        
+        if (Math.abs(sin - hoveredSin) < 0.01) {
+          sinColor = "#27ae60"; // green: sin→sin match
+        } else if (Math.abs(sin - hoveredCos) < 0.01) {
+          sinColor = "#f39c12"; // orange: sin→cos match
+        }
+      } else if (p.id === hoveredPoint) {
+        // Hovered point: color based on where it comes from selected point
+        if (Math.abs(cos - selectedCos) < 0.01) {
+          cosColor = "#27ae60"; // green: cos from cos
+        } else if (Math.abs(cos - selectedSin) < 0.01) {
+          cosColor = "#9b59b6"; // purple: cos from sin
+        }
+        
+        if (Math.abs(sin - selectedSin) < 0.01) {
+          sinColor = "#27ae60"; // green: sin from sin
+        } else if (Math.abs(sin - selectedCos) < 0.01) {
+          sinColor = "#f39c12"; // orange: sin from cos
+        }
+      }
+    }
+    
     ctx.font = "bold 12px monospace";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
+    
+    ctx.fillStyle = cosColor;
     ctx.fillText(`cos: ${p.cosVal}`, labelX, labelY - 8);
+    
+    ctx.fillStyle = sinColor;
     ctx.fillText(`sin: ${p.sinVal}`, labelX, labelY + 8);
   });
   
@@ -243,8 +310,9 @@ function drawAxes(param) {
     const rel = calculateRelationship(points[selectedPoint], points[hoveredPoint]);
     ctx.font = "12px monospace";
     ctx.fillStyle = "#333";
-    ctx.fillText(`Angle: ${rel.angle}°  Distance: ${rel.distance}`, 15, 45);
-    ctx.fillText(`Relationship: ${rel.relationship}`, 15, 60);
+    ctx.fillText(`RAU Point ${rel.rauP1} → RAU Point ${rel.rauP2}`, 15, 45);
+    ctx.fillText(`Shift: ${rel.shift} quadrant(s) ${rel.direction}`, 15, 60);
+    ctx.fillText(`Transform: ${rel.transform}`, 15, 75);
   }
 }
 
