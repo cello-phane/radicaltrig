@@ -10,6 +10,7 @@ https://www.shadertoy.com/view/wcXyzB (3D demo that uses traditional sin/cos)
 
 ## Explanation of the handrolled periodicity/continuity:
 https://cello-phane.github.io/radicaltrig/rau_rotating_axes.html
+After a 90 degree sweep, every point(all 4) has sweeped the circle, which is why this system works.
 ```
 Since the formula for t is for a quarter of a circle(1.0) we have to make the radical angle unit
 periodic covering 4.0 in the cartersian coordinate system.
