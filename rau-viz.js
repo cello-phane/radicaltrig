@@ -308,13 +308,13 @@ document.addEventListener('DOMContentLoaded', () => {
       ctx.beginPath();
       //
       ctx.moveTo(cx + radius*2.0, cy);
-      ctx.lineTo(cx, cy - radius);
+      ctx.lineTo(cx, cy - radius*2.0);
       ctx.moveTo(cx, cy - radius*2.0);
-      ctx.lineTo(cx - radius, cy);
+      ctx.lineTo(cx - radius*2.0, cy);
       ctx.moveTo(cx - radius*2.0, cy);
-      ctx.lineTo(cx, cy + radius);
+      ctx.lineTo(cx, cy + radius*2.0);
       ctx.moveTo(cx, cy + radius*2.0);
-      ctx.lineTo(cx + radius, cy);
+      ctx.lineTo(cx + radius*2.0, cy);
       //
       ctx.stroke();
       ctx.setLineDash([]);
