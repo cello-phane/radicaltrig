@@ -8,7 +8,7 @@ https://www.shadertoy.com/view/M3cfRN (2D demo that uses both kinds of trig (blu
 https://www.shadertoy.com/view/WXVXDR (3D demo that uses radical trig)
 https://www.shadertoy.com/view/wcXyzB (3D demo that uses traditional sin/cos)
 
-`c = x coordinate
+```c = x coordinate
 s = y coordinate
 For every Point(x,y)
                     +y
@@ -30,4 +30,4 @@ t progression (0→4) as angle increases:
 │ Q1 : ( -s, +c )  → rotate 90°–180°    │
 │ Q2 : ( -c, -s )  → rotate 180°–270°   │
 │ Q3 : ( +s, -c )  → rotate 270°–360°   │
-└────────────────────────────────────────────┘`
+└────────────────────────────────────────────┘```
