@@ -57,13 +57,22 @@ function getRotationComponents(param) {
   const absVal = Math.abs(param);
   const quadrant = Math.floor(absVal) % 4;
   const fraction = absVal - quadrant;
-  let { c = 0, s = 0 } = getRAUComponents(fraction) || {};
-  let q0 = Number(quadrant === 0);
-  let q1 = Number(quadrant === 1);
-  let q2 = Number(quadrant === 2);
-  let q3 = Number(quadrant === 3);
-  c = c*q0-s*q1-c*q2+s*q3;
-  s = (s*q0+c*q1-s*q2-c*q3)*Math.sign(param);
+
+  // Safely get RAU components, fallback to 0 if undefined
+  const rau = getRAUComponents(fraction) || {};
+  let c = typeof rau.c === 'number' ? rau.c : 0;
+  let s = typeof rau.s === 'number' ? rau.s : 0;
+
+  // Quadrant indicators
+  const q0 = quadrant === 0 ? 1 : 0;
+  const q1 = quadrant === 1 ? 1 : 0;
+  const q2 = quadrant === 2 ? 1 : 0;
+  const q3 = quadrant === 3 ? 1 : 0;
+
+  // Rotate components based on quadrant
+  c = c * q0 - s * q1 - c * q2 + s * q3;
+  s = (s * q0 + c * q1 - s * q2 - c * q3) * Math.sign(param);
+
   return { c, s, quadrant };
 }
 
