@@ -36,4 +36,7 @@ t progression (0→4) as angle increases:
 │ Q2 : ( -c, -s )  → rotate 180°–270°   │
 │ Q3 : ( +s, -c )  → rotate 270°–360°   │
 └────────────────────────────────────────────┘
+Using only algebra the output for s and c:
+c = c⋅q0​−s⋅q1​−c⋅q2​+s⋅q3​
+s = (s⋅q0​+c⋅q1​−s⋅q2​−c⋅q3​)⋅sign(t)​
 ```
