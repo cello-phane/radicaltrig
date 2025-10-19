@@ -26,7 +26,7 @@
 <canvas id="canvas" width="500" height="500"></canvas>
 <br>
 <label>Phase:
-  <input type="range" id="slider" min="0" max="4" step="0.001" value="0">
+  <input type="range" id="slider" min="0" max="4" step="0.0005" value="0">
 </label>
 <label><input type="checkbox" id="auto" unchecked> Auto</label>
 <label>Speed:
@@ -243,40 +243,40 @@ function drawAxes(param) {
     // If hovering over a point, color code based on pairing with selected point
     if (selectedPoint !== null && hoveredPoint !== null && selectedPoint !== hoveredPoint) {
       const selectedPt = points[selectedPoint];
-      const selectedCos = Math.abs(parseFloat(selectedPt.cosVal));
-      const selectedSin = Math.abs(parseFloat(selectedPt.sinVal));
+      const selectedCos = parseFloat(selectedPt.cosVal);
+      const selectedSin = parseFloat(selectedPt.sinVal);
       
-      const cos = Math.abs(parseFloat(p.cosVal));
-      const sin = Math.abs(parseFloat(p.sinVal));
+      const cos = parseFloat(p.cosVal);
+      const sin = parseFloat(p.sinVal);
       
-      const hoveredCos = Math.abs(parseFloat(points[hoveredPoint].cosVal));
-      const hoveredSin = Math.abs(parseFloat(points[hoveredPoint].sinVal));
+      const hoveredCos = parseFloat(points[hoveredPoint].cosVal);
+      const hoveredSin = parseFloat(points[hoveredPoint].sinVal);
       
       // Only color the hovered point and selected point
       if (p.id === selectedPoint) {
         // Selected point: color based on what it maps to in hovered point
-        if (Math.abs(cos - hoveredCos) < 0.01) {
-          cosColor = "#27ae60"; // green: cos→cos match
-        } else if (Math.abs(cos - hoveredSin) < 0.01) {
+        if (Math.abs(Math.abs(cos) - Math.abs(hoveredCos)) < 0.01) {
+          cosColor = "#27ae60"; // green: cos→cos match (same magnitude)
+        } else if (Math.abs(Math.abs(cos) - Math.abs(hoveredSin)) < 0.01) {
           cosColor = "#9b59b6"; // purple: cos→sin match
         }
         
-        if (Math.abs(sin - hoveredSin) < 0.01) {
-          sinColor = "#27ae60"; // green: sin→sin match
-        } else if (Math.abs(sin - hoveredCos) < 0.01) {
+        if (Math.abs(Math.abs(sin) - Math.abs(hoveredSin)) < 0.01) {
+          sinColor = "#27ae60"; // green: sin→sin match (same magnitude)
+        } else if (Math.abs(Math.abs(sin) - Math.abs(hoveredCos)) < 0.01) {
           sinColor = "#f39c12"; // orange: sin→cos match
         }
       } else if (p.id === hoveredPoint) {
         // Hovered point: color based on where it comes from selected point
-        if (Math.abs(cos - selectedCos) < 0.01) {
+        if (Math.abs(Math.abs(cos) - Math.abs(selectedCos)) < 0.01) {
           cosColor = "#27ae60"; // green: cos from cos
-        } else if (Math.abs(cos - selectedSin) < 0.01) {
+        } else if (Math.abs(Math.abs(cos) - Math.abs(selectedSin)) < 0.01) {
           cosColor = "#9b59b6"; // purple: cos from sin
         }
         
-        if (Math.abs(sin - selectedSin) < 0.01) {
+        if (Math.abs(Math.abs(sin) - Math.abs(selectedSin)) < 0.01) {
           sinColor = "#27ae60"; // green: sin from sin
-        } else if (Math.abs(sin - selectedCos) < 0.01) {
+        } else if (Math.abs(Math.abs(sin) - Math.abs(selectedCos)) < 0.01) {
           sinColor = "#f39c12"; // orange: sin from cos
         }
       }
