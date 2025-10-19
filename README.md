@@ -52,5 +52,5 @@ sin = (s x q0 + c x q1​ - s x q2​ - c x q3​) x sign(parameter)​  ----> P
 c = cos(0.5)  0.5/sqrt(1-2*0.5+2*(0.5^2)) =        sqrt(2)/2
 cos = cx0 - sx1 - cx0 + sx0 = -s                       ||                Point
 s = sin(0.5)  (1.0-0.5)/sqrt(1-2*0.5+2*(0.5^2)) =  sqrt(2)/2     (-0.707106, 0.707106)
-sin = (sx0 + cx1 - sx0 - cx0) x (+1) = +c                               (-s, +c)
+sin = (sx0 + cx1 - sx0 - cx0) x (+1) = +c        Point(cos,sin)   =     (-s, +c)
 ```
