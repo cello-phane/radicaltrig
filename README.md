@@ -13,32 +13,30 @@ https://cello-phane.github.io/radicaltrig/rau_rotating_axes.html
 After a 90 degree sweep, every point(all 4) has sweeped the circle, which is why this system works.
 ```
 Since the formula for t is for a quarter of a circle(1.0) we have to make the radical angle unit
-periodic covering 4.0 in the cartersian coordinate system.
+periodic covering 4.0 in the cartersian coordinate systems.
 
 c = x coordinate
 s = y coordinate
 For every Point(x,y)
-                    +y
-                     ↑
-          Q1         |        Q0
-         (-c,+s)     |     (+c,+s)
-  -x-----------------+------------------> +x
-          Q2         |        Q3
-        (-c,-s)      |     (+c,-s)
-So the algorithm must be the following for any parameter t 0.0 - 4.0      
-Q0: 0 ≤ t < 1	none	      (+c, +s)
-Q1:	1 ≤ t < 2	mirror X↔Y	 (-s, +c)
-Q2:	2 ≤ t < 3	both negated (-c, -s)
-Q3:	3 ≤ t < 4	mirror X↔Y 	 (+s, -c)
+┌───────────────────────────────────────────────────┐
+│                    +y                       │
+│                     ↑                       │
+│          Q1         |        Q0             │
+│        (-c,+s)      |     (+c,+s)           │
+│  -x-----------------+------------------> +x │
+│          Q2         |        Q3             │
+│        (-c,-s)      |     (+c,-s)           │
+└───────────────────────────────────────────────────┘
+So the algorithm(for the coordinates) for any parameter 0.0 - 4.0:      
+Q0: 0 ≤ t < 1	both stay +	 (+c, +s) | 0°–90°
+Q1:	1 ≤ t < 2	mirror X↔Y	 (-s, +c) | 90°–180° 
+Q2:	2 ≤ t < 3	both negated (-c, -s) | 180°–270°
+Q3:	3 ≤ t < 4	mirror X↔Y 	 (+s, -c) | 270°–360°
 
-t progression (0→4) as angle increases:
-┌────────────────────────────────────────────┐
-│ Q0 : ( +c, +s )  → rotate 0°–90°      │
-│ Q1 : ( -s, +c )  → rotate 90°–180°    │
-│ Q2 : ( -c, -s )  → rotate 180°–270°   │
-│ Q3 : ( +s, -c )  → rotate 270°–360°   │
-└────────────────────────────────────────────┘
-Using only algebra the output for s and c:
-c = c⋅q0​−s⋅q1​−c⋅q2​+s⋅q3​
-s = (s⋅q0​+c⋅q1​−s⋅q2​−c⋅q3​)⋅sign(t)​
+Make the parameter % 4 minus fraction(after decimal point)
+equal q# integer for each quadrant.
+For every integer q# as boolean q0==0, q1==1, q2==2, q3==3
+that becomes 0.0(false) or 1.0(true) for every quadrant 0-3.
+c = c x q0​ - s x q1​ - c x q2 + s x q3​
+s = (s x q0 + c x q1​ - s x q2​ - c x q3​) x sign(parameter)​  ----> Point(c,s)
 ```
