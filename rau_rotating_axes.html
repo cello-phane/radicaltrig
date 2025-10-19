@@ -87,38 +87,25 @@ function getRotationComponents(param) {
 }
 
 function generateRAUPoints(cx, cy, radius, cos, sin) {
-  // Define offsets for the four points:
-  // Each item: [cosMultiplier, sinMultiplier, color, id]
+  // offsets: [cosMultiplier, sinMultiplier, color, id, axisType]
   const offsets = [
-    [ 1, -1, "#e74c3c", 0], // X+ endpoint
-    [-1,  1, "#e74c3c", 1], // X- endpoint
-    [ 1,  1, "#3498db", 2], // Y+ endpoint
-    [-1, -1, "#3498db", 3], // Y- endpoint
+    [ 1, -1, "#e74c3c", 0, "X"], // X+ endpoint
+    [-1,  1, "#e74c3c", 1, "X"], // X- endpoint
+    [ 1,  1, "#3498db", 2, "Y"], // Y+ endpoint
+    [-1, -1, "#3498db", 3, "Y"], // Y- endpoint
   ];
 
-  const points = offsets.map(([cMul, sMul, color, id]) => {
-    // Correctly compute signed coordinates
-    const x = cx + cMul * (Math.abs(cMul) === 1 ? (cMul > 0 ? cos : cos) * radius : 0)
-                  + (Math.abs(sMul) === 1 ? (sMul > 0 ? sin : sin) * radius : 0);
-    const y = cy + sMul * (Math.abs(sMul) === 1 ? (sMul > 0 ? sin : sin) * radius : 0)
-                  - (Math.abs(cMul) === 1 ? (cMul > 0 ? cos : cos) * radius : 0);
+  return offsets.map(([cMul, sMul, color, id, axis]) => {
+    // Coordinates using signed multipliers
+    const x = cx + cMul * (axis === "X" ? cos : sin) * radius;
+    const y = cy + sMul * (axis === "X" ? sin : cos) * radius;
 
-    // Assign consistent cosVal / sinVal for the point
-    let cosVal, sinVal;
-    if (color === "#e74c3c") {
-      cosVal = (cMul * cos).toFixed(3);
-      sinVal = (sMul * sin).toFixed(3);
-    } else {
-      cosVal = (cMul * sin).toFixed(3);
-      sinVal = (sMul * cos).toFixed(3);
-    }
+    const cosVal = (axis === "X" ? cMul * cos : cMul * sin).toFixed(3);
+    const sinVal = (axis === "X" ? sMul * sin : sMul * cos).toFixed(3);
 
-    return { x, y, color, cosVal, sinVal, id };
+    return { x, y, color, cosVal, sinVal, id, axis };
   });
-
-  return points;
 }
-
   
 function calculateRelationship(p1, p2) {
   // RAU parameters for each point (0-4 range)
@@ -187,40 +174,37 @@ function drawAxes(param) {
     ctx.stroke();
   }
 
-  // --- Circle outline ---
+  // --- Circle ---
   ctx.strokeStyle = "#ddd";
   ctx.lineWidth = 2;
   ctx.beginPath();
   ctx.arc(cx, cy, radius, 0, Math.PI * 2);
   ctx.stroke();
 
-  // --- RAU rotation components ---
+  // --- Rotation ---
   const { c, s } = getRotationComponents(param % 4);
   const cos = typeof c === "number" ? c : 0;
   const sin = typeof s === "number" ? s : 0;
 
-  // --- Generate points consistently ---
+  // --- Generate points ---
   points.length = 0;
   points.push(...generateRAUPoints(cx, cy, radius, cos, sin));
 
-  // --- Draw axes ---
-  ctx.lineWidth = 3;
+  // --- Draw axes dynamically ---
+  const axes = { "X": [], "Y": [] };
+  points.forEach(p => axes[p.axis].push(p));
 
-  // X-axis (red)
-  ctx.strokeStyle = "#e74c3c";
-  ctx.beginPath();
-  ctx.moveTo(points[1].x, points[1].y);
-  ctx.lineTo(points[0].x, points[0].y);
-  ctx.stroke();
+  for (const axis in axes) {
+    const [p1, p2] = axes[axis];
+    ctx.strokeStyle = p1.color;
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(p1.x, p1.y);
+    ctx.lineTo(p2.x, p2.y);
+    ctx.stroke();
+  }
 
-  // Y-axis (blue)
-  ctx.strokeStyle = "#3498db";
-  ctx.beginPath();
-  ctx.moveTo(points[3].x, points[3].y);
-  ctx.lineTo(points[2].x, points[2].y);
-  ctx.stroke();
-
-  // --- Connection line if selecting ---
+  // --- Connection line ---
   if (selectedPoint !== null && hoveredPoint !== null && selectedPoint !== hoveredPoint) {
     ctx.strokeStyle = "rgba(100,100,100,0.5)";
     ctx.lineWidth = 2;
@@ -249,9 +233,8 @@ function drawAxes(param) {
     }
   });
 
-  // --- Labels with simplified hover/selection coloring ---
+  // --- Labels with hover/selection coloring ---
   const labelOffset = 50;
-
   function mapColor(val1, val2, matchColor = "#27ae60", altColor = "#f39c12") {
     if (Math.abs(Math.abs(val1) - Math.abs(val2)) < 0.01) return matchColor;
     return null;
@@ -267,7 +250,7 @@ function drawAxes(param) {
     const labelY = p.y + dirY * labelOffset;
 
     let cosColor = p.color;
-    let sinColor = p.color === "#e74c3c" ? "#3498db" : "#e74c3c";
+    let sinColor = p.axis === "X" ? "#3498db" : "#e74c3c";
 
     if (selectedPoint !== null && hoveredPoint !== null && selectedPoint !== hoveredPoint) {
       const sel = points[selectedPoint];
@@ -300,7 +283,7 @@ function drawAxes(param) {
     ctx.fillText(`sin: ${p.sinVal}`, labelX, labelY + 8);
   });
 
-  // --- Center origin ---
+  // --- Center ---
   ctx.fillStyle = "#999";
   ctx.beginPath();
   ctx.arc(cx, cy, 3, 0, Math.PI * 2);
@@ -321,6 +304,7 @@ function drawAxes(param) {
     ctx.fillText(`Transform: ${rel.transform}`, 15, 75);
   }
 }
+
 
 function animate(timestamp) {
   if (!lastTime) lastTime = timestamp;
