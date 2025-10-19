@@ -10,7 +10,9 @@ https://www.shadertoy.com/view/wcXyzB (3D demo that uses traditional sin/cos)
 
 ## Explanation of the handrolled periodicity/continuity:
 ```
-Since the parameter t is only for a single quadrant of a circle we have to make the angle t periodic:
+Since the formula for t is for a quarter of a circle(1.0) we have to make the angle t
+periodic covering 4.0 in the cartersian coordinate system.
+
 c = x coordinate
 s = y coordinate
 For every Point(x,y)
