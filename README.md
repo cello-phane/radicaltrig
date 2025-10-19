@@ -1,13 +1,14 @@
 # radicaltrig
-Radical Angle Units in action
+Radical Angle Units for a formula to compute sin(angle) and cos(angle)
 
-# Gpu shaders that use radical angle units for rotation:
+## GPU shaders that use radical angle units for rotation:
 
 https://www.shadertoy.com/view/M3cfRN (2D demo that uses both kinds of trig (blue and pink))
 
 https://www.shadertoy.com/view/WXVXDR (3D demo that uses radical trig)
 https://www.shadertoy.com/view/wcXyzB (3D demo that uses traditional sin/cos)
 
+## Explanation of the handrolled periodicity/continuity:
 ```
 Since the parameter t is only for a single quadrant of a circle we have to make the angle t periodic:
 c = x coordinate
