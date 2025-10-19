@@ -57,13 +57,13 @@ function getRotationComponents(param) {
   const absVal = Math.abs(param);
   const quadrant = Math.floor(absVal) % 4;
   const fraction = absVal - quadrant;
-  const { c, s } = getRAUComponents(fraction);
+  let { c, s } = getRAUComponents(fraction);
   let q0 = (quadrant === 0);
   let q1 = (quadrant === 1);
   let q2 = (quadrant === 2);
   let q3 = (quadrant === 3);
-  c = c*q0-s*q1-c*q2​+s*q3​;
-  s = (s*q0​+c*q1​-s*q2​-c*q3​)*Math.sign(t);
+  c = c*q0-s*q1-c*q2+s*q3;
+  s = (s*q0+c*q1-s*q2-c*q3)*Math.sign(param);
   return { c, s, quadrant };
 }
 
