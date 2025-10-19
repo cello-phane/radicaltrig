@@ -87,18 +87,17 @@ function getRotationComponents(param) {
 }
 
 function generateRAUPoints(cx, cy, radius, cos, sin) {
-  // offsets: [cosMultiplier, sinMultiplier, color, id, axisType]
+  // Four endpoints with correct signs for cos/sin
   const offsets = [
-    [ 1, -1, "#e74c3c", 0, "X"], // X+ endpoint
-    [-1,  1, "#e74c3c", 1, "X"], // X- endpoint
-    [ 1,  1, "#3498db", 2, "Y"], // Y+ endpoint
-    [-1, -1, "#3498db", 3, "Y"], // Y- endpoint
+    [ 1,  1, "#e74c3c", 0, "X"], // X+ endpoint
+    [-1, -1, "#e74c3c", 1, "X"], // X- endpoint
+    [ 1, -1, "#3498db", 2, "Y"], // Y+ endpoint
+    [-1,  1, "#3498db", 3, "Y"], // Y- endpoint
   ];
 
   return offsets.map(([cMul, sMul, color, id, axis]) => {
-    // Coordinates using signed multipliers
     const x = cx + cMul * (axis === "X" ? cos : sin) * radius;
-    const y = cy + sMul * (axis === "X" ? sin : cos) * radius;
+    const y = cy - sMul * (axis === "X" ? sin : cos) * radius; // flip sin for canvas
 
     const cosVal = (axis === "X" ? cMul * cos : cMul * sin).toFixed(3);
     const sinVal = (axis === "X" ? sMul * sin : sMul * cos).toFixed(3);
