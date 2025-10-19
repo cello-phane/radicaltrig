@@ -86,6 +86,40 @@ function getRotationComponents(param) {
   return { c, s, quadrant };
 }
 
+function generateRAUPoints(cx, cy, radius, cos, sin) {
+  // Define offsets for the four points:
+  // Each item: [cosMultiplier, sinMultiplier, color, id]
+  const offsets = [
+    [ 1, -1, "#e74c3c", 0], // X+ endpoint
+    [-1,  1, "#e74c3c", 1], // X- endpoint
+    [ 1,  1, "#3498db", 2], // Y+ endpoint
+    [-1, -1, "#3498db", 3], // Y- endpoint
+  ];
+
+  const points = offsets.map(([cMul, sMul, color, id]) => {
+    // Correctly compute signed coordinates
+    const x = cx + cMul * (Math.abs(cMul) === 1 ? (cMul > 0 ? cos : cos) * radius : 0)
+                  + (Math.abs(sMul) === 1 ? (sMul > 0 ? sin : sin) * radius : 0);
+    const y = cy + sMul * (Math.abs(sMul) === 1 ? (sMul > 0 ? sin : sin) * radius : 0)
+                  - (Math.abs(cMul) === 1 ? (cMul > 0 ? cos : cos) * radius : 0);
+
+    // Assign consistent cosVal / sinVal for the point
+    let cosVal, sinVal;
+    if (color === "#e74c3c") {
+      cosVal = (cMul * cos).toFixed(3);
+      sinVal = (sMul * sin).toFixed(3);
+    } else {
+      cosVal = (cMul * sin).toFixed(3);
+      sinVal = (sMul * cos).toFixed(3);
+    }
+
+    return { x, y, color, cosVal, sinVal, id };
+  });
+
+  return points;
+}
+
+  
 function calculateRelationship(p1, p2) {
   // RAU parameters for each point (0-4 range)
   const rauP1 = p1.id;
@@ -170,8 +204,10 @@ function drawAxes(param) {
   const p3 = { x: cx + sin*radius, y: cy + cos*radius, color: "#3498db", cosVal: sin.toFixed(3), sinVal: cos.toFixed(3), id: 2 };
   const p4 = { x: cx - sin*radius, y: cy - cos*radius, color: "#3498db", cosVal: (-sin).toFixed(3), sinVal: (-cos).toFixed(3), id: 3 };
 
-  points.length = 0;
-  points.push(p1, p2, p3, p4);
+  //points.length = 0;
+  //points.push(p1, p2, p3, p4);
+  points.push(...generateRAUPoints(cx, cy, radius, cos, sin));
+  
 
   // Draw axes
   ctx.lineWidth = 3;
