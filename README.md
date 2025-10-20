@@ -7,14 +7,6 @@ Radical Angle Units that are used with a formula to compute sin(angle) and cos(a
 https://cello-phane.github.io/radicaltrig/rau_rotating_axes.html
 After a 90 degree sweep, every point(all 4) has swept the circle, which is why this system works.
 ```
-
-Since the formula for t covers only a quarter of a circle (1.0),
-we define the Radical Angle Unit (RAU) to be periodic by using an
-integer 0, 1, 2, and 3 combined with mod 4 arithmetic(the % operator).
-
-c = x coordinate
-s = y coordinate
-For every Point(x,y)
 ┌───────────────────────────────────────────────────┐
 │                    +y                       │
 │                     ↑                       │
@@ -42,11 +34,9 @@ For a parameter `t` between 0 and 1:
 Any angle from 0° to 360° maps to a RAU value from 0 to 4. The integer part gives  
 the quadrant (0, 1, 2, or 3), and the fractional part is used in the base functions above.  
 
-For any quadrant `q`:
-```
+For any quadrant q:
 cos = c·q0 - s·q1 - c·q2 + s·q3
 sin = (s·q0 + c·q1 - s·q2 - c·q3) × sign(parameter)
-```
 
 Where `q0, q1, q2, q3` are booleans (1 if in that quadrant, 0 if not).
 
