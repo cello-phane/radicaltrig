@@ -45,45 +45,29 @@ let selectedPoint = null;
 let hoveredPoint = null;
 const points = [];
 
-function getRAUComponents(f) {
-  const a = 1 - 2*f + 2*f*f;
-  const denom = 1 / Math.sqrt(a);
-  const c = (1 - f) * denom;
-  const s = f * denom;
-  return { c, s };
+function getRAUComponents(t) {
+  const tt = Math.max(0, Math.min(0.999999, t));
+  const denom = 1.0 / Math.sqrt(1.0 - 2.0*tt + 2.0*tt*tt);
+  const rcos = (1.0 - tt) * denom;
+  const rsin = tt * denom;
+  return { rcos, rsin };
 }
 
 function getRotationComponents(param) {
-  if (typeof param !== "number") param = 0;
-
-  const absVal = Math.abs(param);
-  const quadrant = Math.floor(absVal) % 4;
-  const fraction = absVal - quadrant;
-
-  // RAU components
-  const { c: rauC, s: rauS } = getRAUComponents(fraction);
-  let c = rauC;
-  let s = rauS;
-
-  // Quadrant rotation
-  switch (quadrant) {
-    case 0:
-      break; // c,s stay
-    case 1:
-      [c, s] = [-s, c];
-      break;
-    case 2:
-      [c, s] = [-c, -s];
-      break;
-    case 3:
-      [c, s] = [s, -c];
-      break;
+  let p = param;
+  if (!isFinite(p)) p = 0;
+  if (p < 0) p = 0;
+  const q = Math.floor(p) % 4;
+  const frac = p - Math.floor(p);
+  const { cos: c, sin: s } = getRAUComponents(frac);
+  let cos_val, sin_val;
+  switch (q) {
+    case 0: cos_val = c; sin_val = s; break;
+    case 1: cos_val = -s; sin_val = c; break;
+    case 2: cos_val = -c; sin_val = -s; break;
+    case 3: cos_val = s; sin_val = -c; break;
   }
-
-  // Preserve sign of original param
-  s *= Math.sign(param);
-
-  return { c, s, quadrant };
+  return { cos: cos_val, sin: sin_val, quadrant: q, fraction: frac };
 }
 
 function generateRAUPoints(cx, cy, radius, cos, sin) {
