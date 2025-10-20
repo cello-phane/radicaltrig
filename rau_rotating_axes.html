@@ -67,7 +67,7 @@ function getRotationComponents(param) {
     case 2: cos_val = -c; sin_val = -s; break;
     case 3: cos_val = s; sin_val = -c; break;
   }
-  return { cos: cos_val, sin: sin_val, quadrant: q, fraction: frac };
+  return { cos: cos_val, sin: sin_val };
 }
 
 function generateRAUPoints(cx, cy, radius, cos, sin) {
