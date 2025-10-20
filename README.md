@@ -42,11 +42,12 @@ Where `q0, q1, q2, q3` are booleans (1 if in that quadrant, 0 if not).
 
 ### Quadrant Behavior
 
- Quadrant   Angle           Formula       Point          
-| Q0 |          0°–90°        | (+c, +s)   | identity/start|
-| Q1 |          90°–180°    | (-s,  +c)   | rotate 90°    |
-| Q2 |          180°–270°  | (-c,  -s)    | rotate 180°  |
-| Q3 |          270°–360°  | (+s, -c)    | rotate 270°  |
+ Quadrant   Angle       Formula       Point
+---------   ---------  ---------- ----------------
+| Q0 |      0°–90°      (+c, +s)    identity/start  
+| Q1 |      90°–180°    (-s,  +c)   rotate 90°  
+| Q2 |      180°–270°   (-c,  -s)   rotate 180°  
+| Q3 |      270°–360°   (+s, -c)    rotate 270°  
 
 ### Example: 135° (1.5 RAU)
 
