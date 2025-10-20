@@ -487,61 +487,62 @@
         
         // Initial render
         render();
+
+       /* <!---
+        Rotate around an arbitrary axis defined by two vectors:
+        
+        **Arbitrary Axis Rotation with RAU**
+        
+        Given two vectors that define a rotation plane, you can:
+        
+        1. **Find the rotation axis**: `axis = u⃗ × v⃗` (perpendicular to both vectors)
+        2. **Compute the RAU angle**: Using your `vectorAngleRAU()` function
+        3. **Apply Rodrigues' rotation formula** with RAU trigonometry
+        
+        **Implementation:**
+        
+        ```javascript
+        function rotateAroundAxis(point, axis, rauAngle) {
+            // Normalize the axis
+            const len = Math.sqrt(axis.x*axis.x + axis.y*axis.y + axis.z*axis.z);
+            const k = { x: axis.x/len, y: axis.y/len, z: axis.z/len };
+            
+            // Convert RAU to sin/cos using your system
+            const freq = rauAngle * 4.0; // Convert to frequency domain
+            const { sin, cos } = freqRadSinCos(freq);
+            
+            // Rodrigues' formula with RAU trig:
+            // v' = v*cos(θ) + (k×v)*sin(θ) + k*(k·v)*(1-cos(θ))
+            
+            const dot = k.x*point.x + k.y*point.y + k.z*point.z;
+            const cross = {
+                x: k.y*point.z - k.z*point.y,
+                y: k.z*point.x - k.x*point.z,
+                z: k.x*point.y - k.y*point.x
+            };
+            
+            return {
+                x: point.x*cos + cross.x*sin + k.x*dot*(1-cos),
+                y: point.y*cos + cross.y*sin + k.y*dot*(1-cos),
+                z: point.z*cos + cross.z*sin + k.z*dot*(1-cos)
+            };
+        }
+        ```
+        
+        **Usage Example:**
+        
+        ```javascript
+        // Rotate point around axis defined by two vectors
+        const u = {x: 1, y: 0, z: 0};  // X-axis
+        const v = {x: 0, y: 1, z: 0};  // Y-axis
+        const axis = {x: 0, y: 0, z: 1}; // Z-axis (u × v)
+        
+        const point = {x: 5, y: 0, z: 0};
+        const rauAngle = 0.25; // Quarter rotation in RAU space
+        
+        const rotatedPoint = rotateAroundAxis(point, axis, rauAngle);
+        ```
+        --->*/
     </script>
 </body>
 </html>
-<!---
-Rotate around an arbitrary axis defined by two vectors:
-
-**Arbitrary Axis Rotation with RAU**
-
-Given two vectors that define a rotation plane, you can:
-
-1. **Find the rotation axis**: `axis = u⃗ × v⃗` (perpendicular to both vectors)
-2. **Compute the RAU angle**: Using your `vectorAngleRAU()` function
-3. **Apply Rodrigues' rotation formula** with RAU trigonometry
-
-**Implementation:**
-
-```javascript
-function rotateAroundAxis(point, axis, rauAngle) {
-    // Normalize the axis
-    const len = Math.sqrt(axis.x*axis.x + axis.y*axis.y + axis.z*axis.z);
-    const k = { x: axis.x/len, y: axis.y/len, z: axis.z/len };
-    
-    // Convert RAU to sin/cos using your system
-    const freq = rauAngle * 4.0; // Convert to frequency domain
-    const { sin, cos } = freqRadSinCos(freq);
-    
-    // Rodrigues' formula with RAU trig:
-    // v' = v*cos(θ) + (k×v)*sin(θ) + k*(k·v)*(1-cos(θ))
-    
-    const dot = k.x*point.x + k.y*point.y + k.z*point.z;
-    const cross = {
-        x: k.y*point.z - k.z*point.y,
-        y: k.z*point.x - k.x*point.z,
-        z: k.x*point.y - k.y*point.x
-    };
-    
-    return {
-        x: point.x*cos + cross.x*sin + k.x*dot*(1-cos),
-        y: point.y*cos + cross.y*sin + k.y*dot*(1-cos),
-        z: point.z*cos + cross.z*sin + k.z*dot*(1-cos)
-    };
-}
-```
-
-**Usage Example:**
-
-```javascript
-// Rotate point around axis defined by two vectors
-const u = {x: 1, y: 0, z: 0};  // X-axis
-const v = {x: 0, y: 1, z: 0};  // Y-axis
-const axis = {x: 0, y: 0, z: 1}; // Z-axis (u × v)
-
-const point = {x: 5, y: 0, z: 0};
-const rauAngle = 0.25; // Quarter rotation in RAU space
-
-const rotatedPoint = rotateAroundAxis(point, axis, rauAngle);
-```
---->
