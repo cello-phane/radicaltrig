@@ -22,7 +22,8 @@ For every Point(x,y)
 │        (-c,+s)      |     (+c,+s)           │
 │  -x-----------------+------------------> +x │
 │          Q2         |        Q3             │
-│        (-c,-s)      |     (+c,-s)           │
+│        (-c,-s)      |     (+c,-s)           |
+│                    -y                       |
 └───────────────────────────────────────────────────┘
 So the algorithm(for the coordinates) for any parameter 0.0 - 4.0:      
 Q0: 0 ≤ t < 1	both stay +	 (+c, +s) | 0°–90°
