@@ -1,34 +1,43 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>RAU Axis Reflection with Endpoint Labels</title>
-<style>
-  body {
-    background: #fff;
-    color: #222;
-    text-align: center;
-    font-family: monospace;
-    margin: 0;
-    padding: 10px;
-  }
-  canvas {
-    border: 1px solid #ccc;
-    margin-top: 10px;
-    border-radius: 8px;
-    background: #fff;
-  }
-  label { margin: 0 8px; }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RAU Axis Reflection with Endpoint Labels</title>
+  <style>
+    body {
+      background: #fff;
+      color: #222;
+      text-align: center;
+      font-family: monospace;
+      margin: 0;
+      padding: 10px;
+    }
+    canvas {
+      border: 1px solid #ccc;
+      margin-top: 10px;
+      border-radius: 8px;
+      background: #fff;
+      cursor: default;
+    }
+    label { 
+      margin: 0 8px;
+      display: inline-block;
+    }
+    input[type="range"] {
+      width: 150px;
+    }
+  </style>
 </head>
 <body>
+
 <h2>RAU Axis Reflection — Symmetry Mapping</h2>
 <canvas id="canvas" width="500" height="500"></canvas>
 <br>
 <label>Phase:
   <input type="range" id="slider" min="0" max="4" step="0.0005" value="0">
 </label>
-<label><input type="checkbox" id="auto" unchecked> Auto</label>
+<label><input type="checkbox" id="auto"> Auto</label>
 <label>Speed:
   <input type="range" id="speed" min="0.1" max="2" step="0.1" value="0.1">
 </label>
@@ -71,17 +80,16 @@ function getRotationComponents(param) {
 }
 
 function generateRAUPoints(cx, cy, radius, cos, sin) {
-  // Four endpoints with correct signs for cos/sin
   const offsets = [
-    [ 1,  1, "#e74c3c", 0, "X"], // X+ endpoint
-    [-1, -1, "#e74c3c", 1, "X"], // X- endpoint
-    [ 1, -1, "#3498db", 2, "Y"], // Y+ endpoint
-    [-1,  1, "#3498db", 3, "Y"], // Y- endpoint
+    [ 1,  1, "#e74c3c", 0, "X"],
+    [-1, -1, "#e74c3c", 1, "X"],
+    [ 1, -1, "#3498db", 2, "Y"],
+    [-1,  1, "#3498db", 3, "Y"],
   ];
 
   return offsets.map(([cMul, sMul, color, id, axis]) => {
     const x = cx + cMul * (axis === "X" ? cos : sin) * radius;
-    const y = cy - sMul * (axis === "X" ? sin : cos) * radius; // flip sin for canvas
+    const y = cy - sMul * (axis === "X" ? sin : cos) * radius;
 
     const cosVal = (axis === "X" ? cMul * cos : cMul * sin).toFixed(3);
     const sinVal = (axis === "X" ? sMul * sin : sMul * cos).toFixed(3);
@@ -91,25 +99,16 @@ function generateRAUPoints(cx, cy, radius, cos, sin) {
 }
   
 function calculateRelationship(p1, p2) {
-  // RAU parameters for each point (0-4 range)
   const rauP1 = p1.id;
   const rauP2 = p2.id;
   
-  // For a cross (4 points), relationships are simple:
-  // Same axis (0-1 or 2-3): opposite, 2 quadrants (180°)
-  // Different axis (0-2, 0-3, 1-2, 1-3): adjacent, 1 quadrant (90°)
   const sameAxis = (rauP1 < 2 && rauP2 < 2) || (rauP1 >= 2 && rauP2 >= 2);
   const shift = sameAxis ? 2 : 1;
-  const amount = shift;
   
-  // Direction: clockwise vs counter-clockwise
-  // Counter-clockwise: 0→2, 2→1, 1→3, 3→0
-  // Clockwise: 0→3, 3→1, 1→2, 2→0
   const ccwPairs = [[0,2], [2,1], [1,3], [3,0]];
   const isCounterClockwise = ccwPairs.some(pair => pair[0] === rauP1 && pair[1] === rauP2);
   const direction = isCounterClockwise ? "counter-clockwise" : "clockwise";
   
-  // Describe the coordinate transformation
   const cos1 = parseFloat(p1.cosVal);
   const sin1 = parseFloat(p1.sinVal);
   const cos2 = parseFloat(p2.cosVal);
@@ -117,7 +116,6 @@ function calculateRelationship(p1, p2) {
   
   let transform = "";
   
-  // Check for common transformations
   if (Math.abs(cos1 - cos2) < 0.01 && Math.abs(sin1 + sin2) < 0.01) {
     transform = `cos stays ${cos1.toFixed(2)}, sin → -sin`;
   } else if (Math.abs(cos1 + cos2) < 0.01 && Math.abs(sin1 - sin2) < 0.01) {
@@ -137,7 +135,7 @@ function calculateRelationship(p1, p2) {
   return { 
     rauP1: rauP1.toFixed(1), 
     rauP2: rauP2.toFixed(1),
-    shift: amount,
+    shift: shift,
     direction,
     transform
   };
@@ -149,7 +147,6 @@ function drawAxes(param) {
 
   ctx.clearRect(0, 0, W, H);
 
-  // --- Grid ---
   ctx.strokeStyle = "#f0f0f0";
   ctx.lineWidth = 1;
   for (let i = -4; i <= 4; i++) {
@@ -164,23 +161,17 @@ function drawAxes(param) {
     ctx.stroke();
   }
 
-  // --- Circle ---
   ctx.strokeStyle = "#ddd";
   ctx.lineWidth = 2;
   ctx.beginPath();
   ctx.arc(cx, cy, radius, 0, Math.PI * 2);
   ctx.stroke();
 
-  // --- Rotation ---
-  const { c, s } = getRotationComponents(param % 4);
-  const cos = typeof c === "number" ? c : 0;
-  const sin = typeof s === "number" ? s : 0;
+  const { cos, sin } = getRotationComponents(param % 4);
 
-  // --- Generate points ---
   points.length = 0;
   points.push(...generateRAUPoints(cx, cy, radius, cos, sin));
 
-  // --- Draw axes dynamically ---
   const axes = { "X": [], "Y": [] };
   points.forEach(p => axes[p.axis].push(p));
 
@@ -194,7 +185,6 @@ function drawAxes(param) {
     ctx.stroke();
   }
 
-  // --- Connection line ---
   if (selectedPoint !== null && hoveredPoint !== null && selectedPoint !== hoveredPoint) {
     ctx.strokeStyle = "rgba(100,100,100,0.5)";
     ctx.lineWidth = 2;
@@ -206,7 +196,6 @@ function drawAxes(param) {
     ctx.setLineDash([]);
   }
 
-  // --- Draw points ---
   points.forEach((p, idx) => {
     const isSelected = selectedPoint === idx;
     const isHovered = hoveredPoint === idx;
@@ -223,7 +212,6 @@ function drawAxes(param) {
     }
   });
 
-  // --- Labels with hover/selection coloring ---
   const labelOffset = 50;
 
   points.forEach(p => {
@@ -286,13 +274,11 @@ function drawAxes(param) {
     ctx.fillText(`sin: ${p.sinVal}`, labelX, labelY + 8);
   });
 
-  // --- Center ---
   ctx.fillStyle = "#999";
   ctx.beginPath();
   ctx.arc(cx, cy, 3, 0, Math.PI * 2);
   ctx.fill();
 
-  // --- Info ---
   ctx.fillStyle = "#000";
   ctx.font = "14px monospace";
   ctx.textAlign = "left";
@@ -367,5 +353,6 @@ canvas.addEventListener('mouseleave', () => hoveredPoint = null);
 drawAxes(t);
 requestAnimationFrame(animate);
 </script>
+
 </body>
 </html>
