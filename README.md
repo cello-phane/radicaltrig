@@ -54,4 +54,4 @@ https://www.shadertoy.com/view/WXVXDR (3D demo that uses radical trig)
 
 https://www.shadertoy.com/view/wcXyzB (3D demo that uses traditional sin/cos)
 
-https://www.geogebra.org/classic/tepm6wcn - Geogebra applet (shows a direct comparison)
+https://www.geogebra.org/classic/tepm6wcn - Geogebra applet (shows an rau & original sin/cos)
