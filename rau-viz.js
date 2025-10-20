@@ -43,6 +43,32 @@ function radicalTan(t) {
   const base = f / (1.0 - f);
   return (q === 1 || q === 3) ? -1.0 / base : base;
 }
+
+function getRAUComponents(t) {
+  const tt = Math.max(0, Math.min(0.999999, t));
+  const denom = 1.0 / Math.sqrt(1.0 - 2.0*tt + 2.0*tt*tt);
+  const rcos = (1.0 - tt) * denom;
+  const rsin = tt * denom;
+  return { cos: rcos, sin: rsin };
+}
+
+function getRotationComponents(param) {
+  let p = param;
+  if (!isFinite(p)) p = 0;
+  if (p < 0) p = 0;
+  const q = Math.floor(p) % 4;
+  const frac = p - Math.floor(p);
+  const { cos: c, sin: s } = getRAUComponents(frac);
+  let cos_val, sin_val;
+  switch (q) {
+    case 0: cos_val = c; sin_val = s; break;
+    case 1: cos_val = -s; sin_val = c; break;
+    case 2: cos_val = -c; sin_val = -s; break;
+    case 3: cos_val = s; sin_val = -c; break;
+  }
+  return { cos: cos_val, sin: sin_val, quadrant: q, fraction: frac };
+}
+
 function degToRad(deg) { return deg * Math.PI/180; }
 
 function radToDeg(rad) { return rad*180/Math.PI; }
@@ -247,31 +273,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const ctx = canvas.getContext('2d');
     const slider = document.getElementById('paramSlider');
     const valueDisplay = document.getElementById('paramValue');
-
-    function getRAUComponents(t) {
-      const tt = Math.max(0, Math.min(0.999999, t));
-      const denom = 1.0 / Math.sqrt(1.0 - 2.0*tt + 2.0*tt*tt);
-      const rcos = (1.0 - tt) * denom;
-      const rsin = tt * denom;
-      return { cos: rcos, sin: rsin };
-    }
-
-    function getRotationComponents(param) {
-      let p = param;
-      if (!isFinite(p)) p = 0;
-      if (p < 0) p = 0;
-      const q = Math.floor(p) % 4;
-      const frac = p - Math.floor(p);
-      const { cos: c, sin: s } = getRAUComponents(frac);
-      let cos_val, sin_val;
-      switch (q) {
-        case 0: cos_val = c; sin_val = s; break;
-        case 1: cos_val = -s; sin_val = c; break;
-        case 2: cos_val = -c; sin_val = -s; break;
-        case 3: cos_val = s; sin_val = -c; break;
-      }
-      return { cos: cos_val, sin: sin_val, quadrant: q, fraction: frac };
-    }
 
     function drawGrid(cx, cy, w, h, scale=50) {
       ctx.save();
