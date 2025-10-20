@@ -59,14 +59,17 @@ function getRotationComponents(param) {
   const q = Math.floor(p) % 4;
   const frac = p - Math.floor(p);
   const { cos: c, sin: s } = getRAUComponents(frac);
-  let cos_val, sin_val;
+  /*
+  let cos_result, sin_result;
   switch (q) {
-    case 0: cos_val = c; sin_val = s; break;
-    case 1: cos_val = -s; sin_val = c; break;
-    case 2: cos_val = -c; sin_val = -s; break;
-    case 3: cos_val = s; sin_val = -c; break;
-  }
-  return { cos: cos_val, sin: sin_val, quadrant: q, fraction: frac };
+    case 0: cos_result = c; sin_result = s; break;
+    case 1: cos_result = -s; sin_result = c; break;
+    case 2: cos_result = -c; sin_result = -s; break;
+    case 3: cos_result = s; sin_result = -c; break;
+  }*/
+  let cos_result = c*q0 - s*q1 - c*q2 + s*q3;
+  let sin_result = (s*q0 + c*q1 - s*q2 - c*q3) * (Math.sign(freq)); 
+  return { cos: cos_result, sin: sin_result, quadrant: q, fraction: frac };
 }
 
 function degToRad(deg) { return deg * Math.PI/180; }
