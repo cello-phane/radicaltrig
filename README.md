@@ -25,28 +25,46 @@ For every Point(x,y)
 │        (-c,-s)      |     (+c,-s)           |
 │                    -y                       |
 └───────────────────────────────────────────────────┘
-So the algorithm(for the coordinates) for any parameter 0.0 - 4.0:      
-Q0: 0 ≤ t < 1	both stay +	 (+c, +s) | 0°–90°
-Q1:	1 ≤ t < 2	mirror X↔Y	  (-s, +c) | 90°–180° 
-Q2:	2 ≤ t < 3	both negated (-c, -s) | 180°–270°
-Q3:	3 ≤ t < 4	mirror X↔Y 	 (+s, -c) | 270°–360°
 
-Make the parameter % 4 minus fraction(after decimal point)
-equal q# integer for each quadrant.
-For every integer q# as boolean q0==0, q1==1, q2==2, q3==3
-that becomes 0.0(false) or 1.0(true) for every quadrant 0-3.
-cos = c x q0​ - s x q1​ - c x q2 + s x q3​
-sin = (s x q0 + c x q1​ - s x q2​ - c x q3​) x sign(parameter)​  ----> Point(c,s)
+## Radical Angle Unit (RAU) System
 
+The RAU trigonometric functions map a quarter-circle (0 to 1) onto a full  
+circle using a 0-4 parameter space with four quadrants.
 
-#An example with 135 degrees
-1.5 radical angle unit === 135 deg
- 1.5 - 0.5 = 1 so mapped to Q1
-c = cos(0.5)  0.5/sqrt(1-2*0.5+2*(0.5^2)) =        sqrt(2)/2
-cos = cx0 - sx1 - cx0 + sx0 = -s                       ||                 
-s = sin(0.5)  (1.0-0.5)/sqrt(1-2*0.5+2*(0.5^2)) =  sqrt(2)/2       Point (-s, +c)
-sin = (sx0 + cx1 - sx0 - cx0) x (+1) = +c        Point(cos,sin) = (-0.707106, 0.707106)
+### Base Functions
+
+For a parameter `t` between 0 and 1:
+- `c = (1-t) / √(1 - 2t + 2t²)` (cosine component)
+- `s = t / √(1 - 2t + 2t²)` (sine component)
+
+### Quadrant Mapping
+
+Any angle from 0° to 360° maps to a RAU value from 0 to 4. The integer part gives  
+the quadrant (0, 1, 2, or 3), and the fractional part is used in the base functions above.  
+
+For any quadrant `q`:
 ```
+cos = c·q0 - s·q1 - c·q2 + s·q3
+sin = (s·q0 + c·q1 - s·q2 - c·q3) × sign(parameter)
+```
+
+Where `q0, q1, q2, q3` are booleans (1 if in that quadrant, 0 if not).
+
+### Quadrant Behavior
+
+ Quadrant   Angle           Formula       Point          
+| Q0 |          0°–90°        | (+c, +s)   | identity/start|
+| Q1 |          90°–180°    | (-s,  +c)   | rotate 90°    |
+| Q2 |          180°–270°  | (-c,  -s)    | rotate 180°  |
+| Q3 |          270°–360°  | (+s, -c)    | rotate 270°  |
+
+### Example: 135° (1.5 RAU)
+
+- Quadrant: floor(1.5) = 1 (Q1), fraction = 0.5
+- Base: c = s = √2/2 ≈ 0.707
+- Apply Q1 mapping: (-s, +c) = (-0.707, 0.707)
+```
+
 ## GPU shaders and other things that use radical angle units for rotation:
 
 https://www.shadertoy.com/view/M3cfRN (2D demo that uses both kinds of trig (blue and pink))
