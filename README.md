@@ -5,7 +5,7 @@ Radical Angle Units that are used with a formula to compute sin(angle) and cos(a
 
 ## Explanation of the handrolled periodicity/continuity:
 https://cello-phane.github.io/radicaltrig/rau_rotating_axes.html
-After a 90 degree sweep, every point(all 4) has swept the circle, which is why this system works.
+After a 90 degree sweep, every point(all 4) has covered the circle, which is why this system works.
 ```
 ┌───────────────────────────────────────────────────┐
 │                    +y                       │  Quadrant  Angle       Point    
