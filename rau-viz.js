@@ -67,10 +67,10 @@ function getRotationComponents(param) {
     case 2: cos_result = -c; sin_result = -s; break;
     case 3: cos_result = s; sin_result = -c; break;
   }*/
-  const q0 == Number(q == 0);
-  const q1 == Number(q == 1);
-  const q2 == Number(q == 2);
-  const q3 == Number(q == 3);
+  const q0 = Number(q === 0);
+  const q1 = Number(q === 1);
+  const q2 = Number(q === 2);
+  const q3 = Number(q === 3);
   let cos_result = c*q0 - s*q1 - c*q2 + s*q3;
   let sin_result = (s*q0 + c*q1 - s*q2 - c*q3) * (Math.sign(freq)); 
   return { cos: cos_result, sin: sin_result, quadrant: q, fraction: frac };
