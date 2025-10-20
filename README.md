@@ -8,12 +8,12 @@ https://cello-phane.github.io/radicaltrig/rau_rotating_axes.html
 After a 90 degree sweep, every point(all 4) has swept the circle, which is why this system works.
 ```
 ┌───────────────────────────────────────────────────┐
-│                    +y                       │  Quadrant  Angle       Formula       Point
-│                     ↑                       │  --------  ---------   ---------   --------------
-│          Q1         |        Q0             │  | Q0 |    0°–90°      (+c, +s)    identity/start  
-│        (-c,+s)      |     (+c,+s)           │  | Q1 |    90°–180°    (-s,  +c)   rotate 90°  
-│  -x-----------------+------------------> +x │  | Q2 |    180°–270°   (-c,  -s)   rotate 180°  
-│          Q2         |        Q3             │  | Q3 |    270°–360°   (+s, -c)    rotate 270°  
+│                    +y                       │  Quadrant  Angle       Point    
+│                     ↑                       │  --------  ---------   --------- 
+│          Q1         |        Q0             │  | Q0 |    0°–90°      (+c, +s)  (red)
+│        (-c,+s)      |     (+c,+s)           │  | Q1 |    90°–180°    (-s, +c)  (blue)
+│  -x-----------------+------------------> +x │  | Q2 |    180°–270°   (-c, -s)  (red)
+│          Q2         |        Q3             │  | Q3 |    270°–360°   (+s, -c)  (blue)
 │        (-c,-s)      |     (+c,-s)           |
 │                    -y                       |
 └───────────────────────────────────────────────────┘
