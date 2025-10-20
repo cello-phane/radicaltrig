@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Wireframe Sphere</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: #0a0a0a;
+            color: white;
+            font-family: monospace;
+            overflow: hidden;
+        }
+        
+        canvas {
+            display: block;
+            margin: 0 auto;
+            border: 1px solid #333;
+            background: linear-gradient(45deg, #001122, #000511);
+        }
+        
+        .controls {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0,0,0,0.8);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #333;
+        }
+        
+        .control-group {
+            margin-bottom: 10px;
+        }
+        
+        label {
+            display: inline-block;
+            width: 120px;
+            font-size: 12px;
+        }
+        
+        input[type="range"] {
+            width: 150px;
+        }
+        
+        .value {
+            color: #00ff88;
+            font-weight: bold;
+        }
+        
+        .info {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(0,0,0,0.8);
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #333;
+            font-size: 11px;
+            max-width: 300px;
+        }
+        
+        .animation-controls {
+            margin-top: 15px;
+            border-top: 1px solid #333;
+            padding-top: 10px;
+        }
+        
+        button {
+            background: #333;
+            color: white;
+            border: 1px solid #555;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        
+        button:hover {
+            background: #555;
+        }
+        
+        button.active {
+            background: #007755;
+        }
+    </style>
+</head>
+<body>
+    <div class="controls">
+        <div class="control-group">
+            <label>Rotation X:</label>
+            <input type="range" id="rotX" min="0" max="360" value="30">
+            <span class="value" id="rotXVal">30°</span>
+        </div>
+        <div class="control-group">
+            <label>Rotation Y:</label>
+            <input type="range" id="rotY" min="0" max="360" value="45">
+            <span class="value" id="rotYVal">45°</span>
+        </div>
+        <div class="control-group">
+            <label>Integration Param:</label>
+            <input type="range" id="integParam" min="0" max="100" value="50">
+            <span class="value" id="integParamVal">0.50</span>
+        </div>
+        <div class="control-group">
+            <label>Meridians:</label>
+            <input type="range" id="meridians" min="8" max="32" value="16">
+            <span class="value" id="meridiansVal">16</span>
+        </div>
+        <div class="control-group">
+            <label>Parallels:</label>
+            <input type="range" id="parallels" min="8" max="32" value="12">
+            <span class="value" id="parallelsVal">12</span>
+        </div>
+        <div class="control-group">
+            <label>Perspective:</label>
+            <input type="range" id="perspective" min="100" max="1000" value="400">
+            <span class="value" id="perspectiveVal">400</span>
+        </div>
+        
+        <div class="animation-controls">
+            <div class="control-group">
+                <label>Frame Delay (ms):</label>
+                <input type="range" id="frameDelay" min="16" max="500" value="100">
+                <span class="value" id="frameDelayVal">100ms</span>
+            </div>
+            <button id="toggleAnim">Start Animation</button>
+            <button id="stepAnim">Step Once</button>
+        </div>
+    </div>
+    
+    <canvas id="canvas" width="800" height="600"></canvas>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height / 2;
+        
+        // Control elements
+        const controls = {
+            rotX: document.getElementById('rotX'),
+            rotY: document.getElementById('rotY'),
+            integParam: document.getElementById('integParam'),
+            meridians: document.getElementById('meridians'),
+            parallels: document.getElementById('parallels'),
+            perspective: document.getElementById('perspective'),
+            frameDelay: document.getElementById('frameDelay')
+        };
+        
+        const values = {
+            rotXVal: document.getElementById('rotXVal'),
+            rotYVal: document.getElementById('rotYVal'),
+            integParamVal: document.getElementById('integParamVal'),
+            meridiansVal: document.getElementById('meridiansVal'),
+            parallelsVal: document.getElementById('parallelsVal'),
+            perspectiveVal: document.getElementById('perspectiveVal'),
+            frameDelayVal: document.getElementById('frameDelayVal')
+        };
+        
+        // Animation controls
+        const toggleAnimBtn = document.getElementById('toggleAnim');
+        const stepAnimBtn = document.getElementById('stepAnim');
+        
+        function rsin(x) {
+            const a = 1.0 - 2.0 * x + 2.0 * x * x;
+            const invSqrtA = 1.0 / Math.sqrt(a);
+            return x * invSqrtA;
+        }
+
+        function rcos(x) {
+            const a = 1.0 - 2.0 * x + 2.0 * x * x;
+            const invSqrtA = 1.0 / Math.sqrt(a);
+            return (1.0 - x) * invSqrtA;
+        }
+
+        function rpsin(x) {
+            const x2 = x * x;
+            return (2.0 * x) / (1.0 + x2);
+        }
+
+        function rpcos(x) {
+            const x2 = x * x;
+            return (1.0 - x2) / (1.0 + x2);
+        }
+
+        // Convert from degrees to your frequency domain (period 4)
+        function degreesToFreq(degrees) {
+            return (degrees / 90.0); // Maps 0-360° to 0-4 frequency units
+        }
+        
+        // Quadrant mapping for frequency domain trig
+        function freqRadSinCos(freq) {
+            const phase = freq % 4.0;
+            const quadrant = Math.floor(phase);
+            const t = phase - quadrant;
+            const s = rsin(t);
+            const c = rcos(t);
+            const q0 = Number(quadrant === 0);
+            const q1 = Number(quadrant === 1);
+            const q2 = Number(quadrant === 2);
+            const q3 = Number(quadrant === 3);
+            // Quadrant mapping
+            /*let sin_result, cos_result;
+            if (quadrant === 0) {
+                sin_result = s; cos_result = c;
+            } else if (quadrant === 1) {
+                sin_result = c; cos_result = -s;
+            } else if (quadrant === 2) {
+                sin_result = -s; cos_result = -c;
+            } else {
+                sin_result = -c; cos_result = s;
+            }*/
+            let cos_result = c*q0 - s*q1 - c*q2 + s*q3;
+            let sin_result = (s*q0 + c*q1 - s*q2 - c*q3) * (Math.sign(freq)); 
+            return { sin: sin_result, cos: cos_result };
+        }
+
+        // 3D Rotation using RAU radical angle system
+        function rotateX(point, angleDegrees) {
+            const freq = degreesToFreq(angleDegrees);
+            const { sin, cos } = freqRadSinCos(freq);
+            return {
+                x: point.x,
+                y: point.y * cos - point.z * sin,
+                z: point.y * sin + point.z * cos
+            };
+        }
+        
+        function rotateY(point, angleDegrees) {
+            const freq = degreesToFreq(angleDegrees);
+            const { sin, cos } = freqRadSinCos(freq);
+            return {
+                x: point.x * cos + point.z * sin,
+                y: point.y,
+                z: -point.x * sin + point.z * cos
+            };
+        }
+        
+        function project3D(point3d, perspective) {
+            const scale = perspective / (perspective + point3d.z);
+            return {
+                x: centerX + point3d.x * scale,
+                y: centerY + point3d.y * scale,
+                scale: scale
+            };
+        }
+        
+        // Semicircle integration approximation
+        function semicircleIntegral(r, a, steps = 50) {
+            const start = r * a;
+            const end = r * (2 * a);
+            const dx = (end - start) / steps;
+            let sum = 0;
+            
+            for (let i = 0; i < steps; i++) {
+                const x = start + i * dx;
+                if (x <= r) {
+                    const height = Math.sqrt(r * r - x * x);
+                    sum += height * dx;
+                }
+            }
+            return sum;
+        }
+        
+        // Generate sphere points using RAU radical angle system
+        function generateSpherePoints(radius, meridianCount, parallelCount, integParam) {
+            const points = [];
+            const a = integParam; // Integration parameter (0-1)
+            
+            // Generate meridians using frequency domain (0-4 instead of 0-2π)
+            for (let m = 0; m < meridianCount; m++) {
+                const phiFreq = (m / meridianCount) * 4.0; // Longitude in your freq units
+                const meridianPoints = [];
+                
+                for (let p = 0; p <= parallelCount; p++) {
+                    const thetaFreq = (p / parallelCount) * 2.0; // Latitude in your freq units
+                    
+                    // Apply semicircle integration influence
+                    const integralInfluence = semicircleIntegral(radius, a) / (radius * radius);
+                    const modifiedRadius = radius * (1 + 0.1 * freqRadSinCos(integralInfluence * 2.0).sin);
+                    
+                    // Spherical to Cartesian using RAU radical trig functions
+                    const thetaTrig = freqRadSinCos(thetaFreq);
+                    const phiTrig = freqRadSinCos(phiFreq);
+                    
+                    const x = modifiedRadius * thetaTrig.sin * phiTrig.cos;
+                    const y = modifiedRadius * thetaTrig.cos;
+                    const z = modifiedRadius * thetaTrig.sin * phiTrig.sin;
+                    
+                    meridianPoints.push({ x, y, z });
+                }
+                points.push(meridianPoints);
+            }
+            
+            // Generate parallels using RAU radical angle system
+            const parallelLines = [];
+            for (let p = 1; p < parallelCount; p++) { // Skip poles
+                const thetaFreq = (p / parallelCount) * 2.0;
+                const parallelPoints = [];
+                
+                for (let m = 0; m <= meridianCount; m++) {
+                    const phiFreq = (m / meridianCount) * 4.0;
+                    
+                    const integralInfluence = semicircleIntegral(radius, a) / (radius * radius);
+                    const modifiedRadius = radius * (1 + 0.1 * freqRadSinCos(integralInfluence * 2.0).sin);
+                    
+                    const thetaTrig = freqRadSinCos(thetaFreq);
+                    const phiTrig = freqRadSinCos(phiFreq);
+                    
+                    const x = modifiedRadius * thetaTrig.sin * phiTrig.cos;
+                    const y = modifiedRadius * thetaTrig.cos;
+                    const z = modifiedRadius * thetaTrig.sin * phiTrig.sin;
+                    
+                    parallelPoints.push({ x, y, z });
+                }
+                parallelLines.push(parallelPoints);
+            }
+            
+            return { meridians: points, parallels: parallelLines };
+        }
+        
+        // Drawing functions
+        function drawLine(from, to, color = '#00ff88', width = 1) {
+            ctx.strokeStyle = color;
+            ctx.lineWidth = width;
+            ctx.beginPath();
+            ctx.moveTo(from.x, from.y);
+            ctx.lineTo(to.x, to.y);
+            ctx.stroke();
+        }
+        
+        function drawPoint(point, color = '#ff4444', size = 3) {
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.arc(point.x, point.y, size, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        
+        // Main render function using RAU radical angle system
+        function render() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            const rotXAngle = parseFloat(controls.rotX.value); // Now in degrees
+            const rotYAngle = parseFloat(controls.rotY.value); // Now in degrees
+            const integParam = parseFloat(controls.integParam.value) / 100;
+            const meridianCount = parseInt(controls.meridians.value);
+            const parallelCount = parseInt(controls.parallels.value);
+            const perspective = parseFloat(controls.perspective.value);
+            
+            const radius = 150;
+            const sphereData = generateSpherePoints(radius, meridianCount, parallelCount, integParam);
+            
+            // Transform and project meridians
+            sphereData.meridians.forEach((meridian, mIndex) => {
+                const projectedPoints = [];
+                
+                meridian.forEach(point => {
+                    let transformed = rotateX(point, rotXAngle);
+                    transformed = rotateY(transformed, rotYAngle);
+                    const projected = project3D(transformed, perspective);
+                    projectedPoints.push(projected);
+                });
+                
+                // Draw meridian lines
+                for (let i = 0; i < projectedPoints.length - 1; i++) {
+                    const brightness = Math.max(0.3, projectedPoints[i].scale);
+                    const color = `rgba(0, 255, 136, ${brightness})`;
+                    drawLine(projectedPoints[i], projectedPoints[i + 1], color, brightness);
+                }
+                
+                // Highlight special meridians affected by integration
+                if (mIndex === Math.floor(meridianCount * integParam)) {
+                    projectedPoints.forEach(point => {
+                        drawPoint(point, '#ff8800', 2);
+                    });
+                }
+            });
+            
+            // Transform and project parallels
+            sphereData.parallels.forEach(parallel => {
+                const projectedPoints = [];
+                
+                parallel.forEach(point => {
+                    let transformed = rotateX(point, rotXAngle);
+                    transformed = rotateY(transformed, rotYAngle);
+                    const projected = project3D(transformed, perspective);
+                    projectedPoints.push(projected);
+                });
+                
+                // Draw parallel lines
+                for (let i = 0; i < projectedPoints.length - 1; i++) {
+                    const brightness = Math.max(0.2, projectedPoints[i].scale * 0.7);
+                    const color = `rgba(136, 136, 255, ${brightness})`;
+                    drawLine(projectedPoints[i], projectedPoints[i + 1], color, brightness);
+                }
+            });
+        }
+        
+        // Animation system with controlled timing
+        let animating = false;
+        let lastFrameTime = 0;
+        let animationFrame = null;
+        
+        function step(currentTime) {
+            const frameDelay = parseFloat(controls.frameDelay.value);
+            
+            // Only proceed if enough time has passed
+            if (currentTime - lastFrameTime >= frameDelay) {
+                // Update rotation
+                controls.rotY.value = (parseFloat(controls.rotY.value) + 1) % 360;
+                values.rotYVal.textContent = controls.rotY.value + '°';
+                render();
+                
+                // Update last frame time
+                lastFrameTime = currentTime;
+            }
+            
+            // Continue animation if still animating
+            if (animating) {
+                animationFrame = requestAnimationFrame(step);
+            }
+        }
+        
+        function startAnimation() {
+            if (!animating) {
+                animating = true;
+                lastFrameTime = 0; // Reset timing
+                animationFrame = requestAnimationFrame(step);
+                toggleAnimBtn.textContent = 'Stop Animation';
+                toggleAnimBtn.classList.add('active');
+            }
+        }
+        
+        function stopAnimation() {
+            if (animating) {
+                animating = false;
+                if (animationFrame) {
+                    cancelAnimationFrame(animationFrame);
+                    animationFrame = null;
+                }
+                toggleAnimBtn.textContent = 'Start Animation';
+                toggleAnimBtn.classList.remove('active');
+            }
+        }
+        
+        function toggleAnimation() {
+            if (animating) {
+                stopAnimation();
+            } else {
+                startAnimation();
+            }
+        }
+        
+        function stepOnce() {
+            // Single step animation
+            controls.rotY.value = (parseFloat(controls.rotY.value) + 1) % 360;
+            values.rotYVal.textContent = controls.rotY.value + '°';
+            render();
+        }
+        
+        // Event listeners for controls
+        Object.keys(controls).forEach(key => {
+            controls[key].addEventListener('input', (e) => {
+                const value = e.target.value;
+                if (key === 'integParam') {
+                    values[key + 'Val'].textContent = (value / 100).toFixed(2);
+                } else if (key === 'rotX' || key === 'rotY') {
+                    values[key + 'Val'].textContent = value + '°';
+                } else if (key === 'frameDelay') {
+                    values[key + 'Val'].textContent = value + 'ms';
+                } else {
+                    values[key + 'Val'].textContent = value;
+                }
+                render();
+            });
+        });
+        
+        // Animation control event listeners
+        toggleAnimBtn.addEventListener('click', toggleAnimation);
+        stepAnimBtn.addEventListener('click', stepOnce);
+        
+        // Double-click canvas to toggle animation (legacy support)
+        canvas.addEventListener('dblclick', toggleAnimation);
+        
+        // Initial render
+        render();
+    </script>
+</body>
+</html>
+<!---
+Rotate around an arbitrary axis defined by two vectors:
+
+**Arbitrary Axis Rotation with RAU**
+
+Given two vectors that define a rotation plane, you can:
+
+1. **Find the rotation axis**: `axis = u⃗ × v⃗` (perpendicular to both vectors)
+2. **Compute the RAU angle**: Using your `vectorAngleRAU()` function
+3. **Apply Rodrigues' rotation formula** with RAU trigonometry
+
+**Implementation:**
+
+```javascript
+function rotateAroundAxis(point, axis, rauAngle) {
+    // Normalize the axis
+    const len = Math.sqrt(axis.x*axis.x + axis.y*axis.y + axis.z*axis.z);
+    const k = { x: axis.x/len, y: axis.y/len, z: axis.z/len };
+    
+    // Convert RAU to sin/cos using your system
+    const freq = rauAngle * 4.0; // Convert to frequency domain
+    const { sin, cos } = freqRadSinCos(freq);
+    
+    // Rodrigues' formula with RAU trig:
+    // v' = v*cos(θ) + (k×v)*sin(θ) + k*(k·v)*(1-cos(θ))
+    
+    const dot = k.x*point.x + k.y*point.y + k.z*point.z;
+    const cross = {
+        x: k.y*point.z - k.z*point.y,
+        y: k.z*point.x - k.x*point.z,
+        z: k.x*point.y - k.y*point.x
+    };
+    
+    return {
+        x: point.x*cos + cross.x*sin + k.x*dot*(1-cos),
+        y: point.y*cos + cross.y*sin + k.y*dot*(1-cos),
+        z: point.z*cos + cross.z*sin + k.z*dot*(1-cos)
+    };
+}
+```
+
+**Usage Example:**
+
+```javascript
+// Rotate point around axis defined by two vectors
+const u = {x: 1, y: 0, z: 0};  // X-axis
+const v = {x: 0, y: 1, z: 0};  // Y-axis
+const axis = {x: 0, y: 0, z: 1}; // Z-axis (u × v)
+
+const point = {x: 5, y: 0, z: 0};
+const rauAngle = 0.25; // Quarter rotation in RAU space
+
+const rotatedPoint = rotateAroundAxis(point, axis, rauAngle);
+```
+--->
