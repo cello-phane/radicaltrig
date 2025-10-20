@@ -1,5 +1,5 @@
 # radicaltrig
-Radical Angle Units for a formula to compute sin(angle) and cos(angle)  
+Radical Angle Units that are used with a formula to compute sin(angle) and cos(angle)  
 <img width="424" height="217" alt="image" src="https://github.com/user-attachments/assets/bfd17458-9a9a-40ed-b22f-305bd0e7a4f8" />
 
 ## Explanation of the handrolled periodicity/continuity:
