@@ -32,6 +32,16 @@ Any angle from 0° to 360° maps to a RAU value from 0 to 4. The integer part gi
 the quadrant (0, 1, 2, or 3), and the fractional part is used in the base functions above.  
 For any quadrant q:
 ```
+if (q === 0) {
+    sin_result = s; cos_result = c;
+} else if (q === 1) {
+    sin_result = c; cos_result = -s;
+} else if (q === 2) {
+    sin_result = -s; cos_result = -c;
+} else {
+    sin_result = -c; cos_result = s;
+}
+And the same thing is done with this branchless arithmetic using booleans as 0 and 1 numbers:
 cos = c·q0 - s·q1 - c·q2 + s·q3
 sin = (s·q0 + c·q1 - s·q2 - c·q3) × sign(parameter)
 ```
