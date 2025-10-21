@@ -513,9 +513,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
       /////////////////Parameters for the vector diagram///////////////////
       const uSC = getRotationComponents(degToRau(uAng));
-      const vSC = getRotationComponents(degToRau(uAng));
+      const vSC = getRotationComponents(degToRau(vAng));
       const u = {x:  uLen*uSC.cos, y: -uLen*uSC.sin };
-      const v = {x:  vLen*uSC.cos, y: -vLen*uSC.sin };
+      const v = {x:  vLen*vSC.cos, y: -vLen*vSC.sin };
       
       //const u = {x: uLen*Math.cos(uAng), y: -uLen*Math.sin(uAng)};
       //const v = {x: vLen*Math.cos(vAng), y: -vLen*Math.sin(vAng)};
