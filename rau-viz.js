@@ -519,6 +519,7 @@ document.addEventListener('DOMContentLoaded', () => {
       /////////////////Parameters for the vector diagram///////////////////
       currentU = u;
       currentV = v;
+      const rauPhase = atanVec(u, v);
       /////////////////////////////////////////////////////////////////////
       
       const uEnd = {x: centerX+u.x, y: centerY+u.y};
@@ -534,17 +535,18 @@ document.addEventListener('DOMContentLoaded', () => {
       ctx.lineTo(vEnd.x, vEnd.y);
       ctx.closePath();
       ctx.stroke();
+
       drawArrow(ctx, centerX, centerY, uEnd.x, uEnd.y, '#ff4444', 3);
       drawArrow(ctx, centerX, centerY, vEnd.x, vEnd.y, '#4444ff', 3);
-      ctx.strokeStyle = '#666';
-      ctx.lineWidth = 2;
-      ctx.beginPath();
+
       const arcRadius = Math.min(uLen, vLen);
       const startAngle = Math.min(uAng, vAng);
       const endAngle = Math.max(uAng, vAng);
+      ctx.strokeStyle = '#666';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
       ctx.arc(centerX, centerY, arcRadius, -endAngle, -startAngle);
-      ctx.stroke();
-      currentPhaseSection2 = atan2(u,v);
+      
       updateResultsDisplay();
       updateConversionDisplay();
       drawChordConnection(ctx, v, u, arcRadius)
