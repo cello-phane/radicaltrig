@@ -537,12 +537,12 @@ document.addEventListener('DOMContentLoaded', () => {
       drawArrow(ctx, centerX, centerY, vEnd.x, vEnd.y, '#4444ff', 3);
 
       const arcRadius = Math.min(uLen, vLen);
-      const minAngle = Math.min(uAng, vAng);
+      const minAngle = Math.sign(u.x * v.y - u.y * v.x)*Math.min(uAng, vAng);
       const maxAngle = Math.sign(u.x * v.y - u.y * v.x)*Math.max(uAng, vAng);
       ctx.strokeStyle = '#666';
       ctx.lineWidth = 2;
       ctx.beginPath();
-      ctx.arc(centerX, centerY, arcRadius, minAngle, maxAngle);
+      ctx.arc(centerX, centerY, arcRadius, maxAngle, minAngle);
       ctx.stroke();
 
       currentPhaseSection2 = rauPhase;
