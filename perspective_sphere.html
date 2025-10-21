@@ -92,17 +92,22 @@
         <div class="control-group">
             <label>Rotation X:</label>
             <input type="range" id="rotX" min="0" max="360" value="23">
-            <span class="value" id="rotXVal">30°</span>
+            <span class="value" id="rotXVal">23°</span>
         </div>
         <div class="control-group">
             <label>Rotation Y:</label>
             <input type="range" id="rotY" min="0" max="360" value="45">
             <span class="value" id="rotYVal">45°</span>
+        </div>        
+        <div class="control-group">
+            <label>Rotation Z:</label>
+            <input type="range" id="rotZ" min="0" max="360" value="0">
+            <span class="value" id="rotZVal">0°</span>
         </div>
         <div class="control-group">
             <label>Integration Param:</label>
-            <input type="range" id="integParam" min="0" max="100" value="50">
-            <span class="value" id="integParamVal">0.50</span>
+            <input type="range" id="integParam" min="0" max="100" value="0">
+            <span class="value" id="integParamVal">0.0</span>
         </div>
         <div class="control-group">
             <label>Meridians:</label>
@@ -116,8 +121,8 @@
         </div>
         <div class="control-group">
             <label>Perspective:</label>
-            <input type="range" id="perspective" min="100" max="1000" value="400">
-            <span class="value" id="perspectiveVal">400</span>
+            <input type="range" id="perspective" min="100" max="1000" value="1000">
+            <span class="value" id="perspectiveVal">1000</span>
         </div>
         
         <div class="animation-controls">
@@ -143,6 +148,7 @@
         const controls = {
             rotX: document.getElementById('rotX'),
             rotY: document.getElementById('rotY'),
+            rotZ: document.getElementById('rotZ'),
             integParam: document.getElementById('integParam'),
             meridians: document.getElementById('meridians'),
             parallels: document.getElementById('parallels'),
@@ -153,6 +159,7 @@
         const values = {
             rotXVal: document.getElementById('rotXVal'),
             rotYVal: document.getElementById('rotYVal'),
+            rotZVal: document.getElementById('rotZVal'),
             integParamVal: document.getElementById('integParamVal'),
             meridiansVal: document.getElementById('meridiansVal'),
             parallelsVal: document.getElementById('parallelsVal'),
@@ -257,6 +264,14 @@
             };
         }
 
+		function rotateZ(point, angleDegrees) {
+			const freq = degreesToFreq(angleDegrees);
+		    const { cos, sin } = getRotationComponents(freq);
+		    const x = point.x * cos - point.y * sin;
+		    const y = point.x * sin + point.y * cos;
+		    return { x, y, z: point.z };
+		}
+
 		function rotateXandY(point, rotX, rotY) {
 		    // Use RAU-based cosine and sine (or normal ones if testing)
 		    const { cos: c1, sin: s1 } = getRotationComponents(degreesToFreq(rotX)); // X-axis
@@ -272,6 +287,7 @@
 
 		    return { x: x2, y: y1, z: z2 };
 		}
+
         
         function project3D(point3d, perspective) {
             const scale = perspective / (perspective + point3d.z);
@@ -379,12 +395,13 @@
             
             const rotXAngle = parseFloat(controls.rotX.value); // Now in degrees
             const rotYAngle = parseFloat(controls.rotY.value); // Now in degrees
+            const rotZAngle = parseFloat(controls.rotZ.value); // Now in degrees
             const integParam = parseFloat(controls.integParam.value) / 100;
             const meridianCount = parseInt(controls.meridians.value);
             const parallelCount = parseInt(controls.parallels.value);
             const perspective = parseFloat(controls.perspective.value);
             
-            const radius = 150;
+            const radius = 200;
             const sphereData = generateSpherePoints(radius, meridianCount, parallelCount, integParam);
             
             // Transform and project meridians
@@ -395,6 +412,7 @@
                     //let transformed = rotateX(point, rotXAngle);
                     //transformed = rotateY(transformed, rotYAngle);
                     let transformed = rotateXandY(point, rotXAngle, rotYAngle);
+    				transformed = rotateZ(transformed, rotZAngle);
                     const projected = project3D(transformed, perspective);
                     projectedPoints.push(projected);
                 });
@@ -422,6 +440,7 @@
                     //let transformed = rotateX(point, rotXAngle);
                     //transformed = rotateY(transformed, rotYAngle);
                     let transformed = rotateXandY(point, rotXAngle, rotYAngle);
+    				transformed = rotateZ(transformed, rotZAngle);
                     const projected = project3D(transformed, perspective);
                     projectedPoints.push(projected);
                 });
@@ -503,7 +522,7 @@
                 const value = e.target.value;
                 if (key === 'integParam') {
                     values[key + 'Val'].textContent = (value / 100).toFixed(2);
-                } else if (key === 'rotX' || key === 'rotY') {
+                } else if (key === 'rotX' || key === 'rotY' || key === 'rotZ') {
                     values[key + 'Val'].textContent = value + '°';
                 } else if (key === 'frameDelay') {
                     values[key + 'Val'].textContent = value + 'ms';
@@ -523,6 +542,7 @@
         
         // Initial render
         render();
+
     </script>
 </body>
 </html>
