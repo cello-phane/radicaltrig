@@ -543,7 +543,7 @@ document.addEventListener('DOMContentLoaded', () => {
       ctx.lineWidth = 2;
       ctx.beginPath();
       if (Math.sign(u.x * v.y - u.y * v.x) > 0) {
-        ctx.arc(centerX, centerY, arcRadius, abs(startAngle), endAngle);
+        ctx.arc(centerX, centerY, arcRadius, Math.abs(startAngle), endAngle);
       }
       ctx.stroke();
 
