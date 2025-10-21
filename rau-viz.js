@@ -537,16 +537,16 @@ document.addEventListener('DOMContentLoaded', () => {
       drawArrow(ctx, centerX, centerY, vEnd.x, vEnd.y, '#4444ff', 3);
 
       const arcRadius = Math.min(uLen, vLen);
-      const startAngle = Math.min(uAng, vAng);
-      const endAngle = Math.max(uAng, vAng);
+      const startAngle = uAng;
+      const endAngle = vAng;
       ctx.strokeStyle = '#666';
       ctx.lineWidth = 2;
       ctx.beginPath();
       if (Math.sign(u.x * v.y - u.y * v.x) < 0 ) {
-        ctx.arc(centerX, centerY, arcRadius, startAngle, -endAngle);
+        ctx.arc(centerX, centerY, arcRadius, startAngle, endAngle);
       }
       else {
-        ctx.arc(centerX, centerY, arcRadius, -startAngle, endAngle);
+        ctx.arc(centerX, centerY, arcRadius, endAngle, startAngle);
       }
       ctx.stroke();
 
