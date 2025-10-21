@@ -546,8 +546,13 @@ document.addEventListener('DOMContentLoaded', () => {
       ctx.arc(centerX, centerY, arcRadius, -endAngle, -startAngle);
       ctx.stroke();
       const refvec = {x: 1.0, y: 0.0};
-      if (rauPhase > endAngle && atanVec(refvec, u) < atanVec(u, v) + Math.abs(atanVec(refvec, u) - atanVec(refvec, v)) && (uVal/90) < atanVec(refvec, v)) console.log("Blue(v) should have the arc going the other direction.");
-      currentPhaseSection2 = rauPhase;
+      if (rauPhase > endAngle && atanVec(refvec, u) < atanVec(u, v) + Math.abs(atanVec(refvec, u) - atanVec(refvec, v)) && (uVal/90) < atanVec(refvec, v)) {
+        console.log("Blue(v) should have the arc going the other direction.");
+        if (rauPhase < 4.0) currentPhaseSection2 = 4.0 - rauPhase;
+      }
+      else {
+        currentPhaseSection2 = rauPhase;
+      }
       updateResultsDisplay();
       updateConversionDisplay();
       drawChordConnection(ctx, v, u, arcRadius)
