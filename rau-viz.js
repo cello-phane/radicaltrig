@@ -546,7 +546,7 @@ document.addEventListener('DOMContentLoaded', () => {
       ctx.stroke();
       const cross = u.x*v.y - u.y*v.x;
       const dot = u.x*v.x + u.y*v.y;
-      if (cross >= 0) {
+      if (cross >= 0 && phase < 2.0) {
         currentPhaseSection2 = rauPhase;
       }
       else {
