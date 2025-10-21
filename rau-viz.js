@@ -519,9 +519,7 @@ document.addEventListener('DOMContentLoaded', () => {
       /////////////////Parameters for the vector diagram///////////////////
       currentU = u;
       currentV = v;
-      //const rauPhase = atanVec(u, v);
-      const rauPhase = (Math.atan2(u, v) / Math.PI) * 2.0;
-      if (rauPhase < 0) rauPhase += 4.0; // Wrap negative values to 0-4
+      const rauPhase = atanVec(u, v);
       /////////////////////////////////////////////////////////////////////
       
       const uEnd = {x: centerX+u.x, y: centerY+u.y};
