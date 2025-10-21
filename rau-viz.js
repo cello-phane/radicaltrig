@@ -541,7 +541,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const direction = Math.sign(cross); // -1 or +1
       
       // Apply direction to both angles
-      const startAngle = -uAng * direction;
+      const startAngle = -uAngle * direction;
       const endAngle = vAngle * direction;
       
       ctx.strokeStyle = '#666';
