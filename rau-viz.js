@@ -541,11 +541,13 @@ document.addEventListener('DOMContentLoaded', () => {
       ctx.beginPath();
       const arcRadius = Math.min(uLen, vLen);
       const cross = u.x * v.y - u.y * v.x;
-      if (cross >= 0) {
-        ctx.arc(centerX, centerY, arcRadius, -uAng, vAng);
-      } else {
-        ctx.arc(centerX, centerY, arcRadius, vAng, -uAng);
-      }
+      const direction = Math.sign(cross); // -1 or +1
+      
+      // Apply direction to both angles
+      const startAngle = -uAng * direction;
+      const endAngle = vAng * direction;
+      
+      ctx.arc(centerX, centerY, arcRadius, Math.min(startAngle, endAngle), Math.max(startAngle, endAngle));
       ctx.stroke();
 
       currentPhaseSection2 = rauPhase;
