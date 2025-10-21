@@ -541,7 +541,7 @@ document.addEventListener('DOMContentLoaded', () => {
       ctx.strokeStyle = '#666';
       ctx.lineWidth = 2;
       ctx.beginPath();
-      ctx.arc(centerX, centerY, arcRadius, Math.min(uAng, vAngle), Math.max(uAng, vAng));
+      ctx.arc(centerX, centerY, arcRadius, Math.min(-uAng, vAngle), Math.max(uAng, vAng));
       ctx.stroke();
 
       currentPhaseSection2 = rauPhase;
