@@ -545,7 +545,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const endAngle = Math.max(uAng, vAng);
       ctx.arc(centerX, centerY, arcRadius, -endAngle, -startAngle);
       ctx.stroke();
-      let rauParam = (Math.atan2(u, v) / Math.PI) * 2.0;
+      let rauParam = (Math.atan2(currentU, currentV) / Math.PI) * 2.0;
       if (rauParam < 0) rauParam += 4.0; // Wrap negative values to 0-4
       currentPhaseSection2 = rauParam;
       updateResultsDisplay();
