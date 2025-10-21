@@ -503,8 +503,8 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('vLengthVal').textContent = vLen;
       document.getElementById('vAngleVal').textContent = parseInt(controls.vAngle.value).toFixed(0)+'°';
       /////////////////Parameters for the vector diagram///////////////////
-      const uVal = (parseInt(controls.uAngle.value) / 90.0);
-      const vVal = (parseInt(controls.vAngle.value) / 90.0);
+      const uVal = (parseInt(controls.uAngle.value).toFixed(0) / 90.0);
+      const vVal = (parseInt(controls.vAngle.value).toFixed(0) / 90.0);
       
       const usc = getRotationComponents(uVal);
       const vsc = getRotationComponents(vVal);
