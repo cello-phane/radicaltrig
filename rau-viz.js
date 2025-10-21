@@ -549,7 +549,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (cross >= 0 && rauPhase < 2.0) {
         currentPhaseSection2 = rauPhase;
       }
-      else if (cross >= 0 && rauPhase > 2.0) {
+      else if (cross < 0) {
         currentPhaseSection2 += 2.0;
       }
       else {
