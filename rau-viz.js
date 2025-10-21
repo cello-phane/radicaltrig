@@ -85,6 +85,8 @@ function radToDeg(rad) { return rad*180/Math.PI; }
 
 function degToRau(deg) { return (deg * 4.0) / 360.0; }
 
+function radToRau(rad) { return (rad / (2 * Math.PI)) * 4.0; }
+
 //cross product magnitude divided by dot product, then return angle in 0-4 range
 function atanVec(u,v) {
   const cross = u.x * v.y - u.y * v.x;
@@ -512,8 +514,8 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('vAngleVal').textContent = radToDeg(vAng).toFixed(0)+'°';
 
       /////////////////Parameters for the vector diagram///////////////////
-      const uSC = getRotationComponents(degToRau(uAng));
-      const vSC = getRotationComponents(degToRau(vAng));
+      const uSC = getRotationComponents(radToRau(uAng));
+      const vSC = getRotationComponents(radToRau(vAng));
       const u = {x:  uLen*uSC.cos, y: -uLen*uSC.sin };
       const v = {x:  vLen*vSC.cos, y: -vLen*vSC.sin };
       
