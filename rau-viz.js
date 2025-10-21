@@ -60,7 +60,7 @@ function getRotationComponents(param) {
   if (!isFinite(p)) p = 0;
   if (p < 0) p = 0;
   const q = Math.floor(p) % 4;
-  const frac = param - Math.floor(p);
+  const frac = p - Math.floor(p);
   const { cos: c, sin: s } = getRAUComponents(frac);
   /*
   let cos_result, sin_result;
