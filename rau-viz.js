@@ -511,7 +511,7 @@ document.addEventListener('DOMContentLoaded', () => {
       //const u = {x: uLen*Math.cos(uAng), y: -uLen*Math.sin(uAng)};
       //const v = {x: vLen*Math.cos(vAng), y: -vLen*Math.sin(vAng)};
       const u = {x: uLen*usc.cos_result, y: -uLen*usc.sin_result};
-      const v = {x: vLen*vsc.cos_result, y: vLen*vsc.sin_result};
+      const v = {x: vLen*vsc.cos_result, y: -vLen*vsc.sin_result};
       const rauPhase = atanVec(u, v);
       
       currentU = u;
