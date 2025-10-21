@@ -503,8 +503,16 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('vLengthVal').textContent = vLen;
       document.getElementById('vAngleVal').textContent = radToDeg(vAng).toFixed(0)+'°';
 
-      const u = {x: uLen*Math.cos(uAng), y: -uLen*Math.sin(uAng)};
-      const v = {x: vLen*Math.cos(vAng), y: -vLen*Math.sin(vAng)};
+      const uVal = (parseInt(controls.uAngle.value) / 90.0);
+      const vVal = (parseInt(controls.vAngle.value) / 90.0);
+      
+      const usc = getRotationComponents(uVal);
+      const vsc = getRotationComponents(vVal);
+      //const u = {x: uLen*Math.cos(uAng), y: -uLen*Math.sin(uAng)};
+      //const v = {x: vLen*Math.cos(vAng), y: -vLen*Math.sin(vAng)};
+      const u = {x: uLen*usc.cos_result, y: -uLen*usc.sin_result};
+      const v = {x: vLen*vsc.cos_result, y: -vLen*vsc.sin_result};
+      
       /////////////////Parameters for the vector diagram///////////////////
       currentU = u;
       currentV = v;
