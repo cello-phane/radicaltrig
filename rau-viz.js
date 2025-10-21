@@ -544,17 +544,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const endAngle = Math.max(uAng, vAng);
       ctx.arc(centerX, centerY, arcRadius, -endAngle, -startAngle);
       ctx.stroke();
-      const cross = u.x*v.y - u.y*v.x;
-      const dot = u.x*v.x + u.y*v.y;
-      if (cross >= 0 && rauPhase < 2.0) {
-        currentPhaseSection2 = rauPhase;
-      }
-      else if (cross < 0) {
-        currentPhaseSection2 = 4.0-Math.abs(rauPhase);
-      }
-      else {
-        currentPhaseSection2 = rauPhase + 2.0;
-      }
+
       updateResultsDisplay();
       updateConversionDisplay();
       drawChordConnection(ctx, v, u, arcRadius)
