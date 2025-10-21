@@ -59,7 +59,7 @@ function getRotationComponents(param) {
   if (!isFinite(p)) p = 0;
   if (p < 0) p = 0;
   const q = Math.floor(p) % 4;
-  const frac = p - Math.floor(p);
+  const frac = p - q;
   const { cos: c, sin: s } = getRAUComponents(frac);
   /*
   let cos_result, sin_result;
@@ -73,8 +73,8 @@ function getRotationComponents(param) {
   const q1 = Number(q === 1);
   const q2 = Number(q === 2);
   const q3 = Number(q === 3);
-  let cos_result = c*q0 - s*q1 - c*q2 + s*q3;
-  let sin_result = (s*q0 + c*q1 - s*q2 - c*q3) * Math.sign(param); 
+  let cos_result = c * q0 - s * q1 - c * q2 + s * q3;
+  let sin_result = (s * q0 + c * q1 - s * q2 - c * q3) * Math.sign(param); 
   return { cos: cos_result, sin: sin_result, quadrant: q, fraction: frac };
 }
 
@@ -82,15 +82,16 @@ function degToRad(deg) { return deg * Math.PI/180; }
 
 function radToDeg(rad) { return rad*180/Math.PI; }
 
-function atanVec(u,v) {
-  const mix = (a, b, c) => c ? b : a;
+function atanVec(u, v) {
   const cross = u.x * v.y - u.y * v.x;
-  const dot = u.x * v.x + u.y * v.y;
+  const dot   = u.x * v.x + u.y * v.y;
   let angle = Math.abs(cross) / (Math.abs(dot) + Math.abs(cross));
-  const q4fix = mix(Math.sign(cross) * angle, 4.0 - angle, dot > 0 && cross < 0);
-  const qblend = mix(mix(q4fix, angle, cross > dot), angle + 1.0, cross < 0 && dot < 0);
-  const halfrot = mix(2.0 - angle, angle + 2.0, cross < 0);
-  return mix(qblend, halfrot, dot < 0);
+  // four quadrant logic
+  angle = mix( mix( mix( mix(Math.sign(cross) * angle, 4.0 - angle, dot > 0 && cross < 0), angle, cross > dot), 
+                   angle + 1.0, cross < 0 && dot < 0),
+                  mix(2.0 - angle, angle + 2.0, cross < 0),
+                  dot < 0);
+  return angle;
 }
 
 // ============================================
@@ -507,6 +508,7 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('vAngleVal').textContent = radToDeg(vAng).toFixed(0)+'°';
 
       /////////////////Parameters for the vector diagram///////////////////
+      getRotationComponents
       const u = {x: uLen*Math.cos(uAng), y: -uLen*Math.sin(uAng)};
       const v = {x: vLen*Math.cos(vAng), y: -vLen*Math.sin(vAng)};
       currentU = u;
