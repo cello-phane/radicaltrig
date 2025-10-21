@@ -550,7 +550,7 @@ document.addEventListener('DOMContentLoaded', () => {
         currentPhaseSection2 = rauPhase;
       }
       else {
-        currentPhaseSection2 = -rauPhase;
+        currentPhaseSection2 = 4.0-Math.abs(rauPhase);
       }
       updateResultsDisplay();
       updateConversionDisplay();
