@@ -538,18 +538,17 @@ document.addEventListener('DOMContentLoaded', () => {
       drawArrow(ctx, centerX, centerY, uEnd.x, uEnd.y, '#ff4444', 3);
       drawArrow(ctx, centerX, centerY, vEnd.x, vEnd.y, '#4444ff', 3);
 
-      const arcRadius = Math.min(uLen, vLen);
-      const cross = u.x * v.y - u.y * v.x;
-      const direction = Math.sign(cross); // -1 or +1
-      
-      // Apply direction to both angles
-      const startAngle = -uAngle * direction;
-      const endAngle = vAngle * direction;
       
       ctx.strokeStyle = '#666';
       ctx.lineWidth = 2;
       ctx.beginPath();
-      ctx.arc(centerX, centerY, arcRadius, -Math.max(startAngle, endAngle), -Math.min(startAngle, endAngle));
+      const arcRadius = Math.min(uLen, vLen);
+      const cross = u.x * v.y - u.y * v.x;
+      if (cross >= 0) {
+        ctx.arc(centerX, centerY, arcRadius, -uAng, vAngle);
+      } else {
+        ctx.arc(centerX, centerY, arcRadius, vAngle, -uAng);
+      }
       ctx.stroke();
 
       currentPhaseSection2 = rauPhase;
