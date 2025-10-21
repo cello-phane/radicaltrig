@@ -546,7 +546,7 @@ document.addEventListener('DOMContentLoaded', () => {
       ctx.arc(centerX, centerY, arcRadius, -endAngle, -startAngle);
       ctx.stroke();
       const refvec = {x: 1.0, y: 0.0};
-      if (atanVec(refvec, u) < rauPhase || atanVec(refvec, v) > 2.0) {
+      if (atanVec(refvec, u) < rauPhase || atanVec(refvec, u) > 2.0) {
         console.log("Blue(v) should switch direction.");
       }
       currentPhaseSection2 = rauPhase;
