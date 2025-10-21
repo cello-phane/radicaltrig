@@ -544,7 +544,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const endAngle = Math.max(uAng, vAng);
       ctx.arc(centerX, centerY, arcRadius, -endAngle, -startAngle);
       ctx.stroke();
-
+      currentPhaseSection2 = rauPhase;
       updateResultsDisplay();
       updateConversionDisplay();
       drawChordConnection(ctx, v, u, arcRadius)
