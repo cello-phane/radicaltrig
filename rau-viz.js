@@ -538,16 +538,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const arcRadius = Math.min(uLen, vLen);
       const minAngle = Math.min(uAng, vAng);
-      const maxAngle = Math.max(uAng, vAng);
+      const maxAngle = Math.sign(u.x * v.y - u.y * v.x) < 0)*Math.max(uAng, vAng);
       ctx.strokeStyle = '#666';
       ctx.lineWidth = 2;
       ctx.beginPath();
-      if (Math.sign(u.x * v.y - u.y * v.x) < 0) {
-        ctx.arc(centerX, centerY, arcRadius, minAngle , maxAngle);
-      }
-      else if (Math.sign(u.x * v.y - u.y * v.x) > 0) {
-        ctx.arc(centerX, centerY, arcRadius,  -maxAngle, -minAngle);
-      }
+      ctx.arc(centerX, centerY, arcRadius, minAngle, maxAngle);
       ctx.stroke();
 
       currentPhaseSection2 = rauPhase;
