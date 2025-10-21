@@ -511,10 +511,10 @@ document.addEventListener('DOMContentLoaded', () => {
       
       let usc = getRotationComponents(uVal);
       let vsc = getRotationComponents(vVal);
-      //const u = {x: uLen*Math.cos(uAng), y: -uLen*Math.sin(uAng)};
-      //const v = {x: vLen*Math.cos(vAng), y: -vLen*Math.sin(vAng)};
-      const u = {x: uLen*usc.cos, y: -uLen*usc.sin};
-      const v = {x: vLen*vsc.cos, y: -vLen*vsc.sin};
+      const u = {x: uLen*Math.cos(uAng), y: -uLen*Math.sin(uAng)};
+      const v = {x: vLen*Math.cos(vAng), y: -vLen*Math.sin(vAng)};
+      //const u = {x: uLen*usc.cos, y: -uLen*usc.sin};
+      //const v = {x: vLen*vsc.cos, y: -vLen*vsc.sin};
       
       /////////////////Parameters for the vector diagram///////////////////
       currentU = u;
