@@ -519,7 +519,9 @@ document.addEventListener('DOMContentLoaded', () => {
       /////////////////Parameters for the vector diagram///////////////////
       currentU = u;
       currentV = v;
-      const rauPhase = atanVec(u, v);
+      //const rauPhase = atanVec(u, v);
+      const rauPhase = (Math.atan2(u, v) / Math.PI) * 2.0;
+      if (rauPhase < 0) rauPhase += 4.0; // Wrap negative values to 0-4
       /////////////////////////////////////////////////////////////////////
       
       const uEnd = {x: centerX+u.x, y: centerY+u.y};
@@ -545,9 +547,8 @@ document.addEventListener('DOMContentLoaded', () => {
       const endAngle = Math.max(uAng, vAng);
       ctx.arc(centerX, centerY, arcRadius, -endAngle, -startAngle);
       ctx.stroke();
-      let rauParam = (Math.atan2(currentU, currentV) / Math.PI) * 2.0;
-      if (rauParam < 0) rauParam += 4.0; // Wrap negative values to 0-4
-      currentPhaseSection2 = rauParam;
+      
+      currentPhaseSection2 = rauPhase;
       updateResultsDisplay();
       updateConversionDisplay();
       drawChordConnection(ctx, v, u, arcRadius)
