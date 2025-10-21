@@ -548,7 +548,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const refvec = {x: 1.0, y: 0.0};
       if (rauPhase > endAngle && atanVec(refvec, u) < atanVec(u, v) + Math.abs(atanVec(refvec, u) - atanVec(refvec, v)) && (uVal/90) < atanVec(refvec, v)) {
         console.log("Blue(v) is switching direction.");
-        currentPhaseSection2 = Math.abs(4.0 - atanVec(u, v));
+        currentPhaseSection2 = Math.abs(atanVec(u, v) + Math.abs(atanVec(refvec, u) - atanVec(refvec, v)));
       }
       else {
         currentPhaseSection2 = rauPhase;
