@@ -83,7 +83,7 @@ function degToRad(deg) { return deg * Math.PI/180; }
 
 function radToDeg(rad) { return rad*180/Math.PI; }
 
-function degToRau(deg) { return (deg / 360) * 4; }
+function degToRau(deg) { return (deg * 4.0) / 360.0; }
 
 //cross product magnitude divided by dot product, then return angle in 0-4 range
 function atanVec(u,v) {
