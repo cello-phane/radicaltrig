@@ -1,12 +1,37 @@
-// ============================================up
+// ============================================
 // Global State
 // ============================================
 let currentPhaseSection1 = 0;
 let currentPhaseSection2 = 0;
 let currentU = { x: 120, y: 0 };
 let currentV = { x: 100, y: 0 };
+
+// ============================================
+// Utility functions
+// ============================================
+function degToRad(deg) { return deg * Math.PI/180; }
+function radToDeg(rad) { return rad*180/Math.PI; }
+
+function degToRau(deg) { return (deg * 4.0) / 360.0; }
+function radToRau(rad) { return (rad / (2 * Math.PI)) * 4.0; }
+function rauToRad(rau) { return (rau / 4.0) * (2 * Math.PI); }
+
+//cross product magnitude divided by dot product, then return angle in 0-4 range
+function atanVec(u,v) {
+  const cross = u.x * v.y - u.y * v.x;
+  const dot = u.x * v.x + u.y * v.y;
+
+  // four quadrant logic
+  let angle = Math.abs(cross) / (Math.abs(dot) + Math.abs(cross));
+  const q4fix = mix(Math.sign(cross) * angle, 4.0 - angle, dot > 0 && cross < 0);
+  const qblend = mix(mix(q4fix, angle, cross > dot), angle + 1.0, cross < 0 && dot < 0);
+  const halfrot = mix(2.0 - angle, angle + 2.0, cross < 0);
+  return mix(qblend, halfrot, dot < 0);
+}
+
 // helper: mix(a,b,cond)
 const mix = (a, b, cond) => (cond ? b : a);
+
 // ============================================
 // RAU Math Functions
 // ============================================
@@ -77,27 +102,6 @@ function getRotationComponents(param) {
   let cos_result = c * q0 - s * q1 - c * q2 + s * q3;
   let sin_result = (s * q0 + c * q1 - s * q2 - c * q3) * Math.sign(param); 
   return { cos: cos_result, sin: sin_result, quadrant: q, fraction: frac };
-}
-
-function degToRad(deg) { return deg * Math.PI/180; }
-
-function radToDeg(rad) { return rad*180/Math.PI; }
-
-function degToRau(deg) { return (deg * 4.0) / 360.0; }
-
-function radToRau(rad) { return (rad / (2 * Math.PI)) * 4.0; }
-
-//cross product magnitude divided by dot product, then return angle in 0-4 range
-function atanVec(u,v) {
-  const cross = u.x * v.y - u.y * v.x;
-  const dot = u.x * v.x + u.y * v.y;
-
-  // four quadrant logic
-  let angle = Math.abs(cross) / (Math.abs(dot) + Math.abs(cross));
-  const q4fix = mix(Math.sign(cross) * angle, 4.0 - angle, dot > 0 && cross < 0);
-  const qblend = mix(mix(q4fix, angle, cross > dot), angle + 1.0, cross < 0 && dot < 0);
-  const halfrot = mix(2.0 - angle, angle + 2.0, cross < 0);
-  return mix(qblend, halfrot, dot < 0);
 }
 
 // ============================================
@@ -549,6 +553,21 @@ document.addEventListener('DOMContentLoaded', () => {
       ctx.lineWidth = 2;
       ctx.beginPath();
       ctx.arc(centerX, centerY, arcRadius, startAngle, endAngle);
+
+      let start = atanVec(refvec, u);
+      let end   = atanVec(refvec, v);
+      // compute CCW difference
+      let delta = (end - start + 4.0) % 4.0;
+      // detect direction
+      if (delta > 2.0) {
+        // arc crosses the wrap (goes past 360°)
+        // → draw the shorter *decreasing* arc
+        ctx.arc(centerX, centerY, radius, rauToRad(end*90), rauToRad(start*90), true); // true = anticlockwise
+      } else {
+        // normal CCW sweep
+        ctx.arc(centerX, centerY, radius, rauToRad(start*90), rauToRad(end*90), false);
+      }
+      
       //Update value for the vector diagram
       currentPhaseSection2 = rauPhase;
       
