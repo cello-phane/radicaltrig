@@ -542,8 +542,8 @@ document.addEventListener('DOMContentLoaded', () => {
       ctx.strokeStyle = '#666';
       ctx.lineWidth = 2;
       ctx.beginPath();
-      if (Math.sign(u.x * v.y - u.y * v.x) > 0 ) {
-        ctx.arc(centerX, centerY, arcRadius, -endAngle, -startAngle);
+      if (Math.sign(u.x * v.y - u.y * v.x) < 0 ) {
+        ctx.arc(centerX, centerY, arcRadius, endAngle, startAngle);
       }
       else {
         ctx.arc(centerX, centerY, arcRadius, startAngle, endAngle);
