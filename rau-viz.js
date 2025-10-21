@@ -5,7 +5,8 @@ let currentPhaseSection1 = 0;
 let currentPhaseSection2 = 0;
 let currentU = { x: 120, y: 0 };
 let currentV = { x: 100, y: 0 };
-
+// helper: mix(a,b,cond)
+const mix = (a, b, cond) => (cond ? b : a);
 // ============================================
 // RAU Math Functions
 // ============================================
