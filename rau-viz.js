@@ -546,7 +546,7 @@ document.addEventListener('DOMContentLoaded', () => {
         ctx.arc(centerX, centerY, arcRadius, -endAngle, -startAngle);
       }
       else {
-        ctx.arc(centerX, centerY, arcRadius, endAngle, startAngle);
+        ctx.arc(centerX, centerY, arcRadius, startAngle, endAngle);
       }
       ctx.stroke();
 
