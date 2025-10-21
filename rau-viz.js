@@ -546,7 +546,7 @@ document.addEventListener('DOMContentLoaded', () => {
       ctx.lineWidth = 2;
       ctx.beginPath();
       ctx.arc(centerX, centerY, arcRadius, -endAngle, -startAngle);
-      
+      currentPhaseSection2 = rauPhase;
       updateResultsDisplay();
       updateConversionDisplay();
       drawChordConnection(ctx, v, u, arcRadius)
