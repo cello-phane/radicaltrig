@@ -19,6 +19,7 @@ function radicalSine(t) {
     case 1: return (1-lt)/Math.sqrt(a);
     case 2: return -lt/Math.sqrt(a);
     case 3: return -(1-lt)/Math.sqrt(a);
+    default: return 0; // Safety fallback
   }
 }
 
@@ -32,6 +33,7 @@ function radicalCosine(t) {
     case 1: return -lt/Math.sqrt(a);
     case 2: return -(1-lt)/Math.sqrt(a);
     case 3: return lt/Math.sqrt(a);
+    default: return 0; // Safety fallback
   }
 }
 
