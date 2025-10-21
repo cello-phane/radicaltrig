@@ -534,27 +534,24 @@ document.addEventListener('DOMContentLoaded', () => {
       ctx.lineTo(vEnd.x, vEnd.y);
       ctx.closePath();
       ctx.stroke();
-
       drawArrow(ctx, centerX, centerY, uEnd.x, uEnd.y, '#ff4444', 3);
       drawArrow(ctx, centerX, centerY, vEnd.x, vEnd.y, '#4444ff', 3);
-
-      
       ctx.strokeStyle = '#666';
       ctx.lineWidth = 2;
       ctx.beginPath();
       const arcRadius = Math.min(uLen, vLen);
       const cross = u.x * v.y - u.y * v.x;
       if (cross >= 0) {
-        ctx.arc(centerX, centerY, arcRadius, -uAng, vAngle);
+        ctx.arc(centerX, centerY, arcRadius, -uAng, vAng);
       } else {
-        ctx.arc(centerX, centerY, arcRadius, vAngle, -uAng);
+        ctx.arc(centerX, centerY, arcRadius, vAng, -uAng);
       }
       ctx.stroke();
 
       currentPhaseSection2 = rauPhase;
       updateResultsDisplay();
       updateConversionDisplay();
-      drawChordConnection(ctx, v, u, arcRadius);
+      drawChordConnection(ctx, v, u, arcRadius)
     }
 
     Object.values(controls).forEach(c => c.addEventListener('input', render));
