@@ -83,16 +83,19 @@ function degToRad(deg) { return deg * Math.PI/180; }
 
 function radToDeg(rad) { return rad*180/Math.PI; }
 
-function atanVec(u, v) {
+function degToRau(deg) { return (deg / 360) * 4; }
+
+//cross product magnitude divided by dot product, then return angle in 0-4 range
+function atanVec(u,v) {
   const cross = u.x * v.y - u.y * v.x;
-  const dot   = u.x * v.x + u.y * v.y;
-  let angle = Math.abs(cross) / (Math.abs(dot) + Math.abs(cross));
+  const dot = u.x * v.x + u.y * v.y;
+
   // four quadrant logic
-  angle = mix( mix( mix( mix(Math.sign(cross) * angle, 4.0 - angle, dot > 0 && cross < 0), angle, cross > dot), 
-                   angle + 1.0, cross < 0 && dot < 0),
-                  mix(2.0 - angle, angle + 2.0, cross < 0),
-                  dot < 0);
-  return angle;
+  let angle = Math.abs(cross) / (Math.abs(dot) + Math.abs(cross));
+  const q4fix = mix(Math.sign(cross) * angle, 4.0 - angle, dot > 0 && cross < 0);
+  const qblend = mix(mix(q4fix, angle, cross > dot), angle + 1.0, cross < 0 && dot < 0);
+  const halfrot = mix(2.0 - angle, angle + 2.0, cross < 0);
+  return mix(qblend, halfrot, dot < 0);
 }
 
 // ============================================
@@ -509,8 +512,8 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('vAngleVal').textContent = radToDeg(vAng).toFixed(0)+'°';
 
       /////////////////Parameters for the vector diagram///////////////////
-      const u = {x:  uLen*radicalCosine((uAng / 360) * 4), y: -uLen*radicalSine((uAng / 360) * 4) };
-      const v = {x:  vLen*radicalCosine((vAng / 360) * 4), y: -vLen*radicalSine((vAng / 360) * 4) };
+      const u = {x:  uLen*radicalCosine(degToRau(uAng)), y: -uLen*radicalSine(degToRau(uAng)) };
+      const v = {x:  vLen*radicalCosine(degToRau(vAng)), y: -vLen*radicalSine(degToRau(vAng)) };
       
       //const u = {x: uLen*Math.cos(uAng), y: -uLen*Math.sin(uAng)};
       //const v = {x: vLen*Math.cos(vAng), y: -vLen*Math.sin(vAng)};
