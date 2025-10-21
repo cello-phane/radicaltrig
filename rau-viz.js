@@ -551,9 +551,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (atanVec(u, v) - rauPhase > 2.0) {
           currentPhaseSection2 = 4.0 - rauPhase;
         }
-        else {
-          currentPhaseSection2 = Math.abs(4.0 - rauPhase);
-        }
       }
       else {
         currentPhaseSection2 = rauPhase;
