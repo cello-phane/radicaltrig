@@ -548,9 +548,11 @@ document.addEventListener('DOMContentLoaded', () => {
       const refvec = {x: 1.0, y: 0.0};
       if (atanVec(refvec, u) < atanVec(u, v) + Math.abs(atanVec(refvec, u) - atanVec(refvec, v)) && (uVal/90) < atanVec(refvec, v)) {
         console.log("Blue(v) is switching direction.");
-        rauPhase = 4.0 - rauPhase;
+        currentPhaseSection2 = 4.0 - rauPhase;
       }
-      currentPhaseSection2 = rauPhase;
+      else {
+        currentPhaseSection2 = rauPhase;
+      }
       updateResultsDisplay();
       updateConversionDisplay();
       drawChordConnection(ctx, v, u, arcRadius)
