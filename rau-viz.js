@@ -505,10 +505,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const u = {x: uLen*Math.cos(uAng), y: -uLen*Math.sin(uAng)};
       const v = {x: vLen*Math.cos(vAng), y: -vLen*Math.sin(vAng)};
-
+      /////////////////Parameters for the vector diagram///////////////////
       currentU = u;
       currentV = v;
-
+      const rauPhase = atanVec(u, v);
+      /////////////////////////////////////////////////////////////////////
+      
       const uEnd = {x: centerX+u.x, y: centerY+u.y};
       const vEnd = {x: centerX+v.x, y: centerY+v.y};
       const para = {x: centerX+u.x+v.x, y: centerY+u.y+v.y};
@@ -535,10 +537,6 @@ document.addEventListener('DOMContentLoaded', () => {
       ctx.arc(centerX, centerY, arcRadius, -endAngle, -startAngle);
       ctx.stroke();
 
-      const cross = u.x*v.y - u.y*v.x;
-      const dot = u.x*v.x + u.y*v.y;
-      const rauPhase = atanVec(u, v);
-      
       currentPhaseSection2 = rauPhase;
       updateResultsDisplay();
       updateConversionDisplay();
