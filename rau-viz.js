@@ -547,27 +547,29 @@ document.addEventListener('DOMContentLoaded', () => {
       drawArrow(ctx, centerX, centerY, vEnd.x, vEnd.y, '#4444ff', 3);
       const refvec     = {x: 1.0, y: 0.0};
       const arcRadius  = Math.min(uLen, vLen);
-      const startAngle = Math.min(uAng, vAng);
-      const endAngle = Math.max(uAng, vAng);
       ctx.strokeStyle = '#666';
       ctx.lineWidth = 2;
       ctx.beginPath();
-      ctx.arc(centerX, centerY, arcRadius, startAngle, endAngle);
-
-      let start = atanVec(refvec, u);
-      let end   = atanVec(refvec, v);
-      // compute CCW difference
-      let delta = (end - start + 4.0) % 4.0;
-      // detect direction
-      if (delta > 2.0) {
-        // arc crosses the wrap (goes past 360°)
-        // → draw the shorter *decreasing* arc
-        ctx.arc(centerX, centerY, arcRadius, rauToRad(end*90), rauToRad(start*90), true); // true = anticlockwise
-      } else {
-        // normal CCW sweep
-        ctx.arc(centerX, centerY, arcRadius, rauToRad(start*90), rauToRad(end*90), false);
-      }
       
+      let start = atanVec(refvec, u);  // RAU angle (0-4)
+      let end   = atanVec(refvec, v);  // RAU angle (0-4)
+      
+      // Convert RAU (0-4) to radians (-π to π)
+      const startRad = (start / 4.0) * 2.0 * Math.PI;
+      const endRad = (end / 4.0) * 2.0 * Math.PI;
+      
+      // Compute CCW difference
+      let delta = (end - start + 4.0) % 4.0;
+      
+      if (delta > 2.0) {
+        // Crosses the wrap - draw shorter arc going clockwise
+        ctx.arc(centerX, centerY, arcRadius, endRad, startRad, true);
+      } else {
+        // Normal CCW sweep
+        ctx.arc(centerX, centerY, arcRadius, startRad, endRad, false);
+      }
+
+      ctx.stroke()
       //Update value for the vector diagram
       currentPhaseSection2 = rauPhase;
       
