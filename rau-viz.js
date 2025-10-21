@@ -60,7 +60,7 @@ function getRotationComponents(param) {
   if (!isFinite(p)) p = 0;
   if (p < 0) p = 0;
   const q = Math.floor(p) % 4;
-  const frac = p - q;
+  const frac = param - Math.floor(p);
   const { cos: c, sin: s } = getRAUComponents(frac);
   /*
   let cos_result, sin_result;
@@ -545,7 +545,9 @@ document.addEventListener('DOMContentLoaded', () => {
       ctx.lineWidth = 2;
       ctx.beginPath();
       ctx.arc(centerX, centerY, arcRadius, -endAngle, -startAngle);
+      //Update value for the vector diagram
       currentPhaseSection2 = rauPhase;
+      
       updateResultsDisplay();
       updateConversionDisplay();
       drawChordConnection(ctx, v, u, arcRadius)
