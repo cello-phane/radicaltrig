@@ -545,7 +545,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       drawArrow(ctx, centerX, centerY, uEnd.x, uEnd.y, '#ff4444', 3);
       drawArrow(ctx, centerX, centerY, vEnd.x, vEnd.y, '#4444ff', 3);
-
+      const refvec = {x: 1.0, y: 0.0};
       const arcRadius = Math.min(uLen, vLen);
       const startAngle = Math.min(uAng, vAng);
       const endAngle = Math.max(uAng, vAng);
