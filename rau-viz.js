@@ -499,16 +499,25 @@ document.addEventListener('DOMContentLoaded', () => {
       const vAng = degToRad(parseInt(controls.vAngle.value));
 
       document.getElementById('uLengthVal').textContent = uLen;
-      document.getElementById('uAngleVal').textContent = radToDeg(uAng).toFixed(0)+'°';
+      document.getElementById('uAngleVal').textContent = parseInt(controls.uAngle.value).toFixed(0)+'°';
       document.getElementById('vLengthVal').textContent = vLen;
-      document.getElementById('vAngleVal').textContent = radToDeg(vAng).toFixed(0)+'°';
-
-      const u = {x: uLen*Math.cos(uAng), y: -uLen*Math.sin(uAng)};
-      const v = {x: vLen*Math.cos(vAng), y: -vLen*Math.sin(vAng)};
+      document.getElementById('vAngleVal').textContent = parseInt(controls.vAngle.value).toFixed(0)+'°';
+      const uVal = (parseInt(controls.uAngle.value) / 90.0);
+      const vVal = (parseInt(controls.vAngle.value) / 90.0);
+      
+      const usc = getRotationComponents(uVal);
+      const vsc = getRotationComponents(vVal);
+      
+      const u = {x: uLen*usc.cos_result, y: -uLen*usc.sin_result};
+      const v = {x: vLen*vsc.cos_result, y: -vLen*vsc.sin_result};
+      const rauPhase = atanVec(u, v);
+      
+      //const u = {x: uLen*Math.cos(uAng), y: -uLen*Math.sin(uAng)};
+      //const v = {x: vLen*Math.cos(vAng), y: -vLen*Math.sin(vAng)};
       /////////////////Parameters for the vector diagram///////////////////
       currentU = u;
       currentV = v;
-      const rauPhase = atanVec(u, v);
+      
       /////////////////////////////////////////////////////////////////////
       
       const uEnd = {x: centerX+u.x, y: centerY+u.y};
@@ -529,8 +538,8 @@ document.addEventListener('DOMContentLoaded', () => {
       drawArrow(ctx, centerX, centerY, vEnd.x, vEnd.y, '#4444ff', 3);
 
       const arcRadius = Math.min(uLen, vLen);
-      const startAngle = Math.min(uAng, vAng);
-      const endAngle = Math.max(uAng, vAng);
+      const startAngle = Math.min(degToRad(uAng), degToRad(vAng));
+      const endAngle = Math.max(degToRad(uAng), degToRad(vAng));
       ctx.strokeStyle = '#666';
       ctx.lineWidth = 2;
       ctx.beginPath();
