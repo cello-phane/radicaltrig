@@ -512,11 +512,13 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('vAngleVal').textContent = radToDeg(vAng).toFixed(0)+'°';
 
       /////////////////Parameters for the vector diagram///////////////////
-      //const u = {x:  uLen*radicalCosine(degToRau(uAng)), y: -uLen*radicalSine(degToRau(uAng)) };
-      //const v = {x:  vLen*radicalCosine(degToRau(vAng)), y: -vLen*radicalSine(degToRau(vAng)) };
+      const uSC = getRotationComponents(degToRau(uAng));
+      const vSC = getRotationComponents(degToRau(uAng));
+      const u = {x:  uLen*uSC.cos, y: -uLen*uSC.sin };
+      const v = {x:  vLen*uSC.cos, y: -vLen*uSC.sin };
       
-      const u = {x: uLen*Math.cos(uAng), y: -uLen*Math.sin(uAng)};
-      const v = {x: vLen*Math.cos(vAng), y: -vLen*Math.sin(vAng)};
+      //const u = {x: uLen*Math.cos(uAng), y: -uLen*Math.sin(uAng)};
+      //const v = {x: vLen*Math.cos(vAng), y: -vLen*Math.sin(vAng)};
       currentU = u;
       currentV = v;
       const rauPhase = atanVec(u, v);
@@ -544,7 +546,7 @@ document.addEventListener('DOMContentLoaded', () => {
       ctx.strokeStyle = '#666';
       ctx.lineWidth = 2;
       ctx.beginPath();
-      ctx.arc(centerX, centerY, arcRadius, -endAngle, -startAngle);
+      ctx.arc(centerX, centerY, arcRadius, startAngle, endAngle);
       //Update value for the vector diagram
       currentPhaseSection2 = rauPhase;
       
