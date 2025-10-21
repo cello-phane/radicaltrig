@@ -508,9 +508,11 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('vAngleVal').textContent = radToDeg(vAng).toFixed(0)+'°';
 
       /////////////////Parameters for the vector diagram///////////////////
-      getRotationComponents
-      const u = {x: uLen*Math.cos(uAng), y: -uLen*Math.sin(uAng)};
-      const v = {x: vLen*Math.cos(vAng), y: -vLen*Math.sin(vAng)};
+      const u = {x:  uLen*radicalCosine(uAng/90.0), y: -uLen*radicalSine(uAng/90.0) };
+      const v = {x:  vLen*radicalCosine(vAng/90.0), y: -vLen*radicalSine(vAng/90.0) };
+      
+      //const u = {x: uLen*Math.cos(uAng), y: -uLen*Math.sin(uAng)};
+      //const v = {x: vLen*Math.cos(vAng), y: -vLen*Math.sin(vAng)};
       currentU = u;
       currentV = v;
       const rauPhase = atanVec(u, v);
