@@ -545,8 +545,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
       drawArrow(ctx, centerX, centerY, uEnd.x, uEnd.y, '#ff4444', 3);
       drawArrow(ctx, centerX, centerY, vEnd.x, vEnd.y, '#4444ff', 3);
-      const refvec = {x: 1.0, y: 0.0};
-      const arcRadius = Math.min(uLen, vLen);
+      const refvec     = {x: 1.0, y: 0.0};
+      const arcRadius  = Math.min(uLen, vLen);
       const startAngle = Math.min(uAng, vAng);
       const endAngle = Math.max(uAng, vAng);
       ctx.strokeStyle = '#666';
@@ -562,10 +562,10 @@ document.addEventListener('DOMContentLoaded', () => {
       if (delta > 2.0) {
         // arc crosses the wrap (goes past 360°)
         // → draw the shorter *decreasing* arc
-        ctx.arc(centerX, centerY, radius, rauToRad(end*90), rauToRad(start*90), true); // true = anticlockwise
+        ctx.arc(centerX, centerY, arcRadius, rauToRad(end*90), rauToRad(start*90), true); // true = anticlockwise
       } else {
         // normal CCW sweep
-        ctx.arc(centerX, centerY, radius, rauToRad(start*90), rauToRad(end*90), false);
+        ctx.arc(centerX, centerY, arcRadius, rauToRad(start*90), rauToRad(end*90), false);
       }
       
       //Update value for the vector diagram
