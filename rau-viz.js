@@ -549,7 +549,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (rauPhase > endAngle && atanVec(refvec, u) < atanVec(u, v) + Math.abs(atanVec(refvec, u) - atanVec(refvec, v)) && (uVal/90) < atanVec(refvec, v)) {
         console.log("Blue(v) should have the arc going the other direction.");
         if (4.0 - rauPhase > 2.0) {
-          currentPhaseSection2 = rauPhase;
+          currentPhaseSection2 = 4.0 - rauPhase;
         }
         else {
           currentPhaseSection2 = Math.abs(4.0 - rauPhase);
