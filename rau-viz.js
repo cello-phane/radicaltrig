@@ -530,7 +530,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const cross = u.x*v.y - u.y*v.x;
       const dot = u.x*v.x + u.y*v.y;
-      const rauPhase = radToRau(Math.atan2(u, v));
+      const rauPhase = radToRau(Math.atan2(u.x, u.y));
       
       currentPhaseSection2 = rauPhase;
       updateResultsDisplay();
