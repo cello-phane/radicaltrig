@@ -584,7 +584,7 @@ document.addEventListener('DOMContentLoaded', () => {
       currentPhaseSection2 = rauPhase;
       anglebetweenDeg = Math.abs(parseInt(controls.uAngle.value) - parseInt(controls.vAngle.value));
       if (anticlockwise) anglebetweenDeg = 360 - anglebetweenDeg;
-      if (anticlockwise && drawShortestArc) anglebetweenDeg = 360 - anglebetweenDeg;
+      if (!anticlockwise && drawShortestArc) anglebetweenDeg = 360 - anglebetweenDeg;
       updateResultsDisplay();
       updateConversionDisplay();
     }
