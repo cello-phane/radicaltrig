@@ -10,7 +10,7 @@ let uAng = 0;
 let vAng = 0;
 let anticlockwise = false;
 let rauPhase = 0;
-
+let drawShortestArc = true;
 const controls = {
   uLength: document.getElementById('uLength'),
   uAngle: document.getElementById('uAngle'),
@@ -568,7 +568,7 @@ document.addEventListener('DOMContentLoaded', () => {
       drawArcBetween(ctx, centerX, centerY, arcRadius, u, v, {
         color: '#666',
         width: 3,
-        shortest: true
+        shortest: drawShortestArc
       });
       
       //draw arc manually
@@ -584,6 +584,7 @@ document.addEventListener('DOMContentLoaded', () => {
       currentPhaseSection2 = rauPhase;
       anglebetweenDeg = Math.abs(parseInt(controls.uAngle.value) - parseInt(controls.vAngle.value));
       if (anticlockwise) anglebetweenDeg = 360 - anglebetweenDeg;
+      if (anticlockwise && drawShortestArc) anglebetweenDeg = 360 - anglebetweenDeg;
       updateResultsDisplay();
       updateConversionDisplay();
     }
