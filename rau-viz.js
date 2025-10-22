@@ -133,28 +133,30 @@ const showConv = document.getElementById("showConversion");
 
 function drawArcBetween(ctx, cx, cy, radius, u, v, options = {}) {
   const {
-    ref = {x: 1, y: 0},   // reference direction (+X)
-    shortest = true,
-    color = '#666',
-    width = 2
+    ref = {x: 1, y: 0},   // reference vector (default +X)
+    shortest = true,      // draw shortest arc between u and v
+    width = 3
   } = options;
 
-  // Get angles of u and v relative to ref
-  const angleU = atanVec(ref, u);
+  // Compute RAU “angles” for u and v relative to +X
+  const angleU = atanVec(ref, u); // 0..4 range
   const angleV = atanVec(ref, v);
 
-  // Compute CCW delta (RAU domain)
+  // Compute signed difference (mod 4 for full circle)
   let delta = (angleV - angleU + 4.0) % 4.0;
 
-  // If shortest arc requested, use the smaller path
+  // If delta > 2 RAU (half turn), use the shorter way around
   if (shortest && delta > 2.0) delta -= 4.0;
+
+  // Determine direction and color based on rotation sense
+  const anticlockwise = delta < 0;
+  const color = anticlockwise ? "#1e90ff" : "#ff4444"; // blue=CCW, red=CW
 
   // Convert RAU → radians
   const startAngle = (angleU / 4.0) * 2 * Math.PI;
   const endAngle   = ((angleU + delta) / 4.0) * 2 * Math.PI;
-  const anticlockwise = delta < 0;
 
-  // Draw
+  // Draw the arc
   ctx.save();
   ctx.strokeStyle = color;
   ctx.lineWidth = width;
@@ -163,8 +165,23 @@ function drawArcBetween(ctx, cx, cy, radius, u, v, options = {}) {
   ctx.stroke();
   ctx.restore();
 
+  // Optional: mark start/end points for clarity
+  ctx.save();
+  ctx.fillStyle = "#222";
+  const sx = cx + radius * Math.cos(startAngle);
+  const sy = cy + radius * Math.sin(startAngle);
+  const ex = cx + radius * Math.cos(endAngle);
+  const ey = cy + radius * Math.sin(endAngle);
+  ctx.beginPath();
+  ctx.arc(sx, sy, 4, 0, 2 * Math.PI);
+  ctx.arc(ex, ey, 4, 0, 2 * Math.PI);
+  ctx.fill();
+  ctx.restore();
+
+  // Return data for debugging or labeling if desired
   return { angleU, angleV, delta, anticlockwise };
 }
+
 
 function drawConversionDiagram(rauPhase) {
     const ctx = convCtx;
