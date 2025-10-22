@@ -131,52 +131,35 @@ const convCtx = convCanvas.getContext("2d");
 const convPanel = document.getElementById("conversionPanel");
 const showConv = document.getElementById("showConversion");
 
-function drawArcBetween(ctx, centerX, centerY, radius, u, v, options = {}) {
+function drawArcBetween(ctx, cx, cy, radius, u, v, options = {}) {
   const {
-    ref = {x: 1, y: 0},   // reference vector (usually +X)
-    shortest = true,      // draw shortest arc or continuous?
+    ref = {x: 1, y: 0},   // reference direction (+X)
+    shortest = true,
     color = '#666',
     width = 2
   } = options;
-  
-  // Convert vectors to RAU "angles" (0..4)
+
+  // Get angles of u and v relative to ref
   const angleU = atanVec(ref, u);
   const angleV = atanVec(ref, v);
 
-  // Compute CCW difference (in RAU units)
+  // Compute CCW delta (RAU domain)
   let delta = (angleV - angleU + 4.0) % 4.0;
 
-  // Optionally use shortest path (so it won't spin full circle)
-  if (shortest && delta > 2.0) {
-    delta -= 4.0; // go the other way
-  }
-
-  // Direction: CW if delta < 0, CCW otherwise
-  anticlockwise = delta < 0;
+  // If shortest arc requested, use the smaller path
+  if (shortest && delta > 2.0) delta -= 4.0;
 
   // Convert RAU → radians
-  let startAngle = (angleU / 4.0) * 2 * Math.PI;
-  let endAngle   = ((angleU + delta) / 4.0) * 2 * Math.PI;
+  const startAngle = (angleU / 4.0) * 2 * Math.PI;
+  const endAngle   = ((angleU + delta) / 4.0) * 2 * Math.PI;
+  const anticlockwise = delta < 0;
 
-  // Draw the arc
+  // Draw
   ctx.save();
   ctx.strokeStyle = color;
   ctx.lineWidth = width;
   ctx.beginPath();
-  //////////////DEBUG/////////////////
-  if (delta > 0 && atanVec({x: 1.0, y: 0.0}, v) < atanVec(u, v) + Math.abs(atanVec({x: 1.0, y: 0.0}, u) - atanVec({x: 1.0, y: 0.0}, v))) 
-  { 
-    ctx.arc(centerX, centerY, radius, endAngle, startAngle, true);
-  }
-  else {
-    if (Math.abs(atanVec(u, v)) > Math.abs(atanVec({x: 1.0, y: 0.0}, v))) { 
-      ctx.arc(centerX, centerY, radius, startAngle, endAngle, anticlockwise);
-    }
-    else {
-      ctx.arc(centerX, centerY, radius, endAngle, startAngle, anticlockwise);
-    }
-  }
-  ////////////////////////////////////
+  ctx.arc(cx, cy, radius, startAngle, endAngle, anticlockwise);
   ctx.stroke();
   ctx.restore();
 
