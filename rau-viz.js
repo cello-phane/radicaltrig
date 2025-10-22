@@ -8,7 +8,6 @@ let currentV = { x: 100, y: 0 };
 let anglebetweenDeg = 0;
 let uAng = 0;
 let vAng = 0;
-let anticlockwise = false;
 let rauPhase = 0;
 let drawShortestArc = false;
 const controls = {
