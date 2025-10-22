@@ -5,7 +5,6 @@ let currentPhaseSection1 = 0;
 let currentPhaseSection2 = 0;
 let currentU = { x: 120, y: 0 };
 let currentV = { x: 100, y: 0 };
-let cw = false;
 let anglebetweenDeg = 0;
 let uAng = 0;
 let vAng = 0;
