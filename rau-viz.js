@@ -7,22 +7,9 @@ let currentU = { x: 120, y: 0 };
 let currentV = { x: 100, y: 0 };
 let cw = false;
 let anglebetweenDeg = 0;
-const controls = {
-  uLength: document.getElementById('uLength'),
-  uAngle: document.getElementById('uAngle'),
-  vLength: document.getElementById('vLength'),
-  vAngle: document.getElementById('vAngle')
-};
+let uAng = 0;
+let vAng = 0;
 
-const uLen = parseInt(controls.uLength.value);
-const uAng = degToRad(parseInt(controls.uAngle.value));
-const vLen = parseInt(controls.vLength.value);
-const vAng = degToRad(parseInt(controls.vAngle.value));
-
-document.getElementById('uLengthVal').textContent = uLen;
-document.getElementById('uAngleVal').textContent = radToDeg(uAng).toFixed(0)+'°';
-document.getElementById('vLengthVal').textContent = vLen;
-document.getElementById('vAngleVal').textContent = radToDeg(vAng).toFixed(0)+'°';
 if (cw) {
   anglebetweenDeg = uAng - vAng;
 }
@@ -541,7 +528,22 @@ document.addEventListener('DOMContentLoaded', () => {
     function render(){
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       drawGrid(ctx, canvas.width, canvas.height, 50);
+      const controls = {
+        uLength: document.getElementById('uLength'),
+        uAngle: document.getElementById('uAngle'),
+        vLength: document.getElementById('vLength'),
+        vAngle: document.getElementById('vAngle')
+      };
       
+      const uLen = parseInt(controls.uLength.value);
+      uAng = degToRad(parseInt(controls.uAngle.value));
+      const vLen = parseInt(controls.vLength.value);
+      vAng = degToRad(parseInt(controls.vAngle.value));
+      
+      document.getElementById('uLengthVal').textContent = uLen;
+      document.getElementById('uAngleVal').textContent = radToDeg(uAng).toFixed(0)+'°';
+      document.getElementById('vLengthVal').textContent = vLen;
+      document.getElementById('vAngleVal').textContent = radToDeg(vAng).toFixed(0)+'°';
       const u = {x: uLen*Math.cos(uAng), y: -uLen*Math.sin(uAng)};
       const v = {x: vLen*Math.cos(vAng), y: -vLen*Math.sin(vAng)};
 
