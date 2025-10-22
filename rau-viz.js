@@ -6,10 +6,14 @@ let currentPhaseSection2 = 0;
 let currentU = { x: 120, y: 0 };
 let currentV = { x: 100, y: 0 };
 let anglebetweenDeg = 0;
+let anglebetweenRadian = 0;
 let uAng = 0;
 let vAng = 0;
 let rauPhase = 0;
-let anticlockwise = false;
+let rauDeg = 0;
+let rauRad = 0;
+let ccw = false;
+
 const controls = {
   uLength: document.getElementById('uLength'),
   uAngle: document.getElementById('uAngle'),
@@ -59,6 +63,10 @@ function degToRad(deg) { return deg * (Math.PI/180.0); }
 function radToDeg(rad) { return rad*180/Math.PI; }
 
 function radToRau(rad) { return Math.sqrt(2 - 2 * Math.cos(rad)); }
+
+function rauToRad(rau) { return Math.acos(1 - (rau * rau) / 2); }
+
+function rauToDeg(rau) { return (rau / 4.0) * 360; }
 
 function atanVec(u,v) {
   const mix = (a, b, c) => c ? b : a;
@@ -122,6 +130,40 @@ cos(θ) = ${rauCos.toFixed(3)}`;
   }
 }
 
+function drawArcBetween(ctx, cx, cy, radius, u, v, options = {}) {
+  const {
+    ref = {x: 1, y: 0},   // reference vector (default +X)
+    color = '#666',
+    width = 3
+  } = options;
+  
+  // compute CCW difference from both ref'd raus
+  let start = atanVec(ref, u);
+  let end   = atanVec(ref, v);
+  let delta = (end - start + 4.0) % 4.0;
+  // Draw the arc
+  ctx.save();
+  ctx.strokeStyle = color;
+  ctx.lineWidth = width;
+  ctx.beginPath();
+  // detect direction
+  if ((start-end > 0.0 || start-end + 2.0 == 0.0) && (atanVec(u,v) < start+delta)) {
+  	currentPhaseSection2 = 4.0-atanVec(u,v);
+  	ccw = false;
+  }
+  if (delta > 2.0) {
+    // arc crosses the wrap (goes past 360°)
+    // → draw the shorter *decreasing* arc
+    ctx.arc(cx, cy, radius, degToRad(end*90), degToRad(start*90), true); // anticlockwise
+  } else {
+    // normal CCW sweep
+    ctx.arc(cx, cy, radius, degToRad(start*90), degToRad(end*90), false); // clockwise
+  }
+  // Finalize the arc
+  ctx.stroke();
+  ctx.restore();
+}
+
 // ============================================
 // Conversion Diagram
 // ============================================
@@ -130,29 +172,6 @@ const convCtx = convCanvas.getContext("2d");
 const convPanel = document.getElementById("conversionPanel");
 const showConv = document.getElementById("showConversion");
 
-function drawArcBetween(ctx, cx, cy, radius, u, v, options = {}) {
-  const {
-    ref = {x: 1, y: 0},   // reference vector (default +X)
-    color = '#666',
-    width = 3
-  } = options;
-
-  // Compute RAU “angles” for u and v relative to +X
-  const angleU = atanVec(ref, u); // 0..4 range
-  const angleV = atanVec(ref, v);
-  // Convert RAU → radians
-  const startAngle = (angleU / 4.0) * 2 * Math.PI;
-  const endAngle   = (angleV / 4.0) * 2 * Math.PI;
-
-  // Draw the arc
-  ctx.save();
-  ctx.strokeStyle = color;
-  ctx.lineWidth = width;
-  ctx.beginPath();
-  ctx.arc(cx, cy, radius, startAngle, endAngle, anticlockwise);
-  ctx.stroke();
-  ctx.restore();
-}
 
 function drawConversionDiagram(rauPhase) {
     const ctx = convCtx;
@@ -562,7 +581,15 @@ document.addEventListener('DOMContentLoaded', () => {
       // Update variables
       rauPhase = atanVec(u,v);
       currentPhaseSection2 = rauPhase;
-      anglebetweenDeg = Math.abs(parseInt(controls.uAngle.value) - parseInt(controls.vAngle.value));
+      let diff = 0;
+      if (ccw) {
+      	diff = 360; 
+      }
+      else {
+      	diff = 0;
+      }
+      anglebetweenDeg = rauToDeg(rauPhase); 
+      //anglebetweenDeg = Math.abs(parseInt(controls.uAngle.value) - parseInt(controls.vAngle.value));
 
       updateResultsDisplay();
       updateConversionDisplay();
