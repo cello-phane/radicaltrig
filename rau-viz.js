@@ -16,6 +16,16 @@ const controls = {
   vLength: document.getElementById('vLength'),
   vAngle: document.getElementById('vAngle')
 };
+const uLen = parseInt(controls.uLength.value);
+uAng = degToRad(parseInt(controls.uAngle.value));
+const vLen = parseInt(controls.vLength.value);
+vAng = degToRad(parseInt(controls.vAngle.value));
+if (cw) {
+  anglebetweenDeg = uAng - vAng;
+}
+else {
+  anglebetweenDeg = 360 - (uAng - vAng);
+}
 // ============================================
 // RAU Math Functions
 // ============================================
@@ -53,7 +63,7 @@ function radicalTan(t) {
   const base = f / (1.0 - f);
   return (q === 1 || q === 3) ? -1.0 / base : base;
 }
-function degToRad(deg) { return deg * Math.PI/180; }
+function degToRad(deg) { return deg * (Math.PI/180.0); }
 
 function radToDeg(rad) { return rad*180/Math.PI; }
 
@@ -103,7 +113,7 @@ cos(θ) = ${rauCos.toFixed(3)}`;
     const rauSin = radicalSine(phase);
     const rauCos = radicalCosine(phase);
     const rauTan = radicalTan(phase);
-    const rauRad = anglebetweenDeg * (Math.PI/180.0);
+    const rauRad = degToRad(anglebetweenDeg);
     const rauDeg = anglebetweenDeg;
     
     const formatNum = (num, width=8, decimals=2) => num.toFixed(decimals).padStart(width);
@@ -529,16 +539,6 @@ document.addEventListener('DOMContentLoaded', () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       drawGrid(ctx, canvas.width, canvas.height, 50);
       
-      const uLen = parseInt(controls.uLength.value);
-      uAng = degToRad(parseInt(controls.uAngle.value));
-      const vLen = parseInt(controls.vLength.value);
-      vAng = degToRad(parseInt(controls.vAngle.value));
-      if (cw) {
-        anglebetweenDeg = uAng - vAng;
-      }
-      else {
-        anglebetweenDeg = 360 - (uAng - vAng);
-      }
       document.getElementById('uLengthVal').textContent = uLen;
       document.getElementById('uAngleVal').textContent = radToDeg(uAng).toFixed(0)+'°';
       document.getElementById('vLengthVal').textContent = vLen;
