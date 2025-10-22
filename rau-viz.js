@@ -169,7 +169,7 @@ function drawArcBetween(ctx, centerX, centerY, radius, u, v, options = {}) {
     ctx.arc(centerX, centerY, radius, endAngle, startAngle, true);
   }
   else {
-    if (Math.abs(atanVec({x: 1.0, y: 0.0}, v)) > Math.abs(atanVec({x: 1.0, y: 0.0}, u))) { 
+    if (Math.abs(atanVec({x: 1.0, y: 0.0}, v)) < Math.abs(atanVec({x: 1.0, y: 0.0}, u))) { 
       ctx.arc(centerX, centerY, radius, startAngle, endAngle, anticlockwise);
     }
     else {
