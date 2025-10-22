@@ -1,4 +1,6 @@
-// ============================================up
+// ============================================
+
+// ============================================
 // Global State
 // ============================================
 let currentPhaseSection1 = 0;
@@ -9,7 +11,7 @@ let currentV = { x: 100, y: 0 };
 // ============================================
 // RAU Math Functions
 // ============================================
-function radicalSine(t) {
+function radicalSineGlobal(t) {
   t = t % 4;
   const quadrant = Math.floor(t);
   const lt = t - quadrant;
@@ -22,7 +24,7 @@ function radicalSine(t) {
   }
 }
 
-function radicalCosine(t) {
+function radicalCosineGlobal(t) {
   t = t % 4;
   const quadrant = Math.floor(t);
   const lt = t - quadrant;
@@ -35,7 +37,7 @@ function radicalCosine(t) {
   }
 }
 
-function radicalTan(t) {
+function radicalTanGlobal(t) {
   t = ((t % 4) + 4) % 4;
   const q = Math.floor(t);
   const f = t - q;
@@ -43,20 +45,7 @@ function radicalTan(t) {
   const base = f / (1.0 - f);
   return (q === 1 || q === 3) ? -1.0 / base : base;
 }
-function degToRad(deg) { return deg * Math.PI/180; }
 
-function radToDeg(rad) { return rad*180/Math.PI; }
-
-function atanVec(u,v) {
-  const mix = (a, b, c) => c ? b : a;
-  const cross = u.x * v.y - u.y * v.x;
-  const dot = u.x * v.x + u.y * v.y;
-  let angle = Math.abs(cross) / (Math.abs(dot) + Math.abs(cross));
-  const q4fix = mix(Math.sign(cross) * angle, 4.0 - angle, dot > 0 && cross < 0);
-  const qblend = mix(mix(q4fix, angle, cross > dot), angle + 1.0, cross < 0 && dot < 0);
-  const halfrot = mix(2.0 - angle, angle + 2.0, cross < 0);
-  return mix(qblend, halfrot, dot < 0);
-}
 // ============================================
 // Display Update Function
 // ============================================
@@ -68,10 +57,10 @@ function updateResultsDisplay() {
   if (isSection1Active) {
     // Section 1: Only show RAU phase and trig values
     const phase = currentPhaseSection1;
-    const rauSin = radicalSine(phase);
-    const rauCos = radicalCosine(phase);
-    const rauTan = radicalTan(phase);
-    const rauRad = (phase / 4) * 2.0 * Math.PI;
+    const rauSin = radicalSineGlobal(phase);
+    const rauCos = radicalCosineGlobal(phase);
+    const rauTan = radicalTanGlobal(phase);
+    const rauRad = (phase / 4) * Math.PI;
     const rauDeg = (phase / 4) * 360;
     
     resultsContent.textContent = `RAU Phase = ${phase.toFixed(3)}
@@ -87,10 +76,10 @@ cos(θ) = ${rauCos.toFixed(3)}`;
     const v = currentV;
     const cross = u.x * v.y - u.y * v.x;
     const dot = u.x * v.x + u.y * v.y;
-    const rauSin = radicalSine(phase);
-    const rauCos = radicalCosine(phase);
-    const rauTan = radicalTan(phase);
-    const rauRad = (phase / 4) * 2.0 * Math.PI;
+    const rauSin = radicalSineGlobal(phase);
+    const rauCos = radicalCosineGlobal(phase);
+    const rauTan = radicalTanGlobal(phase);
+    const rauRad = (phase / 4) * Math.PI;
     const rauDeg = (phase / 4) * 360;
     
     const formatNum = (num, width=8, decimals=2) => num.toFixed(decimals).padStart(width);
@@ -109,22 +98,24 @@ cos(θ) = ${rauCos.toFixed(3)}`;
   }
 }
 
-// ============================================
-// Conversion Diagram
-// ============================================
-const convCanvas = document.getElementById("conversionCanvas");
-const convCtx = convCanvas.getContext("2d");
-const convPanel = document.getElementById("conversionPanel");
-const showConv = document.getElementById("showConversion");
+  // ============================================
+  // Conversion Diagram
+  // ============================================
+  const convCanvas = document.getElementById("conversionCanvas");
+  const convCtx = convCanvas.getContext("2d");
+  const convPanel = document.getElementById("conversionPanel");
+  const showConv = document.getElementById("showConversion");
+
 
 function drawConversionDiagram(rauPhase) {
     const ctx = convCtx;
-    const w = convCanvas.width;  // use actual width
-    const h = convCanvas.height; // use actual height
+    const w = convCanvas.width;
+    const h = convCanvas.height;
     ctx.clearRect(0, 0, w, h);
-  
-    const r = Math.min(w, h) * 0.3; // radius scales with canvas size
-    const cx = w/2, cy = h/2;
+
+    const r = 60;
+    const cx = w/2, cy = h/2 + 10;
+
     ctx.strokeStyle = "#333";
     ctx.lineWidth = 2;
     ctx.beginPath();
@@ -166,7 +157,7 @@ function drawConversionDiagram(rauPhase) {
     ctx.beginPath();
     ctx.arc(px, py, 6, 0, 2*Math.PI);
     ctx.fill();
-}
+  }
 function updateConversionDisplay() {
   const s1 = document.getElementById('section1');
   const isSection1Active = s1.classList.contains('active');
@@ -174,22 +165,6 @@ function updateConversionDisplay() {
   const showConv = document.getElementById('showConversion');
   if (showConv.checked) {
     drawConversionDiagram(phase);
-  }
-}
-
-function resizeConversionCanvas() {
-  const canvas = document.getElementById('conversionCanvas');
-  const container = document.getElementById('conversionPanel');
-  
-  // Set canvas resolution to match container
-  const width = container.clientWidth - 6; // subtract padding (3px each side)
-  canvas.width = width;
-  canvas.height = width; // square canvas
-  
-  // Redraw if it's visible
-  const showConv = document.getElementById('showConversion');
-  if (showConv.checked) {
-    updateConversionDisplay();
   }
 }
 
@@ -205,7 +180,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const showing1 = s1.classList.contains('active');
     s1.classList.toggle('active', !showing1);
     s2.classList.toggle('active', showing1);
-    toggleBtn.textContent = showing1 ? 'Switch to Introduction' : 'Switch to Vector Diagram';
+    toggleBtn.textContent = showing1 ? 'Switch to RAU Explanation' : 'Switch to Vector Diagram';
     updateResultsDisplay();
     updateConversionDisplay();
   });
@@ -243,7 +218,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Section 1: RAU Canvas
   // ============================================
   (function() {
-    const canvas = document.getElementById('vectorCanvas');
+    const canvas = document.getElementById('canvas1');
     const ctx = canvas.getContext('2d');
     const slider = document.getElementById('paramSlider');
     const valueDisplay = document.getElementById('paramValue');
@@ -318,7 +293,6 @@ document.addEventListener('DOMContentLoaded', () => {
       ctx.strokeStyle = '#888';
       ctx.lineWidth = 1;
       ctx.beginPath();
-
       ctx.moveTo(cx + radius, cy);
       ctx.lineTo(cx, cy - radius);
       ctx.moveTo(cx, cy - radius);
@@ -327,7 +301,6 @@ document.addEventListener('DOMContentLoaded', () => {
       ctx.lineTo(cx, cy + radius);
       ctx.moveTo(cx, cy + radius);
       ctx.lineTo(cx + radius, cy);
-
       ctx.stroke();
       ctx.setLineDash([]);
       ctx.restore();
@@ -374,19 +347,16 @@ document.addEventListener('DOMContentLoaded', () => {
     slider.addEventListener('input', draw);
     draw();
 
-    // Setup responsive canvas with redraw callback
-    setupResponsiveCanvas('vectorCanvas', 0.642, draw);
-    
-      if (window.MathJax && MathJax.typesetPromise) {
-        MathJax.typesetPromise().catch(console.error);
-      }
-    })();
+    if (window.MathJax && MathJax.typesetPromise) {
+      MathJax.typesetPromise().catch(console.error);
+    }
+  })();
 
   // ============================================
   // Section 2: Vector Diagram
   // ============================================
   (function() {
-    const canvas = document.getElementById('simpleCanvas');
+    const canvas = document.getElementById('canvas2');
     const ctx = canvas.getContext('2d');
     const centerX = canvas.width/2;
     const centerY = canvas.height/2;
@@ -397,7 +367,10 @@ document.addEventListener('DOMContentLoaded', () => {
       vLength: document.getElementById('vLength'),
       vAngle: document.getElementById('vAngle')
     };
-
+    
+    function degToRad(deg) { return deg * Math.PI/180; }
+    function radToDeg(rad) { return rad*180/Math.PI; }
+    
     function drawArrow(ctx, fromX, fromY, toX, toY, color, width=2){
       const headLen = 12;
       const dx = toX - fromX, dy = toY - fromY;
@@ -438,7 +411,44 @@ document.addEventListener('DOMContentLoaded', () => {
       ctx.moveTo(0, centerY); ctx.lineTo(width, centerY);
       ctx.stroke();
     }
+    
+    function radicalSine(t){
+      t = t % 4;
+      const quadrant = Math.floor(t);
+      const lt = t - quadrant;
+      const a = 1 - 2*lt + 2*lt*lt;
+      switch(quadrant){
+        case 0: return lt/Math.sqrt(a);
+        case 1: return (1-lt)/Math.sqrt(a);
+        case 2: return -lt/Math.sqrt(a);
+        case 3: return -(1-lt)/Math.sqrt(a);
+      }
+    }
+    
+    function radicalCosine(t){
+      t = t % 4;
+      const quadrant = Math.floor(t);
+      const lt = t - quadrant;
+      const a = 1 - 2*lt + 2*lt*lt;
+      switch(quadrant){
+        case 0: return (1-lt)/Math.sqrt(a);
+        case 1: return -lt/Math.sqrt(a);
+        case 2: return -(1-lt)/Math.sqrt(a);
+        case 3: return lt/Math.sqrt(a);
+      }
+    }
 
+    function computeRAUPhase(u,v) {
+      const mix = (a, b, c) => c ? b : a;
+      const cross = u.x * v.y - u.y * v.x;
+      const dot = u.x * v.x + u.y * v.y;
+      let angle = Math.abs(cross) / (Math.abs(dot) + Math.abs(cross));
+      const q4fix = mix(Math.sign(cross) * angle, 4.0 - angle, dot > 0 && cross < 0);
+      const qblend = mix(mix(q4fix, angle, cross > dot), angle + 1.0, cross < 0 && dot < 0);
+      const halfrot = mix(2.0 - angle, angle + 2.0, cross < 0);
+      return mix(qblend, halfrot, dot < 0);
+    }
+    
     function drawChordConnection(ctx, u, v, radius) {
       const uMag = Math.sqrt(u.x*u.x + u.y*u.y);
       const vMag = Math.sqrt(v.x*v.x + v.y*v.y);
@@ -529,7 +539,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const cross = u.x*v.y - u.y*v.x;
       const dot = u.x*v.x + u.y*v.y;
-      const rauPhase = atanVec(u, v);
+      const rauPhase = computeRAUPhase(u, v);
       
       currentPhaseSection2 = rauPhase;
       updateResultsDisplay();
@@ -539,8 +549,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     Object.values(controls).forEach(c => c.addEventListener('input', render));
     render();
-    // Setup responsive canvas with redraw callback
-    setupResponsiveCanvas('simpleCanvas', 0.642, render);
   })();
 
   showConv.addEventListener("change", () => {
@@ -548,4 +556,5 @@ document.addEventListener('DOMContentLoaded', () => {
     updateConversionDisplay();
   });
 
+  
 });
