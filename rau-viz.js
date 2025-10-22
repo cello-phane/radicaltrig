@@ -119,6 +119,45 @@ const convCtx = convCanvas.getContext("2d");
 const convPanel = document.getElementById("conversionPanel");
 const showConv = document.getElementById("showConversion");
 
+function drawArcBetween(ctx, centerX, centerY, radius, u, v, options = {}) {
+  const {
+    ref = {x: 1, y: 0},   // reference vector (usually +X)
+    shortest = true,      // draw shortest arc or continuous?
+    color = '#666',
+    width = 2
+  } = options;
+
+  // Convert vectors to RAU "angles" (0..4)
+  const angleU = atanVec(ref, u);
+  const angleV = atanVec(ref, v);
+
+  // Compute CCW difference (in RAU units)
+  let delta = (angleV - angleU + 4.0) % 4.0;
+
+  // Optionally use shortest path (so it won't spin full circle)
+  if (shortest && delta > 2.0) {
+    delta -= 4.0; // go the other way
+  }
+
+  // Direction: CW if delta < 0, CCW otherwise
+  const anticlockwise = delta < 0;
+
+  // Convert RAU → radians
+  const startAngle = (angleU / 4.0) * 2 * Math.PI;
+  const endAngle   = ((angleU + delta) / 4.0) * 2 * Math.PI;
+
+  // Draw the arc
+  ctx.save();
+  ctx.strokeStyle = color;
+  ctx.lineWidth = width;
+  ctx.beginPath();
+  ctx.arc(centerX, centerY, radius, startAngle, endAngle, anticlockwise);
+  ctx.stroke();
+  ctx.restore();
+
+  return { angleU, angleV, delta, anticlockwise };
+}
+
 function drawConversionDiagram(rauPhase) {
     const ctx = convCtx;
     const w = convCanvas.width;  // use actual width
@@ -520,14 +559,28 @@ document.addEventListener('DOMContentLoaded', () => {
       drawArrow(ctx, centerX, centerY, uEnd.x, uEnd.y, '#ff4444', 3);
       drawArrow(ctx, centerX, centerY, vEnd.x, vEnd.y, '#4444ff', 3);
 
-      const arcRadius = Math.min(uLen, vLen);
       const startAngle = Math.min(uAng, vAng);
       const endAngle = Math.max(uAng, vAng);
-      ctx.strokeStyle = '#666';
+      
+      // ================================================
+      // Use drawArcBetween to draw angle between u and v
+      const arcRadius = Math.min(uLen, vLen);
+      const centerX = canvas.width / 2;
+      const centerY = canvas.height / 2;
+      
+      drawArcBetween(ctx, centerX, centerY, arcRadius, u, v, {
+        color: '#ff8844',
+        width: 3,
+        shortest: true
+      });
+      
+      //draw arc manually
+      /*ctx.strokeStyle = '#666';
       ctx.lineWidth = 2;
       ctx.beginPath();
       ctx.arc(centerX, centerY, arcRadius, -endAngle, -startAngle);
-      ctx.stroke();
+      ctx.stroke();*/
+      
       // =========================
       // Update variables
       const rauPhase = atanVec(u,v);
