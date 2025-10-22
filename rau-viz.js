@@ -9,6 +9,7 @@ let cw = false;
 let anglebetweenDeg = 0;
 let uAng = 0;
 let vAng = 0;
+let anticlockwise = false;
 
 const controls = {
   uLength: document.getElementById('uLength'),
@@ -151,8 +152,8 @@ function drawArcBetween(ctx, centerX, centerY, radius, u, v, options = {}) {
   }
 
   // Direction: CW if delta < 0, CCW otherwise
-  const anticlockwise = delta < 0;
-  cw = anticlockwise;
+  anticlockwise = delta < 0;
+
   // Convert RAU → radians
   const startAngle = (angleU / 4.0) * 2 * Math.PI;
   const endAngle   = ((angleU + delta) / 4.0) * 2 * Math.PI;
@@ -582,8 +583,8 @@ document.addEventListener('DOMContentLoaded', () => {
       const rauPhase = atanVec(u,v);
       currentPhaseSection2 = rauPhase;
       anglebetweenDeg = Math.abs(parseInt(controls.uAngle.value) - parseInt(controls.vAngle.value));
-      if (cw) {
-        console.log("going clockwise");
+      if (anticlockwise) {
+        console.log("going counter-clockwise");
         anglebetweenDeg = 360 - anglebetweenDeg;
       }
       updateResultsDisplay();
