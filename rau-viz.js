@@ -9,7 +9,7 @@ let anglebetweenDeg = 0;
 let uAng = 0;
 let vAng = 0;
 let rauPhase = 0;
-let drawShortestArc = false;
+let anticlockwise = false;
 const controls = {
   uLength: document.getElementById('uLength'),
   uAngle: document.getElementById('uAngle'),
@@ -133,27 +133,16 @@ const showConv = document.getElementById("showConversion");
 function drawArcBetween(ctx, cx, cy, radius, u, v, options = {}) {
   const {
     ref = {x: 1, y: 0},   // reference vector (default +X)
-    shortest = true,      // draw shortest arc between u and v
+    color = '#666',
     width = 3
   } = options;
 
   // Compute RAU “angles” for u and v relative to +X
   const angleU = atanVec(ref, u); // 0..4 range
   const angleV = atanVec(ref, v);
-
-  // Compute signed difference (mod 4 for full circle)
-  let delta = (angleV - angleU + 4.0) % 4.0;
-
-  // If delta > 2 RAU (half turn), use the shorter way around
-  if (shortest && delta > 2.0) delta -= 4.0;
-
-  // Determine direction and color based on rotation sense
-  const anticlockwise = delta < 0;
-  const color = anticlockwise ? "#1e90ff" : "#ff4444"; // blue=CCW, red=CW
-
   // Convert RAU → radians
   const startAngle = (angleU / 4.0) * 2 * Math.PI;
-  const endAngle   = ((angleU + delta) / 4.0) * 2 * Math.PI;
+  const endAngle   = (angleV / 4.0) * 2 * Math.PI;
 
   // Draw the arc
   ctx.save();
@@ -163,22 +152,6 @@ function drawArcBetween(ctx, cx, cy, radius, u, v, options = {}) {
   ctx.arc(cx, cy, radius, startAngle, endAngle, anticlockwise);
   ctx.stroke();
   ctx.restore();
-
-  // Optional: mark start/end points for clarity
-  ctx.save();
-  ctx.fillStyle = "#222";
-  const sx = cx + radius * Math.cos(startAngle);
-  const sy = cy + radius * Math.sin(startAngle);
-  const ex = cx + radius * Math.cos(endAngle);
-  const ey = cy + radius * Math.sin(endAngle);
-  ctx.beginPath();
-  ctx.arc(sx, sy, 4, 0, 2 * Math.PI);
-  ctx.arc(ex, ey, 4, 0, 2 * Math.PI);
-  ctx.fill();
-  ctx.restore();
-
-  // Return data for debugging or labeling if desired
-  return { angleU, angleV, delta, anticlockwise };
 }
 
 function drawConversionDiagram(rauPhase) {
@@ -577,9 +550,9 @@ document.addEventListener('DOMContentLoaded', () => {
       drawArrow(ctx, centerX, centerY, vEnd.x, vEnd.y, '#4444ff', 3);
       drawChordConnection(ctx, v, u, arcRadius);
       drawArcBetween(ctx, centerX, centerY, arcRadius, u, v, {
+        ref = {x: 1, y: 0},
         color: '#666',
         width: 3,
-        shortest: drawShortestArc
       });
       
       //draw arc manually
