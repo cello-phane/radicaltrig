@@ -157,19 +157,21 @@ function drawArcBetween(ctx, centerX, centerY, radius, u, v, options = {}) {
   // Convert RAU → radians
   let startAngle = (angleU / 4.0) * 2 * Math.PI;
   let endAngle   = ((angleU + delta) / 4.0) * 2 * Math.PI;
-  //////////////DEBUG/////////////////
-  if (anticlockwise && atanVec({x: 1.0, y: 0.0}, u) < atanVec(u, v) + Math.abs(atanVec({x: 1.0, y: 0.0}, u) - atanVec({x: 1.0, y: 0.0}, v))) 
-  { 
-    startAngle = ((angleU + delta) / 4.0) * 2 * Math.PI;
-    endAngle = (angleU / 4.0) * 2 * Math.PI;
-  }
-  ////////////////////////////////////
+
   // Draw the arc
   ctx.save();
   ctx.strokeStyle = color;
   ctx.lineWidth = width;
   ctx.beginPath();
-  ctx.arc(centerX, centerY, radius, startAngle, endAngle, anticlockwise);
+  //////////////DEBUG/////////////////
+  if (delta > 0 && atanVec({x: 1.0, y: 0.0}, u) < atanVec(u, v) + Math.abs(atanVec({x: 1.0, y: 0.0}, u) - atanVec({x: 1.0, y: 0.0}, v))) 
+  { 
+    ctx.arc(centerX, centerY, radius, startAngle, endAngle, anticlockwise);
+  }
+  else {
+    ctx.arc(centerX, centerY, radius, endAngle, startAngle, anticlockwise);
+  }
+  ////////////////////////////////////
   ctx.stroke();
   ctx.restore();
 
