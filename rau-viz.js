@@ -400,11 +400,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function drawArrow(ctx, fromX, fromY, toX, toY, color, width=2){
       const headLen = 12;
-      //const dx = toX - fromX, dy = toY - fromY;
-      //const angle = Math.atan2(dy, dx);
+      const dx = toX - fromX, dy = toY - fromY;
+      const angle = Math.atan2(dy, dx);
       const dx = toX - fromX;
-      const dy = toY - fromY;
-      const angle = atanVec({x: 1, y: 0}, {x: dx, y: dy});
       const rauSin = radicalSine(angle - (1/3));
       const rauCos = radicalCosine(angle - (1/3));
       const rauTan = radicalTan(angle - (1/3));
