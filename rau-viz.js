@@ -182,7 +182,6 @@ function drawArcBetween(ctx, cx, cy, radius, u, v, options = {}) {
   return { angleU, angleV, delta, anticlockwise };
 }
 
-
 function drawConversionDiagram(rauPhase) {
     const ctx = convCtx;
     const w = convCanvas.width;  // use actual width
