@@ -101,10 +101,9 @@ cos(θ) = ${rauCos.toFixed(3)}`;
 v = (${formatNum(v.x)}, ${formatNum(v.y)})
 Cross = ${formatNum(cross)}
 Dot   = ${formatNum(dot)}
------------
 RAU Phase = ${phase.toFixed(3)}
 Radian    = ${rauRad.toFixed(3)} (${rauDeg.toFixed(1)}°)
------------
+________________________________________________________
 tan(θ) = ${rauTan === 0 ? 'undefined' : rauTan.toFixed(4)}
 sin(θ) = ${rauSin.toFixed(3)}
 cos(θ) = ${rauCos.toFixed(3)}`;
