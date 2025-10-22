@@ -16,7 +16,8 @@ function degToRau(deg) { return (deg * 4.0) / 360.0; }
 function radToRau(rad) { return (rad / (2 * Math.PI)) * 4.0; }
 function rauToRad(rau) { return (rau / 4.0) * (2 * Math.PI); }
 
-//cross product magnitude divided by dot product, then return angle in 0-4 range
+// Angle from u to v (relative)
+// (cross product magnitude divided by dot product, return angle in 0-4 range)
 function atanVec(u,v) {
   const cross = u.x * v.y - u.y * v.x;
   const dot = u.x * v.x + u.y * v.y;
@@ -27,6 +28,27 @@ function atanVec(u,v) {
   const qblend = mix(mix(q4fix, angle, cross > dot), angle + 1.0, cross < 0 && dot < 0);
   const halfrot = mix(2.0 - angle, angle + 2.0, cross < 0);
   return mix(qblend, halfrot, dot < 0);
+}
+
+// Angle from positive x-axis (absolute)
+// (return angle in 0-4 range)
+function rauAtan2(y, x) {
+  // Compute angle without relying on Math.atan2
+  const absX = Math.abs(x);
+  const absY = Math.abs(y);
+  
+  // Determine base angle (0 to 1 in RAU, representing 0 to 90°)
+  const t = absY / (absX + absY); // Normalized ratio
+  const { sin: s, cos: c } = getRAUComponents(t);
+  
+  // Determine quadrant and apply sign
+  let rau = 0;
+  if (x >= 0 && y >= 0) rau = t;            // Q0: 0 to 1
+  else if (x < 0 && y >= 0) rau = 2.0 - t;  // Q1: 1 to 2
+  else if (x < 0 && y < 0) rau = 2.0 + t;   // Q2: 2 to 3
+  else rau = 4.0 - t;                       // Q3: 3 to 4
+  
+  return rau;
 }
 
 // helper: mix(a,b,cond)
