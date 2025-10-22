@@ -561,6 +561,7 @@ document.addEventListener('DOMContentLoaded', () => {
       // ================================================
       drawArrow(ctx, centerX, centerY, uEnd.x, uEnd.y, '#ff4444', 3);
       drawArrow(ctx, centerX, centerY, vEnd.x, vEnd.y, '#4444ff', 3);
+      drawChordConnection(ctx, v, u, arcRadius);
       drawArcBetween(ctx, centerX, centerY, Math.min(uLen, vLen), u, v, {
         color: '#666',
         width: 3,
@@ -580,7 +581,6 @@ document.addEventListener('DOMContentLoaded', () => {
       currentPhaseSection2 = rauPhase;
       updateResultsDisplay();
       updateConversionDisplay();
-      drawChordConnection(ctx, v, u, arcRadius);
     }
 
     Object.values(controls).forEach(c => c.addEventListener('input', render));
