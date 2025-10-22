@@ -402,7 +402,6 @@ document.addEventListener('DOMContentLoaded', () => {
       const headLen = 12;
       const dx = toX - fromX, dy = toY - fromY;
       const angle = Math.atan2(dy, dx);
-      const dx = toX - fromX;
       const rauSin = radicalSine(angle - (1/3));
       const rauCos = radicalCosine(angle - (1/3));
       const rauTan = radicalTan(angle - (1/3));
