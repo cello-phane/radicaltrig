@@ -556,19 +556,12 @@ document.addEventListener('DOMContentLoaded', () => {
       ctx.closePath();
       ctx.stroke();
 
+      // ================================================
+      // Draw arrows then draw angle between u and v
+      // ================================================
       drawArrow(ctx, centerX, centerY, uEnd.x, uEnd.y, '#ff4444', 3);
       drawArrow(ctx, centerX, centerY, vEnd.x, vEnd.y, '#4444ff', 3);
-
-      const startAngle = Math.min(uAng, vAng);
-      const endAngle = Math.max(uAng, vAng);
-      
-      // ================================================
-      // Use drawArcBetween to draw angle between u and v
-      const arcRadius = Math.min(uLen, vLen);
-      const centerX = canvas.width / 2;
-      const centerY = canvas.height / 2;
-      
-      drawArcBetween(ctx, centerX, centerY, arcRadius, u, v, {
+      drawArcBetween(ctx, centerX, centerY, Math.min(uLen, vLen), u, v, {
         color: '#ff8844',
         width: 3,
         shortest: true
