@@ -140,8 +140,8 @@ function updateResultsDisplay() {
     const rauCos = radicalCosine(phase);
     //const rauTan = radicalTan(phase);//This is in RAU space
     const rauTan = rauSin / rauCos;
-    const rauRad = (phase / 4) * 2.0 * Math.PI;
-    const rauDeg = (phase / 4) * 360;
+    const rauRad = rauToRad(phase);
+    const rauDeg = rauToDeg(phase);
     
     resultsContent.textContent = `RAU Phase = ${phase.toFixed(3)}
 θ (Radians) = ${rauRad.toFixed(3)} (${rauDeg.toFixed(1)}°)
