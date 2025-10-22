@@ -17,8 +17,8 @@ const controls = {
   vAngle: document.getElementById('vAngle')
 };
 
-anglebetweenDeg = parseInt(controls.uAngle.value) - parseInt(controls.vAngle.value);
-if !(cw) {
+anglebetweenDeg = Math.abs(parseInt(controls.uAngle.value) - parseInt(controls.vAngle.value));
+if (!cw) {
   anglebetweenDeg = 360 - anglebetweenDeg;
 }
 // ============================================
