@@ -559,10 +559,11 @@ document.addEventListener('DOMContentLoaded', () => {
       // ================================================
       // Draw arrows then draw angle between u and v
       // ================================================
+      const arcRadius = Math.min(uLen, vLen);
       drawArrow(ctx, centerX, centerY, uEnd.x, uEnd.y, '#ff4444', 3);
       drawArrow(ctx, centerX, centerY, vEnd.x, vEnd.y, '#4444ff', 3);
       drawChordConnection(ctx, v, u, arcRadius);
-      drawArcBetween(ctx, centerX, centerY, Math.min(uLen, vLen), u, v, {
+      drawArcBetween(ctx, centerX, centerY, arcRadius, u, v, {
         color: '#666',
         width: 3,
         shortest: false
