@@ -1,37 +1,10 @@
-// ============================================
+// ============================================up
 // Global State
 // ============================================
 let currentPhaseSection1 = 0;
 let currentPhaseSection2 = 0;
 let currentU = { x: 120, y: 0 };
 let currentV = { x: 100, y: 0 };
-
-function setupResponsiveCanvas(canvasId, aspectRatio = 1, redrawCallback) {
-  const canvas = document.getElementById(canvasId);
-  const container = canvas.parentElement;
-  
-  function resize() {
-    canvas.width = container.clientWidth;
-    canvas.height = container.clientWidth * aspectRatio;
-    // Call the redraw function after resize
-    if (redrawCallback) redrawCallback();
-  }
-  
-  window.addEventListener('resize', resize);
-  resize();
-}
-
-// ============================================
-// Utility functions
-// ============================================
-function degToRad(degrees) { return degrees * Math.PI/180; }
-function radToDeg(radian) { return radian*180/Math.PI; }
-function radToRau(radian) { return Math.sqrt(2 - 2 * Math.cos(radian)); }
-function degToRau(degrees) { return Math.sqrt(2 - 2 * Math.cos(degrees * Math.PI / 180)); }
-function rauToRad(rau) { return Math.acos((2 - rau*rau) / 2); }
-function rauToDeg(rau) { return (Math.acos((2 - rau*rau) / 2)) * 180 / Math.PI; }
-
-const mix = (a, b, c) => c ? b : a;
 
 // ============================================
 // RAU Math Functions
@@ -46,7 +19,6 @@ function radicalSine(t) {
     case 1: return (1-lt)/Math.sqrt(a);
     case 2: return -lt/Math.sqrt(a);
     case 3: return -(1-lt)/Math.sqrt(a);
-    default: return 0; // Safety fallback
   }
 }
 
@@ -60,7 +32,6 @@ function radicalCosine(t) {
     case 1: return -lt/Math.sqrt(a);
     case 2: return -(1-lt)/Math.sqrt(a);
     case 3: return lt/Math.sqrt(a);
-    default: return 0; // Safety fallback
   }
 }
 
@@ -72,40 +43,12 @@ function radicalTan(t) {
   const base = f / (1.0 - f);
   return (q === 1 || q === 3) ? -1.0 / base : base;
 }
+function degToRad(deg) { return deg * Math.PI/180; }
 
-function getRAUComponents(t) {
-  const tt = Math.max(0, Math.min(0.999999, t));
-  const denom = 1.0 / Math.sqrt(1.0 - 2.0*tt + 2.0*tt*tt);
-  const rcos = (1.0 - tt) * denom;
-  const rsin = tt * denom;
-  return { cos: rcos, sin: rsin };
-}
-
-function getRotationComponents(param) {
-  let p = param;
-  if (!isFinite(p)) p = 0;
-  if (p < 0) p = 0;
-  const q = Math.floor(p) % 4;
-  const frac = p - Math.floor(p);
-  const { cos: c, sin: s } = getRAUComponents(frac);
-  /*
-  let cos_result, sin_result;
-  switch (q) {
-    case 0: cos_result = c; sin_result = s; break;
-    case 1: cos_result = -s; sin_result = c; break;
-    case 2: cos_result = -c; sin_result = -s; break;
-    case 3: cos_result = s; sin_result = -c; break;
-  }*/
-  const q0 = Number(q === 0);
-  const q1 = Number(q === 1);
-  const q2 = Number(q === 2);
-  const q3 = Number(q === 3);
-  let cos_result = c*q0 - s*q1 - c*q2 + s*q3;
-  let sin_result = (s*q0 + c*q1 - s*q2 - c*q3) * Math.sign(param); 
-  return { cos: cos_result, sin: sin_result, quadrant: q, fraction: frac };
-}
+function radToDeg(rad) { return rad*180/Math.PI; }
 
 function atanVec(u,v) {
+  const mix = (a, b, c) => c ? b : a;
   const cross = u.x * v.y - u.y * v.x;
   const dot = u.x * v.x + u.y * v.y;
   let angle = Math.abs(cross) / (Math.abs(dot) + Math.abs(cross));
@@ -114,8 +57,6 @@ function atanVec(u,v) {
   const halfrot = mix(2.0 - angle, angle + 2.0, cross < 0);
   return mix(qblend, halfrot, dot < 0);
 }
-
-
 // ============================================
 // Display Update Function
 // ============================================
@@ -306,6 +247,31 @@ document.addEventListener('DOMContentLoaded', () => {
     const ctx = canvas.getContext('2d');
     const slider = document.getElementById('paramSlider');
     const valueDisplay = document.getElementById('paramValue');
+
+    function getRAUComponents(t) {
+      const tt = Math.max(0, Math.min(0.999999, t));
+      const denom = 1.0 / Math.sqrt(1.0 - 2.0*tt + 2.0*tt*tt);
+      const rcos = (1.0 - tt) * denom;
+      const rsin = tt * denom;
+      return { cos: rcos, sin: rsin };
+    }
+
+    function getRotationComponents(param) {
+      let p = param;
+      if (!isFinite(p)) p = 0;
+      if (p < 0) p = 0;
+      const q = Math.floor(p) % 4;
+      const frac = p - Math.floor(p);
+      const { cos: c, sin: s } = getRAUComponents(frac);
+      let cos_val, sin_val;
+      switch (q) {
+        case 0: cos_val = c; sin_val = s; break;
+        case 1: cos_val = -s; sin_val = c; break;
+        case 2: cos_val = -c; sin_val = -s; break;
+        case 3: cos_val = s; sin_val = -c; break;
+      }
+      return { cos: cos_val, sin: sin_val, quadrant: q, fraction: frac };
+    }
 
     function drawGrid(cx, cy, w, h, scale=50) {
       ctx.save();
@@ -529,18 +495,12 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('vLengthVal').textContent = vLen;
       document.getElementById('vAngleVal').textContent = radToDeg(vAng).toFixed(0)+'°';
 
-      /////////////////Parameters for the vector diagram///////////////////
-      const uSC = getRotationComponents(radToRau(uAng));
-      const vSC = getRotationComponents(radToRau(vAng));
-      const u = {x:  uLen*uSC.cos, y: -uLen*uSC.sin };
-      const v = {x:  vLen*vSC.cos, y: -vLen*vSC.sin };
-      
-      //const u = {x: uLen*Math.cos(uAng), y: -uLen*Math.sin(uAng)};
-      //const v = {x: vLen*Math.cos(vAng), y: -vLen*Math.sin(vAng)};
+      const u = {x: uLen*Math.cos(uAng), y: -uLen*Math.sin(uAng)};
+      const v = {x: vLen*Math.cos(vAng), y: -vLen*Math.sin(vAng)};
+
       currentU = u;
       currentV = v;
-      const rauPhase = atanVec(u, v);
-      
+
       const uEnd = {x: centerX+u.x, y: centerY+u.y};
       const vEnd = {x: centerX+v.x, y: centerY+v.y};
       const para = {x: centerX+u.x+v.x, y: centerY+u.y+v.y};
@@ -557,37 +517,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
       drawArrow(ctx, centerX, centerY, uEnd.x, uEnd.y, '#ff4444', 3);
       drawArrow(ctx, centerX, centerY, vEnd.x, vEnd.y, '#4444ff', 3);
-      const refvec     = {x: 1.0, y: 0.0};
-      const arcRadius  = Math.min(uLen, vLen);
+
+      const arcRadius = Math.min(uLen, vLen);
+      const startAngle = Math.min(uAng, vAng);
+      const endAngle = Math.max(uAng, vAng);
       ctx.strokeStyle = '#666';
       ctx.lineWidth = 2;
       ctx.beginPath();
-      
-      let start = atanVec(refvec, u);  // RAU angle (0-4)
-      let end   = atanVec(refvec, v);  // RAU angle (0-4)
-      
-      // Convert RAU (0-4) to radians (-π to π)
-      const startRad = (start / 4.0) * 2.0 * Math.PI;
-      const endRad = (end / 4.0) * 2.0 * Math.PI;
-      
-      // Compute CCW difference
-      let delta = (end - start + 4.0) % 4.0;
-      
-      if (delta > 2.0) {
-        // Crosses the wrap - draw shorter arc going clockwise
-        ctx.arc(centerX, centerY, arcRadius, endRad, startRad, true);
-      } else {
-        // Normal CCW sweep
-        ctx.arc(centerX, centerY, arcRadius, startRad, endRad, false);
-      }
+      ctx.arc(centerX, centerY, arcRadius, -endAngle, -startAngle);
+      ctx.stroke();
 
-      ctx.stroke()
-      //Update value for the vector diagram
-      currentPhaseSection2 = rauPhase;
+      const cross = u.x*v.y - u.y*v.x;
+      const dot = u.x*v.x + u.y*v.y;
+      const rauPhase = atanVec(u, v);
       
+      currentPhaseSection2 = rauPhase;
       updateResultsDisplay();
       updateConversionDisplay();
-      drawChordConnection(ctx, v, u, arcRadius)
+      drawChordConnection(ctx, v, u, arcRadius);
     }
 
     Object.values(controls).forEach(c => c.addEventListener('input', render));
