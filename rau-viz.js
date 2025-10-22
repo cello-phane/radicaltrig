@@ -562,9 +562,9 @@ document.addEventListener('DOMContentLoaded', () => {
       drawArrow(ctx, centerX, centerY, uEnd.x, uEnd.y, '#ff4444', 3);
       drawArrow(ctx, centerX, centerY, vEnd.x, vEnd.y, '#4444ff', 3);
       drawArcBetween(ctx, centerX, centerY, Math.min(uLen, vLen), u, v, {
-        color: '#ff8844',
+        color: '#666',
         width: 3,
-        shortest: true
+        shortest: false
       });
       
       //draw arc manually
