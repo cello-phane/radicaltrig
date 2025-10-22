@@ -24,13 +24,13 @@ function setupResponsiveCanvas(canvasId, aspectRatio = 1, redrawCallback) {
 // ============================================
 // Utility functions
 // ============================================
-function degToRad(deg) { return deg * Math.PI/180; }
-function radToDeg(rad) { return rad*180/Math.PI; }
-
-function degToRau(deg) { return (deg * 4.0) / 360.0; }
-function radToRau(rad) { return (rad / (2 * Math.PI)) * 4.0; }
+function degToRad(degrees) { return degrees * Math.PI/180; }
+function radToDeg(radian) { return radian*180/Math.PI; }
+function radToRau(radian) { return Math.sqrt(2 - 2 * Math.cos(radian)); }
+function degToRau(degrees) { return (degrees * 4.0) / 360.0; }
 function rauToRad(rau) { return (rau / 4.0) * (2 * Math.PI); }
 function rauToDeg(rau) { return (rau / 4.0) * 360.0; }
+
 const mix = (a, b, c) => c ? b : a;
 
 // ============================================
