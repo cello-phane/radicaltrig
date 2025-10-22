@@ -77,7 +77,7 @@ function updateResultsDisplay() {
     const rauDeg = (phase / 4) * 360;
     
     resultsContent.textContent = `RAU Phase = ${phase.toFixed(3)}
-θ (Radians) = ${rauRad.toFixed(3)} (${rauDeg.toFixed(1)}°)
+θ Radians = ${rauRad.toFixed(3)} (${rauDeg.toFixed(1)}°)
 -----------
 tan(θ) = ${rauTan === 0 ? 'undefined' : rauTan.toFixed(4)}
 sin(θ) = ${rauSin.toFixed(3)}
