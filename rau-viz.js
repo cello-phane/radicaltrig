@@ -549,11 +549,7 @@ document.addEventListener('DOMContentLoaded', () => {
       drawArrow(ctx, centerX, centerY, uEnd.x, uEnd.y, '#ff4444', 3);
       drawArrow(ctx, centerX, centerY, vEnd.x, vEnd.y, '#4444ff', 3);
       drawChordConnection(ctx, v, u, arcRadius);
-      drawArcBetween(ctx, centerX, centerY, arcRadius, u, v, {
-        ref = {x: 1, y: 0},
-        color: '#666',
-        width: 3,
-      });
+      drawArcBetween(ctx, centerX, centerY, arcRadius, u, v);
       
       //draw arc manually
       /*ctx.strokeStyle = '#666';
