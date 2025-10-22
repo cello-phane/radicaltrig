@@ -164,7 +164,7 @@ function drawArcBetween(ctx, centerX, centerY, radius, u, v, options = {}) {
   ctx.lineWidth = width;
   ctx.beginPath();
   //////////////DEBUG/////////////////
-  if (delta > 0 && atanVec({x: 1.0, y: 0.0}, v) < atanVec(u, v) + Math.abs(atanVec({x: 1.0, y: 0.0}, v) - atanVec({x: 1.0, y: 0.0}, u))) 
+  if (delta > 0 && atanVec({x: 1.0, y: 0.0}, v) < atanVec(u, v) + Math.abs(atanVec({x: 1.0, y: 0.0}, u) - atanVec({x: 1.0, y: 0.0}, v))) 
   { 
     ctx.arc(centerX, centerY, radius, endAngle, startAngle, anticlockwise);
   }
