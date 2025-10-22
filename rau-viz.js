@@ -31,44 +31,7 @@ function degToRau(deg) { return (deg * 4.0) / 360.0; }
 function radToRau(rad) { return (rad / (2 * Math.PI)) * 4.0; }
 function rauToRad(rau) { return (rau / 4.0) * (2 * Math.PI); }
 function rauToDeg(rau) { return (rau / 4.0) * 360.0; }
-
-// Angle from u to v (relative)
-// (cross product magnitude divided by dot product, return angle in 0-4 range)
-function atanVec(u,v) {
-  const cross = u.x * v.y - u.y * v.x;
-  const dot = u.x * v.x + u.y * v.y;
-
-  // four quadrant logic
-  let angle = Math.abs(cross) / (Math.abs(dot) + Math.abs(cross));
-  const q4fix = mix(Math.sign(cross) * angle, 4.0 - angle, dot > 0 && cross < 0);
-  const qblend = mix(mix(q4fix, angle, cross > dot), angle + 1.0, cross < 0 && dot < 0);
-  const halfrot = mix(2.0 - angle, angle + 2.0, cross < 0);
-  return mix(qblend, halfrot, dot < 0);
-}
-
-// Angle from positive x-axis (absolute)
-// (return angle in 0-4 range)
-function rauAtan2(y, x) {
-  // Compute angle without relying on Math.atan2
-  const absX = Math.abs(x);
-  const absY = Math.abs(y);
-  
-  // Determine base angle (0 to 1 in RAU, representing 0 to 90°)
-  const t = absY / (absX + absY); // Normalized ratio
-  const { sin: s, cos: c } = getRAUComponents(t);
-  
-  // Determine quadrant and apply sign
-  let rau = 0;
-  if (x >= 0 && y >= 0) rau = t;            // Q0: 0 to 1
-  else if (x < 0 && y >= 0) rau = 2.0 - t;  // Q1: 1 to 2
-  else if (x < 0 && y < 0) rau = 2.0 + t;   // Q2: 2 to 3
-  else rau = 4.0 - t;                       // Q3: 3 to 4
-  
-  return rau;
-}
-
-// helper: mix(a,b,cond)
-const mix = (a, b, cond) => (cond ? b : a);
+const mix = (a, b, c) => c ? b : a;
 
 // ============================================
 // RAU Math Functions
@@ -83,6 +46,7 @@ function radicalSine(t) {
     case 1: return (1-lt)/Math.sqrt(a);
     case 2: return -lt/Math.sqrt(a);
     case 3: return -(1-lt)/Math.sqrt(a);
+    default: return 0; // Safety fallback
   }
 }
 
@@ -96,6 +60,7 @@ function radicalCosine(t) {
     case 1: return -lt/Math.sqrt(a);
     case 2: return -(1-lt)/Math.sqrt(a);
     case 3: return lt/Math.sqrt(a);
+    default: return 0; // Safety fallback
   }
 }
 
@@ -107,7 +72,6 @@ function radicalTan(t) {
   const base = f / (1.0 - f);
   return (q === 1 || q === 3) ? -1.0 / base : base;
 }
-
 
 function getRAUComponents(t) {
   const tt = Math.max(0, Math.min(0.999999, t));
@@ -136,10 +100,21 @@ function getRotationComponents(param) {
   const q1 = Number(q === 1);
   const q2 = Number(q === 2);
   const q3 = Number(q === 3);
-  let cos_result = c * q0 - s * q1 - c * q2 + s * q3;
-  let sin_result = (s * q0 + c * q1 - s * q2 - c * q3) * Math.sign(param); 
+  let cos_result = c*q0 - s*q1 - c*q2 + s*q3;
+  let sin_result = (s*q0 + c*q1 - s*q2 - c*q3) * Math.sign(param); 
   return { cos: cos_result, sin: sin_result, quadrant: q, fraction: frac };
 }
+
+function atanVec(u,v) {
+  const cross = u.x * v.y - u.y * v.x;
+  const dot = u.x * v.x + u.y * v.y;
+  let angle = Math.abs(cross) / (Math.abs(dot) + Math.abs(cross));
+  const q4fix = mix(Math.sign(cross) * angle, 4.0 - angle, dot > 0 && cross < 0);
+  const qblend = mix(mix(q4fix, angle, cross > dot), angle + 1.0, cross < 0 && dot < 0);
+  const halfrot = mix(2.0 - angle, angle + 2.0, cross < 0);
+  return mix(qblend, halfrot, dot < 0);
+}
+
 
 // ============================================
 // Display Update Function
@@ -154,10 +129,9 @@ function updateResultsDisplay() {
     const phase = currentPhaseSection1;
     const rauSin = radicalSine(phase);
     const rauCos = radicalCosine(phase);
-    //const rauTan = radicalTan(phase);//This is in RAU space
-    const rauTan = rauSin / rauCos;
-    const rauRad = rauToRad(phase);
-    const rauDeg = rauToDeg(phase);
+    const rauTan = radicalTan(phase);
+    const rauRad = (phase / 4) * 2.0 * Math.PI;
+    const rauDeg = (phase / 4) * 360;
     
     resultsContent.textContent = `RAU Phase = ${phase.toFixed(3)}
 θ (Radians) = ${rauRad.toFixed(3)} (${rauDeg.toFixed(1)}°)
@@ -174,7 +148,7 @@ cos(θ) = ${rauCos.toFixed(3)}`;
     const dot = u.x * v.x + u.y * v.y;
     const rauSin = radicalSine(phase);
     const rauCos = radicalCosine(phase);
-    const rauTan = rauSin / rauCos;
+    const rauTan = radicalTan(phase);
     const rauRad = (phase / 4) * 2.0 * Math.PI;
     const rauDeg = (phase / 4) * 360;
     
