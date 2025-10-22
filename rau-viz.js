@@ -28,7 +28,7 @@ function degToRad(degrees) { return degrees * Math.PI/180; }
 function radToDeg(radian) { return radian*180/Math.PI; }
 function radToRau(radian) { return Math.sqrt(2 - 2 * Math.cos(radian)); }
 function degToRau(degrees) { return Math.sqrt(2 - 2 * Math.cos(degrees * Math.PI / 180)); }
-function rauToRad(rau) { return (rau / 4.0) * (2 * Math.PI); }
+function rauToRad(rau) { return Math.acos((2 - rau*rau) / 2); }
 function rauToDeg(rau) { return (Math.acos((2 - rau*rau) / 2)) * 180 / Math.PI; }
 
 const mix = (a, b, c) => c ? b : a;
