@@ -67,7 +67,6 @@ function radicalSine(t) {
     case 1: return (1-lt)/Math.sqrt(a);
     case 2: return -lt/Math.sqrt(a);
     case 3: return -(1-lt)/Math.sqrt(a);
-    default: return 0; // Safety fallback
   }
 }
 
@@ -81,7 +80,6 @@ function radicalCosine(t) {
     case 1: return -lt/Math.sqrt(a);
     case 2: return -(1-lt)/Math.sqrt(a);
     case 3: return lt/Math.sqrt(a);
-    default: return 0; // Safety fallback
   }
 }
 
@@ -89,23 +87,11 @@ function radicalTan(t) {
   t = ((t % 4) + 4) % 4;
   const q = Math.floor(t);
   const f = t - q;
-  
-  // Handle special cases near boundaries
   if (f >= 0.999999) return 0;
-  if (f <= 0.000001) return 0;
-  
-  // Base RAU tangent formula: f / (1 - f)
   const base = f / (1.0 - f);
-  
-  // Apply quadrant sign adjustments
-  switch(q) {
-    case 0: return base;           // positive
-    case 1: return -(1.0 - f) / f; // inverted and negated
-    case 2: return base;           // positive again
-    case 3: return -(1.0 - f) / f; // inverted and negated
-    default: return 0;
-  }
+  return (q === 1 || q === 3) ? -1.0 / base : base;
 }
+
 
 function getRAUComponents(t) {
   const tt = Math.max(0, Math.min(0.999999, t));
