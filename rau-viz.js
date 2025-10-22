@@ -218,7 +218,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Section 1: RAU Canvas
   // ============================================
   (function() {
-    const canvas = document.getElementById('canvas1');
+    const canvas = document.getElementById('simpleCanvas');
     const ctx = canvas.getContext('2d');
     const slider = document.getElementById('paramSlider');
     const valueDisplay = document.getElementById('paramValue');
@@ -356,7 +356,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Section 2: Vector Diagram
   // ============================================
   (function() {
-    const canvas = document.getElementById('canvas2');
+    const canvas = document.getElementById('vectorCanvas');
     const ctx = canvas.getContext('2d');
     const centerX = canvas.width/2;
     const centerY = canvas.height/2;
