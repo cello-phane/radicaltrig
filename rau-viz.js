@@ -158,7 +158,7 @@ cos(θ) = ${rauCos.toFixed(3)}`;
     const dot = u.x * v.x + u.y * v.y;
     const rauSin = radicalSine(phase);
     const rauCos = radicalCosine(phase);
-    const rauTan = radicalTan(phase);
+    const rauTan = rauSin / rauCos;
     const rauRad = (phase / 4) * 2.0 * Math.PI;
     const rauDeg = (phase / 4) * 360;
     
