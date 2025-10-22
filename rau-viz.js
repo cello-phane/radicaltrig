@@ -9,6 +9,7 @@ let anglebetweenDeg = 0;
 let uAng = 0;
 let vAng = 0;
 let anticlockwise = false;
+let rauPhase = 0;
 
 const controls = {
   uLength: document.getElementById('uLength'),
@@ -567,7 +568,7 @@ document.addEventListener('DOMContentLoaded', () => {
       drawArcBetween(ctx, centerX, centerY, arcRadius, u, v, {
         color: '#666',
         width: 3,
-        shortest: false
+        shortest: true
       });
       
       //draw arc manually
@@ -579,13 +580,10 @@ document.addEventListener('DOMContentLoaded', () => {
       
       // =========================
       // Update variables
-      const rauPhase = atanVec(u,v);
+      rauPhase = atanVec(u,v);
       currentPhaseSection2 = rauPhase;
       anglebetweenDeg = Math.abs(parseInt(controls.uAngle.value) - parseInt(controls.vAngle.value));
-      if (anticlockwise) {
-        console.log("going counter-clockwise");
-        anglebetweenDeg = 360 - anglebetweenDeg;
-      }
+
       updateResultsDisplay();
       updateConversionDisplay();
     }
