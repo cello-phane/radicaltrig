@@ -583,7 +583,7 @@ document.addEventListener('DOMContentLoaded', () => {
       rauPhase = atanVec(u,v);
       currentPhaseSection2 = rauPhase;
       anglebetweenDeg = Math.abs(parseInt(controls.uAngle.value) - parseInt(controls.vAngle.value));
-
+      if (anticlockwise) anglebetweenDeg = 360 - anglebetweenDeg;
       updateResultsDisplay();
       updateConversionDisplay();
     }
