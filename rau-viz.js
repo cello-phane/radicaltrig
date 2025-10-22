@@ -138,7 +138,7 @@ function drawArcBetween(ctx, centerX, centerY, radius, u, v, options = {}) {
     color = '#666',
     width = 2
   } = options;
-
+  
   // Convert vectors to RAU "angles" (0..4)
   const angleU = atanVec(ref, u);
   const angleV = atanVec(ref, v);
@@ -157,7 +157,12 @@ function drawArcBetween(ctx, centerX, centerY, radius, u, v, options = {}) {
   // Convert RAU → radians
   const startAngle = (angleU / 4.0) * 2 * Math.PI;
   const endAngle   = ((angleU + delta) / 4.0) * 2 * Math.PI;
-
+  //////////////DEBUG/////////////////
+  if (atanVec({x: 1.0, y: 0.0}, u) < atanVec(u, v) + Math.abs(atanVec({x: 1.0, y: 0.0}, u) - atanVec({x: 1.0, y: 0.0}, v))) 
+  { 
+    console.log("v vector is used"); 
+  }
+  ////////////////////////////////////
   // Draw the arc
   ctx.save();
   ctx.strokeStyle = color;
