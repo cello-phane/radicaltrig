@@ -17,10 +17,6 @@ const controls = {
   vAngle: document.getElementById('vAngle')
 };
 
-anglebetweenDeg = Math.abs(parseInt(controls.uAngle.value) - parseInt(controls.vAngle.value));
-if (!cw) {
-  anglebetweenDeg = 360 - anglebetweenDeg;
-}
 // ============================================
 // RAU Math Functions
 // ============================================
@@ -585,6 +581,10 @@ document.addEventListener('DOMContentLoaded', () => {
       // Update variables
       const rauPhase = atanVec(u,v);
       currentPhaseSection2 = rauPhase;
+      anglebetweenDeg = Math.abs(parseInt(controls.uAngle.value) - parseInt(controls.vAngle.value));
+      if (!cw) {
+        anglebetweenDeg = 360 - anglebetweenDeg;
+      }
       updateResultsDisplay();
       updateConversionDisplay();
     }
