@@ -5,7 +5,30 @@ let currentPhaseSection1 = 0;
 let currentPhaseSection2 = 0;
 let currentU = { x: 120, y: 0 };
 let currentV = { x: 100, y: 0 };
+let cw = false;
+let anglebetweenDeg = 0;
+const controls = {
+  uLength: document.getElementById('uLength'),
+  uAngle: document.getElementById('uAngle'),
+  vLength: document.getElementById('vLength'),
+  vAngle: document.getElementById('vAngle')
+};
 
+const uLen = parseInt(controls.uLength.value);
+const uAng = degToRad(parseInt(controls.uAngle.value));
+const vLen = parseInt(controls.vLength.value);
+const vAng = degToRad(parseInt(controls.vAngle.value));
+
+document.getElementById('uLengthVal').textContent = uLen;
+document.getElementById('uAngleVal').textContent = radToDeg(uAng).toFixed(0)+'°';
+document.getElementById('vLengthVal').textContent = vLen;
+document.getElementById('vAngleVal').textContent = radToDeg(vAng).toFixed(0)+'°';
+if (cw) {
+  anglebetweenDeg = uAng - vAng;
+}
+else {
+  anglebetweenDeg = 360 - (uAng - vAng);
+}
 // ============================================
 // RAU Math Functions
 // ============================================
@@ -93,8 +116,8 @@ cos(θ) = ${rauCos.toFixed(3)}`;
     const rauSin = radicalSine(phase);
     const rauCos = radicalCosine(phase);
     const rauTan = radicalTan(phase);
-    const rauRad = (phase / 4) * 2.0 * Math.PI;
-    const rauDeg = (phase / 4) * 360;
+    const rauRad = anglebetweenDeg * (Math.PI/180.0);
+    const rauDeg = anglebetweenDeg;
     
     const formatNum = (num, width=8, decimals=2) => num.toFixed(decimals).padStart(width);
     
@@ -141,7 +164,7 @@ function drawArcBetween(ctx, centerX, centerY, radius, u, v, options = {}) {
 
   // Direction: CW if delta < 0, CCW otherwise
   const anticlockwise = delta < 0;
-
+  cw = anticlockwise;
   // Convert RAU → radians
   const startAngle = (angleU / 4.0) * 2 * Math.PI;
   const endAngle   = ((angleU + delta) / 4.0) * 2 * Math.PI;
@@ -431,13 +454,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const ctx = canvas.getContext('2d');
     const centerX = canvas.width/2;
     const centerY = canvas.height/2;
-    
-    const controls = {
-      uLength: document.getElementById('uLength'),
-      uAngle: document.getElementById('uAngle'),
-      vLength: document.getElementById('vLength'),
-      vAngle: document.getElementById('vAngle')
-    };
 
     function drawArrow(ctx, fromX, fromY, toX, toY, color, width=2){
       const headLen = 12;
@@ -525,17 +541,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function render(){
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       drawGrid(ctx, canvas.width, canvas.height, 50);
-
-      const uLen = parseInt(controls.uLength.value);
-      const uAng = degToRad(parseInt(controls.uAngle.value));
-      const vLen = parseInt(controls.vLength.value);
-      const vAng = degToRad(parseInt(controls.vAngle.value));
-
-      document.getElementById('uLengthVal').textContent = uLen;
-      document.getElementById('uAngleVal').textContent = radToDeg(uAng).toFixed(0)+'°';
-      document.getElementById('vLengthVal').textContent = vLen;
-      document.getElementById('vAngleVal').textContent = radToDeg(vAng).toFixed(0)+'°';
-
+      
       const u = {x: uLen*Math.cos(uAng), y: -uLen*Math.sin(uAng)};
       const v = {x: vLen*Math.cos(vAng), y: -vLen*Math.sin(vAng)};
 
