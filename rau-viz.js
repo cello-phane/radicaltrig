@@ -10,12 +10,12 @@ let anglebetweenDeg = 0;
 let uAng = 0;
 let vAng = 0;
 
-if (cw) {
-  anglebetweenDeg = uAng - vAng;
-}
-else {
-  anglebetweenDeg = 360 - (uAng - vAng);
-}
+const controls = {
+  uLength: document.getElementById('uLength'),
+  uAngle: document.getElementById('uAngle'),
+  vLength: document.getElementById('vLength'),
+  vAngle: document.getElementById('vAngle')
+};
 // ============================================
 // RAU Math Functions
 // ============================================
@@ -528,18 +528,17 @@ document.addEventListener('DOMContentLoaded', () => {
     function render(){
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       drawGrid(ctx, canvas.width, canvas.height, 50);
-      const controls = {
-        uLength: document.getElementById('uLength'),
-        uAngle: document.getElementById('uAngle'),
-        vLength: document.getElementById('vLength'),
-        vAngle: document.getElementById('vAngle')
-      };
       
       const uLen = parseInt(controls.uLength.value);
       uAng = degToRad(parseInt(controls.uAngle.value));
       const vLen = parseInt(controls.vLength.value);
       vAng = degToRad(parseInt(controls.vAngle.value));
-      
+      if (cw) {
+        anglebetweenDeg = uAng - vAng;
+      }
+      else {
+        anglebetweenDeg = 360 - (uAng - vAng);
+      }
       document.getElementById('uLengthVal').textContent = uLen;
       document.getElementById('uAngleVal').textContent = radToDeg(uAng).toFixed(0)+'°';
       document.getElementById('vLengthVal').textContent = vLen;
