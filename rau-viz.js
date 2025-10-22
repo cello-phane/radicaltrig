@@ -6,14 +6,15 @@ let currentPhaseSection2 = 0;
 let currentU = { x: 120, y: 0 };
 let currentV = { x: 100, y: 0 };
 
-function setupResponsiveCanvas(canvasId, aspectRatio = 1) {
+function setupResponsiveCanvas(canvasId, aspectRatio = 1, redrawCallback) {
   const canvas = document.getElementById(canvasId);
   const container = canvas.parentElement;
   
   function resize() {
     canvas.width = container.clientWidth;
     canvas.height = container.clientWidth * aspectRatio;
-    // Redraw here
+    // Call the redraw function after resize
+    if (redrawCallback) redrawCallback();
   }
   
   window.addEventListener('resize', resize);
