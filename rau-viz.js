@@ -10,7 +10,7 @@ let uAng = 0;
 let vAng = 0;
 let anticlockwise = false;
 let rauPhase = 0;
-let drawShortestArc = true;
+let drawShortestArc = false;
 const controls = {
   uLength: document.getElementById('uLength'),
   uAngle: document.getElementById('uAngle'),
