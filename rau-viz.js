@@ -402,25 +402,17 @@ document.addEventListener('DOMContentLoaded', () => {
       const headLen = 12;
       const dx = toX - fromX, dy = toY - fromY;
       const angle = Math.atan2(dy, dx);
-      const rauSin = radicalSine(angle - (1/3));
-      const rauCos = radicalCosine(angle - (1/3));
-      const rauTan = radicalTan(angle - (1/3));
       ctx.strokeStyle = color;
       ctx.lineWidth = width;
       ctx.beginPath();
       ctx.moveTo(fromX, fromY);
-      
       ctx.lineTo(toX, toY);
       ctx.stroke();
       ctx.beginPath();
       ctx.moveTo(toX, toY);
-      ctx.lineTo(toX - headLen*rauCos, toY - headLen*rauSin);  // First arrowhead
+      ctx.lineTo(toX - headLen*Math.cos(angle-Math.PI/6), toY - headLen*Math.sin(angle-Math.PI/6));
       ctx.moveTo(toX, toY);
-      // Second arrowhead with opposite angle offset
-      const angleRight = angle - (1/3);
-      const rauCosRight = radicalCosine(angleRight);
-      const rauSinRight = radicalSine(angleRight);
-      ctx.lineTo(toX - headLen*rauCosRight, toY + headLen*rauSinRight);
+      ctx.lineTo(toX - headLen*Math.cos(angle+Math.PI/6), toY - headLen*Math.sin(angle+Math.PI/6));
       ctx.stroke();
     }
     
