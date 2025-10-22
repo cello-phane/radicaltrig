@@ -583,6 +583,7 @@ document.addEventListener('DOMContentLoaded', () => {
       currentPhaseSection2 = rauPhase;
       anglebetweenDeg = Math.abs(parseInt(controls.uAngle.value) - parseInt(controls.vAngle.value));
       if (cw) {
+        console.log("going clockwise");
         anglebetweenDeg = 360 - anglebetweenDeg;
       }
       updateResultsDisplay();
