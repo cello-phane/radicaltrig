@@ -90,8 +90,9 @@ function radicalTan(t) {
   const q = Math.floor(t);
   const f = t - q;
   if (f >= 0.999999) return 0;
+  
   const base = f / (1.0 - f);
-  return (q === 1 || q === 3) ? -1.0 / base : base;
+  return (q === 1 || q === 3) ? -(1.0 - f) / f : base;
 }
 
 function getRAUComponents(t) {
