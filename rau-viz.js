@@ -89,7 +89,7 @@ cos(θ) = ${rauCos.toFixed(3)}`;
     const dot = u.x * v.x + u.y * v.y;
     const rauSin = radicalSine(phase);
     const rauCos = radicalCosine(phase);
-    const rauTan = radicalTan(phase);
+    const rauTan = radicalTanl(phase);
     const rauRad = (phase / 4) * 2.0 * Math.PI;
     const rauDeg = (phase / 4) * 360;
     
@@ -400,19 +400,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function drawArrow(ctx, fromX, fromY, toX, toY, color, width=2){
       const headLen = 12;
-      const dx = toX - fromX, dy = toY - fromY;
-      const angle = Math.atan2(dy, dx);
+      //const dx = toX - fromX, dy = toY - fromY;
+      //const angle = Math.atan2(dy, dx);
+      const dx = toX - fromX;
+      const dy = toY - fromY;
+      const angle = atanVec({x: 1, y: 0}, {x: dx, y: dy});
+      const rauSin = radicalSine(angle - (1/3));
+      const rauCos = radicalCosine(angle - (1/3));
+      const rauTan = radicalTan(angle - (1/3));
       ctx.strokeStyle = color;
       ctx.lineWidth = width;
       ctx.beginPath();
       ctx.moveTo(fromX, fromY);
+      
       ctx.lineTo(toX, toY);
       ctx.stroke();
       ctx.beginPath();
       ctx.moveTo(toX, toY);
-      ctx.lineTo(toX - headLen*Math.cos(angle-Math.PI/6), toY - headLen*Math.sin(angle-Math.PI/6));
+      ctx.lineTo(toX - headLen*rauCos, toY - headLen*rauSin);  // First arrowhead
       ctx.moveTo(toX, toY);
-      ctx.lineTo(toX - headLen*Math.cos(angle+Math.PI/6), toY - headLen*Math.sin(angle+Math.PI/6));
+      // Second arrowhead with opposite angle offset
+      const angleRight = angle - (1/3);
+      const rauCosRight = radicalCosine(angleRight);
+      const rauSinRight = radicalSine(angleRight);
+      ctx.lineTo(toX - headLen*rauCosRight, toY + headLen*rauSinRight);
       ctx.stroke();
     }
     
