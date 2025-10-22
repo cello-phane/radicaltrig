@@ -47,7 +47,7 @@ function degToRad(deg) { return deg * Math.PI/180; }
 
 function radToDeg(rad) { return rad*180/Math.PI; }
 
-function radToRau(rad) { Math.sqrt(2 - 2 * Math.cos(rad)); }
+function radToRau(rad) { return Math.sqrt(2 - 2 * Math.cos(rad)); }
 
 function atanVec(u,v) {
   const mix = (a, b, c) => c ? b : a;
