@@ -48,7 +48,7 @@ function degToRad(deg) { return deg * Math.PI/180; }
 function radToDeg(rad) { return rad*180/Math.PI; }
 
 function radToRau(rad) { return Math.sqrt(2 - 2 * Math.cos(rad)); }
-
+/*
 function atanVec(u,v) {
   const mix = (a, b, c) => c ? b : a;
   const cross = u.x * v.y - u.y * v.x;
@@ -58,6 +58,19 @@ function atanVec(u,v) {
   const qblend = mix(mix(q4fix, angle, cross > dot), angle + 1.0, cross < 0 && dot < 0);
   const halfrot = mix(2.0 - angle, angle + 2.0, cross < 0);
   return mix(qblend, halfrot, dot < 0);
+}*/
+function atanVec(u, v) {
+    const cross_uv_mag = u.x * v.y - u.y * v.x;
+    const dot_uv = u.x * v.x + u.y * v.y;
+    let angle = Math.abs(cross_uv_mag) / (Math.abs(dot_uv) + Math.abs(cross_uv_mag));
+    // Quadrant adjustments
+    if (dot_uv < 0) {
+        angle = cross_uv_mag < 0 ? 2.0 - angle : angle + 1.0;
+    }
+    if (cross_uv_mag < 0 && dot_uv < 0) {
+        angle = angle + 1.0;
+    }
+    return angle;
 }
 // ============================================
 // Display Update Function
@@ -527,11 +540,9 @@ document.addEventListener('DOMContentLoaded', () => {
       ctx.beginPath();
       ctx.arc(centerX, centerY, arcRadius, -endAngle, -startAngle);
       ctx.stroke();
-
-      const cross = u.x*v.y - u.y*v.x;
-      const dot = u.x*v.x + u.y*v.y;
-      const rauPhase = radToRau(Math.atan(cross/dot));
-      
+      // =========================
+      // Update variables
+      const rauPhase = atanVec(u,v);
       currentPhaseSection2 = rauPhase;
       updateResultsDisplay();
       updateConversionDisplay();
