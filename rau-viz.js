@@ -15,6 +15,7 @@ function radToDeg(rad) { return rad*180/Math.PI; }
 function degToRau(deg) { return (deg * 4.0) / 360.0; }
 function radToRau(rad) { return (rad / (2 * Math.PI)) * 4.0; }
 function rauToRad(rau) { return (rau / 4.0) * (2 * Math.PI); }
+function rauToDeg(rau) { return (rau / 4.0) * 360.0; }
 
 // Angle from u to v (relative)
 // (cross product magnitude divided by dot product, return angle in 0-4 range)
