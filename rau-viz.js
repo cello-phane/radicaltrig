@@ -155,12 +155,13 @@ function drawArcBetween(ctx, centerX, centerY, radius, u, v, options = {}) {
   anticlockwise = delta < 0;
 
   // Convert RAU → radians
-  const startAngle = (angleU / 4.0) * 2 * Math.PI;
-  const endAngle   = ((angleU + delta) / 4.0) * 2 * Math.PI;
+  let startAngle = (angleU / 4.0) * 2 * Math.PI;
+  let endAngle   = ((angleU + delta) / 4.0) * 2 * Math.PI;
   //////////////DEBUG/////////////////
-  if (atanVec({x: 1.0, y: 0.0}, u) < atanVec(u, v) + Math.abs(atanVec({x: 1.0, y: 0.0}, u) - atanVec({x: 1.0, y: 0.0}, v))) 
+  if (anticlockwise && atanVec({x: 1.0, y: 0.0}, u) < atanVec(u, v) + Math.abs(atanVec({x: 1.0, y: 0.0}, u) - atanVec({x: 1.0, y: 0.0}, v))) 
   { 
-    console.log("v vector is used"); 
+    startAngle = ((angleU + delta) / 4.0) * 2 * Math.PI;
+    endAngle = (angleU / 4.0) * 2 * Math.PI;
   }
   ////////////////////////////////////
   // Draw the arc
