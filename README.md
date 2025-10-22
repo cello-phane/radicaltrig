@@ -1,31 +1,29 @@
 # radicaltrig
-Radical Angle Units that are used with a formula to compute sin(angle) and cos(angle)  
 <img width="424" height="217" alt="image" src="https://github.com/user-attachments/assets/bfd17458-9a9a-40ed-b22f-305bd0e7a4f8" />  
 0.0 to 4.0 rau ~~ 0.0 to 2.0 π radians  
 
-## Explanation of the handrolled periodicity/continuity:
+## Radical Angle Unit (RAU)
 https://cello-phane.github.io/radicaltrig/rau_rotating_axes.html
 After a 90 degree sweep, every point(all 4) has covered the circle, which is why this system works.
-```
-┌───────────────────────────────────────────────────┐
-│                    +y                       │  Quadrant  Angle       Point    
-│                     ↑                       │  --------  ---------   --------- 
-│          Q1         |        Q0             │  | Q0 |    0°–90°      (+c, +s)  (red)
-│        (-c,+s)      |     (+c,+s)           │  | Q1 |    90°–180°    (-s, +c)  (blue)
-│  -x-----------------+------------------> +x │  | Q2 |    180°–270°   (-c, -s)  (red)
-│          Q2         |        Q3             │  | Q3 |    270°–360°   (+s, -c)  (blue)
-│        (-c,-s)      |     (+c,-s)           |
-│                    -y                       |
-└───────────────────────────────────────────────────┘
-```
-## Radical Angle Unit (RAU) System
-The RAU trigonometric functions map a quarter-circle (0 to 1) onto a full  
-circle using a 0-4 parameter space with four quadrants.
 
 ### Base Functions
 For a parameter `t` between 0 and 1:
 - `c = (1-t) / √(1 - 2t + 2t²)` (cosine component)
 - `s = t / √(1 - 2t + 2t²)` (sine component)
+  
+```
+┌-------------------┐
+          ↑ y
+ 90°–180° │ 0°–90°  
+    Q1    │   Q0
+   -c,+s  │  +c,+s
+  ←────────────────→ x 
+ 180°–270°|270°–360°
+    Q2    │   Q3
+  -c,-s   │  +c,-s  
+          ↓
+└-------------------┘
+```
 
 ### Quadrant Mapping
 Any angle from 0° to 360° maps to a RAU value from 0 to 4. The integer part gives  
