@@ -68,6 +68,21 @@ function rauToRad(rau) { return Math.acos(1 - (rau * rau) / 2); }
 
 function rauToDeg(rau) { return (rau / 4.0) * 360; }
 
+function rauDiff(a, b) {
+  // Normalize both to [0, 4)
+  a = ((a % 4) + 4) % 4;
+  b = ((b % 4) + 4) % 4;
+
+  // Compute raw difference
+  let diff = b - a;
+
+  // Wrap around shortest path
+  if (diff > 2.0) diff -= 4.0;
+  else if (diff < -2.0) diff += 4.0;
+
+  return diff;
+}
+
 function atanVec(u,v) {
   const mix = (a, b, c) => c ? b : a;
   const cross = u.x * v.y - u.y * v.x;
@@ -581,13 +596,8 @@ document.addEventListener('DOMContentLoaded', () => {
       // Update variables
       rauPhase = atanVec(u,v);
       currentPhaseSection2 = rauPhase;
-      let diff = 0;
-      if (ccw) {
-      	diff = 360; 
-      }
-      else {
-      	diff = 0;
-      }
+	  let diff = rauDiff(atanVec({x: 1, y: 0}, u), atanVec({x: 1, y: 0}, v));
+	  ccw = diff > 0;
       anglebetweenDeg = rauToDeg(rauPhase); 
       //anglebetweenDeg = Math.abs(parseInt(controls.uAngle.value) - parseInt(controls.vAngle.value));
 
