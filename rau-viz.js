@@ -380,8 +380,28 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   
   setSlimMode(false);
-  dragElement(formulaPanel);
 
+   let isDragging = false;
+   let offsetX, offsetY;
+
+   formulaHeader.addEventListener('mousedown', (e) => {
+       isDragging = true;
+       offsetX = e.clientX - formulaPanel.getBoundingClientRect().left;
+       offsetY = e.clientY - formulaPanel.getBoundingClientRect().top;
+       formulaHeader.style.cursor = 'grabbing';
+   });
+
+   document.addEventListener('mousemove', (e) => {
+       if (!isDragging) return;
+
+       formulaPanel.style.left = (e.clientX - offsetX) + 'px';
+       formulaPanel.style.top = (e.clientY - offsetY) + 'px';
+   });
+
+   document.addEventListener('mouseup', () => {
+       isDragging = false;
+       formulaHeader.style.cursor = 'grab';
+   });
   // ============================================
   // Section 1: RAU Canvas
   // ============================================
