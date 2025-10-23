@@ -192,7 +192,6 @@ const convCtx = convCanvas.getContext("2d");
 const convPanel = document.getElementById("conversionPanel");
 const showConv = document.getElementById("showConversion");
 
-
 function drawConversionDiagram(rauPhase) {
     const ctx = convCtx;
     const w = convCanvas.width;  // use actual width
@@ -669,26 +668,26 @@ document.addEventListener('DOMContentLoaded', () => {
       // Update variables
       rauPhase = atanVec(u,v);
       currentPhaseSection2 = rauPhase;
-	  let diff = rauDiff(atanVec({x: 1, y: 0}, u), atanVec({x: 1, y: 0}, v));
-	  ccw = diff > 0;
-      //anglebetweenDeg = rauToDeg(rauPhase); // this is inaccurate results on the sidebar
-      anglebetweenDeg = Math.abs(parseInt(controls.uAngle.value) - parseInt(controls.vAngle.value));
-
-      updateResultsDisplay();
-      updateConversionDisplay();
-    }
-
-    Object.values(controls).forEach(c => c.addEventListener('input', render));
-    render();
-
-	const showWave = document.getElementById("showWave");
-	showWave.addEventListener("change", updateWavePanel);
-	window.addEventListener("resize", resizeWaveformCanvas);
-	resizeWaveformCanvas();
-    
-    // Setup responsive canvas with redraw callback
-    setupResponsiveCanvas('simpleCanvas', 0.642, render);
-  	})();
+		  let diff = rauDiff(atanVec({x: 1, y: 0}, u), atanVec({x: 1, y: 0}, v));
+		  ccw = diff > 0;
+	      //anglebetweenDeg = rauToDeg(rauPhase); // this is inaccurate results on the sidebar
+	      anglebetweenDeg = Math.abs(parseInt(controls.uAngle.value) - parseInt(controls.vAngle.value));
+	
+	      updateResultsDisplay();
+	      updateConversionDisplay();
+			}
+	
+			Object.values(controls).forEach(c => c.addEventListener('input', render));
+			render();
+		
+			const showWave = document.getElementById("showWave");
+			showWave.addEventListener("change", updateWavePanel);
+			window.addEventListener("resize", resizeWaveformCanvas);
+			resizeWaveformCanvas();
+		
+			// Setup responsive canvas with redraw callback
+			setupResponsiveCanvas('simpleCanvas', 0.642, render);
+	})();
 
   showConv.addEventListener("change", () => {
     convPanel.style.display = showConv.checked ? "block" : "none";
