@@ -82,16 +82,21 @@ function rauDiff(a, b) {
 
   return diff;
 }
+// helper: mix(a,b,cond)
+const mix = (a, b, cond) => (cond ? b : a);
 
-function atanVec(u,v) {
-  const mix = (a, b, c) => c ? b : a;
+function atanVec(u, v) {
   const cross = u.x * v.y - u.y * v.x;
-  const dot = u.x * v.x + u.y * v.y;
+  const dot   = u.x * v.x + u.y * v.y;
+
   let angle = Math.abs(cross) / (Math.abs(dot) + Math.abs(cross));
-  const q4fix = mix(Math.sign(cross) * angle, 4.0 - angle, dot > 0 && cross < 0);
-  const qblend = mix(mix(q4fix, angle, cross > dot), angle + 1.0, cross < 0 && dot < 0);
-  const halfrot = mix(2.0 - angle, angle + 2.0, cross < 0);
-  return mix(qblend, halfrot, dot < 0);
+  // four quadrant logic
+  angle = mix( mix( mix( mix(Math.sign(cross) * angle, 4.0 - angle, 
+  			dot > 0 && cross < 0), angle, cross > dot), 
+  			angle + 1.0, cross < 0 && dot < 0), 
+  			mix(2.0 - angle, angle + 2.0, cross < 0), dot < 0 );
+
+  return angle;
 }
 
 // ============================================
@@ -238,6 +243,7 @@ function drawConversionDiagram(rauPhase) {
     ctx.arc(px, py, 6, 0, 2*Math.PI);
     ctx.fill();
 }
+
 function updateConversionDisplay() {
   const s1 = document.getElementById('section1');
   const isSection1Active = s1.classList.contains('active');
@@ -262,6 +268,73 @@ function resizeConversionCanvas() {
   if (showConv.checked) {
     updateConversionDisplay();
   }
+}
+
+function dRau(f, t, h = 1e-4) {
+  return (f(t + h) - f(t - h)) / (2 * h);
+}
+
+function getSamples(sfunc, cfunc, range, step) {
+  const samples = [];
+  for (let t = 0; t <= range; t += step) {
+    const s = sfunc(t);
+    const c = cfunc(t);
+    samples.push({ t, s, c });
+  }
+  return samples;
+}
+
+function drawWaveForm(samples) {
+  const canvas = document.getElementById("waveCanvas");
+  const ctx = canvas.getContext("2d");
+  const w = canvas.width;
+  const h = canvas.height;
+  ctx.clearRect(0, 0, w, h);
+
+  // axes
+  ctx.strokeStyle = "#aaa";
+  ctx.beginPath();
+  ctx.moveTo(40, h/2);
+  ctx.lineTo(w - 20, h/2);
+  ctx.moveTo(40, 20);
+  ctx.lineTo(40, h - 20);
+  ctx.stroke();
+
+  function plot(fn, color, dash=true) {
+    ctx.beginPath();
+    ctx.strokeStyle = color;
+    ctx.setLineDash(dash ? [5,3] : []);
+    samples.forEach((p, i) => {
+      const x = 40 + (p.t / 4) * (w - 60);
+      const y = h/2 - fn(p) * (h/3);
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+  }
+
+  plot(p => p.s, "red");    // sin
+  plot(p => p.c, "blue");   // cos
+}
+
+function updateWavePanel() {
+  const panel = document.getElementById("wavePanel");
+  const show = document.getElementById("showWave").checked;
+  panel.style.display = show ? "block" : "none";
+  if (show) {
+    const samples = getSamples(radicalSine, radicalCosine, 4.0, 0.02)
+    drawWaveForm(samples);
+  }
+}
+
+function resizeWaveformCanvas() {
+  const canvas = document.getElementById("waveCanvas");
+  const panel = document.getElementById("wavePanel");
+  const width = panel.clientWidth - 10;
+  canvas.width = width;
+  canvas.height = 240;
+  if (document.getElementById("showWave").checked)
+    updateWavePanel();
 }
 
 // ============================================
@@ -607,9 +680,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     Object.values(controls).forEach(c => c.addEventListener('input', render));
     render();
+
+	const showWave = document.getElementById("showWave");
+	showWave.addEventListener("change", updateWavePanel);
+	window.addEventListener("resize", resizeWaveformCanvas);
+	resizeWaveformCanvas();
+    
     // Setup responsive canvas with redraw callback
     setupResponsiveCanvas('simpleCanvas', 0.642, render);
-  })();
+  	})();
 
   showConv.addEventListener("change", () => {
     convPanel.style.display = showConv.checked ? "block" : "none";
