@@ -112,9 +112,9 @@
             <span class="value" id="rotZVal">0°</span>
         </div>
         <div class="control-group">
-            <label>Integration Param:</label>
-            <input type="range" id="integParam" min="0" max="100" value="0">
-            <span class="value" id="integParamVal">0.0</span>
+            <label>Semicircle:</label>
+            <input type="range" id="semicircle" min="0" max="100" value="0">
+            <span class="value" id="semicircleVal">0</span>
         </div>
         <div class="control-group">
             <label>Meridians:</label>
@@ -131,7 +131,11 @@
             <input type="range" id="perspective" min="100" max="1000" value="1000">
             <span class="value" id="perspectiveVal">1000</span>
         </div>
-        
+        <div class="control-group">
+            <label>Radius:</label>
+            <input type="range" id="radius" min="10" max="300" value="300">
+            <span class="value" id="radiusVal">300</span>
+        </div>
         <div class="animation-controls">
             <div class="control-group">
                 <label>Frame Delay (ms):</label>
@@ -151,16 +155,16 @@
         const ctx = canvas.getContext('2d');
         const centerX = canvas.width / 2;
         const centerY = canvas.height / 2;
-        const integPtSize = 4;
         // Control elements
         const controls = {
             rotX: document.getElementById('rotX'),
             rotY: document.getElementById('rotY'),
             rotZ: document.getElementById('rotZ'),
-            integParam: document.getElementById('integParam'),
+            semicircle: document.getElementById('semicircle'),
             meridians: document.getElementById('meridians'),
             parallels: document.getElementById('parallels'),
             perspective: document.getElementById('perspective'),
+            radius: document.getElementById('radius'),
             frameDelay: document.getElementById('frameDelay')
         };
         
@@ -168,16 +172,19 @@
             rotXVal: document.getElementById('rotXVal'),
             rotYVal: document.getElementById('rotYVal'),
             rotZVal: document.getElementById('rotZVal'),
-            integParamVal: document.getElementById('integParamVal'),
+            semicircleVal: document.getElementById('semicircleVal'),
             meridiansVal: document.getElementById('meridiansVal'),
             parallelsVal: document.getElementById('parallelsVal'),
             perspectiveVal: document.getElementById('perspectiveVal'),
+            radiusVal: document.getElementById('radiusVal'),
             frameDelayVal: document.getElementById('frameDelayVal')
         };
         
         // Animation controls
         const toggleAnimBtn = document.getElementById('toggleAnim');
         const stepAnimBtn = document.getElementById('stepAnim');
+        // Resized point for semicricle
+        let semicirclePtSize = 2+(controls.radius.value/100)*(canvas.width/canvas.height);
 
         function fastInvSqrt(x) {
             // Quake III fast inverse square root approximation
@@ -241,7 +248,7 @@
             return { sin: sin_result, cos: cos_result };
         }
 
-        // 3D Rotation using RAU radical angle system
+        // 3D Rotations
         function rotateX(point, angleDegrees) {
             const freq = degreesToFreq(angleDegrees);
             const { sin, cos } = getRotationComponents(freq);
@@ -265,28 +272,30 @@
 		function rotateZ(point, angleDegrees) {
 			const freq = degreesToFreq(angleDegrees);
 		    const { cos, sin } = getRotationComponents(freq);
-		    const x = point.x * cos - point.y * sin;
-		    const y = point.x * sin + point.y * cos;
-		    return { x, y, z: point.z };
+		    return { 
+		    	x: point.x * cos - point.y * sin, 
+		    	y: point.x * sin + point.y * cos, 
+		    	z: point.z
+		    };
 		}
 
 		function rotateXandY(point, rotX, rotY) {
-		    // Use RAU-based cosine and sine (or normal ones if testing)
+		    // Combine for a plane axis rotation
 		    const { cos: c1, sin: s1 } = getRotationComponents(degreesToFreq(rotX)); // X-axis
 		    const { cos: c2, sin: s2 } = getRotationComponents(degreesToFreq(rotY)); // Y-axis
 
-		    // first rotate X, then Y
+		    // First rotate X
 		    const y1 = point.y * c1 - point.z * s1;
 		    const z1 = point.y * s1 + point.z * c1;
 		    const x1 = point.x;
-
+			// Then rotate Y
 		    const x2 = x1 * c2 + z1 * s2;
 		    const z2 = -x1 * s2 + z1 * c2;
 
 		    return { x: x2, y: y1, z: z2 };
 		}
 
-        
+        // Project 3d to perspective
         function project3D(point3d, perspective) {
             const scale = perspective / (perspective + point3d.z);
             return {
@@ -295,9 +304,9 @@
                 scale: scale
             };
         }
-        
-        // Semicircle integration approximation
-        function semicircleIntegral(r, a) {
+
+        // Used for generating sphere points along a half great circle
+        function semicircle(r, a) {
             const dx = 1 / r;
             let sum = 0;
             
@@ -312,53 +321,49 @@
         }
         
         // Generate sphere points using RAU radical angle system
-        function generateSpherePoints(radius, meridianCount, parallelCount, integParam) {
+        function generateSpherePoints(radius, meridianCount, parallelCount, semicircleParam) {
             const points = [];
-            const a = integParam; // Integration parameter (0-1)
+            const scParam = semicircleParam; // Parameter (0-1)
             
             // Generate meridians using frequency domain (0-4 instead of 0-2π)
             for (let m = 0; m < meridianCount; m++) {
-                const phiFreq = (m / meridianCount) * 4.0; // Longitude in your freq units
+                const phiFreq = (m / meridianCount) * 4.0; // Longitude in freq units
                 const meridianPoints = [];
                 
                 for (let p = 0; p <= parallelCount; p++) {
-                    const thetaFreq = (p / parallelCount) * 2.0; // Latitude in your freq units
-                    
-                    // Apply semicircle integration influence
-                    const integralInfluence = semicircleIntegral(radius, a) / (radius * radius);
-                    const modifiedRadius = radius * (1 + 0.1 * getRotationComponents(integralInfluence * 2.0).sin);
-                    
-                    // Spherical to Cartesian using RAU radical trig functions
+                    const thetaFreq = (p / parallelCount) * 2.0; // Latitude in freq units
+                    const semiCirc = semicircle(radius, scParam) / (radius * radius);
+                    const inRadius = radius * (1 + 0.1 * getRotationComponents(semiCirc * 2.0).sin);
+                    // Spherical to Cartesian
                     const thetaTrig = getRotationComponents(thetaFreq);
                     const phiTrig = getRotationComponents(phiFreq);
                     
-                    const x = modifiedRadius * thetaTrig.sin * phiTrig.cos;
-                    const y = modifiedRadius * thetaTrig.cos;
-                    const z = modifiedRadius * thetaTrig.sin * phiTrig.sin;
+                    const x = inRadius * thetaTrig.sin * phiTrig.cos;
+                    const y = inRadius * thetaTrig.cos;
+                    const z = inRadius * thetaTrig.sin * phiTrig.sin;
                     
                     meridianPoints.push({ x, y, z });
                 }
                 points.push(meridianPoints);
             }
             
-            // Generate parallels using RAU radical angle system
+            // Generate parallels
             const parallelLines = [];
-            for (let p = 1; p < parallelCount; p++) { // Skip poles
+            for (let p = 0; p < parallelCount; p++) {
                 const thetaFreq = (p / parallelCount) * 2.0;
                 const parallelPoints = [];
                 
                 for (let m = 0; m <= meridianCount; m++) {
-                    const phiFreq = (m / meridianCount) * 4.0;
-                    
-                    const integralInfluence = semicircleIntegral(radius, a) / (radius * radius);
-                    const modifiedRadius = radius * (1 + 0.1 * getRotationComponents(integralInfluence * 2.0).sin);
-                    
+                    const phiFreq = (m / meridianCount) * 4.0; // Longitude in freq units
+                    const semiCirc = semicircle(radius, scParam) / (radius * radius);
+                    const inRadius = radius * (1 + 0.1 * getRotationComponents(semiCirc * 2.0).sin);
+                    // Spherical to Cartesian
                     const thetaTrig = getRotationComponents(thetaFreq);
                     const phiTrig = getRotationComponents(phiFreq);
                     
-                    const x = modifiedRadius * thetaTrig.sin * phiTrig.cos;
-                    const y = modifiedRadius * thetaTrig.cos;
-                    const z = modifiedRadius * thetaTrig.sin * phiTrig.sin;
+                    const x = inRadius * thetaTrig.sin * phiTrig.cos;
+                    const y = inRadius * thetaTrig.cos;
+                    const z = inRadius * thetaTrig.sin * phiTrig.sin;
                     
                     parallelPoints.push({ x, y, z });
                 }
@@ -389,16 +394,15 @@
         function render() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
-            const rotXAngle = parseFloat(controls.rotX.value); // degrees
-            const rotYAngle = parseFloat(controls.rotY.value); // degrees
-            const rotZAngle = parseFloat(controls.rotZ.value); // degrees
-            const integParam = parseFloat(controls.integParam.value) / 100;
-            const meridianCount = parseInt(controls.meridians.value);
-            const parallelCount = parseInt(controls.parallels.value);
-            const perspective = parseFloat(controls.perspective.value);
-            
-            const radius = 300;
-            const sphereData = generateSpherePoints(radius, meridianCount, parallelCount, integParam);
+            const rotXAngle 		= parseFloat(controls.rotX.value); // degrees
+            const rotYAngle 		= parseFloat(controls.rotY.value); // degrees
+            const rotZAngle 		= parseFloat(controls.rotZ.value); // degrees
+            const semicircle    	= parseFloat(controls.semicircle.value) / 100; // 0.01..1.0
+            const meridianCount 	= parseInt(controls.meridians.value);
+            const parallelCount 	= parseInt(controls.parallels.value);
+            const perspective 		= parseFloat(controls.perspective.value);
+            const radius 			= parseInt(controls.radius.value);
+            const sphereData 		= generateSpherePoints(radius, meridianCount, parallelCount, semicircle);
             
             // Transform and project meridians
             sphereData.meridians.forEach((meridian, mIndex) => {
@@ -419,11 +423,10 @@
                     const color = `rgba(0, 255, 136, ${brightness})`;
                     drawLine(projectedPoints[i], projectedPoints[i + 1], color, brightness);
                 }
-                
                 // Highlight special meridians affected by integration
-                if (mIndex === Math.floor(meridianCount * integParam)) {
+                if (mIndex === Math.floor(meridianCount * semicircle)) {
                     projectedPoints.forEach(point => {
-                        drawPoint(point, '#ff8800', integPtSize);
+                        drawPoint(point, '#ff8800', semicirclePtSize);
                     });
                 }
             });
@@ -524,7 +527,7 @@
         Object.keys(controls).forEach(key => {
             controls[key].addEventListener('input', (e) => {
                 const value = e.target.value;
-                if (key === 'integParam') {
+                if (key === 'semicircleParam') {
                     values[key + 'Val'].textContent = (value / 100).toFixed(2);
                 } else if (key === 'rotX' || key === 'rotY' || key === 'rotZ') {
                     values[key + 'Val'].textContent = value + '°';
