@@ -671,8 +671,8 @@ document.addEventListener('DOMContentLoaded', () => {
       currentPhaseSection2 = rauPhase;
 	  let diff = rauDiff(atanVec({x: 1, y: 0}, u), atanVec({x: 1, y: 0}, v));
 	  ccw = diff > 0;
-      anglebetweenDeg = rauToDeg(rauPhase); 
-      //anglebetweenDeg = Math.abs(parseInt(controls.uAngle.value) - parseInt(controls.vAngle.value));
+      //anglebetweenDeg = rauToDeg(rauPhase); // this is inaccurate results on the sidebar
+      anglebetweenDeg = Math.abs(parseInt(controls.uAngle.value) - parseInt(controls.vAngle.value));
 
       updateResultsDisplay();
       updateConversionDisplay();
