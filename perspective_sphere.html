@@ -21,14 +21,19 @@
             background: linear-gradient(45deg, #001122, #000511);
         }
         
+        #controlsContainer  {
+        	display: block;
+        }
+
         .controls {
             position: absolute;
-            top: 20px;
+            top: 50px;
             left: 20px;
             background: rgba(0,0,0,0.8);
             padding: 15px;
             border-radius: 8px;
             border: 1px solid #333;
+            display: block;
         }
         
         .control-group {
@@ -88,6 +93,8 @@
     </style>
 </head>
 <body>
+    <button id="toggleCtrls" onclick="hideControls();">Toggle Controls</button> 
+    <div id="controlsContainer">
     <div class="controls">
         <div class="control-group">
             <label>Rotation X:</label>
@@ -135,15 +142,16 @@
             <button id="stepAnim">Step Once</button>
         </div>
     </div>
+    </div>
     
-    <canvas id="canvas" width="800" height="600"></canvas>
+    <canvas id="canvas" width="960" height="720"></canvas>
 
     <script>
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
         const centerX = canvas.width / 2;
         const centerY = canvas.height / 2;
-        
+        const integPtSize = 4;
         // Control elements
         const controls = {
             rotX: document.getElementById('rotX'),
@@ -170,7 +178,7 @@
         // Animation controls
         const toggleAnimBtn = document.getElementById('toggleAnim');
         const stepAnimBtn = document.getElementById('stepAnim');
-        
+
         function fastInvSqrt(x) {
             // Quake III fast inverse square root approximation
             let i = new DataView(new ArrayBuffer(4));
@@ -244,16 +252,6 @@
             };
         }
         
-        function rotateX(point, angleDegrees) {
-            const freq = degreesToFreq(angleDegrees);
-            const { sin, cos } = getRotationComponents(freq);
-            return {
-                x: point.x,
-                y: point.y * cos - point.z * sin,
-                z: point.y * sin + point.z * cos
-            };
-        }
-        
         function rotateY(point, angleDegrees) {
             const freq = degreesToFreq(angleDegrees);
             const { sin, cos } = getRotationComponents(freq);
@@ -299,14 +297,12 @@
         }
         
         // Semicircle integration approximation
-        function semicircleIntegral(r, a, steps = 50) {
-            const start = r * a;
-            const end = r * (2 * a);
-            const dx = (end - start) / steps;
+        function semicircleIntegral(r, a) {
+            const dx = 1 / r;
             let sum = 0;
             
-            for (let i = 0; i < steps; i++) {
-                const x = start + i * dx;
+            for (let i = 0; i < r; i++) {
+                const x = r + i * dx;
                 if (x <= r) {
                     const height = Math.sqrt(r * r - x * x);
                     sum += height * dx;
@@ -393,15 +389,15 @@
         function render() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
-            const rotXAngle = parseFloat(controls.rotX.value); // Now in degrees
-            const rotYAngle = parseFloat(controls.rotY.value); // Now in degrees
-            const rotZAngle = parseFloat(controls.rotZ.value); // Now in degrees
+            const rotXAngle = parseFloat(controls.rotX.value); // degrees
+            const rotYAngle = parseFloat(controls.rotY.value); // degrees
+            const rotZAngle = parseFloat(controls.rotZ.value); // degrees
             const integParam = parseFloat(controls.integParam.value) / 100;
             const meridianCount = parseInt(controls.meridians.value);
             const parallelCount = parseInt(controls.parallels.value);
             const perspective = parseFloat(controls.perspective.value);
             
-            const radius = 200;
+            const radius = 300;
             const sphereData = generateSpherePoints(radius, meridianCount, parallelCount, integParam);
             
             // Transform and project meridians
@@ -427,7 +423,7 @@
                 // Highlight special meridians affected by integration
                 if (mIndex === Math.floor(meridianCount * integParam)) {
                     projectedPoints.forEach(point => {
-                        drawPoint(point, '#ff8800', 2);
+                        drawPoint(point, '#ff8800', integPtSize);
                     });
                 }
             });
@@ -454,11 +450,19 @@
             });
         }
         
+        function hideControls() {
+	        var contentElement = document.getElementById("controlsContainer");
+	        if (contentElement.style.display === "none") {
+	            contentElement.style.display = "block"; // Show the element
+	        } else {
+	            contentElement.style.display = "none"; // Hide the element
+	        }
+   		 }
         // Animation system with controlled timing
         let animating = false;
         let lastFrameTime = 0;
         let animationFrame = null;
-        
+          
         function step(currentTime) {
             const frameDelay = parseFloat(controls.frameDelay.value);
             
@@ -515,7 +519,7 @@
             values.rotYVal.textContent = controls.rotY.value + '°';
             render();
         }
-        
+
         // Event listeners for controls
         Object.keys(controls).forEach(key => {
             controls[key].addEventListener('input', (e) => {
@@ -532,17 +536,15 @@
                 render();
             });
         });
-        
+
         // Animation control event listeners
         toggleAnimBtn.addEventListener('click', toggleAnimation);
         stepAnimBtn.addEventListener('click', stepOnce);
-        
         // Double-click canvas to toggle animation (legacy support)
         canvas.addEventListener('dblclick', toggleAnimation);
-        
+
         // Initial render
         render();
-
     </script>
 </body>
 </html>
