@@ -266,7 +266,7 @@
             };
         }
         
-        function rotateY(point, angleDegrees) {
+        function rotateZ(point, angleDegrees) {
             const freq = degreesToFreq(angleDegrees);
             const { sin, cos } = getRotationComponents(freq);
             return {
@@ -276,7 +276,7 @@
             };
         }
 
-		function rotateZ(point, angleDegrees) {
+		function rotateY(point, angleDegrees) {
 			const freq = degreesToFreq(angleDegrees);
 		    const { cos, sin } = getRotationComponents(freq);
 		    return { 
@@ -286,10 +286,10 @@
 		    };
 		}
 
-		function rotateXandY(point, rotX, rotY) {
+		function rotateXandZ(point, rotX, rotZ) {
 		    // Combine for a plane axis rotation
 		    const { cos: c1, sin: s1 } = getRotationComponents(degreesToFreq(rotX)); // X-axis
-		    const { cos: c2, sin: s2 } = getRotationComponents(degreesToFreq(rotY)); // Y-axis
+		    const { cos: c2, sin: s2 } = getRotationComponents(degreesToFreq(rotZ)); // Z-axis
 
 		    // First rotate X
 		    const y1 = point.y * c1 - point.z * s1;
@@ -417,10 +417,8 @@
                 const projectedPoints = [];
                 const transformedPoints = [];
                 meridian.forEach(point => {
-                    //let transformed = rotateX(point, rotXAngle);
-                    //transformed = rotateY(transformed, rotYAngle);
-                    let transformed = rotateXandY(point, rotXAngle, rotYAngle);
-    				transformed = rotateZ(transformed, rotZAngle);
+                    let transformed = rotateXandZ(point, rotXAngle, rotZAngle);
+    				transformed = rotateY(transformed, rotYAngle);
     				transformedPoints.push(transformed);
                     const projected = project3D(transformed, perspective);
                     projectedPoints.push(projected);
@@ -454,10 +452,8 @@
                 const projectedPoints = [];
                 const transformedPoints = [];                
                 parallel.forEach(point => {
-                    //let transformed = rotateX(point, rotXAngle);
-                    //transformed = rotateY(transformed, rotYAngle);
-                    let transformed = rotateXandY(point, rotXAngle, rotYAngle);
-    				transformed = rotateZ(transformed, rotZAngle);
+                    let transformed = rotateXandZ(point, rotXAngle, rotZAngle);
+    				transformed = rotateZ(transformed, rotYAngle);
     				transformedPoints.push(transformed);
                     const projected = project3D(transformed, perspective);
                     projectedPoints.push(projected);
@@ -494,8 +490,8 @@
             // Only proceed if enough time has passed
             if (currentTime - lastFrameTime >= frameDelay) {
                 // Update rotation
-                controls.rotY.value = (parseFloat(controls.rotY.value) + 1) % 360;
-                values.rotYVal.textContent = controls.rotY.value + '°';
+                controls.rotZ.value = (parseFloat(controls.rotZ.value) + 1) % 360;
+                values.rotZVal.textContent = controls.rotZ.value + '°';
                 render();
                 
                 // Update last frame time
@@ -540,8 +536,8 @@
         
         function stepOnce() {
             // Single step animation
-            controls.rotY.value = (parseFloat(controls.rotY.value) + 1) % 360;
-            values.rotYVal.textContent = controls.rotY.value + '°';
+            controls.rotZ.value = (parseFloat(controls.rotZ.value) + 1) % 360;
+            values.rotZVal.textContent = controls.rotZ.value + '°';
             render();
         }
 
@@ -551,7 +547,7 @@
                 const value = e.target.value;
                 if (key === 'semicircleParam') {
                     values[key + 'Val'].textContent = (value / 100).toFixed(2);
-                } else if (key === 'rotX' || key === 'rotY' || key === 'rotZ') {
+                } else if (key === 'rotX' || key === 'rotZ' || key === 'rotZ') {
                     values[key + 'Val'].textContent = value + '°';
                 } else if (key === 'frameDelay') {
                     values[key + 'Val'].textContent = value + 'ms';
