@@ -132,16 +132,19 @@
             <span class="value" id="perspectiveVal">730</span>
         </div>
         <div class="control-group">
-            <label>Radius:</label>
+            <label>Radius(zoom):</label>
             <input type="range" id="radius" min="10" max="300" value="300">
             <span class="value" id="radiusVal">300</span>
         </div>
-        <div class="control-group">
-            <label>Culling:</label>
-            <input type="range" id="culling" min="0" max="100" value="0">
-            <span class="value" id="cullingVal">0</span>
-        </div>
         <div class="animation-controls">
+	        <label>Culling(back):</label>
+	        <input type="range" id="cullingf" min="0" max="50" value="50">
+	        <span class="value" id="cullingfVal">50</span>
+	        <div>
+	        <label>Culling(front):</label>
+	        <input type="range" id="cullingb" min="0" max="50" value="0">
+	        <span class="value" id="cullingbVal">0</span>
+	        </div>
             <div class="control-group">
                 <label>Frame Delay (ms):</label>
                 <input type="range" id="frameDelay" min="16" max="500" value="43">
@@ -170,7 +173,8 @@
             parallels: document.getElementById('parallels'),
             perspective: document.getElementById('perspective'),
             radius: document.getElementById('radius'),
-            culling: document.getElementById('culling'),
+            cullingf: document.getElementById('cullingf'),
+            cullingb: document.getElementById('cullingb'),            
             frameDelay: document.getElementById('frameDelay')
         };
         
@@ -183,7 +187,8 @@
             parallelsVal: document.getElementById('parallelsVal'),
             perspectiveVal: document.getElementById('perspectiveVal'),
             radiusVal: document.getElementById('radiusVal'),
-			cullingVal: document.getElementById('cullingVal'),            
+			cullingfVal: document.getElementById('cullingfVal'),
+	        cullingbVal: document.getElementById('cullingbVal'), 
             frameDelayVal: document.getElementById('frameDelayVal')
         };
         
@@ -241,14 +246,10 @@
             const q3 = Number(quadrant === 3);
             // Quadrant mapping
             /*let sin_result, cos_result;
-            if (quadrant === 0) {
-                sin_result = s; cos_result = c;
-            } else if (quadrant === 1) {
-                sin_result = c; cos_result = -s;
-            } else if (quadrant === 2) {
-                sin_result = -s; cos_result = -c;
-            } else {
-                sin_result = -c; cos_result = s;
+            if (quadrant === 0) { sin_result = s; cos_result = c;
+            } else if (quadrant === 1) { sin_result = c; cos_result = -s;
+            } else if (quadrant === 2) { sin_result = -s; cos_result = -c;
+            } else { sin_result = -c; cos_result = s;
             }*/
             let cos_result = c*q0 - s*q1 - c*q2 + s*q3;
             let sin_result = (s*q0 + c*q1 - s*q2 - c*q3) * (Math.sign(freq)); 
@@ -295,7 +296,7 @@
 		    const y1 = point.y * c1 - point.z * s1;
 		    const z1 = point.y * s1 + point.z * c1;
 		    const x1 = point.x;
-			// Then rotate Y
+			// Then rotate Z
 		    const x2 = x1 * c2 + z1 * s2;
 		    const z2 = -x1 * s2 + z1 * c2;
 
@@ -327,7 +328,7 @@
             return sum;
         }
         
-        // Generate sphere points using RAU radical angle system
+        // Generate sphere points
         function generateSpherePoints(radius, meridianCount, parallelCount, semicircleParam) {
             const points = [];
             const scParam = semicircleParam; // Parameter (0-1)
@@ -399,7 +400,7 @@
         
         // Main render function using RAU radical angle system
         function render() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+       		ctx.clearRect(0, 0, canvas.width, canvas.height);
             
             const rotXAngle 		= parseFloat(controls.rotX.value); // degrees
             const rotYAngle 		= parseFloat(controls.rotY.value); // degrees
@@ -409,9 +410,12 @@
             const parallelCount 	= parseInt(controls.parallels.value);
             const perspective 		= parseFloat(controls.perspective.value);
             const radius 			= parseInt(controls.radius.value);
-			const cullingPercent 	= parseFloat(controls.culling.value);            
+			const cullingfPercent 	= parseFloat(controls.cullingf.value);
+			const cullingbPercent 	= parseFloat(controls.cullingb.value);
             const sphereData 		= generateSpherePoints(radius, meridianCount, parallelCount, semicircle);
-            
+            const cullF = perspective * 1/(cullingfPercent); //front face
+            const cullB = -perspective * 1/(cullingbPercent);//back face
+
             // Transform and project meridians
             sphereData.meridians.forEach((meridian, mIndex) => {
                 const projectedPoints = [];
@@ -426,8 +430,10 @@
                 
                 // Draw meridian lines
                 for (let i = 0; i < projectedPoints.length - 1; i++) {
-                    //checks for z-axis(depth) and skip if too close
-                    if ((transformedPoints[i].z + transformedPoints[i + 1].z) < -perspective / (cullingPercent/10)) continue;
+   				    if (cullingfPercent > 0 || cullingbPercent > 0) {
+               	      if (transformedPoints[i].z + transformedPoints[i + 1].z > cullF) continue;
+               	      if (transformedPoints[i].z + transformedPoints[i + 1].z < cullB) continue;
+               	    }
                     const brightness = Math.max(0.5, projectedPoints[i].scale * 0.7);
                     const color = `rgba(0, 255, 136, ${brightness})`;
                 	drawLine(projectedPoints[i], projectedPoints[i + 1], color, brightness);
@@ -461,8 +467,10 @@
                 
                 // Draw parallel lines
                 for (let i = 0; i < projectedPoints.length - 1; i++) {
-                	//checks for z-axis(depth) and skip if too close
-                	if ((transformedPoints[i].z + transformedPoints[i + 1].z) < -perspective / (cullingPercent/10)) continue;
+   				    if (cullingfPercent > 0 || cullingbPercent > 0) {
+               	      if (transformedPoints[i].z + transformedPoints[i + 1].z > cullF) continue;
+               	      if (transformedPoints[i].z + transformedPoints[i + 1].z < cullB) continue;
+               	    }
                     const brightness = Math.max(0.5, projectedPoints[i].scale * 0.7);
                     const color = `rgba(136, 136, 255, ${brightness})`;
                     drawLine(projectedPoints[i], projectedPoints[i + 1], color, brightness);
@@ -547,7 +555,7 @@
                 const value = e.target.value;
                 if (key === 'semicircleParam') {
                     values[key + 'Val'].textContent = (value / 100).toFixed(2);
-                } else if (key === 'rotX' || key === 'rotZ' || key === 'rotZ') {
+                } else if (key === 'rotX' || key === 'rotY' || key === 'rotZ') {
                     values[key + 'Val'].textContent = value + '°';
                 } else if (key === 'frameDelay') {
                     values[key + 'Val'].textContent = value + 'ms';
