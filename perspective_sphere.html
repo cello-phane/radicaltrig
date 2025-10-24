@@ -184,7 +184,7 @@
         const toggleAnimBtn = document.getElementById('toggleAnim');
         const stepAnimBtn = document.getElementById('stepAnim');
         // Resized point for semicricle
-        let semicirclePtSize = 2+(controls.radius.value/100)*(canvas.width/canvas.height);
+        let semicirclePtSize = 0;
 
         function fastInvSqrt(x) {
             // Quake III fast inverse square root approximation
@@ -425,6 +425,12 @@
                 }
                 // Highlight special meridians affected by integration
                 if (mIndex === Math.floor(meridianCount * semicircle)) {
+                    if (radius < 100) {
+                    	semicirclePtSize = 2+(controls.radius.value/100)*(canvas.width/canvas.height)/1.25;
+                    }
+                    else {
+                    	semicirclePtSize = 2+(controls.radius.value/100)*(canvas.width/canvas.height);
+                    }
                     projectedPoints.forEach(point => {
                         drawPoint(point, '#ff8800', semicirclePtSize);
                     });
@@ -451,6 +457,7 @@
                     drawLine(projectedPoints[i], projectedPoints[i + 1], color, brightness);
                 }
             });
+
         }
         
         function hideControls() {
@@ -548,6 +555,7 @@
 
         // Initial render
         render();
+
     </script>
 </body>
 </html>
