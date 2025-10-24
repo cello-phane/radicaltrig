@@ -103,8 +103,8 @@
         </div>
         <div class="control-group">
             <label>Rotation Y:</label>
-            <input type="range" id="rotY" min="0" max="360" value="45">
-            <span class="value" id="rotYVal">45°</span>
+            <input type="range" id="rotY" min="0" max="360" value="0">
+            <span class="value" id="rotYVal">0°</span>
         </div>        
         <div class="control-group">
             <label>Rotation Z:</label>
@@ -453,7 +453,7 @@
                 const transformedPoints = [];                
                 parallel.forEach(point => {
                     let transformed = rotateXandZ(point, rotXAngle, rotZAngle);
-    				transformed = rotateZ(transformed, rotYAngle);
+    				transformed = rotateY(transformed, rotYAngle);
     				transformedPoints.push(transformed);
                     const projected = project3D(transformed, perspective);
                     projectedPoints.push(projected);
