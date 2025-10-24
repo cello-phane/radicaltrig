@@ -113,8 +113,8 @@
         </div>
         <div class="control-group">
             <label>Semicircle:</label>
-            <input type="range" id="semicircle" min="0" max="100" value="0">
-            <span class="value" id="semicircleVal">0</span>
+            <input type="range" id="semicircle" min="0" max="100" value="100">
+            <span class="value" id="semicircleVal">100</span>
         </div>
         <div class="control-group">
             <label>Meridians:</label>
@@ -128,13 +128,18 @@
         </div>
         <div class="control-group">
             <label>Perspective:</label>
-            <input type="range" id="perspective" min="100" max="1000" value="1000">
-            <span class="value" id="perspectiveVal">1000</span>
+            <input type="range" id="perspective" min="100" max="1000" value="730">
+            <span class="value" id="perspectiveVal">730</span>
         </div>
         <div class="control-group">
             <label>Radius:</label>
             <input type="range" id="radius" min="10" max="300" value="300">
             <span class="value" id="radiusVal">300</span>
+        </div>
+        <div class="control-group">
+            <label>Culling:</label>
+            <input type="range" id="culling" min="0" max="100" value="0">
+            <span class="value" id="cullingVal">0</span>
         </div>
         <div class="animation-controls">
             <div class="control-group">
@@ -165,6 +170,7 @@
             parallels: document.getElementById('parallels'),
             perspective: document.getElementById('perspective'),
             radius: document.getElementById('radius'),
+            culling: document.getElementById('culling'),
             frameDelay: document.getElementById('frameDelay')
         };
         
@@ -177,6 +183,7 @@
             parallelsVal: document.getElementById('parallelsVal'),
             perspectiveVal: document.getElementById('perspectiveVal'),
             radiusVal: document.getElementById('radiusVal'),
+			cullingVal: document.getElementById('cullingVal'),            
             frameDelayVal: document.getElementById('frameDelayVal')
         };
         
@@ -350,7 +357,7 @@
             // Generate parallels
             const parallelLines = [];
             for (let p = 0; p < parallelCount; p++) {
-                const thetaFreq = (p / parallelCount) * 2.0;
+                const thetaFreq = (p / parallelCount) * 2.0; // Latitude in freq units
                 const parallelPoints = [];
                 
                 for (let m = 0; m <= meridianCount; m++) {
@@ -402,57 +409,65 @@
             const parallelCount 	= parseInt(controls.parallels.value);
             const perspective 		= parseFloat(controls.perspective.value);
             const radius 			= parseInt(controls.radius.value);
+			const cullingPercent 	= parseFloat(controls.culling.value);            
             const sphereData 		= generateSpherePoints(radius, meridianCount, parallelCount, semicircle);
             
             // Transform and project meridians
             sphereData.meridians.forEach((meridian, mIndex) => {
                 const projectedPoints = [];
-                
+                const transformedPoints = [];
                 meridian.forEach(point => {
                     //let transformed = rotateX(point, rotXAngle);
                     //transformed = rotateY(transformed, rotYAngle);
                     let transformed = rotateXandY(point, rotXAngle, rotYAngle);
     				transformed = rotateZ(transformed, rotZAngle);
+    				transformedPoints.push(transformed);
                     const projected = project3D(transformed, perspective);
                     projectedPoints.push(projected);
                 });
                 
                 // Draw meridian lines
                 for (let i = 0; i < projectedPoints.length - 1; i++) {
-                    const brightness = Math.max(0.3, projectedPoints[i].scale);
+                    //checks for z-axis(depth) and skip if too close
+                    if ((transformedPoints[i].z + transformedPoints[i + 1].z) < -perspective / (cullingPercent/10)) continue;
+                    const brightness = Math.max(0.5, projectedPoints[i].scale * 0.7);
                     const color = `rgba(0, 255, 136, ${brightness})`;
-                    drawLine(projectedPoints[i], projectedPoints[i + 1], color, brightness);
+                	drawLine(projectedPoints[i], projectedPoints[i + 1], color, brightness);
+	               	// Highlight special meridians affected by integration
+	                if (mIndex === Math.floor(meridianCount * semicircle)) {
+	                    if (radius < 100) {
+	                    	semicirclePtSize = 2+(controls.radius.value/100)*(canvas.width/canvas.height)/1.25;
+	                    }
+	                    else {
+	                    	semicirclePtSize = 2+(controls.radius.value/100)*(canvas.width/canvas.height);
+	                    }
+	                    projectedPoints.forEach(point => {
+	                        drawPoint(point, '#ff8800', semicirclePtSize);
+	                    });
+	                }
                 }
-                // Highlight special meridians affected by integration
-                if (mIndex === Math.floor(meridianCount * semicircle)) {
-                    if (radius < 100) {
-                    	semicirclePtSize = 2+(controls.radius.value/100)*(canvas.width/canvas.height)/1.25;
-                    }
-                    else {
-                    	semicirclePtSize = 2+(controls.radius.value/100)*(canvas.width/canvas.height);
-                    }
-                    projectedPoints.forEach(point => {
-                        drawPoint(point, '#ff8800', semicirclePtSize);
-                    });
-                }
+                
             });
             
             // Transform and project parallels
             sphereData.parallels.forEach(parallel => {
                 const projectedPoints = [];
-                
+                const transformedPoints = [];                
                 parallel.forEach(point => {
                     //let transformed = rotateX(point, rotXAngle);
                     //transformed = rotateY(transformed, rotYAngle);
                     let transformed = rotateXandY(point, rotXAngle, rotYAngle);
     				transformed = rotateZ(transformed, rotZAngle);
+    				transformedPoints.push(transformed);
                     const projected = project3D(transformed, perspective);
                     projectedPoints.push(projected);
                 });
                 
                 // Draw parallel lines
                 for (let i = 0; i < projectedPoints.length - 1; i++) {
-                    const brightness = Math.max(0.2, projectedPoints[i].scale * 0.7);
+                	//checks for z-axis(depth) and skip if too close
+                	if ((transformedPoints[i].z + transformedPoints[i + 1].z) < -perspective / (cullingPercent/10)) continue;
+                    const brightness = Math.max(0.5, projectedPoints[i].scale * 0.7);
                     const color = `rgba(136, 136, 255, ${brightness})`;
                     drawLine(projectedPoints[i], projectedPoints[i + 1], color, brightness);
                 }
