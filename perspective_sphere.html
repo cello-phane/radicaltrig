@@ -118,13 +118,13 @@
         </div>
         <div class="control-group">
             <label>Meridians:</label>
-            <input type="range" id="meridians" min="8" max="32" value="32">
-            <span class="value" id="meridiansVal">16</span>
+            <input type="range" id="meridians" min="8" max="32" value="23">
+            <span class="value" id="meridiansVal">23</span>
         </div>
         <div class="control-group">
             <label>Parallels:</label>
-            <input type="range" id="parallels" min="8" max="32" value="32">
-            <span class="value" id="parallelsVal">12</span>
+            <input type="range" id="parallels" min="8" max="32" value="25">
+            <span class="value" id="parallelsVal">25</span>
         </div>
         <div class="control-group">
             <label>Perspective:</label>
@@ -133,8 +133,8 @@
         </div>
         <div class="control-group">
             <label>Radius(zoom):</label>
-            <input type="range" id="radius" min="10" max="300" value="300">
-            <span class="value" id="radiusVal">300</span>
+            <input type="range" id="radius" min="10" max="300" value="164">
+            <span class="value" id="radiusVal">164</span>
         </div>
         <div class="animation-controls">
 	        <label>Culling(back):</label>
@@ -147,8 +147,8 @@
 	        </div>
             <div class="control-group">
                 <label>Frame Delay (ms):</label>
-                <input type="range" id="frameDelay" min="16" max="500" value="43">
-                <span class="value" id="frameDelayVal">100ms</span>
+                <input type="range" id="frameDelay" min="0" max="100" value="34">
+                <span class="value" id="frameDelayVal">34ms</span>
             </div>
             <button id="toggleAnim">Start Animation</button>
             <button id="stepAnim">Step Once</button>
@@ -163,6 +163,10 @@
         const ctx = canvas.getContext('2d');
         const centerX = canvas.width / 2;
         const centerY = canvas.height / 2;
+        let frameCount = 0;
+        let lastTime = performance.now();
+        let fps = 0;
+        
         // Control elements
         const controls = {
             rotX: document.getElementById('rotX'),
@@ -398,6 +402,20 @@
             ctx.fill();
         }
         
+        function updateFPS() {
+          frameCount++;
+          const currentTime = performance.now();
+          const elapsed = currentTime - lastTime;
+          
+          if (elapsed >= 1000) { // Update every 1 second
+            fps = Math.round((frameCount * 1000) / elapsed);
+            frameCount = 0;
+            lastTime = currentTime;
+          }
+          
+          return fps;
+        }
+        
         // Main render function using RAU radical angle system
         function render() {
        		ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -476,7 +494,12 @@
                     drawLine(projectedPoints[i], projectedPoints[i + 1], color, brightness);
                 }
             });
-
+			const currentFps = updateFPS();
+			  
+		    // Display FPS on canvas
+		    ctx.fillStyle = '#00ff00';
+		    ctx.font = '12px monospace';
+		    ctx.fillText(`FPS: ${currentFps}`, 10, 20);
         }
         
         function hideControls() {
