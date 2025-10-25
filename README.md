@@ -56,7 +56,7 @@ sin = (s·q0 + c·q1 - s·q2 - c·q3) × Math.sign(parameter)
 https://www.shadertoy.com/view/M3cfRN (2D demo that uses both kinds of trig (blue and pink))  
 https://www.shadertoy.com/view/WXVXDR (3D demo that uses radical trig)  
 https://www.shadertoy.com/view/wcXyzB (3D demo that uses traditional sin/cos)  
-https://cello-phane.github.io/radicaltrig/perspective_sphere.html 3D rotation of a sphere  
+https://cello-phane.github.io/radicaltrig/perspective_sphere.html (3D rotation of a sphere on Javascript 2D canvas)
 Graphing:  
 https://www.geogebra.org/classic/tepm6wcn - Geogebra applet (sin/cos comparison)  
 https://www.desmos.com/calculator/qku0curcwb (reference for a "uniform motion" parameter using a conversion)  
