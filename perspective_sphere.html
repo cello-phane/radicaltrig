@@ -138,8 +138,8 @@
         </div>
         <div class="animation-controls">
 	        <label>Culling(back):</label>
-	        <input type="range" id="cullingf" min="0" max="100" value="100">
-	        <span class="value" id="cullingfVal">50</span>
+	        <input type="range" id="cullingf" min="0" max="100" value="0">
+	        <span class="value" id="cullingfVal">0</span>
 	        <div>
 	        <label>Culling(front):</label>
 	        <input type="range" id="cullingb" min="0" max="100" value="0">
@@ -339,20 +339,19 @@
             
             // Generate meridians using frequency domain (0-4 instead of 0-2π)
             for (let m = 0; m < meridianCount; m++) {
-                const phiFreq = (m / meridianCount) * 4.0; // Longitude in freq units
+                const phiFreq = (m / meridianCount) * 4.0; // Longitude
                 const meridianPoints = [];
                 
                 for (let p = 0; p <= parallelCount; p++) {
-                    const thetaFreq = (p / parallelCount) * 2.0; // Latitude in freq units
-                    const semiCirc = semicircle(radius, scParam) / (radius * radius);
-                    const inRadius = radius * (1 + 0.1 * getRotationComponents(semiCirc * 2.0).sin);
+                    const thetaFreq = (p / parallelCount) * 2.0; // Latitude
+                    const semiCirc = semicircle(radius, scParam);
                     // Spherical to Cartesian
                     const thetaTrig = getRotationComponents(thetaFreq);
                     const phiTrig = getRotationComponents(phiFreq);
                     
-                    const x = inRadius * thetaTrig.sin * phiTrig.cos;
-                    const y = inRadius * thetaTrig.cos;
-                    const z = inRadius * thetaTrig.sin * phiTrig.sin;
+                    const x = radius * thetaTrig.sin * phiTrig.cos;
+                    const y = radius * thetaTrig.cos;
+                    const z = radius * thetaTrig.sin * phiTrig.sin;
                     
                     meridianPoints.push({ x, y, z });
                 }
@@ -362,20 +361,19 @@
             // Generate parallels
             const parallelLines = [];
             for (let p = 0; p < parallelCount; p++) {
-                const thetaFreq = (p / parallelCount) * 2.0; // Latitude in freq units
+                const thetaFreq = (p / parallelCount) * 2.0; // Latitude
                 const parallelPoints = [];
                 
                 for (let m = 0; m <= meridianCount; m++) {
-                    const phiFreq = (m / meridianCount) * 4.0; // Longitude in freq units
-                    const semiCirc = semicircle(radius, scParam) / (radius * radius);
-                    const inRadius = radius * (1 + 0.1 * getRotationComponents(semiCirc * 2.0).sin);
+                    const phiFreq = (m / meridianCount) * 4.0; // Longitude
+                    const semiCirc = semicircle(radius, scParam);
                     // Spherical to Cartesian
                     const thetaTrig = getRotationComponents(thetaFreq);
                     const phiTrig = getRotationComponents(phiFreq);
                     
-                    const x = inRadius * thetaTrig.sin * phiTrig.cos;
-                    const y = inRadius * thetaTrig.cos;
-                    const z = inRadius * thetaTrig.sin * phiTrig.sin;
+                    const x = radius * thetaTrig.sin * phiTrig.cos;
+                    const y = radius * thetaTrig.cos;
+                    const z = radius * thetaTrig.sin * phiTrig.sin;
                     
                     parallelPoints.push({ x, y, z });
                 }
@@ -431,18 +429,19 @@
 			const cullingfPercent 	= parseFloat(controls.cullingf.value);
 			const cullingbPercent 	= parseFloat(controls.cullingb.value);
             const sphereData 		= generateSpherePoints(radius, meridianCount, parallelCount, semicircle);
-            const cullF = perspective * 1/(cullingfPercent/10); //front face
-            const cullB = -perspective * 1/(cullingbPercent/10);//back face
+            const cullF             = perspective * 1/(cullingfPercent/10); //front face
+            const cullB             = -perspective * 1/(cullingbPercent/10);//back face
 
             // Transform and project meridians
             sphereData.meridians.forEach((meridian, mIndex) => {
                 const projectedPoints = [];
                 const transformedPoints = [];
+                let projected = [];
                 meridian.forEach(point => {
                     let transformed = rotateXandZ(point, rotXAngle, rotZAngle);
     				transformed = rotateY(transformed, rotYAngle);
-    				transformedPoints.push(transformed);
-                    const projected = project3D(transformed, perspective);
+ 					transformedPoints.push(transformed);   					
+                    projected = project3D(transformed, perspective);
                     projectedPoints.push(projected);
                 });
                 
@@ -458,10 +457,10 @@
 	               	// Highlight special meridians affected by integration
 	                if (mIndex === Math.floor(meridianCount * semicircle)) {
 	                    if (radius < 100) {
-	                    	semicirclePtSize = 2+(controls.radius.value/100)*(canvas.width/canvas.height)/1.25;
+	                    	semicirclePtSize = 1+(canvas.width/canvas.height)/1.25;
 	                    }
 	                    else {
-	                    	semicirclePtSize = 2+(controls.radius.value/100)*(canvas.width/canvas.height);
+	                    	semicirclePtSize = 1+(canvas.width/canvas.height);
 	                    }
 	                    projectedPoints.forEach(point => {
 	                        drawPoint(point, '#ff8800', semicirclePtSize);
@@ -474,13 +473,14 @@
             // Transform and project parallels
             sphereData.parallels.forEach(parallel => {
                 const projectedPoints = [];
-                const transformedPoints = [];                
+                const transformedPoints = [];
+                let projected = [];                
                 parallel.forEach(point => {
                     let transformed = rotateXandZ(point, rotXAngle, rotZAngle);
     				transformed = rotateY(transformed, rotYAngle);
-    				transformedPoints.push(transformed);
-                    const projected = project3D(transformed, perspective);
-                    projectedPoints.push(projected);
+	    			transformedPoints.push(transformed);
+	                projected = project3D(transformed, perspective);
+	                projectedPoints.push(projected);
                 });
                 
                 // Draw parallel lines
