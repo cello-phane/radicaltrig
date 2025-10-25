@@ -150,40 +150,6 @@ cos(θ) = ${rauCos.toFixed(3)}`;
   }
 }
 
-function drawArcBetween(ctx, cx, cy, radius, u, v, options = {}) {
-  const {
-    ref = {x: 1, y: 0},   // reference vector (default +X)
-    color = '#666',
-    width = 3
-  } = options;
-  
-  // compute CCW difference from both ref'd raus
-  let start = atanVec(ref, u);
-  let end   = atanVec(ref, v);
-  let delta = (end - start + 4.0) % 4.0;
-  // Draw the arc
-  ctx.save();
-  ctx.strokeStyle = color;
-  ctx.lineWidth = width;
-  ctx.beginPath();
-  // detect direction
-  if ((start-end > 0.0 || start-end + 2.0 == 0.0) && (atanVec(u,v) < start+delta)) {
-  	currentPhaseSection2 = 4.0-atanVec(u,v);
-  	ccw = false;
-  }
-  if (delta > 2.0) {
-    // arc crosses the wrap (goes past 360°)
-    // → draw the shorter *decreasing* arc
-    ctx.arc(cx, cy, radius, degToRad(end*90), degToRad(start*90), true); // anticlockwise
-  } else {
-    // normal CCW sweep
-    ctx.arc(cx, cy, radius, degToRad(start*90), degToRad(end*90), false); // clockwise
-  }
-  // Finalize the arc
-  ctx.stroke();
-  ctx.restore();
-}
-
 // ============================================
 // Conversion Diagram
 // ============================================
@@ -594,7 +560,29 @@ document.addEventListener('DOMContentLoaded', () => {
       ctx.moveTo(0, centerY); ctx.lineTo(width, centerY);
       ctx.stroke();
     }
-
+    
+	function drawArcBetween(ctx, cx, cy, radius, u, v, options = {}) {
+	  const {
+	    ref = {x: 1, y: 0},   // reference vector (default +X)
+	    color = '#666',
+	    width = 3
+	  } = options;
+	  
+	  // compute CCW difference from both between x-axis and vec
+	  let start = atanVec(ref, u);
+	  let end   = atanVec(ref, v);
+	  let delta = (end - start + 4.0) % 4.0;
+	  // Draw the arc
+	  ctx.save();
+	  ctx.strokeStyle = color;
+	  ctx.lineWidth = width;
+	  ctx.beginPath();
+	  ctx.arc(cx, cy, radius, degToRad(end*90), degToRad(start*90), delta);
+	  // Finalize the arc
+	  ctx.stroke();
+	  ctx.restore();
+	}
+	
     function drawChordConnection(ctx, u, v, radius) {
       const uMag = Math.sqrt(u.x*u.x + u.y*u.y);
       const vMag = Math.sqrt(v.x*v.x + v.y*v.y);
