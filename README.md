@@ -1,7 +1,7 @@
 # radicaltrig
 <img width="424" height="217" alt="image" src="https://github.com/user-attachments/assets/bfd17458-9a9a-40ed-b22f-305bd0e7a4f8" />  
 0.0 to 1.0 ~~ 0.0 to π/2 radians  
-Non-periodic but closed form
+(Non-periodic, closed form solution)
 
 ## Radical Angle Unit (RAU)
 https://cello-phane.github.io/radicaltrig/rau_rotating_axes.html
