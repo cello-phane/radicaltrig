@@ -1,10 +1,11 @@
 # radicaltrig
 <img width="424" height="217" alt="image" src="https://github.com/user-attachments/assets/bfd17458-9a9a-40ed-b22f-305bd0e7a4f8" />  
-0.0 to 4.0 rau ~~ 0.0 to 2.0 π radians  
+0.0 to 1.0 ~~ 0.0 to π/2 radians  
+Non-periodic but closed form
 
 ## Radical Angle Unit (RAU)
 https://cello-phane.github.io/radicaltrig/rau_rotating_axes.html
-After a 90 degree sweep, every point(all 4) has covered the circle, which is why this system works.
+After a 90 degree sweep, every point(all 4) has covered the circle, which is why we can achieve periodicity of 0 to 2π.
 
 ### Base Functions
 For a parameter `t` between 0 and 1:
