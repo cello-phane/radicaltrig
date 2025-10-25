@@ -431,8 +431,8 @@
 			const cullingfPercent 	= parseFloat(controls.cullingf.value);
 			const cullingbPercent 	= parseFloat(controls.cullingb.value);
             const sphereData 		= generateSpherePoints(radius, meridianCount, parallelCount, semicircle);
-            const cullF = perspective * 1/(cullingfPercent); //front face
-            const cullB = -perspective * 1/(cullingbPercent);//back face
+            const cullF = perspective * 1/(cullingfPercent/10); //front face
+            const cullB = -perspective * 1/(cullingbPercent/10);//back face
 
             // Transform and project meridians
             sphereData.meridians.forEach((meridian, mIndex) => {
