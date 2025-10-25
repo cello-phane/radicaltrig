@@ -49,12 +49,12 @@ sin = (s·q0 + c·q1 - s·q2 - c·q3) × Math.sign(parameter)
 ### Example: 135° (1.5 RAU)
 - Quadrant: floor(1.5) = 1 (Q1), fraction = 0.5
 - Base: c = s = √2/2 ≈ 0.707
-- Apply Q1 mapping: (-s, +c) = (-0.707, 0.707)
+- Apply Q1 mapping: (-s, +c) = (-0.707, 0.707)  
 
 ### 2D/3D applications:  
-https://www.shadertoy.com/view/M3cfRN (2D demo that uses both kinds of trig (blue and pink))
+https://www.shadertoy.com/view/M3cfRN (2D demo that uses both kinds of trig (blue and pink))  
 https://www.shadertoy.com/view/WXVXDR (3D demo that uses radical trig)  
-https://www.shadertoy.com/view/wcXyzB (3D demo that uses traditional sin/cos)
+https://www.shadertoy.com/view/wcXyzB (3D demo that uses traditional sin/cos)  
 https://cello-phane.github.io/radicaltrig/perspective_sphere.html 3D rotation of a sphere  
 Graphing:  
 https://www.geogebra.org/classic/tepm6wcn - Geogebra applet (sin/cos comparison)  
