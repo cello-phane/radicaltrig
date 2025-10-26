@@ -13,6 +13,7 @@ let rauPhase = 0;
 let rauDeg = 0;
 let rauRad = 0;
 let ccw = false;
+let crossmag_sign = 1;
 
 const controls = {
   uLength: document.getElementById('uLength'),
@@ -109,19 +110,20 @@ function updateResultsDisplay() {
   
   if (isSection1Active) {
     // Section 1: Only show RAU phase and trig values
-    const phase = currentPhaseSection1;
-    const rauSin = radicalSine(phase);
-    const rauCos = radicalCosine(phase);
-    const rauTan = radicalTan(phase);
-    const rauRad = (phase / 4) * 2.0 * Math.PI;
-    const rauDeg = (phase / 4) * 360;
+    const rads   = degToRad=(anglebetweenDeg);
+    const phase  = currentPhaseSection1;
+    const rauSin = radicalSine(radToRau(rads));
+    const rauCos = radicalCosine(radToRau(rads));
+    const rauTan = radicalTan(radToRau(rads));
+    const rauRad = rads;
+    const rauDeg = anglebetweenDeg;
     
-    resultsContent.textContent = `RAU Phase = ${phase.toFixed(3)}
-θ Radians = ${rauRad.toFixed(3)} (${rauDeg.toFixed(1)}°)
+    resultsContent.textContent = `RAU Phase = ${phase.toFixed(16)}
+θ Radians = ${rauRad.toFixed(16)} (${rauDeg.toFixed(16)}°)
 -----------
-tan(θ) = ${rauTan === 0 ? 'undefined' : rauTan.toFixed(4)}
-sin(θ) = ${rauSin.toFixed(3)}
-cos(θ) = ${rauCos.toFixed(3)}`;
+tan(θ) = ${rauTan === 0 ? 'undefined' : rauTan.toFixed(16)}
+sin(θ) = ${rauSin.toFixed(16)}
+cos(θ) = ${rauCos.toFixed(16)}`;
   } else {
     // Section 2: Show vector info + RAU values
     const phase = currentPhaseSection2;
@@ -132,8 +134,8 @@ cos(θ) = ${rauCos.toFixed(3)}`;
     const rauSin = radicalSine(phase);
     const rauCos = radicalCosine(phase);
     const rauTan = radicalTan(phase);
-    const rauRad = degToRad(anglebetweenDeg);
-    const rauDeg = anglebetweenDeg;
+    const rauRad = crossmag_sign*degToRad(anglebetweenDeg);
+    const rauDeg = crossmag_sign*anglebetweenDeg;
     
     const formatNum = (num, width=8, decimals=2) => num.toFixed(decimals).padStart(width);
     
@@ -141,12 +143,12 @@ cos(θ) = ${rauCos.toFixed(3)}`;
 v = (${formatNum(v.x)}, ${formatNum(v.y)})
 Cross = ${formatNum(cross)}
 Dot   = ${formatNum(dot)}
-RAU Phase = ${phase.toFixed(3)}
-Radian    = ${rauRad.toFixed(3)} (${rauDeg.toFixed(1)}°)
+RAU Phase = ${phase.toFixed(16)}
+Radian    = ${rauRad.toFixed(16)} (${rauDeg.toFixed(1)}°)
 ________________________________________________________
-tan(θ) = ${rauTan === 0 ? 'undefined' : rauTan.toFixed(4)}
-sin(θ) = ${rauSin.toFixed(3)}
-cos(θ) = ${rauCos.toFixed(3)}`;
+tan(θ) = ${rauTan === 0 ? 'undefined' : rauTan.toFixed(16)}
+sin(θ) = ${rauSin.toFixed(16)}
+cos(θ) = ${rauCos.toFixed(16)}`;
   }
 }
 
@@ -674,6 +676,7 @@ document.addEventListener('DOMContentLoaded', () => {
       
       // =========================
       // Update variables
+      crossmag_sign = Math.sign(u.x * v.y - u.y * v.x);
 	  let diff = rauDiff(atanVec({x: 1, y: 0}, u), atanVec({x: 1, y: 0}, v));
 	  ccw = diff > 0;
       anglebetweenDeg = Math.abs(parseInt(controls.uAngle.value) - parseInt(controls.vAngle.value));
