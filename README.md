@@ -32,14 +32,15 @@ the quadrant (0, 1, 2, or 3), and the fractional part is used in the base functi
 For any quadrant q:
 ```
 if (q === 0) {
-    sin_result = s; cos_result = c;
+    cos_result = c;  sin_result = s;
 } else if (q === 1) {
-    sin_result = c; cos_result = -s;
+    cos_result = -s; sin_result = c;
 } else if (q === 2) {
-    sin_result = -s; cos_result = -c;
+    cos_result = -c; sin_result = -s;
 } else {
-    sin_result = -c; cos_result = s;
-} sin_result=sin_result*Math.sign(parameter);
+    cos_result = -c; sin_result = s;
+}
+sin_result=sin_result*Math.sign(parameter);
 ```
 And the same thing is done with this arithmetic  
 where q0, q1, q2, q3 are booleans (1 if in that quadrant, 0 if not):
