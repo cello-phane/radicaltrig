@@ -450,6 +450,22 @@
           
           return fps;
         }
+
+		function drawBlurredLine(from, to, color, width, blur) {
+		    const layers = 3; // More = smoother but slower
+		    
+		    for (let i = 0; i < layers; i++) {
+		        const offset = (i / layers) * blur;
+		        const alpha = (1 - i / layers) * 0.3; // Decreasing opacity
+		        
+		        ctx.strokeStyle = `rgba(255, 100, 100, ${alpha})`;
+		        ctx.lineWidth = width + offset;
+		        ctx.beginPath();
+		        ctx.moveTo(from.x, from.y);
+		        ctx.lineTo(to.x, to.y);
+		        ctx.stroke();
+		    }
+		}
         
         // Main render function using RAU radical angle system
         function render() {
@@ -466,7 +482,7 @@
 			const cullingfPercent 	= parseFloat(controls.cullingf.value);
 			const cullingbPercent 	= parseFloat(controls.cullingb.value);
             const sphereData 		= generateSpherePoints(radius, meridianCount, parallelCount, semicircle);
-            const fieldLines        = generateGravityField(radius, meridianCount, 2);
+            const fieldLines        = generateGravityField(radius, (meridianCount/parallelCount)*20.0, 5);
             const cullF             = perspective * 1/(cullingfPercent/10); //front face
             const cullB             = -perspective * 1/(cullingbPercent/10);//back face
 		    
@@ -484,9 +500,9 @@
 				    // Draw the field line
 				    for (let i = 0; i < projectedPoints.length - 1; i++) {
 				        // Color by force strength
-				        const alpha = Math.max(10,(line[i].force+line[i].force)/2);
+				        const alpha = Math.max(1,(line[i].force));
 				        const color = `rgba(255, 100, 100, ${alpha})`;
-				        drawLine(projectedPoints[i], projectedPoints[i + 1], color, 1);
+				        drawBlurredLine(projectedPoints[i], projectedPoints[i + 1], color, 0.25, 10);
 				    }
 			    }
 			});
@@ -620,7 +636,6 @@
         function startFieldLineAnimation() {
         	if (!drawingFieldLines) {
         		drawingFieldLines = true;
-        		toggleFieldLinesBtn.textContent = 'Draw crazy field lines';
         		toggleFieldLinesBtn.classList.add('active');
         	}
         }
@@ -628,7 +643,6 @@
         function stopFieldLineAnimation() {
         	if (drawingFieldLines) {
         		drawingFieldLines = false;
-        		toggleFieldLinesBtn.textContent = 'Draw crazy field lines';
         		toggleFieldLinesBtn.classList.remove('active');	
         	}
         }
