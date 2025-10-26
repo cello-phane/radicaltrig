@@ -118,32 +118,32 @@
         </div>
         <div class="control-group">
             <label>Meridians:</label>
-            <input type="range" id="meridians" min="8" max="32" value="23">
-            <span class="value" id="meridiansVal">23</span>
+            <input type="range" id="meridians" min="8" max="32" value="27">
+            <span class="value" id="meridiansVal">27</span>
         </div>
         <div class="control-group">
             <label>Parallels:</label>
-            <input type="range" id="parallels" min="8" max="32" value="25">
-            <span class="value" id="parallelsVal">25</span>
+            <input type="range" id="parallels" min="8" max="32" value="28">
+            <span class="value" id="parallelsVal">28</span>
         </div>
         <div class="control-group">
             <label>Perspective:</label>
-            <input type="range" id="perspective" min="100" max="1000" value="730">
+            <input type="range" id="perspective" min="100" max="1000" value="1000">
             <span class="value" id="perspectiveVal">730</span>
         </div>
         <div class="control-group">
             <label>Radius(zoom):</label>
-            <input type="range" id="radius" min="10" max="300" value="164">
-            <span class="value" id="radiusVal">164</span>
+            <input type="range" id="radius" min="10" max="300" value="232">
+            <span class="value" id="radiusVal">232</span>
         </div>
         <div class="animation-controls">
 	        <label>Culling(back):</label>
-	        <input type="range" id="cullingf" min="0" max="100" value="0">
-	        <span class="value" id="cullingfVal">0</span>
+	        <input type="range" id="cullingf" min="0" max="100" value="22">
+	        <span class="value" id="cullingfVal">22</span>
 	        <div>
 	        <label>Culling(front):</label>
-	        <input type="range" id="cullingb" min="0" max="100" value="0">
-	        <span class="value" id="cullingbVal">0</span>
+	        <input type="range" id="cullingb" min="0" max="100" value="22">
+	        <span class="value" id="cullingbVal">22</span>
 	        </div>
             <div class="control-group">
                 <label>Frame Delay (ms):</label>
@@ -152,7 +152,7 @@
             </div>
             <button id="toggleAnim">Start Animation</button>
             <button id="stepAnim">Step Once</button>
-            <button id="toggleFieldLines">Crazy field lines</button>
+            <button id="toggleFieldLines" class="active">Crazy field lines</button>
         </div>
     </div>
     </div>
@@ -167,7 +167,7 @@
         let frameCount = 0;
         let lastTime = performance.now();
         let fps = 0;
-        let drawingFieldLines = false;
+        let drawingFieldLines = true;
         // Control elements
         const controls = {
             rotX: document.getElementById('rotX'),
@@ -456,7 +456,7 @@
 		    
 		    for (let i = 0; i < layers; i++) {
 		        const offset = (i / layers) * blur;
-		        const alpha = (1 - i / layers) * 0.3; // Decreasing opacity
+		        const alpha = (1 - i / layers) * 0.05; // Decreasing opacity
 		        
 		        ctx.strokeStyle = `rgba(255, 100, 100, ${alpha})`;
 		        ctx.lineWidth = width + offset;
@@ -482,10 +482,10 @@
 			const cullingfPercent 	= parseFloat(controls.cullingf.value);
 			const cullingbPercent 	= parseFloat(controls.cullingb.value);
             const sphereData 		= generateSpherePoints(radius, meridianCount, parallelCount, semicircle);
-            const fieldLines        = generateGravityField(radius, (meridianCount/parallelCount)*20.0, 5);
+            
             const cullF             = perspective * 1/(cullingfPercent/10); //front face
             const cullB             = -perspective * 1/(cullingbPercent/10);//back face
-		    
+		    fieldLines              = generateGravityField((animationFrame%2), ((animationFrame/2)%12), 10);
 			fieldLines.forEach(line => {
 			    const projectedPoints = [];
 			    const transformedPoints = [];
@@ -497,13 +497,12 @@
 			        projectedPoints.push(projected);
 			    });
 			    if (drawingFieldLines) {
+			    for (let i = 0; i < parallelCount; i++) {
 				    // Draw the field line
-				    for (let i = 0; i < projectedPoints.length - 1; i++) {
-				        // Color by force strength
-				        const alpha = Math.max(1,(line[i].force));
-				        const color = `rgba(255, 100, 100, ${alpha})`;
-				        drawBlurredLine(projectedPoints[i], projectedPoints[i + 1], color, 0.25, 10);
-				    }
+	                const brightness = (animationFrame/2)%12*Math.PI/2;
+					const color = `rgba(255, 255, 255, ${brightness})`;
+					drawBlurredLine(projectedPoints[0], projectedPoints[1], color, i*(0.01*radius), 100);
+				}
 			    }
 			});
 						
