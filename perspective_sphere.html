@@ -152,6 +152,7 @@
             </div>
             <button id="toggleAnim">Start Animation</button>
             <button id="stepAnim">Step Once</button>
+            <button id="toggleFieldLines">Crazy field lines</button>
         </div>
     </div>
     </div>
@@ -166,7 +167,7 @@
         let frameCount = 0;
         let lastTime = performance.now();
         let fps = 0;
-        
+        let drawingFieldLines = false;
         // Control elements
         const controls = {
             rotX: document.getElementById('rotX'),
@@ -199,6 +200,7 @@
         // Animation controls
         const toggleAnimBtn = document.getElementById('toggleAnim');
         const stepAnimBtn = document.getElementById('stepAnim');
+        const toggleFieldLinesBtn = document.getElementById('toggleFieldLines');
         // Resized point for semicricle
         let semicirclePtSize = 0;
 
@@ -383,6 +385,41 @@
             return { meridians: points, parallels: parallelLines };
         }
         
+		function generateGravityField(radius, rayCount, shellCount) {
+		    const fieldLines = [];
+		    
+		    // Generate field lines pointing radially inward
+		    for (let i = 0; i < rayCount; i++) {
+		        const thetaFreq = (i / rayCount) * 2.0; // Latitude (RAU)
+		        
+		        for (let j = 0; j < rayCount; j++) {
+		            const phiFreq = (j / rayCount) * 4.0; // Longitude (RAU)
+		            
+		            // One field line with multiple shell points
+		            const line = [];
+		            
+		            for (let shell = 1; shell <= shellCount; shell++) {
+		                const r = radius * shell / shellCount;
+		                const forceMagnitude = 1 / (r * r);
+		                
+		                const thetaTrig = getRotationComponents(thetaFreq);
+		                const phiTrig = getRotationComponents(phiFreq);
+		                
+		                const x = r * thetaTrig.sin * phiTrig.cos;
+		                const y = r * thetaTrig.cos;
+		                const z = r * thetaTrig.sin * phiTrig.sin;
+		                
+		                line.push({ x, y, z, force: forceMagnitude });
+		            }
+		            
+		            fieldLines.push(line);
+		        }
+		    }
+		    
+		    return fieldLines;
+		}
+
+        
         // Drawing functions
         function drawLine(from, to, color = '#00ff88', width = 1) {
             ctx.strokeStyle = color;
@@ -429,9 +466,31 @@
 			const cullingfPercent 	= parseFloat(controls.cullingf.value);
 			const cullingbPercent 	= parseFloat(controls.cullingb.value);
             const sphereData 		= generateSpherePoints(radius, meridianCount, parallelCount, semicircle);
+            const fieldLines        = generateGravityField(radius, meridianCount, 2);
             const cullF             = perspective * 1/(cullingfPercent/10); //front face
             const cullB             = -perspective * 1/(cullingbPercent/10);//back face
-
+		    
+			fieldLines.forEach(line => {
+			    const projectedPoints = [];
+			    const transformedPoints = [];
+                let projected = [];   
+			    line.forEach(point => {
+			        let transformed = rotateXandZ(point, rotXAngle, rotZAngle);
+			        transformed = rotateY(transformed, rotYAngle);
+			        const projected = project3D(transformed, perspective);
+			        projectedPoints.push(projected);
+			    });
+			    if (drawingFieldLines) {
+				    // Draw the field line
+				    for (let i = 0; i < projectedPoints.length - 1; i++) {
+				        // Color by force strength
+				        const alpha = Math.max(10,(line[i].force+line[i].force)/2);
+				        const color = `rgba(255, 100, 100, ${alpha})`;
+				        drawLine(projectedPoints[i], projectedPoints[i + 1], color, 1);
+				    }
+			    }
+			});
+						
             // Transform and project meridians
             sphereData.meridians.forEach((meridian, mIndex) => {
                 const projectedPoints = [];
@@ -500,6 +559,7 @@
 		    ctx.fillStyle = '#00ff00';
 		    ctx.font = '12px monospace';
 		    ctx.fillText(`FPS: ${currentFps}`, 10, 20);
+
         }
         
         function hideControls() {
@@ -556,6 +616,30 @@
                 toggleAnimBtn.classList.remove('active');
             }
         }
+
+        function startFieldLineAnimation() {
+        	if (!drawingFieldLines) {
+        		drawingFieldLines = true;
+        		toggleFieldLinesBtn.textContent = 'Draw crazy field lines';
+        		toggleFieldLinesBtn.classList.add('active');
+        	}
+        }
+
+        function stopFieldLineAnimation() {
+        	if (drawingFieldLines) {
+        		drawingFieldLines = false;
+        		toggleFieldLinesBtn.textContent = 'Draw crazy field lines';
+        		toggleFieldLinesBtn.classList.remove('active');	
+        	}
+        }
+
+		function toggleFieldLinesAnimation() {
+			if (drawingFieldLines) {
+			    stopFieldLineAnimation();
+			} else {
+			    startFieldLineAnimation();
+			}
+		}
         
         function toggleAnimation() {
             if (animating) {
@@ -592,9 +676,10 @@
         // Animation control event listeners
         toggleAnimBtn.addEventListener('click', toggleAnimation);
         stepAnimBtn.addEventListener('click', stepOnce);
+        toggleFieldLinesBtn.addEventListener('click', toggleFieldLinesAnimation);
         // Double-click canvas to toggle animation (legacy support)
         canvas.addEventListener('dblclick', toggleAnimation);
-
+		
         // Initial render
         render();
 
