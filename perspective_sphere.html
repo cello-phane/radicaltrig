@@ -98,17 +98,17 @@
     <div class="controls">
         <div class="control-group">
             <label>Rotation X:</label>
-            <input type="range" id="rotX" min="0" max="360" value="23">
+            <input id="rotX" type="range" min="-360" max="360" value="0">
             <span class="value" id="rotXVal">23°</span>
         </div>
         <div class="control-group">
             <label>Rotation Y:</label>
-            <input type="range" id="rotY" min="0" max="360" value="0">
+            <input id="rotY" type="range" min="-360" max="360" value="0">
             <span class="value" id="rotYVal">0°</span>
         </div>        
         <div class="control-group">
             <label>Rotation Z:</label>
-            <input type="range" id="rotZ" min="0" max="360" value="0">
+            <input id="rotZ" type="range" min="-360" max="360" value="0">
             <span class="value" id="rotZVal">0°</span>
         </div>
         <div class="control-group">
@@ -249,15 +249,15 @@
         
         // Quadrant mapping for frequency domain trig
         function getRotationComponents(freq) {
-            const phase = freq % 4.0;
-            const quadrant = Math.floor(phase);
-            const t = phase - quadrant;
-            const s = rsin(t);
-            const c = rcos(t);
-            const q0 = Number(quadrant === 0);
-            const q1 = Number(quadrant === 1);
-            const q2 = Number(quadrant === 2);
-            const q3 = Number(quadrant === 3);
+		    const phase = ((freq % 4.0) + 4.0) % 4.0;  // Normalize to 0-4 range
+		    const quadrant = Math.floor(phase);
+		    const t = phase - quadrant;
+		    const s = rsin(t);
+		    const c = rcos(t);
+		    const q0 = Number(quadrant === 0);
+		    const q1 = Number(quadrant === 1);
+		    const q2 = Number(quadrant === 2);
+		    const q3 = Number(quadrant === 3);
             // Quadrant mapping
             /*let sin_result, cos_result;
             if (quadrant === 0) { sin_result = s; cos_result = c;
