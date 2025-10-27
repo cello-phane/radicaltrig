@@ -138,12 +138,12 @@
         </div>
         <div class="animation-controls">
 	        <label>Culling(back):</label>
-	        <input type="range" id="cullingf" min="0" max="100" value="22">
-	        <span class="value" id="cullingfVal">22</span>
+	        <input type="range" id="cullingf" min="0" max="100" value="100">
+	        <span class="value" id="cullingfVal">100</span>
 	        <div>
 	        <label>Culling(front):</label>
-	        <input type="range" id="cullingb" min="0" max="100" value="22">
-	        <span class="value" id="cullingbVal">22</span>
+	        <input type="range" id="cullingb" min="0" max="100" value="0">
+	        <span class="value" id="cullingbVal">9</span>
 	        </div>
 	        <div>
 			<label>Spark:</label>
@@ -153,12 +153,12 @@
 	        
             <div class="control-group">
                 <label>Frame Delay (ms):</label>
-                <input type="range" id="frameDelay" min="0" max="100" value="34">
-                <span class="value" id="frameDelayVal">34ms</span>
+                <input type="range" id="frameDelay" min="0" max="100" value="42">
+                <span class="value" id="frameDelayVal">42ms</span>
             </div>
             <button id="toggleAnim">Start Animation</button>
             <button id="stepAnim">Step Once</button>
-            <button id="toggleFieldLines" class="active">Center Spark</button>
+            <button id="toggleFieldLines">Spark</button>
         </div>
     </div>
     </div>
@@ -173,7 +173,7 @@
         let frameCount = 0;
         let lastTime = performance.now();
         let fps = 0;
-        let drawingFieldLines = true;
+        let drawingFieldLines = false;
         // Control elements
         const controls = {
             rotX: document.getElementById('rotX'),
@@ -646,15 +646,17 @@
         function startFieldLineAnimation() {
         	if (!drawingFieldLines) {
         		drawingFieldLines = true;
-        		toggleFieldLinesBtn.classList.add('active');
         	}
+        	toggleFieldLinesBtn.classList.add('active');
+        	toggleFieldLinesBtn.textContent = 'Spark';
         }
 
         function stopFieldLineAnimation() {
         	if (drawingFieldLines) {
         		drawingFieldLines = false;
-        		toggleFieldLinesBtn.classList.remove('active');	
         	}
+        	toggleFieldLinesBtn.classList.remove('active');	
+        	toggleFieldLinesBtn.textContent = 'No Spark';
         }
 
 		function toggleFieldLinesAnimation() {
