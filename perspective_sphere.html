@@ -145,6 +145,12 @@
 	        <input type="range" id="cullingb" min="0" max="100" value="22">
 	        <span class="value" id="cullingbVal">22</span>
 	        </div>
+	        <div>
+			<label>Spark:</label>
+            <input type="range" id="spark" min="0" max="300" value="10">
+            <span class="value" id="sparkVal">10</span>
+	        </div>
+	        
             <div class="control-group">
                 <label>Frame Delay (ms):</label>
                 <input type="range" id="frameDelay" min="0" max="100" value="34">
@@ -180,7 +186,8 @@
             radius: document.getElementById('radius'),
             cullingf: document.getElementById('cullingf'),
             cullingb: document.getElementById('cullingb'),            
-            frameDelay: document.getElementById('frameDelay')
+            frameDelay: document.getElementById('frameDelay'),
+            spark: document.getElementById('spark')
         };
         
         const values = {
@@ -194,7 +201,8 @@
             radiusVal: document.getElementById('radiusVal'),
 			cullingfVal: document.getElementById('cullingfVal'),
 	        cullingbVal: document.getElementById('cullingbVal'), 
-            frameDelayVal: document.getElementById('frameDelayVal')
+            frameDelayVal: document.getElementById('frameDelayVal'),
+            sparkVal: document.getElementById('sparkVal')
         };
         
         // Animation controls
@@ -479,12 +487,15 @@
             const parallelCount 	= parseInt(controls.parallels.value);
             const perspective 		= parseFloat(controls.perspective.value);
             const radius 			= parseInt(controls.radius.value);
+            const avgLinecount      = 0.5*(meridianCount+parallelCount);
 			const cullingfPercent 	= parseFloat(controls.cullingf.value);
-			const cullingbPercent 	= parseFloat(controls.cullingb.value);
+			const cullingbPercent 	= parseFloat(controls.cullingb.value);			
             const sphereData 		= generateSpherePoints(radius, meridianCount, parallelCount, semicircle);
             
-            const cullF             = perspective * 1/(cullingfPercent/10); //front face
-            const cullB             = -perspective * 1/(cullingbPercent/10);//back face
+            const cullF             = (1/(cullingfPercent))*avgLinecount*radius; //front face
+            const cullB             = -(1/(cullingbPercent))*avgLinecount*radius;//back face
+            const sparkEffect		= parseInt(controls.spark.value);
+
 		    fieldLines              = generateGravityField((animationFrame%2), ((animationFrame/2)%12), 10);
 			fieldLines.forEach(line => {
 			    const projectedPoints = [];
@@ -501,7 +512,7 @@
 				    // Draw the field line
 	                const brightness = (animationFrame/2)%12*Math.PI/2;
 					const color = `rgba(255, 255, 255, ${brightness})`;
-					drawBlurredLine(projectedPoints[0], projectedPoints[1], color, i*(0.01*radius), 100);
+					drawBlurredLine(projectedPoints[0], projectedPoints[1], color, i*(0.01*radius), sparkEffect);
 				}
 			    }
 			});
