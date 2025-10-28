@@ -211,34 +211,16 @@
         const toggleFieldLinesBtn = document.getElementById('toggleFieldLines');
         // Resized point for semicricle
         let semicirclePtSize = 0;
-
-        function fastInvSqrt(x) {
-            // Quake III fast inverse square root approximation
-            let i = new DataView(new ArrayBuffer(4));
-            i.setFloat32(0, x);
-            i = i.getInt32(0);
-            i = 0x5f3759df - (i >> 1);
-            
-            let y = new DataView(new ArrayBuffer(4));
-            y.setInt32(0, i);
-            y = y.getFloat32(0);
-            
-            // Newton-Raphson iterations for accuracy
-            y = y * (1.5 - 0.5 * x * y * y); // One more iteration if needed
-            return y;
-        }
         
         function rsin(x) {
             const a = 1.0 - 2.0 * x + 2.0 * x * x;
-            //const invSqrtA = 1.0 / Math.sqrt(a);
-            const invSqrtA = fastInvSqrt(a);
-            return x * invSqrtA;
+           	const invSqrtA = 1.0 / Math.sqrt(a);
+          	 return x * invSqrtA;
         }
 
         function rcos(x) {
             const a = 1.0 - 2.0 * x + 2.0 * x * x;
-            //const invSqrtA = 1.0 / Math.sqrt(a);
-            const invSqrtA = fastInvSqrt(a);
+            const invSqrtA = 1.0 / Math.sqrt(a);
             return (1.0 - x) * invSqrtA;
         }
 
