@@ -134,8 +134,8 @@ cos(θ) = ${rauCos.toFixed(16)}`;
     const rauSin = radicalSine(phase);
     const rauCos = radicalCosine(phase);
     const rauTan = radicalTan(phase);
-    const rauRad = crossmag_sign*degToRad(anglebetweenDeg);
-    const rauDeg = crossmag_sign*anglebetweenDeg;
+    const rauRad = degToRad(anglebetweenDeg);
+    const rauDeg = anglebetweenDeg;
     
     const formatNum = (num, width=8, decimals=2) => num.toFixed(decimals).padStart(width);
     
