@@ -88,6 +88,8 @@ pre#resultsContent { background:#f5f5f5; padding:10px; border-radius:6px; white-
   overflow:hidden;
   display:flex;
   flex-direction:column;
+  resize: both;
+  overflow: auto;
 }
 #formulaPanel.slim {
   width:64px;

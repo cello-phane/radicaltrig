@@ -143,7 +143,7 @@ Cross = ${formatNum(cross)}
 Dot   = ${formatNum(dot)}
 RAU Phase = ${phase.toFixed(16)}
 Radian    = ${rauRad.toFixed(16)} (${rauDeg.toFixed(1)}°)
-________________________________________________________
+_______________________________
 tan(θ) = ${rauTan === 0 ? 'undefined' : rauTan.toFixed(16)}
 sin(θ) = ${rauSin.toFixed(16)}
 cos(θ) = ${rauCos.toFixed(16)}`;
