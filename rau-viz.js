@@ -110,15 +110,14 @@ function updateResultsDisplay() {
   
   if (isSection1Active) {
     // Section 1: Only show RAU phase and trig values
-    const rads   = degToRad(anglebetweenDeg);
     const phase  = currentPhaseSection1;
-    const rauSin = radicalSine(rads);
-    const rauCos = radicalCosine(rads);
-    const rauTan = radicalTan(rads);
-    const rauDeg = anglebetweenDeg;
+    const rauSin = radicalSine(phase);
+    const rauCos = radicalCosine(phase);
+    const rauTan = radicalTan(phase);
+    const rauDeg = rauToDeg(phase);
     
-    resultsContent.textContent = `RAU Phase = ${phase.toFixed(16)}
-θ Radians = ${rads.toFixed(16)} (${anglebetweenDeg.toFixed(16)}°)
+    resultsContent.textContent = `RAU Phase = ${phase.toFixed(16)}  
+Radian    = ${rauRad.toFixed(16)} (${rauDeg.toFixed(1)}°)
 -----------
 tan(θ) = ${rauTan === 0 ? 'undefined' : rauTan.toFixed(16)}
 sin(θ) = ${rauSin.toFixed(16)}
