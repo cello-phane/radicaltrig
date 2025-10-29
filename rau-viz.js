@@ -115,7 +115,7 @@ function updateResultsDisplay() {
     const rauCos = radicalCosine(phase);
     const rauTan = radicalTan(phase);
     const rauDeg = rauToDeg(phase);
-    
+    const rauRad = degToRad(rauDeg);
     resultsContent.textContent = `RAU Phase = ${phase.toFixed(16)}  
 Radian    = ${rauRad.toFixed(16)} (${rauDeg.toFixed(1)}°)
 -----------
