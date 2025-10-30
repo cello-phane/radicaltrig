@@ -494,8 +494,8 @@ document.addEventListener('DOMContentLoaded', () => {
       ctx.arc(x, y, 7, 0, Math.PI*2);
       ctx.fill();
       ctx.restore();
-
-      valueDisplay.textContent = param.toFixed(2);
+	  // Introduction parameter for radical angle unit (t)
+      valueDisplay.textContent = param.toFixed(5);
       updateResultsDisplay();
       updateConversionDisplay();
     }

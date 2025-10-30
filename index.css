@@ -50,8 +50,8 @@ canvas {
 #vectorCanvas { border:2px solid #333; border-radius:8px; background:white; display:block; width: 60%; height: 40%;}
 #simpleCanvas { border:2px solid #333; border-radius:8px; background:white; display:block; width: 60%; height: 40%;}
 .desc { background:#e8f4f8; border-left:4px solid var(--accent); border-radius:2px; }
-.controls { margin-top:12px; text-align:center; }
-input[type=range] { width:320px; margin-top:8px; }
+.controls { margin-top:12px; }
+.controls #paramSlider { width:50%; margin-top:8px; }
 
 .vector-grid {
   display:block;
@@ -69,9 +69,11 @@ input[type=range] { width:320px; margin-top:8px; }
 }
 .control-group { display:flex; align-items:center; gap:8px; margin:8px 0; }
 .control-group label { min-width:110px; font-weight:600; }
-.control-group input[type=range] { flex:1; }
-.value { width:56px; text-align:right; font-family:monospace; }
 
+.value { width:56px; text-align:right; font-family:monospace; }
+.vector-grid .panel .control-group input {
+	width: 70%;
+}
 pre#resultsContent { background:#f5f5f5; padding:10px; border-radius:6px; white-space:pre-wrap; font-family:monospace; font-size:13px; }
 
 #formulaPanel {
@@ -110,11 +112,9 @@ pre#resultsContent { background:#f5f5f5; padding:10px; border-radius:6px; white-
 #formulaPanel.slim #formulaBody { display:none; }
 #formulaPanel.slim #formulaHeader { justify-content:left; }
 
-@media (max-width:900px) {
+
   #formulaPanel { right:5px; top:32px; width:30%; }
-  #formulaPanel.slim { width:2%; }
-  .panel { width:30%; }
-}
+  #formulaPanel.slim { width:10%; }
 
 .conversion-panel {
   display: none;
