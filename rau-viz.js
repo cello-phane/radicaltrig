@@ -15,6 +15,9 @@ let rauRad = 0;
 let ccw = false;
 let crossmag_sign = 1;
 
+// ===========================================
+// Vector Controls
+// ===========================================
 const controls = {
   uLength: document.getElementById('uLength'),
   uAngle: document.getElementById('uAngle'),
@@ -85,6 +88,8 @@ function rauDiff(a, b) {
 }
 // helper: mix(a,b,cond)
 const mix = (a, b, cond) => (cond ? b : a);
+
+// ---------------------------------
 
 function atanVec(u, v) {
   const cross = u.x * v.y - u.y * v.x;

@@ -152,12 +152,11 @@
 	        </div>
 	        
             <div class="control-group">
-                <label>Frame Delay (ms):</label>
-                <input type="range" id="frameDelay" min="0" max="100" value="42">
-                <span class="value" id="frameDelayVal">42ms</span>
+              <label>Rotation Speed:</label>
+              <input type="range" id="rotationSpeed" min="0" max="200" value="5">
+              <span class="value" id="rotationSpeedVal">5</span>
             </div>
             <button id="toggleAnim">Start Animation</button>
-            <button id="stepAnim">Step Once</button>
             <button id="toggleFieldLines">Spark</button>
         </div>
     </div>
@@ -174,6 +173,7 @@
         let lastTime = performance.now();
         let fps = 0;
         let drawingFieldLines = false;
+
         // Control elements
         const controls = {
             rotX: document.getElementById('rotX'),
@@ -186,7 +186,7 @@
             radius: document.getElementById('radius'),
             cullingf: document.getElementById('cullingf'),
             cullingb: document.getElementById('cullingb'),            
-            frameDelay: document.getElementById('frameDelay'),
+            rotationSpeed: document.getElementById('rotationSpeed'),
             spark: document.getElementById('spark')
         };
         
@@ -201,17 +201,30 @@
             radiusVal: document.getElementById('radiusVal'),
 			cullingfVal: document.getElementById('cullingfVal'),
 	        cullingbVal: document.getElementById('cullingbVal'), 
-            frameDelayVal: document.getElementById('frameDelayVal'),
+            rotationSpeedVal: document.getElementById('rotationSpeedVal'),
             sparkVal: document.getElementById('sparkVal')
         };
-        
+        let rotXAngle 		= parseFloat(controls.rotX.value); // degrees
+        let rotYAngle 		= parseFloat(controls.rotY.value); // degrees
+        let rotZAngle 		= parseFloat(controls.rotZ.value); // degrees
+
+		// ===========================================
+		// Smooth interpolation between frames
+		// ===========================================
+		let animStartTime = 0;
+		const animDuration = 2000; // 2 seconds
+		let animatingRotation = false;
+		let startRot = { x: 0, y: 0, z: 0 };
+		let targetRot = { x: 0, y: 0, z: 0 };
+
         // Animation controls
         const toggleAnimBtn = document.getElementById('toggleAnim');
-        const stepAnimBtn = document.getElementById('stepAnim');
         const toggleFieldLinesBtn = document.getElementById('toggleFieldLines');
+        
         // Resized point for semicricle
         let semicirclePtSize = 0;
-        
+
+        // Trig functions
         function rsin(x) {
             const a = 1.0 - 2.0 * x + 2.0 * x * x;
            	const invSqrtA = 1.0 / Math.sqrt(a);
@@ -460,10 +473,6 @@
         // Main render function using RAU radical angle system
         function render() {
        		ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            const rotXAngle 		= parseFloat(controls.rotX.value); // degrees
-            const rotYAngle 		= parseFloat(controls.rotY.value); // degrees
-            const rotZAngle 		= parseFloat(controls.rotZ.value); // degrees
             const semicircle    	= parseFloat(controls.semicircle.value) / 100; // 0.01..1.0
             const meridianCount 	= parseInt(controls.meridians.value);
             const parallelCount 	= parseInt(controls.parallels.value);
@@ -478,7 +487,7 @@
             const cullB             = -(1/(cullingbPercent))*avgLinecount*radius;//back face
             const sparkEffect		= parseInt(controls.spark.value);
 
-		    fieldLines              = generateGravityField((animationFrame%2), ((animationFrame/2)%12), 10);
+		    fieldLines              = generateGravityField((frameCount%2), ((frameCount/2)%12), 10);
 			fieldLines.forEach(line => {
 			    const projectedPoints = [];
 			    const transformedPoints = [];
@@ -492,7 +501,7 @@
 			    if (drawingFieldLines) {
 			    for (let i = 0; i < parallelCount; i++) {
 				    // Draw the field line
-	                const brightness = (animationFrame/2)%12*Math.PI/2;
+	                const brightness = (animateRotation/2)%12*Math.PI/2;
 					const color = `rgba(255, 255, 255, ${brightness})`;
 					drawBlurredLine(projectedPoints[0], projectedPoints[1], color, i*(0.01*radius), sparkEffect);
 				}
@@ -578,53 +587,76 @@
 	            contentElement.style.display = "none"; // Hide the element
 	        }
    		 }
-        // Animation system with controlled timing
-        let animating = false;
-        let lastFrameTime = 0;
-        let animationFrame = null;
-          
-        function step(currentTime) {
-            const frameDelay = parseFloat(controls.frameDelay.value);
-            
-            // Only proceed if enough time has passed
-            if (currentTime - lastFrameTime >= frameDelay) {
-                // Update rotation
-                controls.rotZ.value = (parseFloat(controls.rotZ.value) + 1) % 360;
-                values.rotZVal.textContent = controls.rotZ.value + '°';
-                render();
-                
-                // Update last frame time
-                lastFrameTime = currentTime;
-            }
-            
-            // Continue animation if still animating
-            if (animating) {
-                animationFrame = requestAnimationFrame(step);
-            }
-        }
         
-        function startAnimation() {
-            if (!animating) {
-                animating = true;
-                lastFrameTime = 0; // Reset timing
-                animationFrame = requestAnimationFrame(step);
-                toggleAnimBtn.textContent = 'Stop Animation';
-                toggleAnimBtn.classList.add('active');
-            }
-        }
-        
-        function stopAnimation() {
-            if (animating) {
-                animating = false;
-                if (animationFrame) {
-                    cancelAnimationFrame(animationFrame);
-                    animationFrame = null;
-                }
-                toggleAnimBtn.textContent = 'Start Animation';
-                toggleAnimBtn.classList.remove('active');
-            }
-        }
+		// =======================================
+		// Smooth rotation animation controls
+		// =======================================
 
+		function smoothstep(t) {
+		  return t * t * (3 - 2 * t);
+		}
+        function stepOnce() {
+            // Single step animation
+            controls.rotZ.value = (parseFloat(controls.rotZ.value) + 1) % 360;
+            values.rotZVal.textContent = controls.rotZ.value + '°';
+            render();
+        }
+		function startRotationAnimation(newRotX, newRotY, newRotZ) {
+		  startRot = { x: rotXAngle, y: rotYAngle, z: rotZAngle };
+		  targetRot = { x: newRotX, y: newRotY, z: newRotZ };
+		  animStartTime = performance.now();
+		  animatingRotation = true;
+		  toggleAnimBtn.textContent = 'Stop Animation';
+		  toggleAnimBtn.classList.add('active');
+		  requestAnimationFrame(animateRotation);
+		}
+
+		function stopRotationAnimation() {
+		  animatingRotation = false;
+		  toggleAnimBtn.textContent = 'Start Animation';
+		  toggleAnimBtn.classList.remove('active');
+		}
+		function animateRotation(timestamp) {
+		  const elapsed = timestamp - animStartTime;
+		  const loop = true; // continuous smooth looping (set false for one-time)
+		  const duration = animDuration;
+
+		  let t = (elapsed % duration) / duration;
+		  const s = smoothstep(t);
+
+		  const speed = parseFloat(controls.rotationSpeed.value) / 100; // normalize 0..2
+		  const tSec = elapsed * 0.001 * speed; // apply speed factor
+
+		  //rotXAngle = Math.sin(tSec) * 30;
+		  //rotYAngle = Math.cos(tSec * 1.2) * 30;
+		  rotZAngle = (startRot.z + tSec * 180) % 360;
+		  
+		  // Update sliders and display values
+		  controls.rotX.value = rotXAngle;
+		  controls.rotY.value = rotYAngle;
+		  controls.rotZ.value = rotZAngle;
+
+		  values.rotXVal.textContent = rotXAngle.toFixed(1) + '°';
+		  values.rotYVal.textContent = rotYAngle.toFixed(1) + '°';
+		  values.rotZVal.textContent = rotZAngle.toFixed(1) + '°';
+		  render();
+		  if (animatingRotation && (loop || t < 1)) {
+		    requestAnimationFrame(animateRotation);
+		  } else {
+		    animatingRotation = false;
+		    stopRotationAnimation();
+		  }
+		}
+
+		function toggleAnimation() {
+		  if (!animatingRotation) {
+		    // Start smooth looping rotation
+		    startRotationAnimation(rotXAngle, rotYAngle, rotZAngle + 360);
+		  } else {
+		    stopRotationAnimation();
+		  }
+		}
+   		
         function startFieldLineAnimation() {
         	if (!drawingFieldLines) {
         		drawingFieldLines = true;
@@ -648,42 +680,32 @@
 			    startFieldLineAnimation();
 			}
 		}
-        
-        function toggleAnimation() {
-            if (animating) {
-                stopAnimation();
-            } else {
-                startAnimation();
-            }
-        }
-        
-        function stepOnce() {
-            // Single step animation
-            controls.rotZ.value = (parseFloat(controls.rotZ.value) + 1) % 360;
-            values.rotZVal.textContent = controls.rotZ.value + '°';
-            render();
-        }
 
-        // Event listeners for controls
-        Object.keys(controls).forEach(key => {
-            controls[key].addEventListener('input', (e) => {
-                const value = e.target.value;
-                if (key === 'semicircleParam') {
-                    values[key + 'Val'].textContent = (value / 100).toFixed(2);
-                } else if (key === 'rotX' || key === 'rotY' || key === 'rotZ') {
-                    values[key + 'Val'].textContent = value + '°';
-                } else if (key === 'frameDelay') {
-                    values[key + 'Val'].textContent = value + 'ms';
-                } else {
-                    values[key + 'Val'].textContent = value;
-                }
-                render();
-            });
-        });
+		Object.keys(controls).forEach(key => {
+		  controls[key].addEventListener('input', (e) => {
+		    //if (animatingRotation) return; // Ignore manual input during animation
+		    const value = parseFloat(e.target.value);
 
+		    if (key === 'rotX') rotXAngle = value;
+		    if (key === 'rotY') rotYAngle = value;
+		    if (key === 'rotZ') rotZAngle = value;
+
+		    if (key === 'semicircleParam') {
+		      values[key + 'Val'].textContent = (value / 100).toFixed(2);
+		    } else if (key === 'rotX' || key === 'rotY' || key === 'rotZ') {
+		      values[key + 'Val'].textContent = value + '°';
+		    } else if (key === 'rotationSpeed') {
+			  values[key + 'Val'].textContent = value;
+		    } else {
+		      values[key + 'Val'].textContent = value;
+		    }
+
+		    render();
+		    
+		  });
+		});
         // Animation control event listeners
         toggleAnimBtn.addEventListener('click', toggleAnimation);
-        stepAnimBtn.addEventListener('click', stepOnce);
         toggleFieldLinesBtn.addEventListener('click', toggleFieldLinesAnimation);
         // Double-click canvas to toggle animation (legacy support)
         canvas.addEventListener('dblclick', toggleAnimation);
