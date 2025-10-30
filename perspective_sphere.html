@@ -487,7 +487,7 @@
             const cullB             = -(1/(cullingbPercent))*avgLinecount*radius;//back face
             const sparkEffect		= parseInt(controls.spark.value);
 
-		    fieldLines              = generateGravityField((frameCount%2), ((frameCount/2)%12), 10);
+		    fieldLines              = generateGravityField((frameCount%2), ((frameCount/2)%24), 10);
 			fieldLines.forEach(line => {
 			    const projectedPoints = [];
 			    const transformedPoints = [];
@@ -498,12 +498,13 @@
 			        const projected = project3D(transformed, perspective);
 			        projectedPoints.push(projected);
 			    });
+		    	let midIdx = Math.floor(projectedPoints.length / 2);
 			    if (drawingFieldLines) {
-			    for (let i = 0; i < parallelCount; i++) {
+			    for (let i = 0; i < parallelCount && i != midIdx; i++) {
 				    // Draw the field line
 	                const brightness = (animateRotation/2)%12*Math.PI/2;
 					const color = `rgba(255, 255, 255, ${brightness})`;
-					drawBlurredLine(projectedPoints[0], projectedPoints[1], color, i*(0.01*radius), sparkEffect);
+					drawBlurredLine(projectedPoints[0], projectedPoints[1], color, i*(0.75*sparkEffect), 10);
 				}
 			    }
 			});
