@@ -3,8 +3,8 @@
 0.0 to 1.0 ~~ 0.0 to π/2 radians  
 (Non-periodic, closed form solution)  
 
-[John Gabriel on the topic of the right angle measure](https://youtu.be/xUdFMTpfGHg)
-[Trigonometric ratios and formulas using right angles](https://youtu.be/2Cn4jHSZXKA)  
+[John Gabriel on the topic of the right angle measure](https://youtu.be/xUdFMTpfGHg)  
+[Trigonometric ratios and formulas using right angles](https://youtu.be/TJr4YfEgVuk)  
 ## Radical Angle Unit (RAU)
 [Rotating axes](https://www.desmos.com/calculator/4cefade964)
 After a 90 degree sweep, every point(all 4) has covered the circle, which is why we can achieve periodicity of 0 to 2π.
@@ -61,5 +61,5 @@ https://www.shadertoy.com/view/WXVXDR (3D demo that uses radical trig)
 https://www.shadertoy.com/view/wcXyzB (3D demo that uses traditional sin/cos)  
 https://cello-phane.github.io/radicaltrig/perspective_sphere.html (3D rotation of a sphere on Javascript 2D canvas)
 Graphing:  
-https://www.geogebra.org/classic/tepm6wcn - Geogebra applet (sin/cos comparison)  
-https://www.desmos.com/calculator/qku0curcwb (reference for a "uniform motion" parameter using a conversion)  
+[Trig Ratios in geogebra](https://www.geogebra.org/calculator/kvnpt4f3)
+[Uniform Motion conversion parameter](https://www.desmos.com/calculator/qku0curcwb)
