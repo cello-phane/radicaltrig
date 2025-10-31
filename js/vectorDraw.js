@@ -194,6 +194,19 @@ function initVectorCanvas() {
     updateResultsDisplay();
   }
 
-  Object.values(controls).forEach(c => c.addEventListener('input', render));
+  Object.entries(controls).forEach(([key, control]) => {
+    control.addEventListener('input', e => {
+      const value = e.target.value;
+  
+      // Update the text next to the slider
+      const valLabel = document.getElementById(key + 'Val');
+      if (valLabel) {
+        if (key === 'uAngle' || key === 'vAngle') valLabel.textContent = value + '°';
+        else valLabel.textContent = value;
+      }
+  
+      render();
+    });
+  });
   render();
 }
