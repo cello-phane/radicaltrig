@@ -48,9 +48,9 @@
         <h2>Introduction to RAU</h2>
         <div class="desc"><strong>Quadrant-aware modular arithmetic</strong> - RAU maps a linear parameter (0–4) to a circle using integer and fractional parts.</div>
         <canvas id="vectorCanvas" width="600" height="400"></canvas>
-        <div class="controls">
-          <label><strong>RAU Phase:</strong> <span id="paramValue">0.00</span></label><br>
-          <input type="range" id="paramSlider" min="0" max="4" step="0.0001" value="0"/>
+        <div style="padding-left: 20%;" class="controls">
+          <span id="paramValue">0.00</span>
+          <input aria-label="Phase(Angle)" type="range" id="paramSlider" min="0" max="4" step="0.0025" value="0"/>
         </div>
       </div>
     </section>
@@ -60,7 +60,7 @@
         <h2>Vector + Radical Angle Unit</h2>
         <canvas id="simpleCanvas" width="600" height="400"></canvas>
         <div class="panel">
-          <div class="control-group">
+          <div>
             <label for="angleMode">Display Mode:</label>
             <select id="angleMode">
               <option value="between">Angle Between Vectors</option>

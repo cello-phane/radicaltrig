@@ -102,7 +102,7 @@ function initRAUCanvas() {
     const r = Math.min(w, h) * 0.34;
 
     const param = parseFloat(slider.value);
-    currentPhaseSection1 = param;
+    introPhase = param;
     const info = getRotationComponents(param);
     const x = cx + info.cos * r;
     const y = cy - info.sin * r;

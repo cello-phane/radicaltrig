@@ -60,7 +60,7 @@ function initRAUCanvas() {
 
     const r = Math.min(w, h) * 0.34;
     const param = parseFloat(slider.value);
-    currentPhaseSection1 = param;
+    introPhase = param;
 
     const info = getRotationComponents(param);
     const x = cx + info.cos * r;
@@ -94,11 +94,11 @@ function initRAUCanvas() {
   draw();
 }
 
- function updateValueDisplay(id, value, isAngle = false) {
-   const el = document.getElementById(id);
-   if (!el) return;
-   el.textContent = isAngle ? `${value}°` : value;
- }
+function updateValueDisplay(id, value, suffix='') {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.textContent = `${value}${suffix}`;
+}
 
 function initVectorCanvas() {
   const canvas = document.getElementById('simpleCanvas');
@@ -131,13 +131,13 @@ function initVectorCanvas() {
     if (dragging === 'u') {
       controls.uLength.value = len;
       controls.uAngle.value = (ang + 360) % 360;
-      updateValueDisplay('uLengthVal', len.toFixed(0), false);
-      updateValueDisplay('uAngleVal', ((ang + 360) % 360).toFixed(0), true);
+      updateValueDisplay('uLengthVal', len.toFixed(0));
+      updateValueDisplay('uAngleVal', ((ang + 360) % 360).toFixed(0), '°');
     } else if (dragging === 'v') {
       controls.vLength.value = len;
       controls.vAngle.value = (ang + 360) % 360;
-      updateValueDisplay('vLengthVal', len.toFixed(0), false);
-      updateValueDisplay('vAngleVal', ((ang + 360) % 360).toFixed(0), true);
+      updateValueDisplay('vLengthVal', len.toFixed(0));
+      updateValueDisplay('vAngleVal', ((ang + 360) % 360).toFixed(0), '°');
     }
 
     render();
@@ -200,7 +200,7 @@ function initVectorCanvas() {
     const signed = vAngle - uAngle;
     ccw = signed > 0;
     anglebetweenDeg = Math.abs(signed);
-    currentPhaseSection2 = (anglebetweenDeg / 360) * 4;
+    vectorPhase = (anglebetweenDeg / 360) * 4;
 
     updateResultsDisplay();
  }
@@ -209,7 +209,7 @@ Object.entries(controls).forEach(([key, control]) => {
     control.addEventListener('input', e => {
       const val = e.target.value;
       if (key === 'uAngle' || key === 'vAngle')
-        updateValueDisplay(key + 'Val', val, true);
+        updateValueDisplay(key + 'Val', val, '°');
       else
         updateValueDisplay(key + 'Val', val);
       render();

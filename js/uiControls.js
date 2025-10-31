@@ -40,7 +40,7 @@ function updateResultsDisplay() {
   const isS1 = s1.classList.contains('active');
 
   if (isS1) {
-    const p = currentPhaseSection1;
+    const p = introPhase;
     const rs = radicalSine(p);
     const rc2 = radicalCosine(p);
     const rt = radicalTan(p);
@@ -64,7 +64,7 @@ cos(θ) = ${rc2.toFixed(15)}`;
     const fmt = (n, w = 8, d = 2) => n.toFixed(d).padStart(w);
 
     if (mode === 'between') {
-      const p = currentPhaseSection2;
+      const p = vectorPhase;
       const rs = radicalSine(p);
       const rc2 = radicalCosine(p);
       const rt = radicalTan(p);

@@ -17,16 +17,6 @@ body {
   color: var(--text);
 }
 
-.card {
-  background: var(--card);
-  box-shadow: 0 6px 18px rgba(0,0,0,0.4);
-  border: 1px solid var(--border);
-}
-
-header {
-  background: var(--border);
-}
-
 html, body {
   height: 100%;
   margin: 0;
@@ -34,7 +24,7 @@ html, body {
 }
 
 header {
-  background: #333;
+  background: var(--border);
   color: var(--accent);
   padding: 10px 16px;
   display: flex;
@@ -77,7 +67,7 @@ section.active {
 canvas {
   border: 2px solid #333;
   border-radius: 8px;
-  background: var(--bg);
+  background: var(--card);
   display: block;
   width: 100%;
   max-width: 600px;
@@ -96,33 +86,30 @@ canvas {
 }
 
 .controls input[type=range] {
-  width: 50%;
+  width: 68%;
   margin-top: 8px;
 }
 
 .panel {
   background: var(--bg);
-  padding: 10px;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-  margin-top: 10px;
-  max-width: 500px;
 }
 
 .control-group {
   display: flex;
-  align-items: center;
-  gap: 8px;
+  align-items: left;
+  gap: 1px;
   margin: 8px 0;
 }
 
 .control-group label {
   min-width: 110px;
-  font-weight: 600;
+  font-weight: 500;
 }
 
 .control-group input[type=range] {
-  flex: 1;
+  width: 68%;
 }
 
 .control-group select {
@@ -162,7 +149,11 @@ pre#resultsContent {
 }
 
 #formulaPanel.slim {
-  width: 64px;
+  width: 10%;
+}
+
+#formulaPanel.slim #formulaBody {
+  display: none;
 }
 
 #formulaHeader {
@@ -182,26 +173,12 @@ pre#resultsContent {
 }
 
 #formulaHeader .chev {
-  font-size: 16px;
+  font-size: 14px;
 }
 
 #formulaBody {
   padding: 8px;
-  font-size: 13px;
-}
-
-#formulaPanel.slim #formulaBody {
-  display: none;
-}
-
-#conversionPanel {
-  display: none;
-  margin-top: 10px;
-}
-
-#conversionCanvas {
-  width: 100%;
-  height: auto;
+  font-size: 12px;
 }
 
 #mathBlock {
