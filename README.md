@@ -59,7 +59,7 @@ sin = (s·q0 + c·q1 - s·q2 - c·q3) × Math.sign(parameter)
 ### 2D/3D applications:  
 [2D demo that uses both kinds of trig (blue and pink)](https://www.shadertoy.com/view/M3cfRN)  
 [3D demo that uses radical trig](https://www.shadertoy.com/view/WXVXDR)  
-[3D demo that uses traditional sin/cos)](https://www.shadertoy.com/view/wcXyzB)    
+[3D demo that uses traditional sin/cos](https://www.shadertoy.com/view/wcXyzB)    
 [3D rotation of a sphere on Javascript 2D canvas](https://cello-phane.github.io/radicaltrig/perspective_sphere.html)  
 Graphing:  
 [Trig Ratios in geogebra](https://www.geogebra.org/calculator/kvnpt4f3)
