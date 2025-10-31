@@ -1,20 +1,7 @@
-import { radicalSine, radicalCosine, radicalTan, degToRad, rauToDeg } from './rau.js';
-import { updateResultsDisplay, updateConversionDisplay } from './uiControls.js';
-
-// Shared state
-export let currentPhaseSection1 = 0;
-export let currentPhaseSection2 = 0;
-export let currentU = { x: 120, y: 0 };
-export let currentV = { x: 100, y: 0 };
-export let anglebetweenDeg = 0;
-export let ccw = false;
-export let uAng = 0;
-export let vAng = 0;
-
 // ===========================
 // RAU Unit Circle visualization
 // ===========================
-export function initRAUCanvas() {
+function initRAUCanvas() {
   const canvas = document.getElementById('vectorCanvas');
   const ctx = canvas.getContext('2d');
   const slider = document.getElementById('paramSlider');
@@ -99,76 +86,112 @@ export function initRAUCanvas() {
     ctx.arc(x, y, 7, 0, Math.PI * 2);
     ctx.fill();
 
-    valueDisplay.textContent = param.toFixed(5);
+    valueDisplay.textContent = param.toFixed(4);
     updateResultsDisplay();
-    updateConversionDisplay();
   }
 
   slider.addEventListener('input', draw);
   draw();
 }
 
-// ===========================
-// Vector diagram (u, v)
-// ===========================
-export function initVectorCanvas() {
+function initVectorCanvas() {
   const canvas = document.getElementById('simpleCanvas');
   const ctx = canvas.getContext('2d');
-  const controls = {
-    uLength: document.getElementById('uLength'),
-    uAngle: document.getElementById('uAngle'),
-    vLength: document.getElementById('vLength'),
-    vAngle: document.getElementById('vAngle'),
-    angleMode: document.getElementById('angleMode')
-  };
+  let cx = canvas.width / 2;
+  let cy = canvas.height / 2;
 
-  function drawArrow(fromX, fromY, toX, toY, color, width = 2) {
-    const dx = toX - fromX;
-    const dy = toY - fromY;
-    const angle = Math.atan2(dy, dx);
-    ctx.strokeStyle = color;
-    ctx.lineWidth = width;
-    ctx.beginPath();
-    ctx.moveTo(fromX, fromY);
-    ctx.lineTo(toX, toY);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.moveTo(toX, toY);
-    ctx.lineTo(toX - 12 * Math.cos(angle - Math.PI / 6), toY - 12 * Math.sin(angle - Math.PI / 6));
-    ctx.moveTo(toX, toY);
-    ctx.lineTo(toX - 12 * Math.cos(angle + Math.PI / 6), toY - 12 * Math.sin(angle + Math.PI / 6));
-    ctx.stroke();
-  }
+  let dragging = null; // 'u' or 'v'
+
+  canvas.addEventListener('mousedown', e => {
+    const rect = canvas.getBoundingClientRect();
+    const mx = e.clientX - rect.left;
+    const my = e.clientY - rect.top;
+    const uEnd = { x: cx + currentU.x, y: cy + currentU.y };
+    const vEnd = { x: cx + currentV.x, y: cy + currentV.y };
+
+    const distU = Math.hypot(mx - uEnd.x, my - uEnd.y);
+    const distV = Math.hypot(mx - vEnd.x, my - vEnd.y);
+    if (distU < 12) dragging = 'u';
+    else if (distV < 12) dragging = 'v';
+  });
+
+  canvas.addEventListener('mousemove', e => {
+    if (!dragging) return;
+    const rect = canvas.getBoundingClientRect();
+    const mx = e.clientX - rect.left - cx;
+    const my = e.clientY - rect.top - cy;
+    const len = Math.sqrt(mx * mx + my * my);
+    const ang = Math.atan2(-my, mx) * 180 / Math.PI;
+    if (dragging === 'u') {
+      controls.uLength.value = len;
+      controls.uAngle.value = (ang + 360) % 360;
+    } else if (dragging === 'v') {
+      controls.vLength.value = len;
+      controls.vAngle.value = (ang + 360) % 360;
+    }
+    render();
+  });
+
+  document.addEventListener('mouseup', () => dragging = null);
 
   function render() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    const cx = canvas.width / 2;
-    const cy = canvas.height / 2;
     const mode = controls.angleMode.value;
-
-    const uLen = parseInt(controls.uLength.value);
-    const uAngleDeg = parseInt(controls.uAngle.value);
-    const vLen = parseInt(controls.vLength.value);
-    const vAngleDeg = parseInt(controls.vAngle.value);
-
-    const uA = degToRad(uAngleDeg);
-    const vA = degToRad(vAngleDeg);
-
+    const uLen = parseFloat(controls.uLength.value);
+    const vLen = parseFloat(controls.vLength.value);
+    const uAngle = parseFloat(controls.uAngle.value);
+    const vAngle = parseFloat(controls.vAngle.value);
+    uAng = uAngle;
+    vAng = vAngle;
+    const uA = degToRad(uAngle);
+    const vA = degToRad(vAngle);
     const u = { x: uLen * Math.cos(uA), y: -uLen * Math.sin(uA) };
     const v = { x: vLen * Math.cos(vA), y: -vLen * Math.sin(vA) };
-    currentU = u; currentV = v;
-    uAng = uAngleDeg; vAng = vAngleDeg;
+    currentU = u;
+    currentV = v;
 
-    drawArrow(cx, cy, cx + u.x, cy + u.y, '#ff4444', 3);
-    drawArrow(cx, cy, cx + v.x, cy + v.y, '#4444ff', 3);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.strokeStyle = '#ddd';
+    ctx.lineWidth = 1;
+    for (let i = -10; i <= 10; i++) {
+      ctx.beginPath();
+      ctx.moveTo(cx + i * 50, 0);
+      ctx.lineTo(cx + i * 50, canvas.height);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(0, cy + i * 50);
+      ctx.lineTo(canvas.width, cy + i * 50);
+      ctx.stroke();
+    }
 
-    const diff = vAngleDeg - uAngleDeg;
-    ccw = diff > 0;
-    anglebetweenDeg = Math.abs(diff);
+    // draw u and v vectors
+    ctx.strokeStyle = '#ff4444';
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.lineTo(cx + u.x, cy + u.y);
+    ctx.stroke();
+
+    ctx.strokeStyle = '#4444ff';
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.lineTo(cx + v.x, cy + v.y);
+    ctx.stroke();
+
+    ctx.fillStyle = '#ff4444';
+    ctx.beginPath();
+    ctx.arc(cx + u.x, cy + u.y, 6, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = '#4444ff';
+    ctx.beginPath();
+    ctx.arc(cx + v.x, cy + v.y, 6, 0, Math.PI * 2);
+    ctx.fill();
+
+    const signed = vAngle - uAngle;
+    ccw = signed > 0;
+    anglebetweenDeg = Math.abs(signed);
     currentPhaseSection2 = (anglebetweenDeg / 360) * 4;
 
     updateResultsDisplay();
-    updateConversionDisplay();
   }
 
   Object.values(controls).forEach(c => c.addEventListener('input', render));

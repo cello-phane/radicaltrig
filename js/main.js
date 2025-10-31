@@ -1,5 +1,12 @@
-import { initUI } from './uiControls.js';
-import { initRAUCanvas, initVectorCanvas } from './vectorDraw.js';
+// Shared global variables
+let currentPhaseSection1 = 0;
+let currentPhaseSection2 = 0;
+let currentU = { x: 120, y: 0 };
+let currentV = { x: 100, y: 0 };
+let anglebetweenDeg = 0;
+let uAng = 0;
+let vAng = 0;
+let ccw = false;
 
 document.addEventListener('DOMContentLoaded', () => {
   initUI();
@@ -17,3 +24,24 @@ document.addEventListener('DOMContentLoaded', () => {
     toggleBtn.textContent = showing1 ? 'Switch to Introduction' : 'Switch to Vector Diagram';
   });
 });
+
+function toggleMathBlock() {
+    const mb = document.getElementById('mathBlock');
+    if (mb.classList.contains('collapsed')) {
+        mb.classList.remove('collapsed');
+        mb.style.maxHeight = mb.scrollHeight + 'px';
+    } else {
+        mb.style.maxHeight = '0';
+        mb.classList.add('collapsed');
+    }
+}
+
+function changeFontSize(changeAmount, id) {
+    let el = document.getElementById(id);
+    if (el) {
+        let size = parseInt(el.style.fontSize) || 13;
+        size += changeAmount;
+        if (size < 8) size = 8;
+        el.style.fontSize = size + 'px';
+    }
+}
