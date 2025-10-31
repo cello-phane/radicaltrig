@@ -94,6 +94,12 @@ function initRAUCanvas() {
   draw();
 }
 
+ function updateValueDisplay(id, value, isAngle = false) {
+   const el = document.getElementById(id);
+   if (!el) return;
+   el.textContent = isAngle ? `${value}°` : value;
+ }
+
 function initVectorCanvas() {
   const canvas = document.getElementById('simpleCanvas');
   const ctx = canvas.getContext('2d');
@@ -125,10 +131,15 @@ function initVectorCanvas() {
     if (dragging === 'u') {
       controls.uLength.value = len;
       controls.uAngle.value = (ang + 360) % 360;
+      updateValueDisplay('uLengthVal', len.toFixed(0), false);
+      updateValueDisplay('uAngleVal', ((ang + 360) % 360).toFixed(0), true);
     } else if (dragging === 'v') {
       controls.vLength.value = len;
       controls.vAngle.value = (ang + 360) % 360;
+      updateValueDisplay('uLengthVal', len.toFixed(0), false);
+      updateValueDisplay('uAngleVal', ((ang + 360) % 360).toFixed(0), true);
     }
+
     render();
   });
 
@@ -192,19 +203,15 @@ function initVectorCanvas() {
     currentPhaseSection2 = (anglebetweenDeg / 360) * 4;
 
     updateResultsDisplay();
-  }
+ }
 
-  Object.entries(controls).forEach(([key, control]) => {
+Object.entries(controls).forEach(([key, control]) => {
     control.addEventListener('input', e => {
-      const value = e.target.value;
-  
-      // Update the text next to the slider
-      const valLabel = document.getElementById(key + 'Val');
-      if (valLabel) {
-        if (key === 'uAngle' || key === 'vAngle') valLabel.textContent = value + '°';
-        else valLabel.textContent = value;
-      }
-  
+      const val = e.target.value;
+      if (key === 'uAngle' || key === 'vAngle')
+        updateValueDisplay(key + 'Val', val, true);
+      else
+        updateValueDisplay(key + 'Val', val);
       render();
     });
   });
