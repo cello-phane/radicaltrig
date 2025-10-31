@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>3D RAU Sphere (Interactive)</title>
+<style>
+  body {
+    margin: 0;
+    background: #0a0a0a;
+    color: white;
+    font-family: monospace;
+    overflow: hidden;
+  }
+  canvas {
+    display: block;
+    margin: 0 auto;
+    background: radial-gradient(circle at 40% 40%, #001122, #000511);
+    border: 1px solid #222;
+  }
+  .controls {
+    position: absolute;
+    top: 40px;
+    left: 20px;
+    background: rgba(0,0,0,0.8);
+    padding: 10px 15px;
+    border-radius: 8px;
+    border: 1px solid #333;
+  }
+  label {
+    display: inline-block;
+    width: 100px;
+    font-size: 12px;
+  }
+  input[type="range"] { width: 120px; }
+  .value { color: #00ff88; }
+  button {
+    background: #333; color: #fff;
+    border: 1px solid #666;
+    border-radius: 4px;
+    margin-top: 6px;
+    padding: 4px 8px;
+    cursor: pointer;
+  }
+  button.active { background: #006644; }
+</style>
+</head>
+<body>
+<div class="controls">
+  <div><label>Rot X:</label><input id="rotX" type="range" min="0" max="180" value="45"><span id="rotXVal" class="value">45°</span></div>
+  <div><label>Rot Y:</label><input id="rotY" type="range" min="0" max="360" value="60"><span id="rotYVal" class="value">60°</span></div>
+  <div><label>Rot Z:</label><input id="rotZ" type="range" min="0" max="360" value="0"><span id="rotZVal" class="value">0°</span></div>
+  <div><label>Radius:</label><input id="radius" type="range" min="50" max="300" value="200"><span id="radiusVal" class="value">200</span></div>
+  <div><label>Meridians:</label><input id="meridians" type="range" min="8" max="96" value="24"><span id="meridiansVal" class="value">24</span></div>
+  <div><label>Parallels:</label><input id="parallels" type="range" min="8" max="96" value="16"><span id="parallelsVal" class="value">16</span></div>
+  <div><label>Perspective:</label><input id="perspective" type="range" min="200" max="1000" value="600"><span id="perspectiveVal" class="value">600</span></div>
+  <div><button id="toggleAnim">Start Animation</button></div>
+</div>
+
+<canvas id="canvas" width="900" height="700"></canvas>
+
+<script>
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+const cx = canvas.width / 2, cy = canvas.height / 2;
+
+const controls = {
+  rotX: document.getElementById('rotX'),
+  rotY: document.getElementById('rotY'),
+  rotZ: document.getElementById('rotZ'),
+  radius: document.getElementById('radius'),
+  meridians: document.getElementById('meridians'),
+  parallels: document.getElementById('parallels'),
+  perspective: document.getElementById('perspective')
+};
+const values = {
+  rotXVal: document.getElementById('rotXVal'),
+  rotYVal: document.getElementById('rotYVal'),
+  rotZVal: document.getElementById('rotZVal'),
+  radiusVal: document.getElementById('radiusVal'),
+  meridiansVal: document.getElementById('meridiansVal'),
+  parallelsVal: document.getElementById('parallelsVal'),
+  perspectiveVal: document.getElementById('perspectiveVal')
+};
+const toggleAnimBtn = document.getElementById('toggleAnim');
+
+let animating = false;
+let rotXAngle = parseFloat(controls.rotX.value);
+let rotYAngle = parseFloat(controls.rotY.value);
+let rotZAngle = parseFloat(controls.rotZ.value);
+
+// ---------------- Math Helpers ----------------
+function fastInvSqrt(x) {
+  let i = new DataView(new ArrayBuffer(4));
+  i.setFloat32(0, x);
+  i = i.getInt32(0);
+  i = 0x5f3759df - (i >> 1);
+  let y = new DataView(new ArrayBuffer(4));
+  y.setInt32(0, i);
+  y = y.getFloat32(0);
+  y = y * (1.5 - 0.5 * x * y * y);
+  return y;
+}
+function rsin(t) {
+  const a = 1.0 - 2.0*t + 2.0*t*t;
+  return t * fastInvSqrt(a);
+}
+function rcos(t) {
+  const a = 1.0 - 2.0*t + 2.0*t*t;
+  return (1.0 - t) * fastInvSqrt(a);
+}
+function degreesToFreq(d) { return d / 90.0; }
+function getRotationComponents(freq) {
+  const phase = ((freq % 4) + 4) % 4;
+  const q = Math.floor(phase);
+  const t = phase - q;
+  const s = rsin(t), c = rcos(t);
+  const sin = [s, c, -s, -c][q];
+  const cos = [c, -s, -c, s][q];
+  return { sin, cos };
+}
+
+function rotateX(p, d) {
+  const { sin, cos } = getRotationComponents(degreesToFreq(d));
+  return { x:p.x, y:p.y*cos - p.z*sin, z:p.y*sin + p.z*cos };
+}
+function rotateY(p, d) {
+  const { sin, cos } = getRotationComponents(degreesToFreq(d));
+  return { x:p.x*cos + p.z*sin, y:p.y, z:-p.x*sin + p.z*cos };
+}
+function rotateZ(p, d) {
+  const { sin, cos } = getRotationComponents(degreesToFreq(d));
+  return { x:p.x*cos - p.y*sin, y:p.x*sin + p.y*cos, z:p.z };
+}
+function rotateXandY(p, rx, ry) {
+  const r1 = rotateX(p, rx);
+  return rotateY(r1, ry);
+}
+function project3D(p, perspective) {
+  const scale = perspective / (perspective + p.z);
+  return { x: cx + p.x * scale, y: cy + p.y * scale, scale };
+}
+
+// ---------------- Sphere Generator ----------------
+function generateSpherePoints(radius, meridians, parallels) {
+  const meridianLines = [], parallelLines = [];
+  for (let m=0;m<meridians;m++) {
+    const phiFreq = (m/meridians)*4.0;
+    const phiTrig = getRotationComponents(phiFreq);
+    const line=[];
+    for (let p=0;p<=parallels;p+=2.0) {
+      const thetaFreq=(p/parallels);
+      const thetaTrig=getRotationComponents(thetaFreq*2.0);
+      const x=radius*thetaTrig.sin*phiTrig.cos;
+      const y=radius*thetaTrig.cos;
+      const z=radius*thetaTrig.sin*phiTrig.sin;
+      line.push({x,y,z});
+    }
+    meridianLines.push(line);
+  }
+  for (let p=0;p<parallels;p++) {
+    const thetaFreq=(p/parallels)*2.0;
+    const thetaTrig=getRotationComponents(thetaFreq);
+    const line=[];
+    for (let m=0;m<=meridians;m++) {
+      const phiFreq=(m/meridians)*4.0;
+      const phiTrig=getRotationComponents(phiFreq);
+      const x=radius*thetaTrig.sin*phiTrig.cos;
+      const y=radius*thetaTrig.cos;
+      const z=radius*thetaTrig.sin*phiTrig.sin;
+      line.push({x,y,z});
+    }
+    parallelLines.push(line);
+  }
+  return { meridians:meridianLines, parallels:parallelLines };
+}
+
+// ---------------- Rendering ----------------
+function drawLine(a,b,color='#0f8',w=1){
+  ctx.strokeStyle=color; ctx.lineWidth=w;
+  ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke();
+}
+function render(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  const radius=parseInt(controls.radius.value);
+  const mer=parseInt(controls.meridians.value);
+  const par=parseInt(controls.parallels.value);
+  const perspective=parseFloat(controls.perspective.value);
+  const sphere=generateSpherePoints(radius,mer,par);
+
+  sphere.meridians.forEach(line=>{
+    const proj=line.map(p=>project3D(rotateZ(rotateXandY(p,rotXAngle,rotYAngle),rotZAngle),perspective));
+    for(let i=0;i<proj.length-1;i++){
+      const c=`rgba(0,255,136,${Math.max(0.3,proj[i].scale)})`;
+      drawLine(proj[i],proj[i+1],c);
+    }
+  });
+  sphere.parallels.forEach(line=>{
+    const proj=line.map(p=>project3D(rotateZ(rotateXandY(p,rotXAngle,rotYAngle),rotZAngle),perspective));
+    for(let i=0;i<proj.length-1;i++){
+      const c=`rgba(136,136,255,${Math.max(0.2,proj[i].scale*0.7)})`;
+      drawLine(proj[i],proj[i+1],c);
+    }
+  });
+}
+
+// ---------------- Mouse + Animation ----------------
+canvas.addEventListener('mousemove', e=>{
+  if(!animating){
+    const r=canvas.getBoundingClientRect();
+    const x=e.clientX-r.left, y=e.clientY-r.top;
+    rotYAngle=(x/r.width)*360;
+    rotXAngle=(y/r.height)*180;
+    rotXAngle=Math.max(0,Math.min(180,rotXAngle));
+    render();
+  }
+});
+
+let animFrame=null;
+function animate(){
+  if(!animating) return;
+  rotYAngle=(rotYAngle+1)%360;
+  render();
+  animFrame=requestAnimationFrame(animate);
+}
+toggleAnimBtn.addEventListener('click',()=>{
+  animating=!animating;
+  if(animating){
+    toggleAnimBtn.textContent='Stop Animation';
+    toggleAnimBtn.classList.add('active');
+    animate();
+  } else {
+    toggleAnimBtn.textContent='Start Animation';
+    toggleAnimBtn.classList.remove('active');
+    cancelAnimationFrame(animFrame);
+  }
+});
+
+// ---------------- Controls ----------------
+Object.keys(controls).forEach(k=>{
+  controls[k].addEventListener('input',()=>{
+    const v=controls[k].value;
+    values[k+'Val'].textContent=(k.includes('rot')?v+'°':v);
+    render();
+  });
+});
+
+// ---------------- Init ----------------
+render();
+</script>
+</body>
+</html>
