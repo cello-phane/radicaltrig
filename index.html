@@ -23,21 +23,20 @@
 
   <div id="formulaPanel">
     <div id="formulaHeader">
-      <div class="title">Information Sidebar</div>
+      <div class="title">Sidebar</div>
       <div class="chev" id="formulaChevron">◀</div>
     </div>
     <div id="formulaBody">
-      <button onclick="toggleMathBlock()">Show/Hide Formulas</button>
+    <button onclick="changeFontSize(1,'resultsContent')">+</button>
+    <button onclick="changeFontSize(-1,'resultsContent')">-</button>
+      <button onclick="toggleMathBlock()">Formulae</button>
       <div id="mathBlock" class="collapsed">
         <p style="margin:0 0 8px 0;font-weight:600">For parameter \(0.0 < t < 1.0\):</p>
         <div>\[\mathrm{rsin}(t)=\frac{t}{\sqrt{1-2t+2t^2}}\]</div>
         <div>\[\mathrm{rcos}(t)=\frac{1-t}{\sqrt{1-2t+2t^2}}\]</div>
         <div>\[\mathrm{rtan}(t)=\frac{t}{1-t}\]</div>
       </div>
-    
-      <strong>Vector Info</strong>
-      <button onclick="changeFontSize(2,'resultsContent')">+</button>
-      <button onclick="changeFontSize(-2,'resultsContent')">-</button>
+
       <pre id="resultsContent"></pre>
     </div>
   </div>

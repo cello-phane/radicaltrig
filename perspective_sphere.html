@@ -504,7 +504,7 @@
 				    // Draw the field line
 	                const brightness = (animateRotation/2)%12*Math.PI/2;
 					const color = `rgba(255, 255, 255, ${brightness})`;
-					drawBlurredLine(projectedPoints[0], projectedPoints[1], color, i*(0.75*sparkEffect), 10);
+					drawBlurredLine(projectedPoints[0], projectedPoints[1], color, i/2*radius*sparkEffect*0.01, radius*0.25);
 				}
 			    }
 			});
