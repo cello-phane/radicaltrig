@@ -4,7 +4,7 @@
 (Non-periodic, closed form solution)
 
 ## Radical Angle Unit (RAU)
-https://cello-phane.github.io/radicaltrig/rau_rotating_axes.html
+[Rotating axes](https://www.desmos.com/calculator/4cefade964)
 After a 90 degree sweep, every point(all 4) has covered the circle, which is why we can achieve periodicity of 0 to 2π.
 
 ### Base Functions
