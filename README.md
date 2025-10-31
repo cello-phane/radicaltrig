@@ -2,14 +2,15 @@
 <img width="424" height="217" alt="image" src="https://github.com/user-attachments/assets/bfd17458-9a9a-40ed-b22f-305bd0e7a4f8" />  
 0.0 to 1.0 ~~ 0.0 to π/2 radians  
 (Non-periodic, closed form solution)   
+
 ### Resources on youtube  
 [John Gabriel on the topic of the right angle measure](https://youtu.be/xUdFMTpfGHg)  
 [Trigonometric ratios and formulas using right angles](https://youtu.be/TJr4YfEgVuk)  
-### Radical Angle Unit (RAU)
-[Rotating axes](https://www.desmos.com/calculator/4cefade964)
-After a 90 degree sweep, every point(all 4) has covered the circle, which is why we can achieve periodicity of 0 to 2π.
 
-### Base Functions
+### Radical Angle Unit (RAU)
+[Rotating axes](https://www.desmos.com/calculator/4cefade964)  
+After a 90 degree sweep, every point(all 4) has covered the circle, which is why we can achieve periodicity of 0 to 2π.  
+
 For a parameter `t` between 0 and 1:
 - `c = (1-t) / √(1 - 2t + 2t²)` (cosine component)
 - `s = t / √(1 - 2t + 2t²)` (sine component)
