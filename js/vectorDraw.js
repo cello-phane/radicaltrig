@@ -136,8 +136,8 @@ function initVectorCanvas() {
     } else if (dragging === 'v') {
       controls.vLength.value = len;
       controls.vAngle.value = (ang + 360) % 360;
-      updateValueDisplay('uLengthVal', len.toFixed(0), false);
-      updateValueDisplay('uAngleVal', ((ang + 360) % 360).toFixed(0), true);
+      updateValueDisplay('vLengthVal', len.toFixed(0), false);
+      updateValueDisplay('vAngleVal', ((ang + 360) % 360).toFixed(0), true);
     }
 
     render();
