@@ -5,7 +5,7 @@
 
 ### Resources on youtube  
 [John Gabriel on the topic of the right angle measure](https://youtu.be/xUdFMTpfGHg)  
-[Trigonometric ratios and formulas using right angles](https://youtu.be/TJr4YfEgVuk)  
+[Trigonometric ratios and formulas](https://youtu.be/TJr4YfEgVuk)  
 
 ### Radical Angle Unit (RAU)
 [Rotating axes](https://www.desmos.com/calculator/4cefade964)  
