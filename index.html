@@ -1,218 +1,107 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Radical Angle Unit - Closed-form Trigonometry</title>
-<link rel="stylesheet" type="text/css" href="index.css">
-<!-- MathJax -->
-<script>
-window.MathJax = {
-  tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] },
-  svg: { fontCache: 'global' }
-};
-</script>
-<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
-
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Radical Angle Unit - Vector Visualization</title>
+  <link rel="stylesheet" href="style.css">
+  <script>
+    window.MathJax = {
+      tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] },
+      svg: { fontCache: 'global' }
+    };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
 </head>
 <body>
+  <header>
+    <h1>Radical Angle Unit - Vector Visualization</h1>
+    <button id="toggleButton" class="toggle-btn">Switch to Vector Diagram</button>
+  </header>
 
-<header>
-  <h1>Radical Angle Unit</h1>
-  <div class="top-controls">
-    <button id="toggleButton" class="toggle-btn">Switch to...</button>
-  </div>
-</header>
-
-<!-- Floating Formula Panel -->
-<div id="formulaPanel" aria-hidden="false">
-  <div id="formulaHeader" "style=cursor: grab;" title="Click and hold to move around">
-    <div class="title">Information Sidebar</div>
-    <div class="chev" id="formulaChevron" title="Click to expand/collapse">◀</div>
-  </div>
-  <div id="formulaBody">
-  <button onclick="toggleMathBlock()">Show/Hide Formulas</button>
-
-    <div id="mathBlock" class="collapsed">
-      <p style="margin:0 0 8px 0; font-weight:600;">For parameter \(0.0 < t < 1.0\):</p>
-      <div>
-        \[
-        \mathrm{rsin}(t) \;=\; \frac{t}{\sqrt{\,1.0 - 2.0t + 2.0t^{2.0}\,}}
-        \]
+  <div id="formulaPanel">
+    <div id="formulaHeader">
+      <div class="title">Information Sidebar</div>
+      <div class="chev" id="formulaChevron">◀</div>
+    </div>
+    <div id="formulaBody">
+      <button onclick="toggleMathBlock()">Show/Hide Formulas</button>
+      <div id="mathBlock" class="collapsed">
+        <p><strong>For parameter \(0.0 < t < 1.0\):</strong></p>
+        <div>\[\mathrm{rsin}(t)=\frac{t}{\sqrt{1-2t+2t^2}}\]</div>
+        <div>\[\mathrm{rcos}(t)=\frac{1-t}{\sqrt{1-2t+2t^2}}\]</div>
+        <div>\[\mathrm{rtan}(t)=\frac{t}{1-t}\]</div>
       </div>
-      <div>
-        \[
-        \mathrm{rcos}(t) \;=\; \frac{1.0 - t}{\sqrt{\,1.0 - 2.0t + 2.0t^{2.0}\,}}
-        \]
+      <strong>Vector Info</strong>
+      <button onclick="changeFontSize(2,'resultsContent')">+</button>
+      <button onclick="changeFontSize(-2,'resultsContent')">-</button>
+      <pre id="resultsContent"></pre>
+
+      <div class="control-group">
+        <label>Conversion Ref</label>
+        <input type="checkbox" id="showConversion">
       </div>
-      <div>
-        \[
-        \mathrm{rtan}(t) \;=\; \frac{t}{1.0 - t}
-        \]
+      <div id="conversionPanel">
+        <canvas id="conversionCanvas" width="280" height="280"></canvas>
       </div>
-    </div>
-    
-    <strong>Vector Info</strong>
-    <button onclick="changeFontSize(2,'resultsContent')">+</button>
-    <button onclick="changeFontSize(-2,'resultsContent')">-</button>
-    <pre id="resultsContent" style="margin:0; font-family:monospace; font-size:13px; background:#fafafa; padding:8px; border-radius:6px;"></pre>
-      
-    <div class="control-group">
-      <label>Conversion Reference</label>
-      <input type="checkbox" id="showConversion">
-    </div>
-   
-    <div id="conversionPanel" class="conversion-panel">
-      <canvas id="conversionCanvas" width="280" height="220"></canvas>
-    </div>
 
-    <div id="wavePanel" style="display:none; text-align:center; margin-top:10px;">
-      <canvas id="waveCanvas" style="border:1px solid #ccc; background:#fafafa; width:100%; height:240px;"></canvas>
-    </div>
-    
-    <label style="display:block; margin-top:6px;">
-      <input type="checkbox" id="showWave"> Waveform
-    </label>
-  </div>
-</div>
-  
-<div id="canvasContainer" style="width: 100%; max-width: 800px; margin: 0 auto;">
-<!-- Section 1: RAU Explanation -->
-<section id="section1" class="inactive">
-  <div class="card">
-    <h2 style="margin-top:6px;">Introduction</h2>
-    <div class="desc">
-      <strong>Quadrant-aware modular arithmetic</strong> RAU maps a linear parameter (0.0–4.0) to circle using integer and fractional parts.
-    </div>
-    <canvas id="vectorCanvas"></canvas>
-
-    <div class="controls">
-      <label style="font-weight:700;"> <span id="paramValue">0.00</span>
-      <input type="range" id="paramSlider" min="0" max="4" step="0.0001" value="0" /></label><br>
-    </div>
-
-    <div style="margin-top:12px; background:#f5f5f5; padding:10px; border-radius:8px;">
-      <a href="https://www.youtube.com/watch?v=TJr4YfEgVuk">More Information</a><br />
-      <a href="https://cello-phane.github.io/radicaltrig/rau_rotating_axes.html">Rotating axes and circle symmetry</a>
+      <div id="wavePanel" style="display:none;margin-top:10px">
+        <canvas id="waveCanvas" style="border:1px solid #ccc;width:100%;height:200px"></canvas>
+      </div>
+      <label><input type="checkbox" id="showWave"> Waveform</label>
     </div>
   </div>
-</section>
 
-<!-- Section 2: Vector Diagram -->
-<section id="section2" class="active">
-  <div class="card">
-    <h2 style="margin-top:6px;">Vector + Radical Angle Unit</h2>
-
-    <div class="vector-grid">
-      <canvas id="simpleCanvas"></canvas>
-
-      <div class="panel">
-        <div class="control-group">
-          <label for="uLength">u length:</label>
-          <input id="uLength" type="range" min="50" max="200" value="120">
-          <div class="value" id="uLengthVal">120</div>
-        </div>
-
-        <div class="control-group">
-          <label for="uAngle">u rotate:</label>
-          <input id="uAngle" type="range" min="0" max="360" value="30">
-          <div class="value" id="uAngleVal">30°</div>
-        </div>
-
-        <div class="control-group">
-          <label for="vLength">v length:</label>
-          <input id="vLength" type="range" min="50" max="200" value="100">
-          <div class="value" id="vLengthVal">100</div>
-        </div>
-
-        <div class="control-group">
-          <label for="vAngle">v rotate:</label>
-          <input id="vAngle" type="range" min="0" max="360" value="0">
-          <div class="value" id="vAngleVal">0°</div>
+  <div class="content">
+    <section id="section1" class="active">
+      <div class="card">
+        <h2>Introduction to RAU</h2>
+        <div class="desc"><strong>Quadrant-aware modular arithmetic</strong> - RAU maps a linear parameter (0–4) to a circle using integer and fractional parts.</div>
+        <canvas id="vectorCanvas" width="600" height="400"></canvas>
+        <div class="controls">
+          <label><strong>RAU Phase:</strong> <span id="paramValue">0.00</span></label><br>
+          <input type="range" id="paramSlider" min="0" max="4" step="0.0001" value="0"/>
         </div>
       </div>
-    </div>
+    </section>
+
+    <section id="section2">
+      <div class="card">
+        <h2>Vector + Radical Angle Unit</h2>
+        <canvas id="simpleCanvas" width="600" height="400"></canvas>
+        <div class="panel">
+          <div class="control-group">
+            <label for="angleMode">Display Mode:</label>
+            <select id="angleMode">
+              <option value="between">Angle Between Vectors</option>
+              <option value="individual">Individual Vector Angles</option>
+            </select>
+          </div>
+          <div class="control-group">
+            <label for="uLength">u length:</label>
+            <input id="uLength" type="range" min="50" max="200" value="120">
+            <div class="value" id="uLengthVal">120</div>
+          </div>
+          <div class="control-group">
+            <label for="uAngle">u rotate:</label>
+            <input id="uAngle" type="range" min="0" max="360" value="30">
+            <div class="value" id="uAngleVal">30°</div>
+          </div>
+          <div class="control-group">
+            <label for="vLength">v length:</label>
+            <input id="vLength" type="range" min="50" max="200" value="100">
+            <div class="value" id="vLengthVal">100</div>
+          </div>
+          <div class="control-group">
+            <label for="vAngle">v rotate:</label>
+            <input id="vAngle" type="range" min="0" max="360" value="90">
+            <div class="value" id="vAngleVal">90°</div>
+          </div>
+        </div>
+      </div>
+    </section>
   </div>
-</section>
-</div>
-<script>
-// Global Utilities
-// ============================================
-  
-function setupResponsiveCanvas(canvasId, aspectRatio = 1, redrawCallback) {
-  const canvas = document.getElementById(canvasId);
-  const container = canvas.parentElement;
-  
-  function resize() {
-    canvas.width = container.clientWidth;
-    canvas.height = container.clientWidth * aspectRatio;
-    // Call the redraw callback after resize
-    if (redrawCallback) redrawCallback();
-  }
-  
-  window.addEventListener('resize', resize);
-  resize(); // Initial resize
-}
 
-// Call for each canvas
-setupResponsiveCanvas('vectorCanvas', 0.642);
-setupResponsiveCanvas('simpleCanvas', 0.642);
-  
-function changeFontSize(changeAmount, id_name) {
-  let element = document.getElementById(id_name);
-  if (element) {
-    let currentSize = parseInt(element.style.fontSize) || 13;
-    let newSize = currentSize + changeAmount;
-    if (newSize < 8) newSize = 8;
-    element.style.fontSize = newSize + 'px';
-  }
-}
-
-function dragElement(elmnt) {
-  var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
-  if (document.getElementById(elmnt.id + "header")) {
-    document.getElementById(elmnt.id + "header").onmousedown = dragMouseDown;
-  }
-  function dragMouseDown(e) {
-    e = e || window.event;
-    e.preventDefault();
-    pos3 = e.clientX;
-    pos4 = e.clientY;
-    document.onmouseup = closeDragElement;
-    document.onmousemove = elementDrag;
-  }
-
-  function elementDrag(e) {
-    e = e || window.event;
-    e.preventDefault();
-    pos1 = pos3 - e.clientX;
-    pos2 = pos4 - e.clientY;
-    pos3 = e.clientX;
-    pos4 = e.clientY;
-    elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
-    elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
-  }
-
-  function closeDragElement() {
-    document.onmouseup = null;
-    document.onmousemove = null;
-  }
-
-}
-function toggleMathBlock() {
-  const mathBlock = document.getElementById('mathBlock');
-  if (mathBlock.classList.contains('collapsed')) {
-    mathBlock.classList.remove('collapsed');
-    mathBlock.style.maxHeight = mathBlock.scrollHeight + 'px';
-  } else {
-    mathBlock.style.maxHeight = '0';
-    mathBlock.classList.add('collapsed');
-  }
-}
-</script>
-  
-<!-- Load external JavaScript -->
-<script src="rau-viz.js"></script>
-
+  <script src="main.js"></script>
 </body>
 </html>
