@@ -14,14 +14,32 @@ document.addEventListener('DOMContentLoaded', () => {
   initVectorCanvas();
 
   const toggleBtn = document.getElementById('toggleButton');
+  const themeBtn = document.getElementById('themeToggle');
   const s1 = document.getElementById('section1');
   const s2 = document.getElementById('section2');
 
+  // --- Load saved theme ---
+  if (localStorage.getItem('theme') === 'dark') {
+    document.body.classList.add('dark-mode');
+    themeBtn.textContent = '☀️ Light Mode';
+  }
+
+  // --- Theme toggle ---
+  themeBtn.addEventListener('click', () => {
+    document.body.classList.toggle('dark-mode');
+    const dark = document.body.classList.contains('dark-mode');
+    themeBtn.textContent = dark ? '☀️ Light Mode' : '🌙 Dark Mode';
+    localStorage.setItem('theme', dark ? 'dark' : 'light');
+  });
+
+  // --- Section toggle ---
   toggleBtn.addEventListener('click', () => {
     const showing1 = s1.classList.contains('active');
     s1.classList.toggle('active', !showing1);
     s2.classList.toggle('active', showing1);
-    toggleBtn.textContent = showing1 ? 'Switch to Introduction' : 'Switch to Vector Diagram';
+    toggleBtn.textContent = showing1
+      ? 'Switch to Introduction'
+      : 'Switch to Vector Diagram';
   });
 });
 
