@@ -31,10 +31,14 @@
     <button onclick="changeFontSize(-1,'resultsContent')">-</button>
       <button onclick="toggleMathBlock()">Formulae</button>
       <div id="mathBlock" class="collapsed">
-        <p style="margin:0 0 8px 0;font-weight:600">For parameter \(0.0 < t < 1.0\):</p>
+        <p style="margin:0 0 11px 0;font-weight:600">For parameter \(0.0 < t < 1.0\):</p>
         <div>\[\mathrm{rsin}(t)=\frac{t}{\sqrt{1-2t+2t^2}}\]</div>
         <div>\[\mathrm{rcos}(t)=\frac{1-t}{\sqrt{1-2t+2t^2}}\]</div>
         <div>\[\mathrm{rtan}(t)=\frac{t}{1-t}\]</div>
+        <div>\[\mathrm{Inverse\ Functions (-1 < t <1)}\]</div>
+        <div>\[\mathrm{rsin^{-1}}(t)=\frac{t^2-\sqrt{t^2-t^4}}{2t^2-1}\]</div>
+        <div>\[\mathrm{rcos^{-1}}(t)=\frac{t^2-1+\sqrt{t^2-t^4}}{2t^2-1}\]</div>
+        <div>\[\mathrm{rtan^{-1}}(t)=\frac{t}{1+t}\]</div>
       </div>
 
       <pre id="resultsContent"></pre>

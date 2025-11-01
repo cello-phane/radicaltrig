@@ -37,6 +37,33 @@ function radicalTan(t) {
   return (q === 1 || q === 3) ? -1 / base : base;
 }
 
+// --- Inverse Radical Functions ---
+function radicalAsin(value) {
+  const t = value;
+  const denom = 2 * t * t - 1;
+  const inner = t * t - t ** 4;
+  if (inner < 0 || denom === 0) return NaN;
+  return (t ** 2 - Math.sqrt(inner)) / denom;
+}
+
+function radicalAcos(value) {
+  const t = value;
+  const denom = 2 * t * t - 1;
+  const inner = t * t - t ** 4;
+  if (inner < 0 || denom === 0) return NaN;
+  return (t ** 2 - 1 + Math.sqrt(inner)) / denom;
+}
+
+function radicalAtan(value) {
+  return value / (1 + value);
+}
+
+// --- Uniform-time parameterization ---
+function uniformRAU(t) {
+  const mapped = Math.tan(t * Math.PI / 2);
+  return mapped / (1 + mapped);
+}
+
 // === Unit conversions ===
 const degToRad = deg => deg * Math.PI / 180;
 const rauToDeg = rau => (rau / 4) * 360;
