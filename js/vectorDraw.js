@@ -127,17 +127,21 @@ function initVectorCanvas() {
     const mx = e.clientX - rect.left - cx;
     const my = e.clientY - rect.top - cy;
     const len = Math.sqrt(mx * mx + my * my);
-    const ang = Math.atan2(-my, mx) * 180 / Math.PI;
+    const u = { x: -my, y: mx };
+    const v = { x: 1,  y: 0 };
+    const ang = Math.atan2(u) * 180 / Math.PI;
+    const angDisplay = rauToDeg(atanVec(u, v)) * 180 / Math.PI;
+
     if (dragging === 'u') {
       controls.uLength.value = len;
       controls.uAngle.value = (ang + 360) % 360;
       updateValueDisplay('uLengthVal', len.toFixed(0));
-      updateValueDisplay('uAngleVal', ((ang + 360) % 360).toFixed(0), '°');
+      updateValueDisplay('uAngleVal', ((angDisplay + 360) % 360).toFixed(0), '°');
     } else if (dragging === 'v') {
       controls.vLength.value = len;
       controls.vAngle.value = (ang + 360) % 360;
       updateValueDisplay('vLengthVal', len.toFixed(0));
-      updateValueDisplay('vAngleVal', ((ang + 360) % 360).toFixed(0), '°');
+      updateValueDisplay('vAngleVal', ((angDisplay + 360) % 360).toFixed(0), '°');
     }
 
     render();

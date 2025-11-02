@@ -64,6 +64,27 @@ function uniformRAU(t) {
   return mapped / (1 + mapped);
 }
 
+function atanVec(u, v) {
+    const cross_uv_mag = u.x * v.y - u.y * v.x; // signed
+    const dot_uv   = u.x * v.x + u.y * v.y;
+    // 0..1 inside quadrant
+    let a = Math.abs(cross_uv_mag) / (Math.abs(dot_uv) + Math.abs(cross_uv_mag));
+
+    if (dot_uv >= 0.0 && cross_uv_mag >= 0.0) {
+        // Q1: 0..1
+        return a;
+    } else if (dot_uv < 0.0 && cross_uv_mag >= 0.0) {
+        // Q2: 1..2
+        return 2.0 - a;
+    } else if (dot_uv < 0.0 && cross_uv_mag < 0.0) {
+        // Q3: 2..3
+        return 2.0 + a;
+    } else {
+        // Q4: 3..4
+        return 4.0 - a;
+    }
+}
+
 // === Unit conversions ===
 const degToRad = deg => deg * Math.PI / 180;
 const rauToDeg = rau => (rau / 4) * 360;
