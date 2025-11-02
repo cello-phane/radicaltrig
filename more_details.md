@@ -10,6 +10,10 @@ rcos(t) = (1 - t) / √(1 - 2t + 2t²)
 rtan(t) = t / (1 - t)
 ```
 
+For a parameter `t` between 0 and 1:
+- `c = (1-t) / √(1 - 2t + 2t²)` (cosine component)
+- `s = t / √(1 - 2t + 2t²)` (sine component)
+
 ## Quadrant Mapping (0–4 RAU)
 
 The RAU parameter extends from 0 to 4 by applying quadrant rotations:
@@ -20,6 +24,20 @@ The RAU parameter extends from 0 to 4 by applying quadrant rotations:
 | Q1 | 1 ≤ t < 2 | (–s, +c) | 90°–180° |
 | Q2 | 2 ≤ t < 3 | (–c, –s) | 180°–270° |
 | Q3 | 3 ≤ t < 4 | (+s, –c) | 270°–360° |
+
+### Branched Computation
+```javascript
+if (q === 0) {
+    cos_result = c;  sin_result = s;
+} else if (q === 1) {
+    cos_result = -s; sin_result = c;
+} else if (q === 2) {
+    cos_result = -c; sin_result = -s;
+} else {
+    cos_result = -c; sin_result = s;
+}
+sin_result=sin_result*Math.sign(parameter);
+```
 
 ### Branchless Computation
 
