@@ -52,8 +52,8 @@ const q1 = quadrant === 1 ? 1 : 0;
 const q2 = quadrant === 2 ? 1 : 0;
 const q3 = quadrant === 3 ? 1 : 0;
 
-cos_val = c * q0 - s * q1 - c * q2 + s * q3;
-sin_val = (s * q0 + c * q1 - s * q2 - c * q3) * sign(param);
+cos_result = c * q0 - s * q1 - c * q2 + s * q3;
+sin_result = (s * q0 + c * q1 - s * q2 - c * q3) * Math.sign(param);
 ```
 
 ## Vector to RAU Parameter
