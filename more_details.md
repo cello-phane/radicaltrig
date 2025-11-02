@@ -86,4 +86,4 @@ sin⁻¹(t) = (t² - √(t²(1 - t²))) / (2t² - 1)    [domain: t ∈ [–1, 1]
 cos⁻¹(t) = (t² - 1 + √(t²(1 - t²))) / (2t² - 1) [domain: t ∈ [–1, 1]]
 tan⁻¹(t) = t / (1 + t)                          [domain: t ∈ ℝ, t ≠ –1]
 ```
-All return RAU parameter in range [0, 1] for one quadrant.![](http://)
+All return RAU parameter in range [0, 1] for one quadrant.
