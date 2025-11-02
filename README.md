@@ -10,7 +10,7 @@
 ### Radical Angle Unit (RAU)
 [Rotating axes](https://www.desmos.com/calculator/4cefade964)  
 After a 90 degree sweep, every point(all 4) has covered the circle, enabling periodicity from 0 to 2π.  
-[More Details](https://cello-phane.github.io/radicaltrig/more_details.md)  
+[More Details](https://www.github.com/cello-phane/radicaltrig/blob/main/more_details.md)  
 
 ### 2D/3D applications:  
 [2D demo that uses both kinds of trig (blue and pink)](https://www.shadertoy.com/view/M3cfRN)  
