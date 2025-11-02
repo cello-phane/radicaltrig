@@ -11,6 +11,19 @@ rtan(t) = t / (1 - t)
 
 ## Quadrant Mapping (0–4 RAU)
 The RAU parameter extends from 0 to 4 by applying quadrant rotations:
+```
+┌-------------------┐
+          ↑ y
+ 90°–180° │ 0°–90°  
+    Q1    │   Q0
+   -c,+s  │  +c,+s
+  ←────────────────→ x 
+ 180°–270°|270°–360°
+    Q2    │   Q3
+  -c,-s   │  +c,-s  
+          ↓
+└-------------------┘
+```
 | Quadrant | Range | Mapping | Angle |
 |----------|-------|---------|-------|
 | Q0 | 0 ≤ t < 1 | (+c, +s) | 0°–90° |
