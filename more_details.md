@@ -69,13 +69,8 @@ function atanVec(u, v) {
   const halfrot = mix(2.0 - angle, angle + 2.0, cross < 0);
   return mix(qblend, halfrot, dot < 0);
 }
+//Works with unnormalized vectors
 ```
-
-**Advantages:**
-- No transcendental functions (no atan, sin, cos, sqrt)
-- Works with unnormalized vectors
-- Handles 90° singularity gracefully (cross/dot ratio)
-- Uses only rational arithmetic
 
 ## Uniform Motion Reparameterization
 For constant angular velocity in time-domain animations, reparameterize using:
