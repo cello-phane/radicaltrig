@@ -127,10 +127,6 @@ function initVectorCanvas() {
     const mx = e.clientX - rect.left - cx;
     const my = e.clientY - rect.top - cy;
     const len = Math.sqrt(mx * mx + my * my);
-    const u = { x: -my, y: mx };
-    const v = { x: 1,  y: 0 };
-    const ang = Math.atan2(u) * 180 / Math.PI;
-    const angDisplay = rauToDeg(atanVec(u, v)) * 180 / Math.PI;
     const mouse = { x: -my, y: mx };
     const ref = { x: 1,  y: 0 };//from the x-axis
     const ang = Math.atan2(mouse.x, mouse.y) * 180 / Math.PI;
