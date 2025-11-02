@@ -1,7 +1,6 @@
 # RAU (Radical Angle Unit) System Reference
 
 ## Core Formulas
-
 For parameter `0.0 ≤ t < 1.0`:
 
 ```
@@ -10,14 +9,8 @@ rcos(t) = (1 - t) / √(1 - 2t + 2t²)
 rtan(t) = t / (1 - t)
 ```
 
-For a parameter `t` between 0 and 1:
-- `c = (1-t) / √(1 - 2t + 2t²)` (cosine component)
-- `s = t / √(1 - 2t + 2t²)` (sine component)
-
 ## Quadrant Mapping (0–4 RAU)
-
 The RAU parameter extends from 0 to 4 by applying quadrant rotations:
-
 | Quadrant | Range | Mapping | Angle |
 |----------|-------|---------|-------|
 | Q0 | 0 ≤ t < 1 | (+c, +s) | 0°–90° |
@@ -40,7 +33,6 @@ sin_result=sin_result*Math.sign(parameter);
 ```
 
 ### Branchless Computation
-
 ```javascript
 const q0 = quadrant === 0 ? 1 : 0;
 const q1 = quadrant === 1 ? 1 : 0;
@@ -52,9 +44,7 @@ sin_val = (s * q0 + c * q1 - s * q2 - c * q3) * sign(param);
 ```
 
 ## Vector to RAU Parameter
-
 Convert angle between two vectors directly to RAU parameter:
-
 ```javascript
 function atanVec(u, v) {
   const mix = (a, b, c) => c ? b : a;
@@ -75,23 +65,17 @@ function atanVec(u, v) {
 - Uses only rational arithmetic
 
 ## Uniform Motion Reparameterization
-
 For constant angular velocity in time-domain animations, reparameterize using:
-
 ```
 t' = tan(t · π/2) / (1 + tan(t · π/2))
 ```
-
 Then use `t'` as the RAU parameter input. Without this, angular velocity varies.
 
 ## Inverse Functions
-
 Recover RAU parameter from trig values:
-
 ```
 sin⁻¹(t) = (t² - √(t²(1 - t²))) / (2t² - 1)    [domain: t ∈ [–1, 1]]
 cos⁻¹(t) = (t² - 1 + √(t²(1 - t²))) / (2t² - 1) [domain: t ∈ [–1, 1]]
 tan⁻¹(t) = t / (1 + t)                          [domain: t ∈ ℝ, t ≠ –1]
 ```
-
 All return RAU parameter in range [0, 1] for one quadrant.![](http://)
