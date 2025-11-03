@@ -10,6 +10,7 @@ let ccw = false;
 let displayPrecision = 5; // Default to 5 decimal places
 let maxDigitsofPrecision = 15;
 let angleWrapMode = 'wrap'; // 'wrap' | 'unwrap'
+let introPhase = 0;
 
 document.addEventListener('DOMContentLoaded', () => {
   initUI();
