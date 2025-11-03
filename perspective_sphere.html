@@ -12,6 +12,13 @@
             color: white;
             font-family: monospace;
             overflow: hidden;
+            cursor: none;
+        }
+
+        #cursor {
+          position: fixed;
+          pointer-events: none;
+          z-index: 10000;
         }
         
         canvas {
@@ -92,7 +99,7 @@
         }
     </style>
 </head>
-<body>
+<body style="cursor: url('cursor.png') 2 2, auto;">
     <button id="toggleCtrls" onclick="hideControls();">Toggle Controls</button> 
     <div id="controlsContainer">
     <div class="controls">
@@ -165,6 +172,7 @@
     <canvas id="canvas" width="960" height="720"></canvas>
 
     <script>
+    <!-- document.body.style.cursor = "url('cursor.png') 0 0, auto"; -->
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
         const centerX = canvas.width / 2;
