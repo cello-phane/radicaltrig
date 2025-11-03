@@ -7,6 +7,8 @@ let anglebetweenDeg = 0;
 let uAng = 0;
 let vAng = 0;
 let ccw = false;
+let displayPrecision = 5; // Default to 5 decimal places
+let maxDigitsofPrecision = 15;
 
 document.addEventListener('DOMContentLoaded', () => {
   initUI();
@@ -21,14 +23,14 @@ document.addEventListener('DOMContentLoaded', () => {
   // --- Load saved theme ---
   if (localStorage.getItem('theme') === 'dark') {
     document.body.classList.add('dark-mode');
-    themeBtn.textContent = '☀️ Light Mode';
+    themeBtn.textContent = 'Light';
   }
 
   // --- Theme toggle ---
   themeBtn.addEventListener('click', () => {
     document.body.classList.toggle('dark-mode');
     const dark = document.body.classList.contains('dark-mode');
-    themeBtn.textContent = dark ? '☀️ Light Mode' : '🌙 Dark Mode';
+    themeBtn.textContent = dark ? 'Light' : 'Dark';
     localStorage.setItem('theme', dark ? 'dark' : 'light');
   });
 
@@ -63,3 +65,22 @@ function changeFontSize(changeAmount, id) {
         el.style.fontSize = size + 'px';
     }
 }
+
+// ================================
+// Initialize precision control in sidebar
+// ================================
+function initPrecisionControl() {
+  const formulaBody = document.getElementById('formulaBody');
+  if (!formulaBody) return;
+  
+  // Insert precision control after the formulas
+  const mathBlock = document.getElementById('mathBlock');
+  if (mathBlock && mathBlock.nextSibling) {
+    mathBlock.parentNode.insertBefore(createPrecisionControl(), mathBlock.nextSibling);
+  } else {
+    formulaBody.insertBefore(createPrecisionControl(), formulaBody.firstChild);
+  }
+}
+
+// Call this after DOM is ready
+document.addEventListener('DOMContentLoaded', initPrecisionControl);

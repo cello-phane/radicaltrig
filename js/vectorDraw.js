@@ -94,10 +94,32 @@ function initRAUCanvas() {
   draw();
 }
 
-function updateValueDisplay(id, value, suffix='') {
+function setPrecision(digits) {
+  displayPrecision = Math.max(0, Math.min(maxDigitsofPrecision, digits));
+  updateResultsDisplay();
+}
+
+function formatValue(value, precision = displayPrecision) {
+  if (typeof value !== 'number' || !isFinite(value)) return '—';
+  return value.toFixed(precision);
+}
+
+function updateValueDisplay(id, value, suffix = '') {
   const el = document.getElementById(id);
   if (!el) return;
-  el.textContent = `${value}${suffix}`;
+  
+  // If value is already formatted, use it directly
+  const displayValue = typeof value === 'number' ? formatValue(value) : value;
+  el.textContent = `${displayValue}${suffix}`;
+}
+
+function updateAllDisplays() {
+  // Update RAU phase display
+  if (introPhase !== undefined) {
+    updateValueDisplay('paramValue', formatValue(introPhase));
+  }
+  // Update results content
+  updateResultsDisplay();
 }
 
 function initVectorCanvas() {
