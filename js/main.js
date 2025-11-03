@@ -9,12 +9,12 @@ let vAng = 0;
 let ccw = false;
 let displayPrecision = 5; // Default to 5 decimal places
 let maxDigitsofPrecision = 15;
+let angleWrapMode = 'wrap'; // 'wrap' | 'unwrap'
 
 document.addEventListener('DOMContentLoaded', () => {
   initUI();
   initRAUCanvas();
   initVectorCanvas();
-
   const toggleBtn = document.getElementById('toggleButton');
   const themeBtn = document.getElementById('themeToggle');
   const s1 = document.getElementById('section1');
@@ -64,6 +64,16 @@ function changeFontSize(changeAmount, id) {
         if (size < 8) size = 8;
         el.style.fontSize = size + 'px';
     }
+}
+
+function setPrecision(digits) {
+  displayPrecision = Math.max(0, Math.min(maxDigitsofPrecision, digits));
+  updateResultsDisplay();
+}
+
+function formatValue(value, precision = displayPrecision) {
+  if (typeof value !== 'number' || !isFinite(value)) return '—';
+  return value.toFixed(precision);
 }
 
 // ================================

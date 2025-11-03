@@ -145,7 +145,8 @@ cos(θ) = ${formatValue(rc2)}`;
       const rt = radicalTan(p);
       const rad = degToRad(anglebetweenDeg);
       let signedDeg = anglebetweenDeg * (ccw ? 1 : -1);
-      const undirDeg = Math.min(Math.abs(signedDeg), 360 - Math.abs(signedDeg));
+      signedDeg = formatValue(signedDeg, 1);
+      const undirDeg = formatValue(Math.min(Math.abs(signedDeg), 360 - Math.abs(signedDeg)), 1);
 
       rc.textContent = `Vector u = (${fmt(u.x)}, ${fmt(u.y)})
   |u| = ${fmt(uMag)}
@@ -154,7 +155,7 @@ Vector v = (${fmt(v.x)}, ${fmt(v.y)})
 Dot product = ${fmt(dot)}
 Cross product = ${fmt(cross)}
 _______________________________
-Signed angle (u→v) = ${signedDeg.toFixed(2)}° ${ccw ? '(CCW)' : '(CW)'}
+Signed angle (u→v) = ${signedDeg}° ${ccw ? '(CCW)' : '(CW)'}
 Angle between = ${undirDeg}°
 _______________________________
 RAU Phase = ${formatValue(p)}

@@ -1,11 +1,18 @@
 : root {
-    --accent: #2196F3;--bg:# f0f0f0;
+    --accent: #2196F3;
+    --bg:# f0f0f0;
     --card: #fff
 }
 html, body {
-    height: 100 % ;margin: 0;font - family: Arial,
-    sans - serif;background: var (--bg);color: #222}
-header{background:# 333;color: #fff;padding: 10 px 16 px;display: flex;align - items: center;justify - content: space - between
+    height: 100 % ;
+    margin: 0;font - family: Arial, sans - serif;
+    background: var (--bg);
+    color: #222}
+header { 
+	background:# 333;
+	color: #fff;
+	padding: 10 px 16 px;
+	display: flex;
 }
 header h1 {
     margin: 0;font - size: 18 px

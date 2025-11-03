@@ -94,16 +94,6 @@ function initRAUCanvas() {
   draw();
 }
 
-function setPrecision(digits) {
-  displayPrecision = Math.max(0, Math.min(maxDigitsofPrecision, digits));
-  updateResultsDisplay();
-}
-
-function formatValue(value, precision = displayPrecision) {
-  if (typeof value !== 'number' || !isFinite(value)) return '—';
-  return value.toFixed(precision);
-}
-
 function updateValueDisplay(id, value, suffix = '') {
   const el = document.getElementById(id);
   if (!el) return;
@@ -149,24 +139,24 @@ function initVectorCanvas() {
     const mx = e.clientX - rect.left - cx;
     const my = e.clientY - rect.top - cy;
     const len = Math.sqrt(mx * mx + my * my);
-    const mouse = { x: -my, y: mx };
-    const ref = { x: 1,  y: 0 };//from the x-axis
-    const ang = Math.atan2(mouse.x, mouse.y) * 180 / Math.PI;
-    const angDisplay = rauToDeg(atanVec(mouse, ref)) * 180 / Math.PI;
-
+    
+    // Standard angle from X-axis for the sliders
+    const standardAng = Math.atan2(-my, mx) * 180 / Math.PI;
+    const angleDeg = (standardAng + 360) % 360;
+  
     if (dragging === 'u') {
       controls.uLength.value = len;
-      controls.uAngle.value = (ang + 360) % 360;
-      updateValueDisplay('uLengthVal', len.toFixed(0));
-      updateValueDisplay('uAngleVal', ((angDisplay + 360) % 360).toFixed(0), '°');
+      controls.uAngle.value = angleDeg;
+      updateValueDisplay('uLengthVal', formatValue(len, 0));
+      updateValueDisplay('uAngleVal', formatValue(angleDeg, 0), '°');
     } else if (dragging === 'v') {
       controls.vLength.value = len;
-      controls.vAngle.value = (ang + 360) % 360;
-      updateValueDisplay('vLengthVal', len.toFixed(0));
-      updateValueDisplay('vAngleVal', ((angDisplay + 360) % 360).toFixed(0), '°');
+      controls.vAngle.value = angleDeg;
+      updateValueDisplay('vLengthVal', formatValue(len, 0));
+      updateValueDisplay('vAngleVal', formatValue(angleDeg, 0), '°');
     }
-
-    render();
+  
+    render(); // This calls updateResultsDisplay() which uses atanVec for sidebar
   });
 
   document.addEventListener('mouseup', () => dragging = null);
@@ -225,7 +215,8 @@ function initVectorCanvas() {
 
     const signed = vAngle - uAngle;
     ccw = signed > 0;
-    anglebetweenDeg = Math.abs(signed);
+    //anglebetweenDeg = Math.abs(signed);
+    anglebetweenDeg = rauToDeg(atanVec(v,u));
     vectorPhase = (anglebetweenDeg / 360) * 4;
 
     updateResultsDisplay();
