@@ -60,14 +60,23 @@ sin_result = (s * q0 + c * q1 - s * q2 - c * q3) * Math.sign(param);
 Convert angle between two vectors directly to RAU parameter:
 ```javascript
 function atanVec(u, v) {
-  const mix = (a, b, c) => c ? b : a;
-  const cross = u.x * v.y - u.y * v.x;
-  const dot = u.x * v.x + u.y * v.y;
-  let angle = Math.abs(cross) / (Math.abs(dot) + Math.abs(cross));
-  const q4fix = mix(Math.sign(cross) * angle, 4.0 - angle, dot > 0 && cross < 0);
-  const qblend = mix(mix(q4fix, angle, cross > dot), angle + 1.0, cross < 0 && dot < 0);
-  const halfrot = mix(2.0 - angle, angle + 2.0, cross < 0);
-  return mix(qblend, halfrot, dot < 0);
+    const cross_uv_mag = u.x * v.y - u.y * v.x; // signed
+    const dot_uv   = u.x * v.x + u.y * v.y;
+    // 0..1 inside quadrant
+    let a = Math.abs(cross_uv_mag) / (Math.abs(dot_uv) + Math.abs(cross_uv_mag));
+    if (dot_uv >= 0.0 && cross_uv_mag >= 0.0) {
+        // Q1: 0..1
+        return a;
+    } else if (dot_uv < 0.0 && cross_uv_mag >= 0.0) {
+        // Q2: 1..2
+        return 2.0 - a;
+    } else if (dot_uv < 0.0 && cross_uv_mag < 0.0) {
+        // Q3: 2..3
+        return 2.0 + a;
+    } else {
+        // Q4: 3..4
+        return 4.0 - a;
+    }
 }
 //Works with unnormalized vectors
 ```
