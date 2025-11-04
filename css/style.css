@@ -1,0 +1,194 @@
+:root {
+  --accent: #2196F3;
+  --bg: #f0f0f0;
+  --card: #fff;
+  --text: #444444;
+}
+
+body.dark-mode {
+  --accent: #64b5f6;
+  --bg: #0d1117;
+  --card: #161b22;
+  --text: #e6edf3;
+  --border: #444;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+  font-family: Arial, sans-serif;
+}
+
+header {
+  background: var(--border);
+  color: var(--accent);
+  padding: 2px 6px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.toggle-btn {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+section {
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  transition: max-height 0.6s ease, opacity 0.6s ease;
+}
+
+section.active {
+  max-height: 2400px;
+  opacity: 1;
+  padding: 20px 16px 40px;
+}
+
+.card {
+  background: var(--card);
+  border-radius: 10px;
+  padding: 18px;
+  max-width: 1000px;
+  margin: 0 auto;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+}
+
+canvas {
+  border: 2px solid #333;
+  border-radius: 8px;
+  background: var(--card);
+  display: block;
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.desc {
+  background: var(--bg);
+  border-left: 4px solid var(--accent);
+  padding: 12px;
+  border-radius: 2px;
+}
+
+.controls {
+  margin-top: 12px;
+}
+
+.controls input[type=range] {
+  width: 68%;
+  margin-top: 8px;
+}
+
+.panel {
+  background: var(--bg);
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+.control-group {
+  display: flex;
+  align-items: left;
+  gap: 1px;
+  margin: 8px 0;
+}
+
+.control-group label {
+  min-width: 110px;
+  font-weight: 500;
+}
+
+.control-group input[type=range] {
+  width: 68%;
+}
+
+.control-group select {
+  flex: 1;
+  padding: 4px;
+}
+
+.value {
+  width: 56px;
+  text-align: right;
+  font-family: monospace;
+}
+
+pre#resultsContent {
+  background: var(--bg);
+  padding: 10px;
+  border-radius: 6px;
+  white-space: pre-wrap;
+  font-family: monospace;
+  font-size: 13px;
+  margin: 8px 0;
+}
+
+#formulaPanel {
+  position: fixed;
+  right: 8px;
+  top: 15%;
+  width: 30%;
+  max-width: 400px;
+  background: var(--bg);
+  border: 2px solid var(--accent);
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  z-index: 1200;
+  overflow: hidden;
+  max-height: 90vh;
+}
+
+#formulaPanel.slim {
+  width: 100px;
+}
+
+#formulaPanel.slim #formulaBody {
+  display: none;
+}
+
+#formulaHeader {
+  background: var(--accent);
+  color: #fff;
+  padding: 8px 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: grab;
+  user-select: none;
+}
+
+#formulaHeader .title {
+  font-weight: 700;
+  font-size: 13px;
+}
+
+#formulaHeader .chev {
+  cursor: pointer;
+  font-size: 14px;
+}
+
+#formulaBody {
+  padding: 4px;
+  font-size: 12px;
+}
+
+#mathBlock {
+  max-height: 500px;
+  overflow: hidden;
+  transition: max-height 0.4s;
+}
+
+#mathBlock.collapsed {
+  max-height: 0;
+}

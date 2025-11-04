@@ -1,0 +1,106 @@
+: root {
+    --accent: #2196F3;
+    --bg:# f0f0f0;
+    --card: #fff
+}
+html, body {
+    height: 100 % ;
+    margin: 0;font - family: Arial, sans - serif;
+    background: var (--bg);
+    color: #222}
+header { 
+	background:# 333;
+	color: #fff;
+	padding: 10 px 16 px;
+	display: flex;
+}
+header h1 {
+    margin: 0;font - size: 18 px
+}
+.toggle - btn {
+    background: var (--accent);color: #fff;border: none;padding: 8 px 12 px;border - radius: 6 px;cursor: pointer;font - weight: 600
+}
+section {
+    overflow: hidden;max - height: 0;opacity: 0;transition: max - height .6 s ease,
+    opacity .6 s ease
+}
+section.active {
+        max - height: 2400 px;
+        opacity: 1;
+        padding: 20 px 16 px 40 px
+    }
+    .card {
+        background: var (--card);border - radius: 10 px;padding: 18 px;max - width: 1000 px;margin: 0 auto;box - shadow: 0 6 px 18 px rgba(0, 0, 0, .06)
+    }
+canvas {
+    border: 2 px solid #333;border-radius:8px;background:# fff;display: block;width: 100 % ;max - width: 600 px;margin: 0 auto
+}
+.desc {
+    background: #e8f4f8;border - left: 4 px solid
+    var (--accent);padding: 12 px;border - radius: 2 px
+}
+.controls {
+    margin - top: 12 px
+}
+.controls input[type = range] {
+        width: 50 % ;margin - top: 8 px
+    }
+    .panel {
+        background: #fff;padding: 10 px;border - radius: 8 px;box - shadow: 0 2 px 8 px rgba(0, 0, 0, .06);margin - top: 10 px;max - width: 500 px
+    }
+    .control - group {
+        display: flex;align - items: center;gap: 8 px;margin: 8 px 0
+    }
+    .control - group label {
+        min - width: 110 px;
+        font - weight: 600
+    }
+    .control - group input[type = range] {
+        flex: 1
+    }
+    .control - group select {
+        flex: 1;padding: 4 px
+    }
+    .value {
+        width: 56 px;text - align: right;font - family: monospace
+    }
+pre #resultsContent {
+    background: #f5f5f5;padding: 10 px;border - radius: 6 px;white - space: pre - wrap;font - family: monospace;font - size: 13 px;margin: 8 px 0
+}
+#formulaPanel {
+    position: fixed;right: 8 px;top: 50 px;width: 30 % ;max - width: 400 px;background: rgba(255, 255, 255, .98);border: 2 px solid
+    var (--accent);border - radius: 10 px;box - shadow: 0 8 px 24 px rgba(0, 0, 0, .12);z - index: 1200;overflow: auto;max - height: 90 vh
+}
+#formulaPanel.slim {
+    width: 64 px
+}
+#formulaHeader {
+    background: var (--accent);color: #fff;padding: 8 px 10 px;display: flex;justify - content: space - between;align - items: center;cursor: grab;user - select: none
+}
+#formulaHeader.title {
+    font - weight: 700;
+    font - size: 13 px
+}
+#formulaHeader.chev {
+    font - size: 16 px
+}
+#formulaBody {
+    padding: 8 px;font - size: 13 px
+}
+#formulaPanel.slim #formulaBody {
+    display: none
+}
+#conversionPanel {
+    display: none;margin - top: 10 px
+}
+#conversionCanvas {
+    width: 100 % ;height: auto
+}
+#mathBlock {
+    max - height: 500 px;
+    overflow: hidden;
+    transition: max - height .4 s
+}
+#mathBlock.collapsed {
+    max - height: 0
+}
