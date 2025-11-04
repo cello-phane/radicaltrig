@@ -9,7 +9,7 @@
 </head>
 <body>
     <button id="toggleCtrls" onclick="hideControls();">Toggle Controls</button> 
-    <button type="button" data-theme-toggle aria-label="Dark/Light">Light</button>
+    <button type="button" data-theme-toggle aria-label="Change Theme">Change Theme</button>
     <div id="controlsContainer">
     <div class="controls">
         <div class="control-group">
@@ -77,7 +77,12 @@
         </div>
     </div>
     </div>
-    
+    <script>
+      (function() {
+        const theme = localStorage.getItem("theme") || "dark"; // default
+        document.documentElement.dataset.theme = theme;
+      })();
+    </script>
     <canvas id="canvas" width="960" height="720"></canvas>
     <script>
     	function calculateSettingAsThemeString({ localStorageTheme, systemSettingDark }) {
@@ -102,7 +107,7 @@
     	  const newTheme = currentThemeSetting === "dark" ? "light" : "dark";
     	
     	  // update the button text
-    	  const newCta = newTheme === "dark" ? "Light" : "Dark";
+    	  const newCta = newTheme === "dark" ? "Switch to Light" : "Switch to Dark";
     	  button.innerText = newCta;  
     	
     	  // use an aria-label if you are omitting text on the button
@@ -180,7 +185,7 @@
 		const themeBtn = document.querySelector('button[data-theme-toggle]');
 
 		function getThemeColors() {
-		    const theme = localStorage.getItem("theme") || "light";
+		    const theme = localStorage.getItem("theme") || "dark";
 		    
 		    if (theme === "light") {
 		        return {
