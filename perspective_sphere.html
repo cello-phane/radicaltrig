@@ -1,106 +1,14 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D Wireframe Sphere</title>
-    <style>
-        body {
-            margin: 0;
-            padding: 20px;
-            background: #0a0a0a;
-            color: white;
-            font-family: monospace;
-            overflow: hidden;
-            cursor: none;
-        }
-
-        #cursor {
-          position: fixed;
-          pointer-events: none;
-          z-index: 10000;
-        }
-        
-        canvas {
-            display: block;
-            margin: 0 auto;
-            border: 1px solid #333;
-            background: linear-gradient(45deg, #001122, #000511);
-        }
-        
-        #controlsContainer  {
-        	display: block;
-        }
-
-        .controls {
-            position: absolute;
-            top: 50px;
-            left: 20px;
-            background: rgba(0,0,0,0.8);
-            padding: 15px;
-            border-radius: 8px;
-            border: 1px solid #333;
-            display: block;
-        }
-        
-        .control-group {
-            margin-bottom: 10px;
-        }
-        
-        label {
-            display: inline-block;
-            width: 120px;
-            font-size: 12px;
-        }
-        
-        input[type="range"] {
-            width: 150px;
-        }
-        
-        .value {
-            color: #00ff88;
-            font-weight: bold;
-        }
-        
-        .info {
-            position: absolute;
-            bottom: 20px;
-            left: 20px;
-            background: rgba(0,0,0,0.8);
-            padding: 10px;
-            border-radius: 8px;
-            border: 1px solid #333;
-            font-size: 11px;
-            max-width: 300px;
-        }
-        
-        .animation-controls {
-            margin-top: 15px;
-            border-top: 1px solid #333;
-            padding-top: 10px;
-        }
-        
-        button {
-            background: #333;
-            color: white;
-            border: 1px solid #555;
-            padding: 5px 10px;
-            border-radius: 4px;
-            cursor: pointer;
-            margin-right: 10px;
-        }
-        
-        button:hover {
-            background: #555;
-        }
-        
-        button.active {
-            background: #007755;
-        }
-    </style>
+    <title>3D wireframe sphere</title>
+	<link rel="stylesheet" href="css/style_perspective_sphere.css">
 </head>
 <body style="cursor: url('cursor.png') 2 2, auto;">
     <button id="toggleCtrls" onclick="hideControls();">Toggle Controls</button> 
+    <button type="button" data-theme-toggle aria-label="Dark/Light">Light</button>
     <div id="controlsContainer">
     <div class="controls">
         <div class="control-group">
@@ -170,13 +78,51 @@
     </div>
     
     <canvas id="canvas" width="960" height="720"></canvas>
-
     <script>
-    <!-- document.body.style.cursor = "url('cursor.png') 0 0, auto"; -->
+    	function calculateSettingAsThemeString({ localStorageTheme, systemSettingDark }) {
+    	  if (localStorageTheme !== null) {
+    	    return localStorageTheme;
+    	  }
+    	
+    	  if (systemSettingDark.matches) {
+    	    return "dark";
+    	  }
+    	
+    	  return "light";
+    	}
+    	
+    	const localStorageTheme = "dark";
+    	const systemSettingDark = window.matchMedia("(prefers-color-scheme: dark)");
+    	let currentThemeSetting = calculateSettingAsThemeString({ localStorageTheme, systemSettingDark });
+    	// target the button using the data attribute we added earlier
+    	const button = document.querySelector("[data-theme-toggle]");
+    	
+    	button.addEventListener("click", () => {
+    	  const newTheme = currentThemeSetting === "dark" ? "light" : "dark";
+    	
+    	  // update the button text
+    	  const newCta = newTheme === "dark" ? "Light" : "Dark";
+    	  button.innerText = newCta;  
+    	
+    	  // use an aria-label if you are omitting text on the button
+    	  // and using sun/moon icons, for example
+    	  button.setAttribute("aria-label", newCta);
+    	
+    	  // update theme attribute on HTML to switch theme in CSS
+    	  document.querySelector("html").setAttribute("data-theme", newTheme);
+    	
+    	  // update in local storage
+    	  localStorage.setItem("theme", newTheme);
+    	
+    	  // update the currentThemeSetting in memory
+    	  currentThemeSetting = newTheme;
+    	});
+    	
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
         const centerX = canvas.width / 2;
         const centerY = canvas.height / 2;
+
         let frameCount = 0;
         let lastTime = performance.now();
         let fps = 0;
@@ -228,7 +174,28 @@
         // Animation controls
         const toggleAnimBtn = document.getElementById('toggleAnim');
         const toggleFieldLinesBtn = document.getElementById('toggleFieldLines');
-        
+		const themeBtn = document.querySelector('button[data-theme-toggle]');
+
+		function getThemeColors() {
+		    const theme = localStorage.getItem("theme") || "light";
+		    
+		    if (theme === "light") {
+		        return {
+		            meridianRGB: [92, 74, 61],        // Brown RGB values
+		            parallelRGB: [201, 181, 160],     // Beige RGB values
+		            fieldLineRGB: [139, 0, 0],        // Deep red RGB values
+		            semicircle: '#c85a3a'             // Orange
+		        };
+		    } else {
+		        return {
+		            meridianRGB: [0, 255, 136],       // Green RGB values
+		            parallelRGB: [136, 136, 255],     // Blue RGB values
+		            fieldLineRGB: [255, 255, 255],    // White RGB values
+		            semicircle: '#ffaa00'             // Orange
+		        };
+		    }
+		}
+
         // Resized point for semicricle
         let semicirclePtSize = 0;
 
@@ -448,6 +415,22 @@
             ctx.fill();
         }
         
+        function drawBlurredLine(from, to, color, width, blur) {
+   		    const layers = 3; // More = smoother but slower
+   		    
+   		    for (let i = 0; i < layers; i++) {
+   		        const offset = (i / layers) * blur;
+   		        const alpha = (1 - i / layers) * 0.05; // Decreasing opacity
+   		        
+   		        ctx.strokeStyle = `rgba(255, 100, 100, ${alpha})`;
+   		        ctx.lineWidth = width + offset;
+   		        ctx.beginPath();
+   		        ctx.moveTo(from.x, from.y);
+   		        ctx.lineTo(to.x, to.y);
+   		        ctx.stroke();
+   		    }
+   		}
+   		
         function updateFPS() {
           frameCount++;
           const currentTime = performance.now();
@@ -461,26 +444,11 @@
           
           return fps;
         }
-
-		function drawBlurredLine(from, to, color, width, blur) {
-		    const layers = 3; // More = smoother but slower
-		    
-		    for (let i = 0; i < layers; i++) {
-		        const offset = (i / layers) * blur;
-		        const alpha = (1 - i / layers) * 0.05; // Decreasing opacity
-		        
-		        ctx.strokeStyle = `rgba(255, 100, 100, ${alpha})`;
-		        ctx.lineWidth = width + offset;
-		        ctx.beginPath();
-		        ctx.moveTo(from.x, from.y);
-		        ctx.lineTo(to.x, to.y);
-		        ctx.stroke();
-		    }
-		}
-        
-        // Main render function using RAU radical angle system
+		
+		// Main render function using RAU radical angle system
         function render() {
        		ctx.clearRect(0, 0, canvas.width, canvas.height);
+       		const colors = getThemeColors();
             const semicircle    	= parseFloat(controls.semicircle.value) / 100; // 0.01..1.0
             const meridianCount 	= parseInt(controls.meridians.value);
             const parallelCount 	= parseInt(controls.parallels.value);
@@ -511,7 +479,8 @@
 			    for (let i = 0; i < parallelCount && i != midIdx; i++) {
 				    // Draw the field line
 	                const brightness = (animateRotation/2)%12*Math.PI/2;
-					const color = `rgba(255, 255, 255, ${brightness})`;
+				    const rgb = colors.fieldLineRGB;
+				    const color = `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, ${brightness})`;
 					drawBlurredLine(projectedPoints[0], projectedPoints[1], color, i/2*radius*sparkEffect*0.01, radius*0.25);
 				}
 			    }
@@ -537,7 +506,8 @@
                	      if (transformedPoints[i].z + transformedPoints[i + 1].z < cullB) continue;
                	    }
                     const brightness = Math.max(0.5, projectedPoints[i].scale * 0.7);
-                    const color = `rgba(0, 255, 136, ${brightness})`;
+                    const rgb = colors.meridianRGB;
+                    const color = `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, ${brightness})`;
                 	drawLine(projectedPoints[i], projectedPoints[i + 1], color, brightness);
 	               	// Highlight special meridians affected by integration
 	                if (mIndex === Math.floor(meridianCount * semicircle)) {
@@ -548,7 +518,7 @@
 	                    	semicirclePtSize = 1+(canvas.width/canvas.height);
 	                    }
 	                    projectedPoints.forEach(point => {
-	                        drawPoint(point, '#ff8800', semicirclePtSize);
+	                        drawPoint(point, colors.semicircle, semicirclePtSize);
 	                    });
 	                }
                 }
@@ -574,19 +544,21 @@
                	      if (transformedPoints[i].z + transformedPoints[i + 1].z > cullF) continue;
                	      if (transformedPoints[i].z + transformedPoints[i + 1].z < cullB) continue;
                	    }
-                    const brightness = Math.max(0.5, projectedPoints[i].scale * 0.7);
-                    const color = `rgba(136, 136, 255, ${brightness})`;
+               	    const brightness = Math.max(0.5, projectedPoints[i].scale * 0.7);
+                    const rgb = colors.parallelRGB;
+                    const color = `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, ${brightness})`;
+                    drawLine(projectedPoints[i], projectedPoints[i + 1], color, brightness);
                     drawLine(projectedPoints[i], projectedPoints[i + 1], color, brightness);
                 }
             });
-			const currentFps = updateFPS();
-			  
-		    // Display FPS on canvas
-		    ctx.fillStyle = '#00ff00';
-		    ctx.font = '12px monospace';
-		    ctx.fillText(`FPS: ${currentFps}`, 10, 20);
-
-        }
+		  
+		  const currentFps = updateFPS();
+		  
+		  // Display FPS on canvas
+		  ctx.fillStyle = '#00ff00';
+		  ctx.font = '12px monospace';
+		  ctx.fillText(`FPS: ${currentFps}`, 10, 20);
+		}
         
         function hideControls() {
 	        var contentElement = document.getElementById("controlsContainer");
@@ -689,7 +661,7 @@
 			    startFieldLineAnimation();
 			}
 		}
-
+		
 		Object.keys(controls).forEach(key => {
 		  controls[key].addEventListener('input', (e) => {
 		    //if (animatingRotation) return; // Ignore manual input during animation
@@ -718,7 +690,7 @@
         toggleFieldLinesBtn.addEventListener('click', toggleFieldLinesAnimation);
         // Double-click canvas to toggle animation (legacy support)
         canvas.addEventListener('dblclick', toggleAnimation);
-		
+
         // Initial render
         render();
 
