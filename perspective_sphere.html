@@ -184,14 +184,16 @@
 		            meridianRGB: [92, 74, 61],        // Brown RGB values
 		            parallelRGB: [201, 181, 160],     // Beige RGB values
 		            fieldLineRGB: [139, 0, 0],        // Deep red RGB values
-		            semicircle: '#c85a3a'             // Orange
+		            semicircle: '#c85a3a',             // Orange
+		            fpsRGB: '#c85a3a'
 		        };
 		    } else {
 		        return {
 		            meridianRGB: [0, 255, 136],       // Green RGB values
 		            parallelRGB: [136, 136, 255],     // Blue RGB values
 		            fieldLineRGB: [255, 255, 255],    // White RGB values
-		            semicircle: '#ffaa00'             // Orange
+		            semicircle: '#ffaa00',             // Orange
+		            fpsRGB: '#00ff00'
 		        };
 		    }
 		}
@@ -553,10 +555,9 @@
             });
 		  
 		  const currentFps = updateFPS();
-		  
 		  // Display FPS on canvas
-		  ctx.fillStyle = '#00ff00';
-		  ctx.font = '12px monospace';
+		  ctx.fillStyle = colors.fpsRGB;
+		  ctx.font = '11px monospace';
 		  ctx.fillText(`FPS: ${currentFps}`, 10, 20);
 		}
         
