@@ -4,6 +4,7 @@
 }
 
 [data-theme="light"] {
+  --cursor-custom: "";
   --color-bg: #e8dcc8;
   --color-fg: #3d3d3d;
   --canvas-border: 3px solid #8b7355;
@@ -36,6 +37,7 @@
 }
 
 [data-theme="dark"] {
+  --cursor-custom: url('cursor.png') 2 2, auto;
   --color-bg: #0a0a0a;
   --color-fg: #fafafa;
   --canvas-border: 1px solid #333;
@@ -78,7 +80,7 @@ body {
     color: var(--color-fg);
     font-family: monospace;
     overflow: hidden;
-    cursor: default;
+    cursor: var(--cursor-custom);
 }
 
 h1, h2 {
