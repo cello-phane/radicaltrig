@@ -1,0 +1,116 @@
+<html>
+<head>
+<script>
+// === RAU base functions ===
+function radicalSine(t) {
+  t = t % 4;
+  const q = Math.floor(t);
+  const lt = t - q;
+  const a = 1 - 2 * lt + 2 * lt * lt;
+  switch (q) {
+    case 0: return lt / Math.sqrt(a);
+    case 1: return (1 - lt) / Math.sqrt(a);
+    case 2: return -lt / Math.sqrt(a);
+    case 3: return -(1 - lt) / Math.sqrt(a);
+  }
+}
+
+function radicalCosine(t) {
+  t = t % 4;
+  const q = Math.floor(t);
+  const lt = t - q;
+  const a = 1 - 2 * lt + 2 * lt * lt;
+  switch (q) {
+    case 0: return (1 - lt) / Math.sqrt(a);
+    case 1: return -lt / Math.sqrt(a);
+    case 2: return -(1 - lt) / Math.sqrt(a);
+    case 3: return lt / Math.sqrt(a);
+  }
+}
+
+// === Precompute RAU sin/cos for 60 divisions (seconds) ===
+const rauSinTable = [], rauCosTable = [];
+for (let i = 0; i < 60; i++) {
+  const t = (i / 60) * 4; // full circle in RAU
+  rauSinTable.push(radicalSine(t));
+  rauCosTable.push(radicalCosine(t));
+}
+
+// === Draw clock ===
+function drawRAUClock(ctx, width, height) {
+  const cx = width / 2;
+  const cy = height / 2;
+  const radius = Math.min(cx, cy) * 0.9;
+
+  ctx.clearRect(0, 0, width, height);
+
+  // Outline
+  ctx.strokeStyle = "#333";
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.arc(cx, cy, radius, 0, 2 * Math.PI);
+  ctx.stroke();
+
+  // Tick marks
+  ctx.lineWidth = 2;
+  for (let i = 0; i < 12; i++) {
+    const t = (i / 12) * 4;
+    const sx = cx + radicalSine(t) * radius * 0.85;
+    const sy = cy - radicalCosine(t) * radius * 0.85;
+    const ex = cx + radicalSine(t) * radius * 0.95;
+    const ey = cy - radicalCosine(t) * radius * 0.95;
+    ctx.beginPath();
+    ctx.moveTo(sx, sy);
+    ctx.lineTo(ex, ey);
+    ctx.stroke();
+  }
+
+  // Time
+  const now = new Date();
+  const sec = now.getSeconds() + now.getMilliseconds() / 1000;
+  const min = now.getMinutes() + sec / 60;
+  const hr = (now.getHours() % 12) + min / 60;
+
+  // Convert to RAU (4 = full turn)
+  const secRAU = (sec / 60) * 4;
+  const minRAU = (min / 60) * 4;
+  const hrRAU = (hr / 12) * 4;
+
+  // Hands
+  drawHand(ctx, cx, cy, radius * 0.9, radicalSine(secRAU), radicalCosine(secRAU), "red", 2);
+  drawHand(ctx, cx, cy, radius * 0.7, radicalSine(minRAU), radicalCosine(minRAU), "blue", 4);
+  drawHand(ctx, cx, cy, radius * 0.5, radicalSine(hrRAU), radicalCosine(hrRAU), "black", 6);
+}
+
+function drawHand(ctx, cx, cy, len, sin, cos, color, width) {
+  ctx.beginPath();
+  ctx.moveTo(cx, cy);
+  ctx.lineTo(cx + len * sin, cy - len * cos);
+  ctx.strokeStyle = color;
+  ctx.lineWidth = width;
+  ctx.lineCap = "round";
+  ctx.stroke();
+}
+
+// === Animate ===
+function startRAUClock() {
+  const canvas = document.getElementById("rauClock");
+  const ctx = canvas.getContext("2d");
+
+  function loop() {
+    drawRAUClock(ctx, canvas.width, canvas.height);
+    requestAnimationFrame(loop);
+  }
+  loop();
+}
+
+document.addEventListener("DOMContentLoaded", startRAUClock);
+</script>
+</head>
+<body>
+<canvas id="rauClock" width="300" height="300"
+        style="border:2px solid #444; border-radius:50%; display:block; margin:auto;"></canvas>
+<script src="rauClock.js"></script>
+
+</body>
+</html>
