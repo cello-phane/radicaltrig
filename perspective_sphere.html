@@ -116,6 +116,8 @@
     	
     	  // update the currentThemeSetting in memory
     	  currentThemeSetting = newTheme;
+    	  //force the update of the theme for the canvas lines/etc.
+    	  render();
     	});
     	
         const canvas = document.getElementById('canvas');
@@ -634,8 +636,10 @@
 		  if (!animatingRotation) {
 		    // Start smooth looping rotation
 		    startRotationAnimation(rotXAngle, rotYAngle, rotZAngle + 360);
+		    render();
 		  } else {
 		    stopRotationAnimation();
+		    render();
 		  }
 		}
    		
