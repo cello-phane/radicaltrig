@@ -48,7 +48,7 @@ function drawRAUClock(ctx, width, height, scaleFactor) {
   const minRAU = (min / 60) * 4;
   const hrRAU = (hr / 12) * 4;
   
-  const outerRX = 320, outerRY = 340;
+  const outerRX = width/1.886, outerRY = width/1.87;
   const innerRX = 70, innerRY = 50;
   
   rauSinTable.forEach((val, i) => {
@@ -59,8 +59,8 @@ function drawRAUClock(ctx, width, height, scaleFactor) {
         (i % 6 === 0 && (i < 40 && i > 20)) ||
         (i % 6 === 0 && (i < 10 || i > 50))) {
   
-      const sx = cx + val * outerRX * 0.85;
-      const sy = cy - cosVal * outerRY * 0.85;
+      const sx = cx + val * outerRX * 0.855;
+      const sy = cy - cosVal * outerRY * 0.84;
       const ex = cx + val * outerRX * 0.95;
       const ey = cy - cosVal * outerRY * 0.95;
       ctx.beginPath();
