@@ -8,8 +8,8 @@
 
 // === Precompute RAU sin/cos for 60 divisions (seconds) ===
 const rauSinTable = [], rauCosTable = [];
-for (let i = 0; i < 40; i++) {
-  const t = (i / 40) * 4; // full circle in RAU
+for (let i = 0; i < 60; i++) {
+  const t = (i / 60) * 4; // full circle in RAU
   rauSinTable.push(radicalSine(t));
   rauCosTable.push(radicalCosine(t));
 }
@@ -48,26 +48,48 @@ function drawRAUClock(ctx, width, height, scaleFactor) {
   const minRAU = (min / 60) * 4;
   const hrRAU = (hr / 12) * 4;
   
-  rauSinTable.forEach(function(val, i)  {
-    if (i % 5 === 0) {
-		const sx = cx + rauSinTable[i] * 320 * 0.85;
-		const sy = cy - rauCosTable[i] * 340 * 0.85;
-		const ex = cx + rauSinTable[i] * 320 * 0.95;
-		const ey = cy - rauCosTable[i] * 340 * 0.95;
-		ctx.beginPath();
-		ctx.moveTo(sx, sy);
-		ctx.lineTo(ex, ey);
-		ctx.stroke();
+  const outerRX = 320, outerRY = 340;
+  const innerRX = 70, innerRY = 50;
+  
+  rauSinTable.forEach((val, i) => {
+    const cosVal = rauCosTable[i];
+  
+    // tick mark conditions
+    if ((i % 5 === 0 && i % 2 === 0) || i % 15 === 0 ||
+        (i % 6 === 0 && (i < 40 && i > 20)) ||
+        (i % 6 === 0 && (i < 10 || i > 50))) {
+  
+      const sx = cx + val * outerRX * 0.85;
+      const sy = cy - cosVal * outerRY * 0.85;
+      const ex = cx + val * outerRX * 0.95;
+      const ey = cy - cosVal * outerRY * 0.95;
+      ctx.beginPath();
+      ctx.moveTo(sx, sy);
+      ctx.lineTo(ex, ey);
+      ctx.stroke();
     }
-		const sx = cx + rauSinTable[i+1] * 70 * 0.45;
-		const sy = cy - rauCosTable[i+1] * 50 * 0.45;
-		const ex = cx + rauSinTable[i+2] * 70 * 0.55;
-		const ey = cy - rauCosTable[i+2] * 50 * 0.55;
-		ctx.beginPath();
-		ctx.moveTo(sx, sy);
-		ctx.lineTo(ex, ey);
-		ctx.stroke();
+  
+    // fancy symbol thing
+    const next = (i + 1) % 60;
+    const prev = (i + 59) % 60;
+    const s = 0.45, e = 0.55;
+  
+    const sx  = cx + rauSinTable[next] * innerRX * s;
+    const sy  = cy - rauCosTable[prev] * innerRY * s;
+    const ex  = cx + rauSinTable[prev] * innerRX * e;
+    const ey  = cy - rauCosTable[next] * innerRY * e;
+  
+    const sxb = cx + rauSinTable[prev] * innerRX * s;
+    const syb = cy - rauCosTable[next] * innerRY * s;
+    const exb = cx + rauSinTable[next] * innerRX * e;
+    const eyb = cy - rauCosTable[prev] * innerRY * e;
+  
+    ctx.beginPath();
+    ctx.moveTo(sx, sy); ctx.lineTo(ex, ey);
+    ctx.moveTo(sxb, syb); ctx.lineTo(exb, eyb);
+    ctx.stroke();
   });
+  
 
 
   // Hands
