@@ -84,31 +84,46 @@
 
     // === Animation ===
     const startMillis = new Date().getSeconds() * 1000 + new Date().getMilliseconds();
-    const now = new Date();
     let startTime = performance.now() - startMillis;
 
     function animate(timestamp) {
+      const now = new Date(); // ⬅️ MOVE inside animation loop
+    
       const elapsed = (timestamp - startTime) / 1000;
       const secondsFrac = elapsed % 60;
       const sec = Math.floor(secondsFrac);
       const nextSec = (sec + 1) % 60;
       const frac = secondsFrac - sec;
-
+    
       const currPos = secHandPositions[sec];
       const nextPos = secHandPositions[nextSec];
       const sin = currPos.sin + (nextPos.sin - currPos.sin) * frac;
       const cos = currPos.cos + (nextPos.cos - currPos.cos) * frac;
-	  const sinMin = secHandPositions[now.getMinutes()].sin;
-	  const sinHr = secHandPositions[now.getHours()].sin;
-	  const cosMin = secHandPositions[now.getMinutes()].cos;
-	  const cosHr = secHandPositions[now.getHours()].cos;
+    
+      // Compute minute and hour positions freshly every frame
+      const minuteFrac = (now.getMinutes() + now.getSeconds() / 60) / 60; // fractional minute
+      const hourFrac = ((now.getHours() % 12) + now.getMinutes() / 60) / 12; // fractional hour
+    
+      const minPos = {
+        sin: radicalSine(minuteFrac * 4),
+        cos: radicalCosine(minuteFrac * 4)
+      };
+      const hrPos = {
+        sin: radicalSine(hourFrac * 4),
+        cos: radicalCosine(hourFrac * 4)
+      };
+    
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      drawStaticBackground(); // draw once onto main canvas (can cache to offscreen if needed)
-      drawHand(radius * 0.9, sin, cos, "red", 3);
-      drawHand(radius * 0.5, sinMin, cosMin, "blue", 3);
-      drawHand(radius * 0.25, sinHr, cosHr, "green", 5);
+      drawStaticBackground(); // redraw or reuse offscreen cache
+    
+      // Draw hands
+      drawHand(radius * 0.97, sin, cos, "red", 3);    // second
+      drawHand(radius * 0.6, minPos.sin, minPos.cos, "blue", 4);  // minute
+      drawHand(radius * 0.35, hrPos.sin, hrPos.cos, "green", 6);  // hour
+    
       requestAnimationFrame(animate);
     }
+    
 
     // Start clock
     drawStaticBackground(); // draw static elements before animation
