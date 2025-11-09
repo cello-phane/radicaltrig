@@ -1,150 +1,118 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="light">
-
 <head>
-    <title>Clock Widget</title>
-    <link href="css/style_perspective_sphere.css" rel="stylesheet" type="text/css" />
-    <script src="js/rau.js"></script>
-    <script>
-        // === Precompute RAU sin/cos for 60 divisions (seconds) ===
-        const rauSinTable = [],
-            rauCosTable = [];
-        for (let i = 0; i < 60; i++) {
-            const t = (i / 60) * 4; // full circle in RAU
-            rauSinTable.push(radicalSine(t));
-            rauCosTable.push(radicalCosine(t));
-        }
-
-        function startRAUClock() {
-            const canvasBg = document.getElementById('rauClock');
-            const ctxBg = canvasBg.getContext('2d');
-
-            function drawHand(ctx, cx, cy, len, sin, cos, color, width) {
-                ctx.beginPath();
-                ctx.moveTo(cx, cy);
-                ctx.lineTo(cx + len * sin, cy - len * cos);
-                ctx.strokeStyle = color;
-                ctx.lineWidth = width;
-                ctx.lineCap = "round";
-                ctx.stroke();
-            }
-
-            function drawClockBackground() {
-                const width = canvasBg.width,
-                    height = canvasBg.height;
-                ctxBg.clearRect(0, 0, width, height);
-
-                const cx = width / 2;
-                const cy = height / 2;
-                const radius = Math.min(width, height) * 0.45;
-
-                // Circle
-                ctxBg.strokeStyle = '#333';
-                ctxBg.lineWidth = 2;
-                ctxBg.beginPath();
-                ctxBg.arc(cx, cy, radius, 0, 2 * Math.PI);
-                ctxBg.stroke();
-
-                // Precompute ticks
-                const rauSinTable = [],
-                    rauCosTable = [];
-                for (let i = 0; i < 60; i++) {
-                    const t = (i / 60) * 4;
-                    rauSinTable.push(radicalSine(t));
-                    rauCosTable.push(radicalCosine(t));
-                }
-
-
-                ctxBg.lineWidth = 1;
-                ctxBg.strokeStyle = '#333';
-
-                const outerRX = radius,
-                    outerRY = radius;
-                const innerRX = 70,
-                    innerRY = 50;
-
-                rauSinTable.forEach((val, i) => {
-                    const cosVal = rauCosTable[i];
-
-                    // tick mark conditions
-                    if ((i % 5 === 0 && i % 2 === 0) || i % 15 === 0 ||
-                        (i % 6 === 0 && (i < 40 && i > 20)) ||
-                        (i % 6 === 0 && (i < 10 || i > 50))) {
-
-                        const sx = cx + val * outerRX * 0.85;
-                        const sy = cy - cosVal * outerRY * 0.85;
-                        const ex = cx + val * outerRX * 0.95;
-                        const ey = cy - cosVal * outerRY * 0.95;
-                        ctxBg.beginPath();
-                        ctxBg.moveTo(sx, sy);
-                        ctxBg.lineTo(ex, ey);
-                        ctxBg.stroke();
-                    }
-
-                    // fancy symbol thing
-                    const next = (i + 1) % 60;
-                    const prev = (i + 59) % 60;
-                    const s = 0.45,
-                        e = 0.55;
-
-                    const sx = cx + rauSinTable[next] * innerRX * s;
-                    const sy = cy - rauCosTable[prev] * innerRY * s;
-                    const ex = cx + rauSinTable[prev] * innerRX * e;
-                    const ey = cy - rauCosTable[next] * innerRY * e;
-
-                    const sxb = cx + rauSinTable[prev] * innerRX * s;
-                    const syb = cy - rauCosTable[next] * innerRY * s;
-                    const exb = cx + rauSinTable[next] * innerRX * e;
-                    const eyb = cy - rauCosTable[prev] * innerRY * e;
-
-                    ctxBg.beginPath();
-                    ctxBg.moveTo(sx, sy);
-                    ctxBg.lineTo(ex, ey);
-                    ctxBg.moveTo(sxb, syb);
-                    ctxBg.lineTo(exb, eyb);
-                    ctxBg.stroke();
-                });
-            }
-
-            function drawHands() {
-                const width = canvasBg.width,
-                    height = canvasBg.height;
-
-                const cx = width / 2;
-                const cy = height / 2;
-                const radius = Math.min(width, height) * 0.45;
-
-                const now = new Date();
-                const sec = now.getSeconds() + now.getMilliseconds() / 1000;
-                const min = now.getMinutes() + sec / 60;
-                const hr = (now.getHours() % 12) + min / 60;
-
-                const secRAU = (sec / 60) * 4;
-                const minRAU = (min / 60) * 4;
-                const hrRAU = (hr / 12) * 4;
-
-                drawHand(ctxBg, cx, cy, radius * 0.9, radicalSine(secRAU), radicalCosine(secRAU), "red", 2);
-                drawHand(ctxBg, cx, cy, radius * 0.7, radicalSine(minRAU), radicalCosine(minRAU), "blue", 4);
-                drawHand(ctxBg, cx, cy, radius * 0.5, radicalSine(hrRAU), radicalCosine(hrRAU), "black", 6);
-            }
-
-            function loop() {
-                drawClockBackground();
-                drawHands();
-                requestAnimationFrame(loop);
-            }
-
-            loop();
-        }
-
-        document.addEventListener("DOMContentLoaded", startRAUClock);
-    </script>
+  <title>RAU Clock Widget</title>
+  <link href="css/style_perspective_sphere.css" rel="stylesheet" type="text/css" />
 </head>
-
 <body>
-    <div style="position: relative; display: inline-block;">
-        <canvas id="rauClock" width="650" height="650" style="border:2px solid #444; border-radius:50%; display:block; margin:auto;"></canvas>
-    </div>
-</body>
+  <div style="position: relative; display: inline-block;">
+	<canvas id="rauClock" width="650" height="650" style="border:2px solid #444; border-radius:50%; display:block; margin:auto;"></canvas>
+  </div>
+  <script src="js/rau.js"></script>
+  <script>
+    const canvas = document.getElementById("rauClock");
+    const ctx = canvas.getContext("2d");
+    const cx = canvas.width / 2;
+    const cy = canvas.height / 2;
+    const radius = Math.min(cx, cy);
 
+    // === Static Precompute ===
+    const secHandPositions = [];
+    for (let sec = 0; sec < 60; sec++) {
+      const t = (sec / 60) * 4;
+      secHandPositions.push({
+        sin: radicalSine(t),
+        cos: radicalCosine(t),
+      });
+    }
+
+    // === Draw background once ===
+    function drawStaticBackground() {
+      ctx.save();
+
+      // Outer circle
+      ctx.lineWidth = 3;
+      ctx.strokeStyle = "#222";
+      ctx.beginPath();
+      ctx.arc(cx, cy, radius, 0, 2 * Math.PI);
+      ctx.stroke();
+
+      // Tick marks
+      ctx.lineCap = "round";
+      for (let i = 0; i < 60; i++) {
+        const { sin, cos } = secHandPositions[i];
+        const inner = i % 5 === 0 ? radius * 0.85 : radius * 0.93;
+        const outer = radius * 0.97;
+        ctx.beginPath();
+        ctx.moveTo(cx + inner * sin, cy - inner * cos);
+        ctx.lineTo(cx + outer * sin, cy - outer * cos);
+        ctx.lineWidth = i % 5 === 0 ? 3 : 1;
+        ctx.strokeStyle = i % 5 === 0 ? "#333" : "#999";
+        ctx.stroke();
+      }
+
+      // Fancy symbol (inner decorative pattern)
+      const innerRX = radius * 0.2;
+      const innerRY = radius * 0.2;
+      for (let i = 0; i < 60; i++) {
+        const next = (i + 1) % 60;
+        const s = 0.45, e = 0.55;
+        const sx = cx + secHandPositions[next].sin * innerRX * s;
+        const sy = cy - secHandPositions[next].cos * innerRY * s;
+        const ex = cx + secHandPositions[i].sin * innerRX * e;
+        const ey = cy - secHandPositions[i].cos * innerRY * e;
+        ctx.beginPath();
+        ctx.moveTo(sx, sy);
+        ctx.lineTo(ex, ey);
+        ctx.strokeStyle = "#666";
+        ctx.lineWidth = 0.5;
+        ctx.stroke();
+      }
+
+      ctx.restore();
+    }
+
+    function drawHand(len, sin, cos, color, width) {
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.lineTo(cx + len * sin, cy - len * cos);
+      ctx.strokeStyle = color;
+      ctx.lineWidth = width;
+      ctx.lineCap = "round";
+      ctx.stroke();
+    }
+
+    // === Animation ===
+    const startMillis = new Date().getSeconds() * 1000 + new Date().getMilliseconds();
+    const now = new Date();
+    let startTime = performance.now() - startMillis;
+
+    function animate(timestamp) {
+      const elapsed = (timestamp - startTime) / 1000;
+      const secondsFrac = elapsed % 60;
+      const sec = Math.floor(secondsFrac);
+      const nextSec = (sec + 1) % 60;
+      const frac = secondsFrac - sec;
+
+      const currPos = secHandPositions[sec];
+      const nextPos = secHandPositions[nextSec];
+      const sin = currPos.sin + (nextPos.sin - currPos.sin) * frac;
+      const cos = currPos.cos + (nextPos.cos - currPos.cos) * frac;
+	  const sinMin = secHandPositions[now.getMinutes()].sin;
+	  const sinHr = secHandPositions[now.getHours()].sin;
+	  const cosMin = secHandPositions[now.getMinutes()].cos;
+	  const cosHr = secHandPositions[now.getHours()].cos;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawStaticBackground(); // draw once onto main canvas (can cache to offscreen if needed)
+      drawHand(radius * 0.9, sin, cos, "red", 3);
+      drawHand(radius * 0.5, sinMin, cosMin, "blue", 3);
+      drawHand(radius * 0.25, sinHr, cosHr, "green", 5);
+      requestAnimationFrame(animate);
+    }
+
+    // Start clock
+    drawStaticBackground(); // draw static elements before animation
+    requestAnimationFrame(animate);
+  </script>
+</body>
 </html>
