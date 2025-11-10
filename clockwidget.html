@@ -2,21 +2,20 @@
 <html lang="en" data-theme="light">
 <head>
   <title>RAU Clock Widget</title>
-  <link href="css/style_perspective_sphere.css" rel="stylesheet" type="text/css" />
+  <link href="css/style_perspective_sphere.css" rel="stylesheet" type="text/css">
+
 </head>
 <body>
-  <div style="position: relative; display: inline-block;">
-	<canvas id="rauClock" width="650" height="650" style="border:2px solid #444; border-radius:50%; display:block; margin:auto;"></canvas>
-  </div>
+  <canvas id="rauClock" width="650" height="650" style="background: transparent; --canvas-border: transparent;">></canvas>
   <script src="js/rau.js"></script>
   <script>
     const canvas = document.getElementById("rauClock");
     const ctx = canvas.getContext("2d");
     const cx = canvas.width / 2;
     const cy = canvas.height / 2;
-    const radius = Math.min(cx, cy);
+    const radius = Math.min(cx, cy) * 0.9;
 
-    // === Static Precompute ===
+    // Precompute all hand positions for uniform spacing
     const secHandPositions = [];
     for (let sec = 0; sec < 60; sec++) {
       const t = (sec / 60) * 4;
@@ -25,7 +24,24 @@
         cos: radicalCosine(t),
       });
     }
-
+    
+    const minHandPositions = [];
+    for (let min = 0; min < 60; min++) {
+      const t = (min / 60) * 4;
+      minHandPositions.push({
+        sin: radicalSine(t),
+        cos: radicalCosine(t),
+      });
+    }
+    
+    const hrHandPositions = [];
+    for (let hr = 0; hr < 12; hr++) {
+      const t = (hr / 12) * 4;
+      hrHandPositions.push({
+        sin: radicalSine(t),
+        cos: radicalCosine(t),
+      });
+    }
     // === Draw background once ===
     function drawStaticBackground() {
       ctx.save();
@@ -50,10 +66,18 @@
         ctx.strokeStyle = i % 5 === 0 ? "#333" : "#999";
         ctx.stroke();
       }
-
-      // Fancy symbol (inner decorative pattern)
-      const innerRX = radius * 0.2;
-      const innerRY = radius * 0.2;
+      const rauSinTable = [],
+      rauCosTable = [];
+      for (let i = 0; i < 60; i++) {
+          const t = (i / 60) * 4;
+          rauSinTable.push(radicalSine(t));
+          rauCosTable.push(radicalCosine(t));
+      }
+      const outerRX = radius,
+          outerRY = radius;
+      const innerRX = 70,
+          innerRY = 50;
+      ctx.restore();
       for (let i = 0; i < 60; i++) {
         const next = (i + 1) % 60;
         const s = 0.45, e = 0.55;
@@ -68,7 +92,6 @@
         ctx.lineWidth = 0.5;
         ctx.stroke();
       }
-
       ctx.restore();
     }
 
@@ -87,43 +110,45 @@
     let startTime = performance.now() - startMillis;
 
     function animate(timestamp) {
-      const now = new Date(); // ⬅️ MOVE inside animation loop
-    
+      const now = new Date();
       const elapsed = (timestamp - startTime) / 1000;
+      
+      // Second hand: smooth interpolation
       const secondsFrac = elapsed % 60;
       const sec = Math.floor(secondsFrac);
       const nextSec = (sec + 1) % 60;
-      const frac = secondsFrac - sec;
-    
-      const currPos = secHandPositions[sec];
-      const nextPos = secHandPositions[nextSec];
-      const sin = currPos.sin + (nextPos.sin - currPos.sin) * frac;
-      const cos = currPos.cos + (nextPos.cos - currPos.cos) * frac;
-    
-      // Compute minute and hour positions freshly every frame
-      const minuteFrac = (now.getMinutes() + now.getSeconds() / 60) / 60; // fractional minute
-      const hourFrac = ((now.getHours() % 12) + now.getMinutes() / 60) / 12; // fractional hour
-    
-      const minPos = {
-        sin: radicalSine(minuteFrac * 4),
-        cos: radicalCosine(minuteFrac * 4)
-      };
-      const hrPos = {
-        sin: radicalSine(hourFrac * 4),
-        cos: radicalCosine(hourFrac * 4)
-      };
-    
+      const secFrac = secondsFrac - sec;
+      const secPos = interpolate(secHandPositions[sec], secHandPositions[nextSec], secFrac);
+      
+      // Minute hand: interpolate within 60 positions
+      const totalSeconds = now.getMinutes() * 60 + now.getSeconds();
+      const minIndex = Math.floor((totalSeconds / 3600) * 60);
+      const minFrac = ((totalSeconds / 3600) * 60) - minIndex;
+      const minPos = interpolate(minHandPositions[minIndex % 60], minHandPositions[(minIndex + 1) % 60], minFrac);
+      
+      // Hour hand: interpolate within 12 positions
+      const totalMinutes = now.getHours() * 60 + now.getMinutes();
+      const hrIndex = Math.floor((totalMinutes / 720) * 12) % 12;
+      const hrFrac = ((totalMinutes / 720) * 12) - hrIndex;
+      const hrPos = interpolate(hrHandPositions[hrIndex], hrHandPositions[(hrIndex + 1) % 12], hrFrac);
+      
+      // Draw
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      drawStaticBackground(); // redraw or reuse offscreen cache
-    
-      // Draw hands
-      drawHand(radius * 0.97, sin, cos, "red", 3);    // second
-      drawHand(radius * 0.6, minPos.sin, minPos.cos, "blue", 4);  // minute
-      drawHand(radius * 0.35, hrPos.sin, hrPos.cos, "green", 6);  // hour
-    
+      drawStaticBackground();
+      
+      drawHand(radius * 0.97, secPos.sin, secPos.cos, "red", 3);
+      drawHand(radius * 0.6, minPos.sin, minPos.cos, "blue", 4);
+      drawHand(radius * 0.06, hrPos.sin, hrPos.cos, "green", 6);
+      
       requestAnimationFrame(animate);
     }
     
+    function interpolate(p1, p2, t) {
+      return {
+        sin: p1.sin + (p2.sin - p1.sin) * t,
+        cos: p1.cos + (p2.cos - p1.cos) * t
+      };
+    }
 
     // Start clock
     drawStaticBackground(); // draw static elements before animation
