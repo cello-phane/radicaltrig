@@ -19,8 +19,8 @@
         <span class="value" id="designVal">15</span>
         </div>
         <div class="control-group">
-        <input type="range" min="0.1" max="1.0" value="0.1" class="slider" id="opacity" step="0.01">
-        <span class="value" id="opacityVal">0.1</span>
+        <input type="range" min="0.1" max="5.0" value="1.5" class="slider" id="opacity" step="0.1">
+        <span class="value" id="opacityVal">1.5</span>
         </div>
         <div class="control-group">
         <input type="range" min="50" max="1000" value="470" class="slider" id="size" step="50">
@@ -259,7 +259,12 @@
             drawHand(radius * 0.97, secPos.sin, secPos.cos, "red", 3);
             drawHand(radius * 0.6, minPos.sin, minPos.cos, "blue", 4);
             drawHand(radius * 0.2, hrPos.sin, hrPos.cos, "green", 6);
-
+	        controls.design.value = design;
+		  	controls.opacity.value = opacity;
+		  	controls.size.value = size;
+		  	values.designVal.textContent 	= design;
+		  	values.opacityVal.textContent 	= opacity;
+		  	values.sizeVal.textContent 		= size;
             requestAnimationFrame(animate);
         }
 
@@ -273,12 +278,8 @@
         // Start clock
         //drawStaticBackground(); // draw static elements before animation
         requestAnimationFrame(animate);
-        controls.design.value = design;
-	  	controls.opacity.value = opacity;
-	  	controls.size.value = size;
-        values.designVal.textContent 	= design;
-        values.opacityVal.textContent 	= opacity;
-        values.sizeVal.textContent 		= size;
+
+
 		Object.keys(controls).forEach(key => {
 		  controls[key].addEventListener('input', (e) => {
 		    if (key === 'design') design = parseInt(e.target.value);
