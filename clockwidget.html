@@ -15,6 +15,12 @@
   <canvas id="rauClock" width="750" height="750" style="background: transparent; --canvas-border: transparent;">></canvas>
   <script src="js/rau.js"></script>
   <script>
+    (function() {
+      const theme = localStorage.getItem("theme") || "dark"; // default
+      document.documentElement.dataset.theme = theme;
+    })();
+  </script>
+  <script>
   function calculateSettingAsThemeString({ localStorageTheme, systemSettingDark }) {
    	  if (localStorageTheme !== null) {
    	    return localStorageTheme;
