@@ -4,7 +4,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="script-src 'unsafe-inline' https://cdn.jsdelivr.net https://cello-phane.github.io; script-src-elem 'unsafe-inline' https://cdn.jsdelivr.net https://cello-phane.github.io">
     <title>RAU Clock Widget</title>
     <link href="css/style_perspective_sphere.css" rel="stylesheet" type="text/css">
 </head>
@@ -15,12 +14,12 @@
     <div id="controlsContainer">
 	<div class="controls">
         <div class="control-group">
-        <input type="range" min="1" max="100" value="15" class="slider" id="design" step="0.1">
-        <span class="value" id="designVal">15</span>
+        <input type="range" min="1" max="100" value="25" class="slider" id="design" step="1">
+        <span class="value" id="designVal">25</span>
         </div>
         <div class="control-group">
-        <input type="range" min="0.1" max="5.0" value="1.5" class="slider" id="opacity" step="0.1">
-        <span class="value" id="opacityVal">1.5</span>
+        <input type="range" min="0.1" max="5" value="1" class="slider" id="opacity" step="0.1">
+        <span class="value" id="opacityVal">1.0</span>
         </div>
         <div class="control-group">
         <input type="range" min="50" max="1000" value="470" class="slider" id="size" step="50">
@@ -279,14 +278,32 @@
         //drawStaticBackground(); // draw static elements before animation
         requestAnimationFrame(animate);
 
-
 		Object.keys(controls).forEach(key => {
 		  controls[key].addEventListener('input', (e) => {
 		    if (key === 'design') design = parseInt(e.target.value);
 		    if (key === 'opacity') opacity = parseFloat(e.target.value);
 		    if (key === 'size') size = parseInt(e.target.value);
 		  });
-		});        
+		});  
+		// Keyboard controls for sliders
+		document.addEventListener('keydown', (e) => {
+		  const activeSlider = document.activeElement;
+		  
+		  // Check if an input slider is focused
+		  if (activeSlider && activeSlider.type === 'range') {
+		    const step = parseInt(activeSlider.step) || 1;
+		    
+		    if (e.key === 'ArrowUp') {
+		      e.preventDefault();
+		      activeSlider.value = Math.min(activeSlider.max, parseInt(activeSlider.value) + step);
+		      activeSlider.dispatchEvent(new Event('input'));
+		    } else if (e.key === 'ArrowDown') {
+		      e.preventDefault();
+		      activeSlider.value = Math.max(activeSlider.min, parseInt(activeSlider.value) - step);
+		      activeSlider.dispatchEvent(new Event('input'));
+		    }
+		  }
+		});
     </script>
 </body>
 
