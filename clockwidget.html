@@ -285,25 +285,6 @@
 		    if (key === 'size') size = parseInt(e.target.value);
 		  });
 		});  
-		// Keyboard controls for sliders
-		document.addEventListener('keydown', (e) => {
-		  const activeSlider = document.activeElement;
-		  
-		  // Check if an input slider is focused
-		  if (activeSlider && activeSlider.type === 'range') {
-		    const step = parseInt(activeSlider.step) || 1;
-		    
-		    if (e.key === 'ArrowUp') {
-		      e.preventDefault();
-		      activeSlider.value = Math.min(activeSlider.max, parseInt(activeSlider.value) + step);
-		      activeSlider.dispatchEvent(new Event('input'));
-		    } else if (e.key === 'ArrowDown') {
-		      e.preventDefault();
-		      activeSlider.value = Math.max(activeSlider.min, parseInt(activeSlider.value) - step);
-		      activeSlider.dispatchEvent(new Event('input'));
-		    }
-		  }
-		});
     </script>
 </body>
 
