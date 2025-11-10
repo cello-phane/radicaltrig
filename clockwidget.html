@@ -6,13 +6,80 @@
 
 </head>
 <body>
+<button type="button" data-theme-toggle aria-label="Change Theme">Dark/Light</button>
 <div class="slidecontainer">
-  <input type="range" min="1" max="100" value="50" class="slider" id="myRange">
+  <input type="range" min="1" max="100" value="25" class="slider" id="design" step="0.1">
+  <input type="range" min="0.1" max="1.0" value="0.1" class="slider" id="opacity" step="0.01">
+  <input type="range" min="50" max="1000" value="470" class="slider" id="size" step="50">
 </div>
   <canvas id="rauClock" width="750" height="750" style="background: transparent; --canvas-border: transparent;">></canvas>
   <script src="js/rau.js"></script>
   <script>
-	let slider = document.getElementById("myRange");
+  function calculateSettingAsThemeString({ localStorageTheme, systemSettingDark }) {
+   	  if (localStorageTheme !== null) {
+   	    return localStorageTheme;
+   	  }
+   	
+   	  if (systemSettingDark.matches) {
+   	    return "dark";
+   	  }
+   	
+   	  return "light";
+   	}
+   	
+   	const localStorageTheme = "dark";
+   	const systemSettingDark = window.matchMedia("(prefers-color-scheme: dark)");
+   	let currentThemeSetting = calculateSettingAsThemeString({ localStorageTheme, systemSettingDark });
+   	// target the button using the data attribute we added earlier
+   	const button = document.querySelector("[data-theme-toggle]");
+   	
+   	button.addEventListener("click", () => {
+   	  const newTheme = currentThemeSetting === "dark" ? "light" : "dark";
+   	
+   	  // update the button text
+   	  const newCta = newTheme === "dark" ? "Switch to Light" : "Switch to Dark";
+   	  button.innerText = newCta;  
+   	
+   	  // use an aria-label if you are omitting text on the button
+   	  // and using sun/moon icons, for example
+   	  button.setAttribute("aria-label", newCta);
+   	
+   	  // update theme attribute on HTML to switch theme in CSS
+   	  document.querySelector("html").setAttribute("data-theme", newTheme);
+   	
+   	  // update in local storage
+   	  localStorage.setItem("theme", newTheme);
+   	
+   	  // update the currentThemeSetting in memory
+   	  currentThemeSetting = newTheme;
+   	  //force the update of the theme for the canvas lines/etc.
+   	  requestAnimationFrame(animate);
+	});
+	const themeBtn = document.querySelector('button[data-theme-toggle]');
+
+	function getThemeColors() {
+	    const theme = localStorage.getItem("theme") || "dark";
+	    
+	    if (theme === "light") {
+	        return {
+	            meridianRGB: [92, 74, 61],        // Brown RGB values
+	            parallelRGB: [201, 181, 160],     // Beige RGB values
+	            fieldLineRGB: [139, 0, 0]         // Deep red RGB values
+            };
+	    } else {
+	        return {
+	            meridianRGB: [0, 255, 136],       // Green RGB values
+	            parallelRGB: [136, 136, 255],     // Blue RGB values
+	            fieldLineRGB: [255, 255, 255]     // White RGB values
+	        };
+	    }
+	}
+
+  </script>
+  <script>
+	let sliderDesignParam = document.getElementById("design");
+	let sliderOpacityParam = document.getElementById("opacity");
+	let sliderSizeParam = document.getElementById("size");
     const canvas = document.getElementById("rauClock");
     const ctx = canvas.getContext("2d");
     const cx = canvas.width / 2;
@@ -45,13 +112,15 @@
         cos: radicalCosine(t),
       });
     }
+    
     // === Draw background once ===
     function drawStaticBackground() {
       ctx.save();
-
+	  const colors = getThemeColors();
       // Outer circle
       ctx.lineWidth = 3;
-      ctx.strokeStyle = "#222";
+      const rgb = colors.meridianRGB;
+      ctx.strokeStyle = `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 255)`;
       ctx.beginPath();
       ctx.arc(cx, cy, radius, 0, 2 * Math.PI);
       ctx.stroke();
@@ -66,21 +135,22 @@
         ctx.moveTo(cx + inner * sin, cy - inner * cos);
         ctx.lineTo(cx + outer * sin, cy - outer * cos);
         ctx.lineWidth = i % 5 === 0 ? 3 : 1;
-        ctx.strokeStyle = i % 5 === 0 ? "#333" : "#999";
+        ctx.strokeStyle = i % 5 === 0 ? "rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 255)" : "rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 205)";
         ctx.stroke();
       }
       const rauSinTable = [],
       rauCosTable = [];
       for (let i = 0; i < 360; i++) {
-          const t = (i / slider.value) * 8;
+          const t = (i / sliderDesignParam.value);
           rauSinTable.push(radicalSine(t));
           rauCosTable.push(radicalCosine(t));
       }
       ctx.restore();
       for (let i = 0; i < 360; i++) {
-		const outerRX = radius, outerRY = radius, innerRX = radius, innerRY = radius;
+      	const size = sliderSizeParam.value;
+		const outerRX = size, outerRY = size, innerRX = size, innerRY = size;
         const next = (i - 1) % 25;
-        const s = 0.24, e = 0.25;
+        const s = 0.25, e = 0.25;
         const sx = cx + rauSinTable[next] * innerRX * s;
         const sy = cy - rauCosTable[next] * innerRY * s;
         const ex = cx + rauSinTable[i] * innerRX * e;
@@ -88,8 +158,8 @@
         ctx.beginPath();
         ctx.moveTo(sx, sy);
         ctx.lineTo(ex, ey);
-        ctx.strokeStyle = "#222";
-        ctx.lineWidth = 0.75;
+        ctx.strokeStyle = `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 255)`;
+        ctx.lineWidth = sliderOpacityParam.value;
         ctx.stroke();
       }
       ctx.restore();
