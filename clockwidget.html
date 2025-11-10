@@ -6,15 +6,18 @@
 
 </head>
 <body>
-  <canvas id="rauClock" width="650" height="650" style="background: transparent; --canvas-border: transparent;">></canvas>
+<div class="slidecontainer">
+  <input type="range" min="1" max="100" value="50" class="slider" id="myRange">
+</div>
+  <canvas id="rauClock" width="750" height="750" style="background: transparent; --canvas-border: transparent;">></canvas>
   <script src="js/rau.js"></script>
   <script>
+	let slider = document.getElementById("myRange");
     const canvas = document.getElementById("rauClock");
     const ctx = canvas.getContext("2d");
     const cx = canvas.width / 2;
     const cy = canvas.height / 2;
     const radius = Math.min(cx, cy) * 0.9;
-
     // Precompute all hand positions for uniform spacing
     const secHandPositions = [];
     for (let sec = 0; sec < 60; sec++) {
@@ -68,28 +71,25 @@
       }
       const rauSinTable = [],
       rauCosTable = [];
-      for (let i = 0; i < 60; i++) {
-          const t = (i / 60) * 4;
+      for (let i = 0; i < 360; i++) {
+          const t = (i / slider.value) * 8;
           rauSinTable.push(radicalSine(t));
           rauCosTable.push(radicalCosine(t));
       }
-      const outerRX = radius,
-          outerRY = radius;
-      const innerRX = 70,
-          innerRY = 50;
       ctx.restore();
-      for (let i = 0; i < 60; i++) {
-        const next = (i + 1) % 60;
-        const s = 0.45, e = 0.55;
-        const sx = cx + secHandPositions[next].sin * innerRX * s;
-        const sy = cy - secHandPositions[next].cos * innerRY * s;
-        const ex = cx + secHandPositions[i].sin * innerRX * e;
-        const ey = cy - secHandPositions[i].cos * innerRY * e;
+      for (let i = 0; i < 360; i++) {
+		const outerRX = radius, outerRY = radius, innerRX = radius, innerRY = radius;
+        const next = (i - 1) % 25;
+        const s = 0.24, e = 0.25;
+        const sx = cx + rauSinTable[next] * innerRX * s;
+        const sy = cy - rauCosTable[next] * innerRY * s;
+        const ex = cx + rauSinTable[i] * innerRX * e;
+        const ey = cy - rauCosTable[i] * innerRY * e;
         ctx.beginPath();
         ctx.moveTo(sx, sy);
         ctx.lineTo(ex, ey);
-        ctx.strokeStyle = "#666";
-        ctx.lineWidth = 0.5;
+        ctx.strokeStyle = "#222";
+        ctx.lineWidth = 0.75;
         ctx.stroke();
       }
       ctx.restore();
@@ -152,7 +152,7 @@
     }
 
     // Start clock
-    drawStaticBackground(); // draw static elements before animation
+    //drawStaticBackground(); // draw static elements before animation
     requestAnimationFrame(animate);
   </script>
 </body>
