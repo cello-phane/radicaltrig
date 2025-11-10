@@ -127,9 +127,10 @@
       const minPos = interpolate(minHandPositions[minIndex % 60], minHandPositions[(minIndex + 1) % 60], minFrac);
       
       // Hour hand: interpolate within 12 positions
-      const totalMinutes = now.getHours() * 60 + now.getMinutes();
-      const hrIndex = Math.floor((totalMinutes / 720) * 12) % 12;
-      const hrFrac = ((totalMinutes / 720) * 12) - hrIndex;
+      const totalMinutes = (now.getHours() % 12) * 60 + now.getMinutes();
+      const hrIndexFloat = (totalMinutes / 720) * 12; // 0-12 over 12 hours
+      const hrIndex = Math.floor(hrIndexFloat) % 12;
+      const hrFrac = hrIndexFloat - Math.floor(hrIndexFloat);
       const hrPos = interpolate(hrHandPositions[hrIndex], hrHandPositions[(hrIndex + 1) % 12], hrFrac);
       
       // Draw
@@ -138,7 +139,7 @@
       
       drawHand(radius * 0.97, secPos.sin, secPos.cos, "red", 3);
       drawHand(radius * 0.6, minPos.sin, minPos.cos, "blue", 4);
-      drawHand(radius * 0.06, hrPos.sin, hrPos.cos, "green", 6);
+      drawHand(radius * 0.2, hrPos.sin, hrPos.cos, "green", 6);
       
       requestAnimationFrame(animate);
     }
