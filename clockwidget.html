@@ -258,7 +258,14 @@
             drawHand(radius * 0.97, secPos.sin, secPos.cos, "red", 3);
             drawHand(radius * 0.6, minPos.sin, minPos.cos, "blue", 4);
             drawHand(radius * 0.2, hrPos.sin, hrPos.cos, "green", 6);
-
+            
+            // Update the Values on the controls div
+	        controls.design.value = design;
+		  	controls.opacity.value = opacity;
+		  	controls.size.value = size;
+		  	values.designVal.textContent 	= design;
+		  	values.opacityVal.textContent 	= opacity;
+		  	values.sizeVal.textContent 		= size;
             requestAnimationFrame(animate);
         }
 
