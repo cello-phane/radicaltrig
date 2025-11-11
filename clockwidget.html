@@ -230,7 +230,7 @@
         function animate(timestamp) {
             const now = new Date();
             const elapsed = (timestamp - startTime) / 1000;
-
+			
             // Second hand: smooth interpolation
             const secondsFrac = elapsed % 60;
             const sec = Math.floor(secondsFrac);
@@ -252,9 +252,6 @@
             const hrPos = interpolate(hrHandPositions[hrIndex], hrHandPositions[(hrIndex + 1) % 12], hrFrac);
 
             // Draw
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            drawStaticBackground();
-
             drawHand(radius * 0.97, secPos.sin, secPos.cos, "red", 3);
             drawHand(radius * 0.6, minPos.sin, minPos.cos, "blue", 4);
             drawHand(radius * 0.2, hrPos.sin, hrPos.cos, "green", 6);
@@ -276,8 +273,9 @@
             };
         }
 		
-        // Start clock
-        //drawStaticBackground(); // draw static elements before animation
+        // Start clock (only once, before the hands are drawn for the ongoing frames in time)
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        drawStaticBackground();
         requestAnimationFrame(animate);
 
 		Object.keys(controls).forEach(key => {
