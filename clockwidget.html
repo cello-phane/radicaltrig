@@ -27,13 +27,14 @@
         </div>
 	</div>
     </div>
-    <canvas id="rauClock" width="750" height="750" style="background: transparent; --canvas-border: transparent;">></canvas>
+    <canvas id="rauClock" width="750" height="750" style="background: transparent; --canvas-border: transparent;"></canvas>
     <script src="js/rau.js"></script>
     <script>
         (function() {
-            const theme = localStorage.getItem("theme") || "dark"; // default
+            const theme = localStorage.getItem("theme") || "dark";
             document.documentElement.dataset.theme = theme;
         })();
+
         function calculateSettingAsThemeString({
             localStorageTheme,
             systemSettingDark
@@ -55,153 +56,225 @@
             localStorageTheme,
             systemSettingDark
         });
-        // target the button using the data attribute we added earlier
+
         const button = document.querySelector("[data-theme-toggle]");
 
         button.addEventListener("click", () => {
             const newTheme = currentThemeSetting === "dark" ? "light" : "dark";
-
-            // update the button text
             const newCta = newTheme === "dark" ? "Switch to Light" : "Switch to Dark";
             button.innerText = newCta;
-
-            // use an aria-label if you are omitting text on the button
-            // and using sun/moon icons, for example
             button.setAttribute("aria-label", newCta);
-
-            // update theme attribute on HTML to switch theme in CSS
             document.querySelector("html").setAttribute("data-theme", newTheme);
-
-            // update in local storage
             localStorage.setItem("theme", newTheme);
-			
-            // update the currentThemeSetting in memory
             currentThemeSetting = newTheme;
-            // Redraw the static layer with the new colors
             drawStaticBackgroundOnce();
         });
-        const themeBtn = document.querySelector('button[data-theme-toggle]');
-		function applyCanvasTheme() {
-		  const root = document.documentElement;
-		  const styles = getComputedStyle(root);
-		  const bgColor = styles.getPropertyValue('--bg-color').trim();
 
-		  // Main visible canvas
-		  canvas.style.backgroundColor = bgColor;
-
-		  // Static buffer canvas (offscreen)
-		  staticCtx.fillStyle = bgColor;
-		  staticCtx.fillRect(0, 0, staticBuffer.width, staticBuffer.height);
-		}
         function getThemeColors() {
             const theme = localStorage.getItem("theme") || "dark";
 
             if (theme === "light") {
                 return {
-                    meridianRGB: [92, 74, 61], // Brown RGB values
-                    parallelRGB: [201, 181, 160], // Beige RGB values
-                    fieldLineRGB: [139, 0, 0] // Deep red RGB values
+                    meridianRGB: [92, 74, 61],
+                    parallelRGB: [201, 181, 160],
+                    fieldLineRGB: [139, 0, 0]
                 };
             } else {
                 return {
-                    meridianRGB: [0, 255, 136], // Green RGB values
-                    parallelRGB: [136, 136, 255], // Blue RGB values
-                    fieldLineRGB: [255, 255, 255] // White RGB values
+                    meridianRGB: [0, 255, 136],
+                    parallelRGB: [136, 136, 255],
+                    fieldLineRGB: [255, 255, 255]
                 };
             }
         }
+
         const canvas = document.getElementById("rauClock");
         const ctx = canvas.getContext("2d");
         const cx = canvas.width / 2;
         const cy = canvas.height / 2;
         const radius = Math.min(cx, cy) * 0.9;
-		let colors = getThemeColors();
-		let rgb = colors.parallelRGB;
-		// Control elements
-		const controls = {
-		    design: document.getElementById('design'),
-		    opacity: document.getElementById('opacity'),
-		    size: document.getElementById('size')
-		};
+
+        const controls = {
+            design: document.getElementById('design'),
+            opacity: document.getElementById('opacity'),
+            size: document.getElementById('size')
+        };
+
         const values = {
-		    designVal: document.getElementById('designVal'),
+            designVal: document.getElementById('designVal'),
             opacityVal: document.getElementById('opacityVal'),
             sizeVal: document.getElementById('sizeVal')
         };
-        let design   = parseInt(controls.design.value);
-       	let opacity  = parseFloat(controls.opacity.value);
-        let size 	 = parseInt(controls.size.value);
-        
-        const sinTable = [], cosTable = [];
-        for (let deg = 0; deg < 360; deg += 6) {
-          const rad = deg * Math.PI / 180;
-          sinTable.push(Math.sin(rad));
-          cosTable.push(Math.cos(rad));
+
+        let design = parseInt(controls.design.value);
+        let opacity = parseFloat(controls.opacity.value);
+        let size = parseInt(controls.size.value);
+
+        // ================================
+        // Uniform Velocity Table Generation
+        // ================================
+        function generateUniformVelocityTable(divisions = 60) {
+            const table = [];
+
+            for (let i = 0; i < divisions; i++) {
+                // RAU position: uniform steps from 0 to 4
+                const rauPosition = (i / divisions) * 4;
+
+                // Compute sin/cos once and store
+                const sin = radicalSine(uniformVelocityRAU(rauPosition));
+                const cos = radicalCosine(uniformVelocityRAU(rauPosition));
+
+                table.push({ sin, cos, rauPosition });
+            }
+
+            return table;
         }
-        
+
+        // ================================
+        // Interpolation from Table
+        // ================================
+        function getInterpolatedFromTable(table, secondsFrac) {
+            // Map seconds (0-60) directly to RAU (0-4)
+            const totalSeconds = secondsFrac % 60;
+            const rauPosition = (totalSeconds / 60) * 4;
+
+            // Find the two nearest table entries
+            const indexFloat = (rauPosition / 4) * table.length;
+            const index = Math.floor(indexFloat);
+            const nextIndex = (index + 1) % table.length;
+            const fraction = indexFloat - index;
+
+            const current = table[index];
+            const next = table[nextIndex];
+
+            // Linear interpolation in sin/cos space
+            const sin = current.sin + (next.sin - current.sin) * fraction;
+            const cos = current.cos + (next.cos - current.cos) * fraction;
+
+            return { sin, cos };
+        }
+
+        const uniformVelocityTable = generateUniformVelocityTable(60);
+
         function hideControls() {
-            var contentElement = document.getElementById("controlsContainer");
+            const contentElement = document.getElementById("controlsContainer");
             if (contentElement.style.display === "none") {
-                contentElement.style.display = "block"; // Show the element
+                contentElement.style.display = "block";
             } else {
-                contentElement.style.display = "none"; // Hide the element
+                contentElement.style.display = "none";
             }
         }
-        // Create offscreen canvas for static background
+
         const staticBuffer = document.createElement("canvas");
         staticBuffer.width = canvas.width;
         staticBuffer.height = canvas.height;
         const staticCtx = staticBuffer.getContext("2d");
-        
-		// === Draw background once ===
+
+        // ================================
+        // Draw Uniform Velocity Ticks
+        // ================================
+        function drawUniformVelocityTicks(ctx, cx, cy, radius, rauTable, opacity = 0.5, color = "rgba(255, 255, 255, ") {
+            ctx.save();
+
+            const tickRadius = radius * 0.92;
+            const tickLength = radius * 0.08;
+
+            rauTable.forEach((entry, index) => {
+                const sin = entry.sin;
+                const cos = entry.cos;
+
+                const innerX = cx + sin * tickRadius;
+                const innerY = cy - cos * tickRadius;
+                const outerX = cx + sin * (tickRadius + tickLength);
+                const outerY = cy - cos * (tickRadius + tickLength);
+
+                ctx.beginPath();
+                ctx.moveTo(innerX, innerY);
+                ctx.lineTo(outerX, outerY);
+
+                if (index % 5 === 0) {
+                    ctx.lineWidth = 3;
+                    ctx.strokeStyle = `${color}1.0)`;
+                } else {
+                    ctx.lineWidth = 1;
+                    ctx.strokeStyle = `${color}${opacity})`;
+                }
+
+                ctx.lineCap = "round";
+                ctx.stroke();
+            });
+
+            ctx.restore();
+        }
+
+        // ================================
+        // Draw Numbered Markers
+        // ================================
+        function drawNumberedMarkers(ctx, cx, cy, radius, rauTable, color = "white") {
+            ctx.save();
+            ctx.fillStyle = color;
+            ctx.font = "12px monospace";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+
+            const markerRadius = radius * 0.80;
+
+            for (let i = 0; i < rauTable.length; i += 5) {
+                const entry = rauTable[i];
+                const sin = entry.sin;
+                const cos = entry.cos;
+
+                const x = cx + sin * markerRadius;
+                const y = cy - cos * markerRadius;
+
+                ctx.fillText(i.toString(), x, y);
+            }
+
+            ctx.restore();
+        }
+
+        // ================================
+        // Draw Static Background
+        // ================================
         function drawStaticBackgroundOnce() {
             staticCtx.clearRect(0, 0, staticBuffer.width, staticBuffer.height);
-        
-            // Apply theme-based background
-            applyCanvasTheme();
-        
+
+            staticCtx.save();
             const colors = getThemeColors();
             const rgb = colors.parallelRGB;
-            staticCtx.save();
-            
+
             // Outer circle
             staticCtx.lineWidth = 3;
-            
             staticCtx.strokeStyle = `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 255)`;
-            staticCtx.clearRect(0, 0, staticBuffer.width, staticBuffer.height);
             staticCtx.beginPath();
             staticCtx.arc(cx, cy, radius, 0, 2 * Math.PI);
             staticCtx.stroke();
 
-            // Tick marks
+            // Uniform velocity ticks
+            drawUniformVelocityTicks(staticCtx, cx, cy, radius, uniformVelocityTable, 0.6, `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, `);
+
+            // Numbered markers
+            drawNumberedMarkers(staticCtx, cx, cy, radius, uniformVelocityTable, `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 0.8)`);
+
             staticCtx.lineCap = "round";
-            for (let i = 0; i < 60; i++) {
-                const inner = i % 5 === 0 ? radius * 0.85 : radius * 0.93;
-                const outer = radius * 0.97;
-                staticCtx.beginPath();
-                staticCtx.moveTo(cx + inner * sinTable[i], cy - inner * cosTable[i]);
-                staticCtx.lineTo(cx + outer * sinTable[i], cy - outer * cosTable[i]);
-                staticCtx.lineWidth = i % 5 === 0 ? 3 : 1;
-                staticCtx.strokeStyle = i % 5 === 0 ? "rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 255)" : "rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 205)";
-                staticCtx.stroke();
-            }
-            
-            const rauSinTable = [],
-                rauCosTable = [];
+
+            // Fancy inner pattern
+            const rauSinTable = [];
+            const rauCosTable = [];
             for (let i = 0; i < 360; i++) {
                 const t = (i / design);
                 rauSinTable.push(radicalSine(t));
                 rauCosTable.push(radicalCosine(t));
             }
-            staticCtx.restore();
+
             for (let i = 0; i < 360; i++) {
-                const outerRX = size,
-                    outerRY = size,
-                    innerRX = size,
-                    innerRY = size;
+                const outerRX = size;
+                const outerRY = size;
+                const innerRX = size;
+                const innerRY = size;
                 const next = (i - 1) % 25;
-                const s = 0.25,
-                    e = 0.25;
+                const s = 0.25;
+                const e = 0.25;
                 const sx = cx + rauSinTable[next] * innerRX * s;
                 const sy = cy - rauCosTable[next] * innerRY * s;
                 const ex = cx + rauSinTable[i] * innerRX * e;
@@ -213,6 +286,7 @@
                 staticCtx.lineWidth = opacity;
                 staticCtx.stroke();
             }
+
             staticCtx.restore();
         }
 
@@ -226,92 +300,71 @@
             ctx.stroke();
         }
 
+        // ================================
+        // Uniform Velocity Conversion (tan-based)
+        // ================================
+        function uniformVelocityRAU(linearParam) {
+            // Map linear parameter to uniform velocity RAU
+            // This compensates for the non-linear speed of RAU functions
+            const phase = linearParam % 4;
+            const quadrant = Math.floor(phase);
+            const t = phase - quadrant;  // 0 to 1 within quadrant
+            // Return adjusted RAU parameter
+            return quadrant + uniformRAU(t);
+        }
+
         // === Animation ===
         function animate() {
-        
-          // Parameters
           const now = new Date();
-          const startMillis = new Date().getSeconds() * 1000 + new Date().getMilliseconds();
-          let startTime = performance.now() - startMillis;
-  
-          const elapsed = (performance.now() - startTime) / 1000;
-          const secFrac = (elapsed % 60) / 60;  // 0–1 over 60 sec
-          const totalSeconds = now.getMinutes() * 60 + now.getSeconds();
-          const minFrac = totalSeconds / 3600;  // 0–1 over 60 minutes
-          const totalMinutes = (now.getHours() % 12) * 60 + now.getMinutes();
-          const hrFrac = totalMinutes / 720;  // 0–1 over 12 hours
-          // --- seconds hand (full revolution in 60 seconds)
-          const secIndexFloat = secFrac * sinTable.length;
-          const secIndex = Math.floor(secIndexFloat);
-          const secNext = (secIndex + 1) % sinTable.length;
-          const fracSec = secIndexFloat - secIndex;
         
-          const sinValSec = sinTable[secIndex] + (sinTable[secNext] - sinTable[secIndex]) * fracSec;
-          const cosValSec = cosTable[secIndex] + (cosTable[secNext] - cosTable[secIndex]) * fracSec;
+          // Continuous time fractions
+          const secFrac = (now.getSeconds() + now.getMilliseconds() / 1000) / 60;
+          const minFrac = (now.getMinutes() + secFrac) / 60;
+          const hrFrac  = ((now.getHours() % 12) + minFrac) / 12;
         
-          // --- minute hand (full revolution in 60 minutes)
-          const minIndexFloat = minFrac * sinTable.length;
-          const minIndex = Math.floor(minIndexFloat);
-          const minNext = (minIndex + 1) % sinTable.length;
-          const fracMin = minIndexFloat - minIndex;
+          // Convert linear progress → uniform RAU parameter
+          const rauSec = uniformVelocityRAU(secFrac * 4);
+          const rauMin = uniformVelocityRAU(minFrac * 4);
+          const rauHr  = uniformVelocityRAU(hrFrac * 4);
         
-          const sinValMin = sinTable[minIndex] + (sinTable[minNext] - sinTable[minIndex]) * fracMin;
-          const cosValMin = cosTable[minIndex] + (cosTable[minNext] - cosTable[minIndex]) * fracMin;
+          // Evaluate radical trig functions
+          const sec = { sin: radicalSine(rauSec), cos: radicalCosine(rauSec) };
+          const min = { sin: radicalSine(rauMin), cos: radicalCosine(rauMin) };
+          const hr  = { sin: radicalSine(rauHr),  cos: radicalCosine(rauHr) };
         
-          // --- hour hand (full revolution in 12 hours)
-          const hrIndexFloat = hrFrac * sinTable.length;
-          const hrIndex = Math.floor(hrIndexFloat);
-          const hrNext = (hrIndex + 1) % sinTable.length;
-          const fracHr = hrIndexFloat - hrIndex;
-        
-          const sinValHr = sinTable[hrIndex] + (sinTable[hrNext] - sinTable[hrIndex]) * fracHr;
-          const cosValHr = cosTable[hrIndex] + (cosTable[hrNext] - cosTable[hrIndex]) * fracHr;
-        
-          // --- drawing
+          // Draw
           ctx.clearRect(0, 0, canvas.width, canvas.height);
           ctx.drawImage(staticBuffer, 0, 0);
         
-          drawHand(radius * 0.97, sinValSec, cosValSec, "red", 3);
-          drawHand(radius * 0.6,  sinValMin, cosValMin, "blue", 4);
-          drawHand(radius * 0.2,  sinValHr,  cosValHr,  "green", 6);
-        
-          // Update UI values
-          values.designVal.textContent = design;
-          values.opacityVal.textContent = opacity;
-          values.sizeVal.textContent = size;
+          drawHand(radius * 0.9, sec.sin, sec.cos, "red", 2);
+          drawHand(radius * 0.6, min.sin, min.cos, "blue", 3);
+          drawHand(radius * 0.4, hr.sin,  hr.cos,  "green", 4);
         
           requestAnimationFrame(animate);
         }
-        
-        function interpolate(p1, p2, t) {
-            return {
-                sin: p1.sin + (p2.sin - p1.sin) * t,
-                cos: p1.cos + (p2.cos - p1.cos) * t
-            };
-        }
-		
-        // Start clock (only once, before the hands are drawn for the ongoing frames in time)
-        drawStaticBackgroundOnce(); // Draw static art one time
+
+        // Start clock
+        drawStaticBackgroundOnce();
         requestAnimationFrame(animate);
-        
-		
-		Object.keys(controls).forEach(key => {
-		  controls[key].addEventListener('input', (e) => {
-		    if (key === 'design') {
-		    	design = parseInt(e.target.value);
-		    	drawStaticBackgroundOnce();
-	    	}
-		    if (key === 'opacity') {
-		    	opacity = parseFloat(e.target.value);
-		    	drawStaticBackgroundOnce();
-	    	}
-		    if (key === 'size') {
-		    	size = parseInt(e.target.value);
-		    	drawStaticBackgroundOnce();
-	    	}
-		  });
-		});  
+
+        Object.keys(controls).forEach(key => {
+            controls[key].addEventListener('input', (e) => {
+                if (key === 'design') {
+                    design = parseInt(e.target.value);
+                    drawStaticBackgroundOnce();
+                }
+                if (key === 'opacity') {
+                    opacity = parseFloat(e.target.value);
+                    drawStaticBackgroundOnce();
+                }
+                if (key === 'size') {
+                    size = parseInt(e.target.value);
+                    drawStaticBackgroundOnce();
+                }
+            });
+        });
     </script>
 </body>
 
 </html>
+

@@ -86,6 +86,44 @@ function atanVec(u, v) {
     }
 }
 
+// ================================
+// Precomputed Uniform Velocity RAU Table
+// ================================
+
+function generateUniformVelocityTable(divisions = 60) {
+  const table = [];
+  
+  for (let i = 0; i < divisions; i++) {
+    // RAU position: uniform steps from 0 to 4
+    const rauPosition = (i / divisions) * 4;
+    
+    // Compute sin/cos once and store
+    const sin = radicalSine(rauPosition);
+    const cos = radicalCosine(rauPosition);
+    
+    table.push({ sin, cos, rauPosition });
+  }
+  
+  return table;
+}
+
+function getInterpolatedFromTable(table, secondsFrac) {
+  const totalSeconds = secondsFrac % 60; // Wrap at 60 seconds
+  const indexFloat = (totalSeconds / 60) * table.length;
+  
+  const index = Math.floor(indexFloat);
+  const nextIndex = (index + 1) % table.length;
+  const fraction = indexFloat - index;
+  
+  const current = table[index];
+  const next = table[nextIndex];
+  
+  // Linear interpolation
+  const sin = current.sin + (next.sin - current.sin) * fraction;
+  const cos = current.cos + (next.cos - current.cos) * fraction;
+  
+  return { sin, cos };
+}
 // === Unit conversions ===
 const degToRad = deg => deg * Math.PI / 180;
 const rauToDeg = rau => (rau / 4) * 360;
