@@ -22,8 +22,8 @@
         𑗊<span class="value" id="opacityVal">0.5</span>
         </div>
         <div class="control-group">
-        <input type="range" min="50" max="1000" value="250" class="slider" id="size" step="50">
-        🔍<span class="value" id="sizeVal">250</span>
+        <input type="range" min="50" max="1000" value="1000" class="slider" id="size" step="50">
+        🔍<span class="value" id="sizeVal">1000</span>
         </div>
 	</div>
     </div>
@@ -74,14 +74,25 @@
 
             // update in local storage
             localStorage.setItem("theme", newTheme);
-
+			
             // update the currentThemeSetting in memory
             currentThemeSetting = newTheme;
-            //force the update of the theme for the canvas lines/etc.
-            requestAnimationFrame(animate);
+            // Redraw the static layer with the new colors
+            drawStaticBackgroundOnce();
         });
         const themeBtn = document.querySelector('button[data-theme-toggle]');
+		function applyCanvasTheme() {
+		  const root = document.documentElement;
+		  const styles = getComputedStyle(root);
+		  const bgColor = styles.getPropertyValue('--bg-color').trim();
 
+		  // Main visible canvas
+		  canvas.style.backgroundColor = bgColor;
+
+		  // Static buffer canvas (offscreen)
+		  staticCtx.fillStyle = bgColor;
+		  staticCtx.fillRect(0, 0, staticBuffer.width, staticBuffer.height);
+		}
         function getThemeColors() {
             const theme = localStorage.getItem("theme") || "dark";
 
@@ -104,7 +115,8 @@
         const cx = canvas.width / 2;
         const cy = canvas.height / 2;
         const radius = Math.min(cx, cy) * 0.9;
-
+		let colors = getThemeColors();
+		let rgb = colors.parallelRGB;
 		// Control elements
 		const controls = {
 		    design: document.getElementById('design'),
@@ -120,33 +132,13 @@
        	let opacity  = parseFloat(controls.opacity.value);
         let size 	 = parseInt(controls.size.value);
         
-        // Precompute all hand positions for uniform spacing
-        const secHandPositions = [];
-        for (let sec = 0; sec < 60; sec++) {
-            const t = (sec / 60) * 4;
-            secHandPositions.push({
-                sin: radicalSine(t),
-                cos: radicalCosine(t),
-            });
+        const sinTable = [], cosTable = [];
+        for (let deg = 0; deg < 360; deg += 6) {
+          const rad = deg * Math.PI / 180;
+          sinTable.push(Math.sin(rad));
+          cosTable.push(Math.cos(rad));
         }
-
-        const minHandPositions = [];
-        for (let min = 0; min < 60; min++) {
-            const t = (min / 60) * 4;
-            minHandPositions.push({
-                sin: radicalSine(t),
-                cos: radicalCosine(t),
-            });
-        }
-
-        const hrHandPositions = [];
-        for (let hr = 0; hr < 12; hr++) {
-            const t = (hr / 12) * 4;
-            hrHandPositions.push({
-                sin: radicalSine(t),
-                cos: radicalCosine(t),
-            });
-        }
+        
         function hideControls() {
             var contentElement = document.getElementById("controlsContainer");
             if (contentElement.style.display === "none") {
@@ -155,34 +147,45 @@
                 contentElement.style.display = "none"; // Hide the element
             }
         }
-        // === Draw background once ===
-        function drawStaticBackground() {
-            ctx.save();
+        // Create offscreen canvas for static background
+        const staticBuffer = document.createElement("canvas");
+        staticBuffer.width = canvas.width;
+        staticBuffer.height = canvas.height;
+        const staticCtx = staticBuffer.getContext("2d");
+        
+		// === Draw background once ===
+        function drawStaticBackgroundOnce() {
+            staticCtx.clearRect(0, 0, staticBuffer.width, staticBuffer.height);
+        
+            // Apply theme-based background
+            applyCanvasTheme();
+        
             const colors = getThemeColors();
+            const rgb = colors.parallelRGB;
+            staticCtx.save();
+            
             // Outer circle
-            ctx.lineWidth = 3;
-            let rgb = colors.parallelRGB;
-            ctx.strokeStyle = `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 255)`;
-            ctx.beginPath();
-            ctx.arc(cx, cy, radius, 0, 2 * Math.PI);
-            ctx.stroke();
+            staticCtx.lineWidth = 3;
+            
+            staticCtx.strokeStyle = `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 255)`;
+            staticCtx.clearRect(0, 0, staticBuffer.width, staticBuffer.height);
+            staticCtx.beginPath();
+            staticCtx.arc(cx, cy, radius, 0, 2 * Math.PI);
+            staticCtx.stroke();
 
             // Tick marks
-            ctx.lineCap = "round";
+            staticCtx.lineCap = "round";
             for (let i = 0; i < 60; i++) {
-                const {
-                    sin,
-                    cos
-                } = secHandPositions[i];
                 const inner = i % 5 === 0 ? radius * 0.85 : radius * 0.93;
                 const outer = radius * 0.97;
-                ctx.beginPath();
-                ctx.moveTo(cx + inner * sin, cy - inner * cos);
-                ctx.lineTo(cx + outer * sin, cy - outer * cos);
-                ctx.lineWidth = i % 5 === 0 ? 3 : 1;
-                ctx.strokeStyle = i % 5 === 0 ? "rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 255)" : "rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 205)";
-                ctx.stroke();
+                staticCtx.beginPath();
+                staticCtx.moveTo(cx + inner * sinTable[i], cy - inner * cosTable[i]);
+                staticCtx.lineTo(cx + outer * sinTable[i], cy - outer * cosTable[i]);
+                staticCtx.lineWidth = i % 5 === 0 ? 3 : 1;
+                staticCtx.strokeStyle = i % 5 === 0 ? "rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 255)" : "rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 205)";
+                staticCtx.stroke();
             }
+            
             const rauSinTable = [],
                 rauCosTable = [];
             for (let i = 0; i < 360; i++) {
@@ -190,7 +193,7 @@
                 rauSinTable.push(radicalSine(t));
                 rauCosTable.push(radicalCosine(t));
             }
-            ctx.restore();
+            staticCtx.restore();
             for (let i = 0; i < 360; i++) {
                 const outerRX = size,
                     outerRY = size,
@@ -203,14 +206,14 @@
                 const sy = cy - rauCosTable[next] * innerRY * s;
                 const ex = cx + rauSinTable[i] * innerRX * e;
                 const ey = cy - rauCosTable[i] * innerRY * e;
-                ctx.beginPath();
-                ctx.moveTo(sx, sy);
-                ctx.lineTo(ex, ey);
-                ctx.strokeStyle = `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 255)`;
-                ctx.lineWidth = opacity;
-                ctx.stroke();
+                staticCtx.beginPath();
+                staticCtx.moveTo(sx, sy);
+                staticCtx.lineTo(ex, ey);
+                staticCtx.strokeStyle = `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 255)`;
+                staticCtx.lineWidth = opacity;
+                staticCtx.stroke();
             }
-            ctx.restore();
+            staticCtx.restore();
         }
 
         function drawHand(len, sin, cos, color, width) {
@@ -224,48 +227,62 @@
         }
 
         // === Animation ===
-        const startMillis = new Date().getSeconds() * 1000 + new Date().getMilliseconds();
-        let startTime = performance.now() - startMillis;
-
-        function animate(timestamp) {
-            const now = new Date();
-            const elapsed = (timestamp - startTime) / 1000;
-			
-            // Second hand: smooth interpolation
-            const secondsFrac = elapsed % 60;
-            const sec = Math.floor(secondsFrac);
-            const nextSec = (sec + 1) % 60;
-            const secFrac = secondsFrac - sec;
-            const secPos = interpolate(secHandPositions[sec], secHandPositions[nextSec], secFrac);
-
-            // Minute hand: interpolate within 60 positions
-            const totalSeconds = now.getMinutes() * 60 + now.getSeconds();
-            const minIndex = Math.floor((totalSeconds / 3600) * 60);
-            const minFrac = ((totalSeconds / 3600) * 60) - minIndex;
-            const minPos = interpolate(minHandPositions[minIndex % 60], minHandPositions[(minIndex + 1) % 60], minFrac);
-
-            // Hour hand: interpolate within 12 positions
-            const totalMinutes = (now.getHours() % 12) * 60 + now.getMinutes();
-            const hrIndexFloat = (totalMinutes / 720) * 12; // 0-12 over 12 hours
-            const hrIndex = Math.floor(hrIndexFloat) % 12;
-            const hrFrac = hrIndexFloat - Math.floor(hrIndexFloat);
-            const hrPos = interpolate(hrHandPositions[hrIndex], hrHandPositions[(hrIndex + 1) % 12], hrFrac);
-
-            // Draw
-            drawHand(radius * 0.97, secPos.sin, secPos.cos, "red", 3);
-            drawHand(radius * 0.6, minPos.sin, minPos.cos, "blue", 4);
-            drawHand(radius * 0.2, hrPos.sin, hrPos.cos, "green", 6);
-            
-            // Update the Values on the controls div
-	        controls.design.value = design;
-		  	controls.opacity.value = opacity;
-		  	controls.size.value = size;
-		  	values.designVal.textContent 	= design;
-		  	values.opacityVal.textContent 	= opacity;
-		  	values.sizeVal.textContent 		= size;
-            requestAnimationFrame(animate);
+        function animate() {
+        
+          // Parameters
+          const now = new Date();
+          const startMillis = new Date().getSeconds() * 1000 + new Date().getMilliseconds();
+          let startTime = performance.now() - startMillis;
+  
+          const elapsed = (performance.now() - startTime) / 1000;
+          const secFrac = (elapsed % 60) / 60;  // 0–1 over 60 sec
+          const totalSeconds = now.getMinutes() * 60 + now.getSeconds();
+          const minFrac = totalSeconds / 3600;  // 0–1 over 60 minutes
+          const totalMinutes = (now.getHours() % 12) * 60 + now.getMinutes();
+          const hrFrac = totalMinutes / 720;  // 0–1 over 12 hours
+          // --- seconds hand (full revolution in 60 seconds)
+          const secIndexFloat = secFrac * sinTable.length;
+          const secIndex = Math.floor(secIndexFloat);
+          const secNext = (secIndex + 1) % sinTable.length;
+          const fracSec = secIndexFloat - secIndex;
+        
+          const sinValSec = sinTable[secIndex] + (sinTable[secNext] - sinTable[secIndex]) * fracSec;
+          const cosValSec = cosTable[secIndex] + (cosTable[secNext] - cosTable[secIndex]) * fracSec;
+        
+          // --- minute hand (full revolution in 60 minutes)
+          const minIndexFloat = minFrac * sinTable.length;
+          const minIndex = Math.floor(minIndexFloat);
+          const minNext = (minIndex + 1) % sinTable.length;
+          const fracMin = minIndexFloat - minIndex;
+        
+          const sinValMin = sinTable[minIndex] + (sinTable[minNext] - sinTable[minIndex]) * fracMin;
+          const cosValMin = cosTable[minIndex] + (cosTable[minNext] - cosTable[minIndex]) * fracMin;
+        
+          // --- hour hand (full revolution in 12 hours)
+          const hrIndexFloat = hrFrac * sinTable.length;
+          const hrIndex = Math.floor(hrIndexFloat);
+          const hrNext = (hrIndex + 1) % sinTable.length;
+          const fracHr = hrIndexFloat - hrIndex;
+        
+          const sinValHr = sinTable[hrIndex] + (sinTable[hrNext] - sinTable[hrIndex]) * fracHr;
+          const cosValHr = cosTable[hrIndex] + (cosTable[hrNext] - cosTable[hrIndex]) * fracHr;
+        
+          // --- drawing
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          ctx.drawImage(staticBuffer, 0, 0);
+        
+          drawHand(radius * 0.97, sinValSec, cosValSec, "red", 3);
+          drawHand(radius * 0.6,  sinValMin, cosValMin, "blue", 4);
+          drawHand(radius * 0.2,  sinValHr,  cosValHr,  "green", 6);
+        
+          // Update UI values
+          values.designVal.textContent = design;
+          values.opacityVal.textContent = opacity;
+          values.sizeVal.textContent = size;
+        
+          requestAnimationFrame(animate);
         }
-
+        
         function interpolate(p1, p2, t) {
             return {
                 sin: p1.sin + (p2.sin - p1.sin) * t,
@@ -274,15 +291,24 @@
         }
 		
         // Start clock (only once, before the hands are drawn for the ongoing frames in time)
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        drawStaticBackground();
+        drawStaticBackgroundOnce(); // Draw static art one time
         requestAnimationFrame(animate);
-
+        
+		
 		Object.keys(controls).forEach(key => {
 		  controls[key].addEventListener('input', (e) => {
-		    if (key === 'design') design = parseInt(e.target.value);
-		    if (key === 'opacity') opacity = parseFloat(e.target.value);
-		    if (key === 'size') size = parseInt(e.target.value);
+		    if (key === 'design') {
+		    	design = parseInt(e.target.value);
+		    	drawStaticBackgroundOnce();
+	    	}
+		    if (key === 'opacity') {
+		    	opacity = parseFloat(e.target.value);
+		    	drawStaticBackgroundOnce();
+	    	}
+		    if (key === 'size') {
+		    	size = parseInt(e.target.value);
+		    	drawStaticBackgroundOnce();
+	    	}
 		  });
 		});  
     </script>

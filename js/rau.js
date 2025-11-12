@@ -1,3 +1,4 @@
+
 // ================================
 // Radical Angle Unit (RAU) math
 // ================================
@@ -64,25 +65,6 @@ function uniformRAU(t) {
   return mapped / (1 + mapped);
 }
 
-// "Branchless"
-function atanVec(u, v) {
-    const cross = u.x * v.y - u.y * v.x; // signed
-    const dot = u.x * v.x + u.y * v.y;
-    // 0..1 inside quadrant
-    const a = Math.abs(cross) / (Math.abs(dot) + Math.abs(cross));
-    const mix = (a, b, c) => c ? b : a;
-    // Q0: a (dot >= 0, cross >= 0)
-    // Q1: 2.0 - a (dot < 0, cross >= 0)
-    // Q2: 2.0 + a (dot < 0, cross < 0)
-    // Q3: 4.0 - a (dot >= 0, cross < 0)
-    const dotNeg = dot < 0.0;
-    const crossNeg = cross < 0.0;
-    const q0_or_q3 = mix(a, 4.0 - a, crossNeg);           // cross >= 0 ? a : 4.0 - a
-    const q1_or_q2 = mix(2.0 - a, 2.0 + a, crossNeg);    // cross >= 0 ? 2.0 - a : 2.0 + a
-    return mix(q0_or_q3, q1_or_q2, dotNeg);              // dot >= 0 ? q0_or_q3 : q1_or_q2
-}
-// "Branched" version of above
-/*
 function atanVec(u, v) {
     const cross_uv_mag = u.x * v.y - u.y * v.x; // signed
     const dot_uv   = u.x * v.x + u.y * v.y;
@@ -102,7 +84,7 @@ function atanVec(u, v) {
         // Q4: 3..4
         return 4.0 - a;
     }
-}*/
+}
 
 // === Unit conversions ===
 const degToRad = deg => deg * Math.PI / 180;
