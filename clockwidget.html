@@ -22,8 +22,12 @@
                 𑗊<span class="value" id="opacityVal">0.5</span>
             </div>
             <div class="control-group">
-                <input type="range" min="50" max="1000" value="1000" class="slider" id="size" step="50">
-                🔍<span class="value" id="sizeVal">1000</span>
+                <input type="range" min="50" max="1500" value="1500" class="slider" id="size" step="50">
+                🔍<span class="value" id="sizeVal">1500</span>
+            </div>
+            <div class="control-group">
+            	<label>Diagonal Mode</label>
+                <input type="checkbox" value="true" id="diagonalMode">
             </div>
         </div>
     </div>
@@ -134,9 +138,24 @@
         staticBuffer.width = canvas.width;
         staticBuffer.height = canvas.height;
         const staticCtx = staticBuffer.getContext("2d");
-        // ================================
+        
+        // =======================================
+        // RAU parameter t → (x,y) along diagonals
+        // =======================================
+        function rauToXY(t) {
+          const q = Math.floor(t) % 4;
+          const lt = t - q; // local parameter in [0,1)
+          switch (q) {
+            case 0: return { cos: 1 - lt,  sin: lt };      // (1,0) → (0,1)
+            case 1: return { cos: -lt,     sin: 1 - lt };     // (0,1) → (-1,0)
+            case 2: return { cos: -1 + lt, sin: -lt };    // (-1,0) → (0,-1)
+            case 3: return { cos: lt,      sin: -1 + lt };     // (0,-1) → (1,0)
+          }
+        }
+        
+        // =================================
         // Uniform Velocity Table Generation
-        // ================================
+        // =================================
         function generateUniformVelocityTable(divisions = 60) {
             const table = [];
 
@@ -349,21 +368,6 @@
             return quadrant + uniformRAU(t);
         }
 
-        function getHandRAUAngle(handSin, handCos) {
-            // Hand vector from center
-            const hand = {
-                x: 0,
-                y: 1
-            };
-            // Reference vector (12 o'clock)
-            const ref = {
-                x: handSin,
-                y: handCos
-            };
-            // Get RAU angle between them
-            return atanVec(ref, hand);
-        }
-
         // ================================
         // Main function for the frame loop
         // ================================
@@ -374,17 +378,23 @@
             const secFrac = (now.getSeconds() + now.getMilliseconds() / 1000) / 60;
             const minFrac = (now.getMinutes() + secFrac) / 60;
             const hrFrac = ((now.getHours() % 12) + minFrac) / 12;
-
+			
             // Convert to a uniform velocity parameter
-            const rauSec = uniformVelocityRAU(secFrac * 4);
+			const rauSec = uniformVelocityRAU(secFrac * 4);
             const rauMin = uniformVelocityRAU(minFrac * 4);
             const rauHr = uniformVelocityRAU(hrFrac * 4);
 
             // Evaluate radical trig functions
-            const sec = {
-                sin: radicalSine(rauSec),
-                cos: radicalCosine(rauSec)
-            };
+            let sec = {sin: 0, cos: 0};
+            if (document.getElementById('diagonalMode').checked) {
+   				sec = rauToXY(uniformVelocityRAU(secFrac * 4));
+            }
+            else {
+            	sec = {
+                	sin: radicalSine(rauSec),
+                	cos: radicalCosine(rauSec)
+            	};
+           	}
             const min = {
                 sin: radicalSine(rauMin),
                 cos: radicalCosine(rauMin)
@@ -393,14 +403,16 @@
                 sin: radicalSine(rauHr),
                 cos: radicalCosine(rauHr)
             };
-
+            
             // Draw
             ctx.clearRect(0, 0, canvas.width, canvas.height);
+			// The background (cached)
             ctx.drawImage(staticBuffer, 0, 0);
-
-            drawHand(radius * 0.9, sec.sin, sec.cos, "red", 2);
+			// Hands
+            drawHand(radius * 0.95, sec.sin, sec.cos, "red", 2);		
             drawHand(radius * 0.6, min.sin, min.cos, "blue", 3);
             drawHand(radius * 0.4, hr.sin, hr.cos, "green", 4);
+
             values.designVal.textContent = design;
             values.opacityVal.textContent = opacity;
             values.sizeVal.textContent = size;
@@ -410,7 +422,7 @@
         // Start clock
         drawStaticBackgroundOnce();
         requestAnimationFrame(animate);
-
+		
         Object.keys(controls).forEach(key => {
             controls[key].addEventListener('input', (e) => {
                 if (key === 'design') {
