@@ -12,24 +12,27 @@
     <button type="button" data-theme-toggle aria-label="Change Theme">Dark/Light</button>
     <button id="toggleCtrls" onclick="hideControls();">Toggle Controls</button>
     <div id="controlsContainer">
-	<div class="controls">
-        <div class="control-group">
-        <input type="range" min="1" max="100" value="25" class="slider" id="design" step="1">
-        💠<span class="value" id="designVal">25</span>
+        <div class="controls">
+            <div class="control-group">
+                <input type="range" min="1" max="100" value="25" class="slider" id="design" step="1">
+                💠<span class="value" id="designVal">25</span>
+            </div>
+            <div class="control-group">
+                <input type="range" min="0.1" max="5" value="0.5" class="slider" id="opacity" step="0.1">
+                𑗊<span class="value" id="opacityVal">0.5</span>
+            </div>
+            <div class="control-group">
+                <input type="range" min="50" max="1000" value="1000" class="slider" id="size" step="50">
+                🔍<span class="value" id="sizeVal">1000</span>
+            </div>
         </div>
-        <div class="control-group">
-        <input type="range" min="0.1" max="5" value="0.5" class="slider" id="opacity" step="0.1">
-        𑗊<span class="value" id="opacityVal">0.5</span>
-        </div>
-        <div class="control-group">
-        <input type="range" min="50" max="1000" value="1000" class="slider" id="size" step="50">
-        🔍<span class="value" id="sizeVal">1000</span>
-        </div>
-	</div>
     </div>
     <canvas id="rauClock" width="750" height="750" style="background: transparent; --canvas-border: transparent;"></canvas>
     <script src="js/rau.js"></script>
     <script>
+        // ======================
+        // Setup light/dark theme
+        // ======================
         (function() {
             const theme = localStorage.getItem("theme") || "dark";
             document.documentElement.dataset.theme = theme;
@@ -88,12 +91,18 @@
             }
         }
 
+        // ======================
+        // Set up for main canvas
+        // ======================
         const canvas = document.getElementById("rauClock");
         const ctx = canvas.getContext("2d");
         const cx = canvas.width / 2;
         const cy = canvas.height / 2;
         const radius = Math.min(cx, cy) * 0.9;
 
+        // ===============================
+        // Get the values from the sliders
+        // ===============================
         const controls = {
             design: document.getElementById('design'),
             opacity: document.getElementById('opacity'),
@@ -110,6 +119,21 @@
         let opacity = parseFloat(controls.opacity.value);
         let size = parseInt(controls.size.value);
 
+        function hideControls() {
+            const contentElement = document.getElementById("controlsContainer");
+            if (contentElement.style.display === "none") {
+                contentElement.style.display = "block";
+            } else {
+                contentElement.style.display = "none";
+            }
+        }
+        // ======================================================================================        
+        // Create a static buffer for the background that gets called from outside animating loop
+        // ======================================================================================
+        const staticBuffer = document.createElement("canvas");
+        staticBuffer.width = canvas.width;
+        staticBuffer.height = canvas.height;
+        const staticCtx = staticBuffer.getContext("2d");
         // ================================
         // Uniform Velocity Table Generation
         // ================================
@@ -130,46 +154,33 @@
             return table;
         }
 
-        // ================================
-        // Interpolation from Table
-        // ================================
-        function getInterpolatedFromTable(table, secondsFrac) {
-            // Map seconds (0-60) directly to RAU (0-4)
-            const totalSeconds = secondsFrac % 60;
-            const rauPosition = (totalSeconds / 60) * 4;
-
-            // Find the two nearest table entries
-            const indexFloat = (rauPosition / 4) * table.length;
-            const index = Math.floor(indexFloat);
-            const nextIndex = (index + 1) % table.length;
-            const fraction = indexFloat - index;
-
-            const current = table[index];
-            const next = table[nextIndex];
-
-            // Linear interpolation in sin/cos space
-            const sin = current.sin + (next.sin - current.sin) * fraction;
-            const cos = current.cos + (next.cos - current.cos) * fraction;
-
-            return { sin, cos };
-        }
-
         const uniformVelocityTable = generateUniformVelocityTable(60);
 
-        function hideControls() {
-            const contentElement = document.getElementById("controlsContainer");
-            if (contentElement.style.display === "none") {
-                contentElement.style.display = "block";
-            } else {
-                contentElement.style.display = "none";
+        // ================================
+        // Draw Numbered Markers
+        // ================================
+        function drawNumberedMarkers(ctx, cx, cy, radius, rauTable, color = "white") {
+            ctx.save();
+            ctx.fillStyle = color;
+            ctx.font = "12px monospace";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+
+            const markerRadius = radius * 0.80;
+
+            for (let i = 0; i < rauTable.length; i += 5) {
+                const entry = rauTable[i];
+                const sin = entry.sin;
+                const cos = entry.cos;
+
+                const x = cx + sin * markerRadius;
+                const y = cy - cos * markerRadius;
+
+                ctx.fillText(i.toString(), x, y);
             }
+
+            ctx.restore();
         }
-
-        const staticBuffer = document.createElement("canvas");
-        staticBuffer.width = canvas.width;
-        staticBuffer.height = canvas.height;
-        const staticCtx = staticBuffer.getContext("2d");
-
         // ================================
         // Draw Uniform Velocity Ticks
         // ================================
@@ -213,26 +224,44 @@
         function drawNumberedMarkers(ctx, cx, cy, radius, rauTable, color = "white") {
             ctx.save();
             ctx.fillStyle = color;
-            ctx.font = "12px monospace";
+            ctx.font = "14px monospace";
             ctx.textAlign = "center";
             ctx.textBaseline = "middle";
 
             const markerRadius = radius * 0.80;
-
-            for (let i = 0; i < rauTable.length; i += 5) {
-                const entry = rauTable[i];
-                const sin = entry.sin;
-                const cos = entry.cos;
-
-                const x = cx + sin * markerRadius;
-                const y = cy - cos * markerRadius;
-
-                ctx.fillText(i.toString(), x, y);
-            }
+			const indexTransforms = {
+			  0: (n) => 12,           // 0 → 12
+			  5: (n) => n / 5,        // 5 → 1
+			  10: (n) => n / 5,       // 10 → 2
+			  3: (n) => n,            // 3 → 3
+			  8: (n) => n / 2,        // 8 → 4
+			  1: (n) => n + 4,        // 1 → 5
+			  6: (n) => n,            // 6 → 6
+			  11: (n) => n - 4,       // 11 → 7
+			  4: (n) => n * 2,        // 4 → 8
+			  9: (n) => n,            // 9 → 9
+			  2: (n) => n * 5,        // 2 → 10
+			  7: (n) => n + 4         // 7 → 11
+			};
+			
+			for (let i = 0; i < rauTable.length; i += 5) {
+			  const entry = rauTable[i];
+			  const sin = entry.sin;
+			  const cos = entry.cos;
+			  const x = cx + sin * markerRadius;
+			  const y = cy - cos * markerRadius;
+			  
+			  const indexPos = i % 12;  // Get the actual index value
+			  const transformedNum = Math.round(indexTransforms[indexPos]?.(indexPos) ?? indexPos);
+			  const yMinOffset = i >=0 && i < 15 ? -20 : i >= 15 && i <= 30 ? 20 : i > 30 && i <= 45 ?  20 : i > 45  ? -20 : 0;
+			  const xMinOffset = i >=0 && i < 15 ? 20 : i >= 15 && i <= 30 ? 20 : i > 30 && i <= 45 ? -20 : i > 45  ? -30 : 0;
+			  ctx.fillText(transformedNum.toString(), x, y);
+			  ctx.fillText(i.toString(), x + xMinOffset, y + yMinOffset);
+			}
 
             ctx.restore();
         }
-
+        
         // ================================
         // Draw Static Background
         // ================================
@@ -249,6 +278,12 @@
             staticCtx.beginPath();
             staticCtx.arc(cx, cy, radius, 0, 2 * Math.PI);
             staticCtx.stroke();
+
+            // Center dot
+            ctx.fillStyle = 'rgba(255,255,255,0.5)';
+            ctx.beginPath();
+            ctx.arc(cx, cy, 6, 0, 2 * Math.PI);
+            ctx.fill();
 
             // Uniform velocity ticks
             drawUniformVelocityTicks(staticCtx, cx, cy, radius, uniformVelocityTable, 0.6, `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, `);
@@ -289,7 +324,8 @@
 
             staticCtx.restore();
         }
-
+        
+		// Helper function
         function drawHand(len, sin, cos, color, width) {
             ctx.beginPath();
             ctx.moveTo(cx, cy);
@@ -308,41 +344,67 @@
             // This compensates for the non-linear speed of RAU functions
             const phase = linearParam % 4;
             const quadrant = Math.floor(phase);
-            const t = phase - quadrant;  // 0 to 1 within quadrant
+            const t = phase - quadrant; // 0 to 1 within quadrant
             // Return adjusted RAU parameter
             return quadrant + uniformRAU(t);
         }
 
-        // === Animation ===
+        function getHandRAUAngle(handSin, handCos) {
+            // Hand vector from center
+            const hand = {
+                x: 0,
+                y: 1
+            };
+            // Reference vector (12 o'clock)
+            const ref = {
+                x: handSin,
+                y: handCos
+            };
+            // Get RAU angle between them
+            return atanVec(ref, hand);
+        }
+
+        // ================================
+        // Main function for the frame loop
+        // ================================
         function animate() {
-          const now = new Date();
-        
-          // Continuous time fractions
-          const secFrac = (now.getSeconds() + now.getMilliseconds() / 1000) / 60;
-          const minFrac = (now.getMinutes() + secFrac) / 60;
-          const hrFrac  = ((now.getHours() % 12) + minFrac) / 12;
-        
-          // Convert linear progress → uniform RAU parameter
-          const rauSec = uniformVelocityRAU(secFrac * 4);
-          const rauMin = uniformVelocityRAU(minFrac * 4);
-          const rauHr  = uniformVelocityRAU(hrFrac * 4);
-        
-          // Evaluate radical trig functions
-          const sec = { sin: radicalSine(rauSec), cos: radicalCosine(rauSec) };
-          const min = { sin: radicalSine(rauMin), cos: radicalCosine(rauMin) };
-          const hr  = { sin: radicalSine(rauHr),  cos: radicalCosine(rauHr) };
-        
-          // Draw
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
-          ctx.drawImage(staticBuffer, 0, 0);
-        
-          drawHand(radius * 0.9, sec.sin, sec.cos, "red", 2);
-          drawHand(radius * 0.6, min.sin, min.cos, "blue", 3);
-          drawHand(radius * 0.4, hr.sin,  hr.cos,  "green", 4);
-          values.designVal.textContent 	= design;
-		  values.opacityVal.textContent = opacity;
-		  values.sizeVal.textContent 	= size;
-          requestAnimationFrame(animate);
+            const now = new Date();
+
+            // Continuous time fractions
+            const secFrac = (now.getSeconds() + now.getMilliseconds() / 1000) / 60;
+            const minFrac = (now.getMinutes() + secFrac) / 60;
+            const hrFrac = ((now.getHours() % 12) + minFrac) / 12;
+
+            // Convert to a uniform velocity parameter
+            const rauSec = uniformVelocityRAU(secFrac * 4);
+            const rauMin = uniformVelocityRAU(minFrac * 4);
+            const rauHr = uniformVelocityRAU(hrFrac * 4);
+
+            // Evaluate radical trig functions
+            const sec = {
+                sin: radicalSine(rauSec),
+                cos: radicalCosine(rauSec)
+            };
+            const min = {
+                sin: radicalSine(rauMin),
+                cos: radicalCosine(rauMin)
+            };
+            const hr = {
+                sin: radicalSine(rauHr),
+                cos: radicalCosine(rauHr)
+            };
+
+            // Draw
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(staticBuffer, 0, 0);
+
+            drawHand(radius * 0.9, sec.sin, sec.cos, "red", 2);
+            drawHand(radius * 0.6, min.sin, min.cos, "blue", 3);
+            drawHand(radius * 0.4, hr.sin, hr.cos, "green", 4);
+            values.designVal.textContent = design;
+            values.opacityVal.textContent = opacity;
+            values.sizeVal.textContent = size;
+            requestAnimationFrame(animate);
         }
 
         // Start clock
@@ -369,4 +431,3 @@
 </body>
 
 </html>
-
