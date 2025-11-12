@@ -339,7 +339,9 @@
           drawHand(radius * 0.9, sec.sin, sec.cos, "red", 2);
           drawHand(radius * 0.6, min.sin, min.cos, "blue", 3);
           drawHand(radius * 0.4, hr.sin,  hr.cos,  "green", 4);
-        
+          values.designVal.textContent 	= design;
+		  values.opacityVal.textContent = opacity;
+		  values.sizeVal.textContent 	= size;
           requestAnimationFrame(animate);
         }
 
