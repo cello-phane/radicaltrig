@@ -14,7 +14,7 @@
     <div id="controlsContainer">
         <div class="controls">
             <div class="control-group">
-                <input type="range" min="1" max="100" value="25" class="slider" id="design" step="1">
+                <input type="range" min="1" max="200" value="25" class="slider" id="design" step="1">
                 💠<span class="value" id="designVal">25</span>
             </div>
             <div class="control-group">
@@ -249,33 +249,46 @@
 
             const markerRadius = radius * 0.80;
 			const indexTransforms = {
-			  0: (n) => 12,           // 0 → 12
-			  5: (n) => n / 5,        // 5 → 1
-			  10: (n) => n / 5,       // 10 → 2
-			  3: (n) => n,            // 3 → 3
-			  8: (n) => n / 2,        // 8 → 4
-			  1: (n) => n + 4,        // 1 → 5
-			  6: (n) => n,            // 6 → 6
-			  11: (n) => n - 4,       // 11 → 7
-			  4: (n) => n * 2,        // 4 → 8
-			  9: (n) => n,            // 9 → 9
-			  2: (n) => n * 5,        // 2 → 10
-			  7: (n) => n + 4         // 7 → 11
+				0: (n) => 12,           // 0 → 12
+				5: (n) => n / 5,        // 5 → 1
+				10: (n) => n / 5,       // 10 → 2
+				3: (n) => n,            // 3 → 3
+				8: (n) => n / 2,        // 8 → 4
+				1: (n) => n + 4,        // 1 → 5
+				6: (n) => n,            // 6 → 6
+				11: (n) => n - 4,       // 11 → 7
+				4: (n) => n * 2,        // 4 → 8
+				9: (n) => n,            // 9 → 9
+				2: (n) => n * 5,        // 2 → 10
+				7: (n) => n + 4         // 7 → 11
 			};
 			
 			for (let i = 0; i < rauTable.length; i += 5) {
-			  const entry = rauTable[i];
-			  const sin = entry.sin;
-			  const cos = entry.cos;
-			  const x = cx + sin * markerRadius;
-			  const y = cy - cos * markerRadius;
+				const entry = rauTable[i];
+				const sin = entry.sin;
+				const cos = entry.cos;
+				const x = cx + sin * markerRadius;
+				const y = cy - cos * markerRadius;
 			  
-			  const indexPos = i % 12;  // Get the actual index value
-			  const transformedNum = Math.round(indexTransforms[indexPos]?.(indexPos) ?? indexPos);
-			  const yMinOffset = i >=0 && i < 15 ? -20 : i >= 15 && i <= 30 ? 20 : i > 30 && i <= 45 ?  20 : i > 45  ? -20 : 0;
-			  const xMinOffset = i >=0 && i < 15 ? 20 : i >= 15 && i <= 30 ? 20 : i > 30 && i <= 45 ? -20 : i > 45  ? -30 : 0;
-			  ctx.fillText(transformedNum.toString(), x, y);
-			  ctx.fillText(i.toString(), x + xMinOffset, y + yMinOffset);
+				// Determine hour number
+			    const indexPos = i % 12;
+			    const transformedNum = indexTransforms[indexPos]?.(indexPos) ?? indexPos;
+			
+			    // Compute small outward offset using sin/cos
+			    const offsetMag = 20; // distance away from center
+			    const xOffset = sin * offsetMag;
+			    const yOffset = -cos * offsetMag; // negative because canvas y grows downward
+			
+			    // Draw minute number
+			    ctx.fillText(transformedNum.toString(), x + xOffset, y + yOffset);
+			
+			    // Draw small index label closer inwards
+			    const innerOffset = 10;
+			    ctx.fillText(
+			      i.toString(),
+			      x - sin * innerOffset,
+			      y + cos * innerOffset
+			    );
 			}
 
             ctx.restore();
@@ -377,45 +390,41 @@
             // Continuous time fractions
             const secFrac = (now.getSeconds() + now.getMilliseconds() / 1000) / 60;
             const minFrac = (now.getMinutes() + secFrac) / 60;
-            const hrFrac = ((now.getHours() % 12) + minFrac) / 12;
+            const hrFrac  = ((now.getHours() % 12) + minFrac) / 12;
 			
-            // Convert to a uniform velocity parameter
-			const rauSec = uniformVelocityRAU(secFrac * 4);
-            const rauMin = uniformVelocityRAU(minFrac * 4);
-            const rauHr = uniformVelocityRAU(hrFrac * 4);
+            // Phase total should be normalized to 4
+			const rauSec = secFrac * 4;
+            const rauMin = minFrac * 4;
+            const rauHr  = hrFrac  * 4;
 
-            // Evaluate radical trig functions
-            let sec = {sin: 0, cos: 0};
+            // Evaluate radical trig functions based on the checkbox value
+            let sec = {sin: 0, cos: 0}, min = {sin: 0, cos: 0}, hr = {sin: 0, cos: 0};
             if (document.getElementById('diagonalMode').checked) {
-   				sec = rauToXY(uniformVelocityRAU(secFrac * 4));
+   				sec = rauToXY(uniformVelocityRAU(rauSec));
+   				min = rauToXY(uniformVelocityRAU(rauMin));
+   				hr  = rauToXY(uniformVelocityRAU(rauHr));
             }
             else {
-            	sec = {
-                	sin: radicalSine(rauSec),
-                	cos: radicalCosine(rauSec)
-            	};
+            	sec = { sin: radicalSine(rauSec),
+                	    cos: radicalCosine(rauSec) };
+            	min = { sin: radicalSine(rauMin),
+                	    cos: radicalCosine(rauMin) };
+            	hr  = { sin: radicalSine(rauHr),
+                   	    cos: radicalCosine(rauHr) };
            	}
-            const min = {
-                sin: radicalSine(rauMin),
-                cos: radicalCosine(rauMin)
-            };
-            const hr = {
-                sin: radicalSine(rauHr),
-                cos: radicalCosine(rauHr)
-            };
             
             // Draw
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-			// The background (cached)
+			// Background (cached)
             ctx.drawImage(staticBuffer, 0, 0);
 			// Hands
-            drawHand(radius * 0.95, sec.sin, sec.cos, "red", 2);		
-            drawHand(radius * 0.6, min.sin, min.cos, "blue", 3);
-            drawHand(radius * 0.4, hr.sin, hr.cos, "green", 4);
+            drawHand(radius * 0.95, sec.sin, sec.cos, "red",   2);
+            drawHand(radius * 0.6,  min.sin, min.cos, "blue",  3);
+            drawHand(radius * 0.4,  hr.sin,  hr.cos,  "green", 4);
 
-            values.designVal.textContent = design;
-            values.opacityVal.textContent = opacity;
-            values.sizeVal.textContent = size;
+            values.designVal.textContent 	= design;
+            values.opacityVal.textContent 	= opacity;
+            values.sizeVal.textContent 		= size;
             requestAnimationFrame(animate);
         }
 
