@@ -293,6 +293,45 @@
 
             ctx.restore();
         }
+
+        // ================================
+        // Modular lines/patterns
+        // ================================
+        function drawModularLines(ctx, cx, cy, size, design, opacity, rgb) {
+          ctx.save();
+          
+          // Precompute the radical sine/cosine tables only once per draw
+          const rauSinTable = [];
+          const rauCosTable = [];
+          for (let i = 0; i < 360; i++) {
+            const t = i / design; // design = density control (slider)
+            rauSinTable.push(radicalSine(t));
+            rauCosTable.push(radicalCosine(t));
+          }
+        
+          // Draw interlaced arcs / cross-lines
+          for (let i = 0; i < 360; i++) {
+              const outerRX = size,
+                  outerRY = size,
+                  innerRX = size,
+                  innerRY = size;
+              const next = (i - 1) % 25;
+              const s = 0.25,
+                  e = 0.25;
+              const sx = cx + rauSinTable[next] * innerRX * s;
+              const sy = cy - rauCosTable[next] * innerRY * s;
+              const ex = cx + rauSinTable[i] * innerRX * e;
+              const ey = cy - rauCosTable[i] * innerRY * e;
+              staticCtx.beginPath();
+              staticCtx.moveTo(sx, sy);
+              staticCtx.lineTo(ex, ey);
+              staticCtx.strokeStyle = `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 255)`;
+              staticCtx.lineWidth = opacity;
+              staticCtx.stroke();
+          }
+        
+          ctx.restore();
+        }
         
         // ================================
         // Draw Static Background
@@ -323,38 +362,10 @@
             // Numbered markers
             drawNumberedMarkers(staticCtx, cx, cy, radius, uniformVelocityTable, `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 0.8)`);
 
+			// Modular patterns/lines
+			drawModularLines(staticCtx, cx, cy, size, design, opacity, rgb);
+
             staticCtx.lineCap = "round";
-
-            // Fancy inner pattern
-            const rauSinTable = [];
-            const rauCosTable = [];
-            for (let i = 0; i < 360; i++) {
-                const t = (i / design);
-                rauSinTable.push(radicalSine(t));
-                rauCosTable.push(radicalCosine(t));
-            }
-
-            for (let i = 0; i < 360; i++) {
-                const outerRX = size;
-                const outerRY = size;
-                const innerRX = size;
-                const innerRY = size;
-                const next = (i - 1) % 25;
-                const s = 0.25;
-                const e = 0.25;
-                const sx = cx + rauSinTable[next] * innerRX * s;
-                const sy = cy - rauCosTable[next] * innerRY * s;
-                const ex = cx + rauSinTable[i] * innerRX * e;
-                const ey = cy - rauCosTable[i] * innerRY * e;
-                staticCtx.beginPath();
-                staticCtx.moveTo(sx, sy);
-                staticCtx.lineTo(ex, ey);
-                staticCtx.strokeStyle = `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 255)`;
-                staticCtx.lineWidth = opacity;
-                staticCtx.stroke();
-            }
-
-            staticCtx.restore();
         }
         
 		// Helper function
