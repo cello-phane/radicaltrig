@@ -147,10 +147,23 @@
           const lt = t - q; // local parameter in [0,1)
           switch (q) {
             case 0: return { cos: 1 - lt,  sin: lt };      // (1,0) → (0,1)
-            case 1: return { cos: -lt,     sin: 1 - lt };     // (0,1) → (-1,0)
-            case 2: return { cos: -1 + lt, sin: -lt };    // (-1,0) → (0,-1)
-            case 3: return { cos: lt,      sin: -1 + lt };     // (0,-1) → (1,0)
+            case 1: return { cos: -lt,     sin: 1 - lt };  // (0,1) → (-1,0)
+            case 2: return { cos: -1 + lt, sin: -lt };     // (-1,0) → (0,-1)
+            case 3: return { cos: lt,      sin: -1 + lt }; // (0,-1) → (1,0)
           }
+        }
+
+        // ================================
+        // Uniform Velocity Conversion (tan-based)
+        // ================================
+        function uniformVelocityRAU(linearParam) {
+            // Map linear parameter to uniform velocity RAU
+            // This compensates for the non-linear speed of RAU functions
+            const phase = linearParam % 4;
+            const quadrant = Math.floor(phase);
+            const t = phase - quadrant; // 0 to 1 within quadrant
+            // Return adjusted RAU parameter
+            return quadrant + uniformRAU(t);
         }
         
         // =================================
@@ -377,19 +390,6 @@
             ctx.lineWidth = width;
             ctx.lineCap = "round";
             ctx.stroke();
-        }
-
-        // ================================
-        // Uniform Velocity Conversion (tan-based)
-        // ================================
-        function uniformVelocityRAU(linearParam) {
-            // Map linear parameter to uniform velocity RAU
-            // This compensates for the non-linear speed of RAU functions
-            const phase = linearParam % 4;
-            const quadrant = Math.floor(phase);
-            const t = phase - quadrant; // 0 to 1 within quadrant
-            // Return adjusted RAU parameter
-            return quadrant + uniformRAU(t);
         }
 
         // ================================
