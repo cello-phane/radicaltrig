@@ -34,6 +34,15 @@
             	<label for="uniformMode">Uniform spacing and time</label>
                 <input type="checkbox" value="true" id="uniformMode" name="uniformMode">
             </div>
+			<div class="control-group">
+				<input type="range" min="8" max="48" value="14" class="slider" id="fontSize" step="1">
+				🔤<span class="value" id="fontSizeVal">14</span>
+		    </div>
+
+		    <div class="control-group">
+			    <input type="color" id="fontColor" value="#ffffff">
+			    🎨<span class="value" id="fontColorVal">#ffffff</span>
+		    </div>
         </div>
     </div>
     <canvas id="rauClock" width="750" height="750" style="background: transparent; --canvas-border: transparent;"></canvas>
@@ -108,7 +117,8 @@
         const cx = canvas.width / 2;
         const cy = canvas.height / 2;
         const radius = Math.min(cx, cy) * 0.9;
-
+	    let fontSize  = 14;
+	    let fontColor = "#ffffff";
         // ===============================
         // Get the values from the sliders
         // ===============================
@@ -116,12 +126,16 @@
             design: document.getElementById('design'),
             opacity: document.getElementById('opacity'),
             size: document.getElementById('size'),
+			fontSize: document.getElementById('fontSize'),
+			fontColor: document.getElementById('fontColor'),
         };
 
         const values = {
             designVal: document.getElementById('designVal'),
             opacityVal: document.getElementById('opacityVal'),
             sizeVal: document.getElementById('sizeVal'),
+			fontSizeVal: document.getElementById('fontSizeVal'),
+			fontColorVal: document.getElementById('fontColorVal'),
         };
 
         let design = parseInt(controls.design.value);
@@ -240,8 +254,8 @@
         // ================================
         function drawNumberedMarkers(ctx, cx, cy, radius, rauTable, color = "white", uniform = true) {
             ctx.save();
-            ctx.fillStyle = color;
-            ctx.font = "14px monospace";
+            ctx.font = `${fontSize}px monospace`;
+			ctx.fillStyle = fontColor;
             ctx.textAlign = "center";
             ctx.textBaseline = "middle";
 
@@ -443,9 +457,12 @@
             drawHand(radius * 0.6,  min.sin, min.cos, "blue",  3);
             drawHand(radius * 0.4,  hr.sin,  hr.cos,  "green", 4);
 
-            values.designVal.textContent 	= design;
-            values.opacityVal.textContent 	= opacity;
-            values.sizeVal.textContent 		= size;
+			// update labels
+			values.designVal.textContent   = design;
+			values.opacityVal.textContent  = opacity;
+			values.sizeVal.textContent     = size;
+			values.fontSizeVal.textContent = fontSize;
+			values.fontColorVal.textContent = fontColor;
             requestAnimationFrame(animate);
         }
 
@@ -458,9 +475,14 @@
                 if (key === 'design') design = parseInt(e.target.value);
                 if (key === 'opacity') opacity = parseFloat(e.target.value);
                 if (key === 'size') size = parseInt(e.target.value);
-                drawStaticBackgroundOnce();
-            });
+				if (key === 'fontSize') fontSize = parseInt(e.target.value);
+				if (key === 'fontColor') fontColor = e.target.value;
+
+
+				drawStaticBackgroundOnce();
+			});
         });
+
         // Checkbox listeners
         document.getElementById("uniformMode").addEventListener("change", (e) => {
             uniformTrue = e.target.checked;
