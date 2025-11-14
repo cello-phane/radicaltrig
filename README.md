@@ -4,7 +4,8 @@
 (Non-periodic, closed form solution)   
 
 ### Resources on youtube  
-[John Gabriel on the topic of the right angle measure](https://youtu.be/xUdFMTpfGHg)[Related to the trig formulas](https://www.youtube.com/watch?v=ffw-x4dhTkI)  
+[John Gabriel on the topic of the right angle measure](https://youtu.be/xUdFMTpfGHg)  
+[Related to the trig formulas](https://www.youtube.com/watch?v=ffw-x4dhTkI)  
 [Trigonometric ratios and formulas](https://youtu.be/TJr4YfEgVuk)  
 
 ### Radical Angle Unit (RAU)
