@@ -403,7 +403,7 @@
             // Evaluate radical trig functions based on the checkbox value
             let sec = {sin: 0, cos: 0}, min = {sin: 0, cos: 0}, hr = {sin: 0, cos: 0};
             if (diagonalMode.checked) {
-            	if (uniformMode.value) {
+            	if (uniformMode.checked) {
 	   				sec = rauToXY(uniformVelocityRAU(rauSec));
 	   				min = rauToXY(uniformVelocityRAU(rauMin));
 	   				hr  = rauToXY(uniformVelocityRAU(rauHr));
