@@ -14,16 +14,16 @@
     <div id="controlsContainer">
         <div class="controls">
             <div class="control-group">
-                <input type="range" min="1" max="200" value="25" class="slider" id="design" step="1">
-                💠<span class="value" id="designVal">25</span>
+                <input type="range" min="1" max="200" value="1" class="slider" id="design" step="1">
+                💠<span class="value" id="designVal">1</span>
             </div>
             <div class="control-group">
                 <input type="range" min="0.1" max="5" value="0.5" class="slider" id="opacity" step="0.1">
                 𑗊<span class="value" id="opacityVal">0.5</span>
             </div>
             <div class="control-group">
-                <input type="range" min="50" max="1350" value="800" class="slider" id="size" step="50">
-                🔍<span class="value" id="sizeVal">800</span>
+                <input type="range" min="50" max="1350" value="1350" class="slider" id="size" step="50">
+                🔍<span class="value" id="sizeVal">1350</span>
             </div>
             <div class="control-group">
             	<label for="diagonalMode">Diagonal Mode</label>
@@ -32,7 +32,7 @@
             </div>
             <div class="control-group">
             	<label for="uniformMode">Uniform spacing and time</label>
-                <input type="checkbox" value="false" id="uniformMode" name="uniformMode">
+                <input type="checkbox" value="true" id="uniformMode" name="uniformMode">
             </div>
         </div>
     </div>
@@ -127,8 +127,8 @@
         let design = parseInt(controls.design.value);
         let opacity = parseFloat(controls.opacity.value);
         let size = parseInt(controls.size.value);
-		let diagonalMode = document.getElementById('diagonalMode');
-		let uniformMode = document.getElementById('uniformMode');
+		let uniformTrue = document.getElementById("uniformMode").checked;
+		let diagonalTrue = document.getElementById("diagonalMode").checked;
 
         function hideControls() {
             const contentElement = document.getElementById("controlsContainer");
@@ -352,9 +352,9 @@
             ctx.beginPath();
             ctx.arc(cx, cy, 6, 0, 2 * Math.PI);
             ctx.fill();
-			let uniformTrueOrFalse = document.getElementById("uniformMode").checked;
+			
 			let rauTable = {sin: 0, cos: 0};
-			if (uniformTrueOrFalse) {
+			if (uniformTrue) {
 				rauTable = generateTable(60, true);
 			}
 			else {
@@ -362,10 +362,10 @@
 			}
 
             // Uniform velocity ticks
-            drawVelocityTicks(staticCtx, cx, cy, radius, rauTable, 0.6, `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, `, uniformTrueOrFalse);
+            drawVelocityTicks(staticCtx, cx, cy, radius, rauTable, 0.6, `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, `, uniformTrue);
 
             // Numbered markers
-            drawNumberedMarkers(staticCtx, cx, cy, radius, rauTable, `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 0.8)`, uniformTrueOrFalse);
+            drawNumberedMarkers(staticCtx, cx, cy, radius, rauTable, `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 0.8)`, uniformTrue);
 
 			// Modular patterns/lines
 			drawModularLines(staticCtx, cx, cy, size, design, opacity, rgb);
@@ -387,7 +387,7 @@
         // ================================
         // Main function for the frame loop
         // ================================
-        function animate() {
+        function animate(refresh = false) {
             const now = new Date();
 
             // Continuous time fractions
@@ -402,8 +402,9 @@
 
             // Evaluate radical trig functions based on the checkbox value
             let sec = {sin: 0, cos: 0}, min = {sin: 0, cos: 0}, hr = {sin: 0, cos: 0};
-            if (diagonalMode.checked) {
-            	if (uniformMode.checked) {
+
+            if (diagonalTrue) {
+            	if (uniformTrue) {
 	   				sec = rauToXY(uniformVelocityRAU(rauSec));
 	   				min = rauToXY(uniformVelocityRAU(rauMin));
 	   				hr  = rauToXY(uniformVelocityRAU(rauHr));
@@ -415,12 +416,12 @@
    				}
             }
             else {
-            	if (uniformMode.checked) {
-	            	sec = { sin: radicalSine(rauSec),
+            	if (uniformTrue) {
+	            	sec = { sin: radicalSine(uniformVelocityRAU(rauSec)),
 	                	    cos: radicalCosine(uniformVelocityRAU(rauSec)) };
-	            	min = { sin: radicalSine(rauMin),
+	            	min = { sin: radicalSine(uniformVelocityRAU(rauMin)),
 	                	    cos: radicalCosine(uniformVelocityRAU(rauMin)) };
-	            	hr  = { sin: radicalSine(rauHr),
+	            	hr  = { sin: radicalSine(uniformVelocityRAU(rauHr)),
 	                   	    cos: radicalCosine(uniformVelocityRAU(rauHr)) };
 	            }
 	            else {
@@ -460,12 +461,18 @@
                 drawStaticBackgroundOnce();
             });
         });
-        const checkboxes = document.querySelectorAll('input[type="checkbox"]');
-        checkboxes.forEach(checkbox => {
-        	checkbox.addEventListener('click', (event) => {
-        	    drawStaticBackgroundOnce();
-        	});
+        // Checkbox listeners
+        document.getElementById("uniformMode").addEventListener("change", (e) => {
+            uniformTrue = e.target.checked;
+            drawStaticBackgroundOnce();
         });
+        
+        document.getElementById("diagonalMode").addEventListener("change", (e) => {
+            diagonalTrue = e.target.checked;
+            drawStaticBackgroundOnce();
+        });
+        
+
     </script>
 </body>
 
