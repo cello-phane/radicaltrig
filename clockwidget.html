@@ -9,7 +9,7 @@
 </head>
 
 <body>
-    <button type="button" data-theme-toggle aria-label="Change Theme">Dark/Light</button>
+    <button type="button" id="buttonTheme" data-theme-toggle aria-label="Change Theme">Dark/Light</button>
     <button id="toggleCtrls" onclick="hideControls();">Toggle Controls</button>
     <div id="controlsContainer">
         <div class="controls">
@@ -28,7 +28,6 @@
             <div class="control-group">
             	<label for="diagonalMode">Diagonal Mode</label>
                 <input type="checkbox" value="false" id="diagonalMode" name="diagonalMode">
-                
             </div>
             <div class="control-group">
             	<label for="uniformMode">Uniform spacing and time</label>
@@ -38,11 +37,11 @@
 				<input type="range" min="8" max="48" value="11" class="slider" id="fontSize" step="1">
 				🔤<span class="value" id="fontSizeVal">11</span>
 		    </div>
-
 		    <div class="control-group">
-			    <input type="color" id="fontColor" value="#d97757">
-			    🎨<span class="value" id="fontColorVal">#d97757</span>
+			    <input type="color" id="fontColor" value="#773b28">
+			    🎨<span class="value" id="fontColorVal">#773b28</span>
 		    </div>
+			<button type="button" id="buttonFont" data-theme-toggle aria-label="Dark/Light">Dark/Light</button>
         </div>
     </div>
     <canvas id="rauClock" width="750" height="750" style="background: transparent; --canvas-border: transparent;"></canvas>
@@ -78,19 +77,36 @@
             systemSettingDark
         });
 
-        const button = document.querySelector("[data-theme-toggle]");
-
-        button.addEventListener("click", () => {
+        const buttonTheme = document.getElementById("buttonTheme");
+	    const buttonFont = document.getElementById("buttonFont");
+        buttonTheme.addEventListener("click", () => {
             const newTheme = currentThemeSetting === "dark" ? "light" : "dark";
             const newCta = newTheme === "dark" ? "Switch to Light" : "Switch to Dark";
-            button.innerText = newCta;
-            button.setAttribute("aria-label", newCta);
+            buttonTheme.innerText = newCta;
+            buttonTheme.setAttribute("aria-label", newCta);
             document.querySelector("html").setAttribute("data-theme", newTheme);
             localStorage.setItem("theme", newTheme);
             currentThemeSetting = newTheme;
             drawStaticBackgroundOnce();
         });
+	  
+	    buttonFont.addEventListener("click", () => {
+			const newTheme = currentThemeSetting === "dark" ? "light" : "dark";
 
+			// Automatically invert font color when switching theme
+			if (newTheme === "dark") {
+				fontColor = invertColor(fontColor);
+				controls.fontColor.value = fontColor; // update slider
+				values.fontColorVal.textContent = fontColor;
+			} else {
+				// invert back if switching to light
+				fontColor = invertColor(fontColor);
+				controls.fontColor.value = fontColor;
+				values.fontColorVal.textContent = fontColor;
+			}
+			drawStaticBackgroundOnce();
+		});
+	  
         function getThemeColors() {
             const theme = localStorage.getItem("theme") || "dark";
 
@@ -108,7 +124,25 @@
                 };
             }
         }
+	  
+		function invertColor(hex) {
+			hex = hex.replace('#', '');
 
+			// Support 3-digit hex
+			if (hex.length === 3) {
+				hex = hex.split('').map(c => c + c).join('');
+			}
+
+			const r = 255 - parseInt(hex.slice(0, 2), 16);
+			const g = 255 - parseInt(hex.slice(2, 4), 16);
+			const b = 255 - parseInt(hex.slice(4, 6), 16);
+
+			return "#" + 
+				r.toString(16).padStart(2, '0') +
+				g.toString(16).padStart(2, '0') +
+				b.toString(16).padStart(2, '0');
+		}
+	  
         // ======================
         // Set up for main canvas
         // ======================
@@ -117,8 +151,7 @@
         const cx = canvas.width / 2;
         const cy = canvas.height / 2;
         const radius = Math.min(cx, cy) * 0.9;
-	    let fontSize  = 14;
-	    let fontColor = "#ffffff";
+
         // ===============================
         // Get the values from the sliders
         // ===============================
@@ -152,6 +185,9 @@
                 contentElement.style.display = "none";
             }
         }
+	  
+	  	let fontSize  = 11;
+	    let fontColor = "#773b28";
         // ======================================================================================        
         // Create a static buffer for the background that gets called from outside animating loop
         // ======================================================================================
@@ -477,8 +513,6 @@
                 if (key === 'size') size = parseInt(e.target.value);
 				if (key === 'fontSize') fontSize = parseInt(e.target.value);
 				if (key === 'fontColor') fontColor = e.target.value;
-
-
 				drawStaticBackgroundOnce();
 			});
         });
