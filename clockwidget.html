@@ -70,11 +70,11 @@
             return "light";
         }
 
-        const localStorageTheme = "dark";
-        const systemSettingDark = window.matchMedia("(prefers-color-scheme: dark)");
+        const localStorageTheme = "light";
+        const systemSettingLight = window.matchMedia("(prefers-color-scheme: light)");
         let currentThemeSetting = calculateSettingAsThemeString({
             localStorageTheme,
-            systemSettingDark
+            systemSettingLight
         });
 
         const buttonTheme = document.getElementById("buttonTheme");
@@ -91,7 +91,7 @@
         });
 	  
 	    buttonFont.addEventListener("click", () => {
-			const newTheme = currentThemeSetting === "dark" ? "light" : "dark";
+			const newTheme = currentThemeSetting === "light" ? "dark" : "light";
 
 			// Automatically invert font color when switching theme
 			if (newTheme === "dark") {
@@ -99,7 +99,7 @@
 				controls.fontColor.value = fontColor; // update slider
 				values.fontColorVal.textContent = fontColor;
 			} else {
-				// invert back if switching to light
+				// invert back if switching to dark
 				fontColor = invertColor(fontColor);
 				controls.fontColor.value = fontColor;
 				values.fontColorVal.textContent = fontColor;
