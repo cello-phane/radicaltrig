@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Transcendental Grid</title>
+    <title>Hyperbolic Plane/Grid</title>
     <style>
         body {
             margin: 0;
@@ -106,7 +106,8 @@
             radicalMode: document.getElementById('radicalMode'),
             zoom: document.getElementById('zoom'),
             resolution: document.getElementById('resolution'),
-            lineAlpha: document.getElementById('lineAlpha')
+            lineAlpha: document.getElementById('lineAlpha'),
+            showDiagonals: document.getElementById('showDiagonals'),
         };
         
         const values = {
@@ -260,6 +261,33 @@
             }
         }
         
+        // Draw 45° diagonal lines
+        function drawDiagonals(zoom, alpha) {
+            ctx.strokeStyle = `rgba(100, 255, 100, ${alpha * 0.5})`;
+            ctx.lineWidth = 1;
+            ctx.setLineDash([5, 5]);
+            
+            const extent = 10;
+            
+            // 45° lines
+            const lines = [
+                [{x: -extent, y: -extent}, {x: extent, y: extent}],   // 45°
+                [{x: -extent, y: extent}, {x: extent, y: -extent}],   // 135°
+            ];
+            
+            lines.forEach(line => {
+                const start = worldToCanvas(line[0].x, line[0].y, zoom);
+                const end = worldToCanvas(line[1].x, line[1].y, zoom);
+                
+                ctx.beginPath();
+                ctx.moveTo(start.x, start.y);
+                ctx.lineTo(end.x, end.y);
+                ctx.stroke();
+            });
+            
+            ctx.setLineDash([]);
+        }
+        
         // Draw axes
         function drawAxes(zoom, alpha) {
             ctx.strokeStyle = `rgba(255, 255, 255, ${alpha * 0.4})`;
@@ -294,7 +322,10 @@
             const useRadical = controls.radicalMode.checked;
 
             drawAxes(zoom, alpha);
-
+            
+            if (controls.showDiagonals.checked) {
+                drawDiagonals(zoom, alpha);
+            }
             
             drawTranscendental(zoom, resolution, alpha, useRadical);
             // Draw center point
