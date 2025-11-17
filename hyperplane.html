@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hyperbolic Plane/Grid</title>
+    <title>Hyperplane</title>
     <style>
         body {
             margin: 0;
@@ -20,14 +20,20 @@
             background: #000;
         }
         
-        .controls {
+        canvas.fullscreen {
+            width: 100vw !important;
+            height: 100vh !important;
+        }
+        
+        #controlsContainer {
             position: absolute;
-            top: 20px;
+            top: 40px;
             left: 20px;
             background: rgba(0,0,0,0.9);
             padding: 15px;
             border-radius: 8px;
             border: 2px solid #00ff88;
+            display: block;
         }
         
         .control-group {
@@ -59,17 +65,102 @@
             font-size: 14px;
             color: #00ff88;
         }
+        
+        .fullscreen-toggle {
+            position: absolute;
+            right: 20px;
+            background: rgba(0,0,0,0.9);
+            color: #00ff88;
+            border: 2px solid #00ff88;
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: monospace;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .fullscreen-toggle:hover {
+            background: rgba(0,255,136,0.2);
+        }
+        
+        .controls-toggle {
+	        position: left;
+	        top: 20px;
+	        right: 20px;
+	        background: rgba(0,0,0,0.9);
+	        color: #00ff88;
+	        border: 2px solid #00ff88;
+	        padding: 10px 15px;
+	        border-radius: 8px;
+	        cursor: pointer;
+	        font-family: monospace;
+	        font-size: 12px;
+	        font-weight: bold;
+        }
+        
+        .controls-toggle:hover {
+            background: rgba(0,255,136,0.2);
+        }
+        
+        button {
+            background: var(--button-bg);
+            color: var(--button);
+            border: var(--button-border);
+            padding: 8px 14px;
+            border-radius: 2px;
+            cursor: pointer;
+            margin-right: 8px;
+            margin-bottom: 8px;
+            font-size: 11px;
+            font-family: inherit;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            font-weight: normal;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        button:hover {
+            background: var(--button-hover-bg);
+            box-shadow: var(--button-hover-shadow);
+        }
+        
+        button:active {
+            box-shadow: var(--button-active-shadow);
+        }
+        
+        button.active {
+            background: var(--button-active-bg);
+            border-color: var(--button-active-border);
+        }
+        
+        button#toggleCtrls {
+            position: auto;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+        }
     </style>
 </head>
 <body>
+    <button class="fullscreen-toggle" id="fullscreenToggle">Toggle Fullscreen</button>
+    <button class="controls-toggle" id="toggleCtrls" onclick="hideControls();">Toggle Controls</button>
+
     <canvas id="canvas" width="960" height="720"></canvas>
     
-    <div class="controls">
-        <h3>Transcendental Grid</h3>
+    <div id="controlsContainer">
+
+        <h3>Controls</h3>
+
+        <div class="control-group">
+            <label>Show Transcendental:</label>
+            <input type="checkbox" id="showTranscendental" checked>
+        </div>
         
         <div class="control-group">
-            <label>Show 45° Lines:</label>
-            <input type="checkbox" id="showDiagonals" checked>
+            <label>Show Axes:</label>
+            <input type="checkbox" id="showAxes" checked>
         </div>
         
         <div class="control-group">
@@ -99,15 +190,16 @@
     <script>
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
-        const centerX = canvas.width / 2;
-        const centerY = canvas.height / 2;
+        let centerX = canvas.width / 2;
+        let centerY = canvas.height / 2;
         
         const controls = {
+            showAxes: document.getElementById('showAxes'),
+            showTranscendental: document.getElementById('showTranscendental'),
             radicalMode: document.getElementById('radicalMode'),
             zoom: document.getElementById('zoom'),
             resolution: document.getElementById('resolution'),
-            lineAlpha: document.getElementById('lineAlpha'),
-            showDiagonals: document.getElementById('showDiagonals'),
+            lineAlpha: document.getElementById('lineAlpha')
         };
         
         const values = {
@@ -130,6 +222,15 @@
             render();
         });
         
+        function hideControls() {
+            const contentElement = document.getElementById("controlsContainer");
+            if (contentElement.style.display === "none") {
+                contentElement.style.display = "block";
+            } else {
+                contentElement.style.display = "none";
+            }
+        }
+
         // Trigger render on checkbox changes
         Object.keys(controls).forEach(key => {
             if (controls[key].type === 'checkbox') {
@@ -261,33 +362,6 @@
             }
         }
         
-        // Draw 45° diagonal lines
-        function drawDiagonals(zoom, alpha) {
-            ctx.strokeStyle = `rgba(100, 255, 100, ${alpha * 0.5})`;
-            ctx.lineWidth = 1;
-            ctx.setLineDash([5, 5]);
-            
-            const extent = 10;
-            
-            // 45° lines
-            const lines = [
-                [{x: -extent, y: -extent}, {x: extent, y: extent}],   // 45°
-                [{x: -extent, y: extent}, {x: extent, y: -extent}],   // 135°
-            ];
-            
-            lines.forEach(line => {
-                const start = worldToCanvas(line[0].x, line[0].y, zoom);
-                const end = worldToCanvas(line[1].x, line[1].y, zoom);
-                
-                ctx.beginPath();
-                ctx.moveTo(start.x, start.y);
-                ctx.lineTo(end.x, end.y);
-                ctx.stroke();
-            });
-            
-            ctx.setLineDash([]);
-        }
-        
         // Draw axes
         function drawAxes(zoom, alpha) {
             ctx.strokeStyle = `rgba(255, 255, 255, ${alpha * 0.4})`;
@@ -310,6 +384,13 @@
             ctx.moveTo(yTop.x, yTop.y);
             ctx.lineTo(yBottom.x, yBottom.y);
             ctx.stroke();
+
+            // Draw center point
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, 4, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
         }
         
         // Main render function
@@ -320,23 +401,39 @@
             const resolution = parseInt(controls.resolution.value);
             const alpha = parseFloat(controls.lineAlpha.value);
             const useRadical = controls.radicalMode.checked;
-
-            drawAxes(zoom, alpha);
             
-            if (controls.showDiagonals.checked) {
-                drawDiagonals(zoom, alpha);
+            // Draw in order (back to front)
+            if (controls.showAxes.checked) {
+                drawAxes(zoom, alpha);
+            }
+            if (controls.showTranscendental.checked) {
+            	drawTranscendental(zoom, resolution, alpha, useRadical);
             }
             
-            drawTranscendental(zoom, resolution, alpha, useRadical);
-            // Draw center point
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-            ctx.beginPath();
-            ctx.arc(centerX, centerY, 4, 0, Math.PI * 2);
-            ctx.fill();
         }
-        
+
         // Initial render
         render();
+        
+        // Fullscreen toggle
+        const fullscreenToggle = document.getElementById('fullscreenToggle');
+        fullscreenToggle.addEventListener('click', () => {
+            canvas.classList.toggle('fullscreen');
+            
+            // Update canvas resolution when toggling fullscreen
+            if (canvas.classList.contains('fullscreen')) {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            } else {
+                canvas.width = 960;
+                canvas.height = 720;
+            }
+            
+            // Update center coordinates
+            centerX = canvas.width / 2;
+            centerY = canvas.height / 2;
+            render();
+        });
     </script>
 </body>
 </html>
