@@ -69,14 +69,21 @@
 
             return "light";
         }
+        
+        let localStorageTheme = "light";
 
-        const localStorageTheme = "light";
         const systemSettingDark = window.matchMedia("(prefers-color-scheme: dark)");
         const systemSettingLight = window.matchMedia("(prefers-color-scheme: light)");
         let currentThemeSetting = calculateSettingAsThemeString({
             localStorageTheme,
             systemSettingLight
         });
+        window.onload = function() {
+        		if (localStorageTheme !== "light") {
+        			fontColor = invertColor(fontColor);
+        			values.fontColorVal.textContent = fontColor;
+        		}
+   		};
 
         const buttonTheme = document.getElementById("buttonTheme");
         const buttonFont = document.getElementById("buttonFont");
@@ -93,10 +100,10 @@
                 fontColor = invertColor(fontColor);
                 controls.fontColor.value = fontColor; // update slider
                 values.fontColorVal.textContent = fontColor;
-            } else {
-                // invert back if switching to dark
-                fontColor = invertColor(fontColor);
-                controls.fontColor.value = fontColor;
+            }
+            else {
+            	fontColor = invertColor(fontColor);
+                controls.fontColor.value = fontColor; // update slider
                 values.fontColorVal.textContent = fontColor;
             }
             drawStaticBackgroundOnce();
@@ -120,7 +127,7 @@
         });
 
         function getThemeColors() {
-            const theme = localStorage.getItem("theme") || "dark";
+            const theme = localStorage.getItem("theme") || "dark" || "light";
 
             if (theme === "light") {
                 return {
