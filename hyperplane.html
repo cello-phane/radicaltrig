@@ -348,7 +348,7 @@
                     const world = canvasToWorld(px, py, zoom);
                     const val = evaluateTranscendental(world.x, world.y, useRadical);
                     
-                    if (val !== null && Math.abs(val - 1.0) < 0.15) {
+                    if (val !== null && Math.abs(val - 1.0) < 0.5) {
                         // Check neighbors to draw continuous lines
                         const worldRight = canvasToWorld(px + step, py, zoom);
                         const worldDown = canvasToWorld(px, py + step, zoom);
