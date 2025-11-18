@@ -389,14 +389,15 @@
 	    function toggleAnimation() {
 		  if (!animating) {
 		    // Start smooth looping rotation
-			  toggleAnimBtn.textContent = 'Start Animation';
-		  toggleAnimBtn.classList.remove('active');
+		  	toggleAnimBtn.textContent = 'Start Animation';
+		  	toggleAnimBtn.classList.remove('active');
 		    animateZoomResolution();
-			  animating = true;
-		  } else {
-			  toggleAnimBtn.textContent = 'Stop Animation ';
-			  toggleAnimBtn.classList.add('active');
-			  animating = false;
+		  	animating = true;
+		  } 
+		  else {
+		  	toggleAnimBtn.textContent = 'Stop Animation ';
+			toggleAnimBtn.classList.add('active');
+			animating = false;
 		  }
 		}
 	  
@@ -475,13 +476,12 @@
 			const alpha = parseFloat(controls.lineAlpha.value);
 			const useRadical = controls.radicalMode.checked;
 
-			//drawTranscendental(zoom, resolution, alpha, useRadical);
-			//use cached version instead:
+			//use cached version:
 			renderTranscendentalCached(zoom, resolution, alpha, useRadical);
 
 			if (animating === false) {
 				// If not animating, simply draw it uncached? (not sure if that is best option)
-				renderTranscendentalCached(zoom, resolution, alpha, useRadical);
+				drawTranscendental(zoom, resolution, alpha, useRadical);
 			}
 		}
 		
