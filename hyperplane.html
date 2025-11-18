@@ -18,6 +18,8 @@
             display: block;
             margin: 0 auto;
             background: #000;
+			z-index: 1;
+			position: relative;
         }
         
         canvas.fullscreen {
@@ -27,13 +29,14 @@
         
         #controlsContainer {
             position: absolute;
-            top: 40px;
+            top: 60px;
             left: 20px;
             background: rgba(0,0,0,0.9);
             padding: 15px;
             border-radius: 8px;
             border: 2px solid #00ff88;
             display: block;
+			z-index: 2;
         }
         
         .control-group {
@@ -65,8 +68,12 @@
             font-size: 14px;
             color: #00ff88;
         }
-        
-        .fullscreen-toggle {
+
+		.mainContainer {
+			position: relative;
+        }
+
+		.fullscreen-toggle {
             position: absolute;
             right: 20px;
             background: rgba(0,0,0,0.9);
@@ -78,6 +85,7 @@
             font-family: monospace;
             font-size: 12px;
             font-weight: bold;
+			z-index: 2;
         }
         
         .fullscreen-toggle:hover {
@@ -85,7 +93,6 @@
         }
         
         .controls-toggle {
-	        position: left;
 	        top: 20px;
 	        right: 20px;
 	        background: rgba(0,0,0,0.9);
@@ -97,6 +104,8 @@
 	        font-family: monospace;
 	        font-size: 12px;
 	        font-weight: bold;
+			position: relative;
+			z-index: 2;
         }
         
         .controls-toggle:hover {
@@ -119,6 +128,7 @@
             font-weight: normal;
             transition: all 0.2s ease;
             box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+			z-index: 2;
         }
         
         button:hover {
@@ -136,20 +146,19 @@
         }
         
         button#toggleCtrls {
-            position: auto;
             top: 20px;
             left: 20px;
-            z-index: 1000;
+            z-index: 2;
         }
     </style>
 </head>
 <body>
-    <button class="fullscreen-toggle" id="fullscreenToggle">Toggle Fullscreen</button>
-    <button class="controls-toggle" id="toggleCtrls" onclick="hideControls();">Toggle Controls</button>
-
-    <canvas id="canvas" width="960" height="720"></canvas>
     
-    <div id="controlsContainer">
+
+    <div id="mainContainer">
+<button class="fullscreen-toggle" id="fullscreenToggle">Toggle Fullscreen</button>
+    <button class="controls-toggle" id="toggleCtrls" onclick="hideControls();">Toggle Controls</button>
+	  <div id="controlsContainer">
 
         <h3>Controls</h3>
 
@@ -186,7 +195,9 @@
             <span class="value" id="lineAlphaVal">0.6</span>
         </div>
     </div>
+    <canvas id="canvas" width="960" height="720"></canvas>
 
+	</div>
     <script>
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
@@ -422,9 +433,11 @@
             
             // Update canvas resolution when toggling fullscreen
             if (canvas.classList.contains('fullscreen')) {
-                canvas.width = window.innerWidth;
-                canvas.height = window.innerHeight;
+                canvas.height = canvas.height*2;
+                canvas.width = canvas.width*2;
+				canvas.style.top = (parseInt(canvas.style.top) || 0 - 50) + 'px';
             } else {
+				canvas.style.top = '0px';
                 canvas.width = 960;
                 canvas.height = 720;
             }
