@@ -481,8 +481,7 @@
 
 			if (animating === false) {
 				// If not animating, simply draw it uncached? (not sure if that is best option)
-				drawTranscendental(zoom, resolution, alpha, useRadical);
-				requestAnimationFrame(render);
+				renderTranscendentalCached(zoom, resolution, alpha, useRadical);
 			}
 		}
 		
