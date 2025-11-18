@@ -159,6 +159,7 @@
     <div id="mainContainer">
 	<button class="fullscreen-toggle" id="fullscreenToggle">&#x26F6;</button>
     <button class="controls-toggle" id="toggleCtrls" onclick="hideControls();">&#247;</button>
+	<button id="toggleAnim">Start Animation</button>
 	  <div id="controlsContainer">
 
         <h3>Controls</h3>
@@ -180,13 +181,13 @@
         
         <div class="control-group">
             <label>Zoom:</label>
-            <input type="range" id="zoom" min="0.2" max="3.0" step="0.1" value="1.0">
+            <input type="range" id="zoom" min="0.1" max="4.0" step="0.05" value="1.0">
             <span class="value" id="zoomVal">1.0</span>
         </div>
         
         <div class="control-group">
             <label>Resolution:</label>
-            <input type="range" id="resolution" min="50" max="400" step="10" value="200">
+            <input type="range" id="resolution" min="50" max="600" step="1" value="200">
             <span class="value" id="resolutionVal">200</span>
         </div>
         
@@ -204,7 +205,7 @@
         const ctx = canvas.getContext('2d');
         let centerX = canvas.width / 2;
         let centerY = canvas.height / 2;
-        
+
         const controls = {
             showAxes: document.getElementById('showAxes'),
             showTranscendental: document.getElementById('showTranscendental'),
@@ -219,7 +220,7 @@
             resolutionVal: document.getElementById('resolutionVal'),
             lineAlphaVal: document.getElementById('lineAlphaVal')
         };
-        
+        const toggleAnimBtn = document.getElementById('toggleAnim');
         // Update displays
         controls.zoom.addEventListener('input', (e) => {
             values.zoomVal.textContent = e.target.value;
@@ -404,26 +405,107 @@
             ctx.fill();
             ctx.stroke();
         }
-        
-        // Main render function
-        function render() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            const zoom = parseFloat(controls.zoom.value);
-            const resolution = parseInt(controls.resolution.value);
-            const alpha = parseFloat(controls.lineAlpha.value);
-            const useRadical = controls.radicalMode.checked;
-            
-            // Draw in order (back to front)
-            if (controls.showAxes.checked) {
-                drawAxes(zoom, alpha);
-            }
-            if (controls.showTranscendental.checked) {
-            	drawTranscendental(zoom, resolution, alpha, useRadical);
-            }
-            
-        }
+	    function toggleAnimation() {
+		  if (!animating) {
+		    // Start smooth looping rotation
+			  toggleAnimBtn.textContent = 'Start Animation';
+		  toggleAnimBtn.classList.remove('active');
+		    animateZoomResolution();
+			  animating = true;
+		  } else {
+			  toggleAnimBtn.textContent = 'Stop Animation ';
+			  toggleAnimBtn.classList.add('active');
+			  animating = false;
+		  }
+		}
+	  
+		// ------------------ TRIANGLE WAVE ------------------
+		function triC(t) {
+			// Returns -1 → 1 → -1 with constant speed
+			return 2.0 * Math.abs((t % 2) - 1) - 1.0;
+		}
 
+		// Animation state
+		let animating = false;
+		let t0_ZR = performance.now();
+
+		// ------------------ ANIMATE ZOOM/RES ------------------
+		function animateZoomResolution() {
+			if (!animating) return;
+
+			let t = (performance.now() - t0_ZR) * 0.00015;
+
+			// ----- Zoom (constant speed triangle wave) -----
+			let z = triC(t);
+			let zoomBase = 1.2;
+			let zoomAmp  = 0.85;
+			let zoomVal  = zoomBase + zoomAmp * z;
+
+			// ----- Resolution (skewed triangle wave) -----
+			let r = triC(t * 0.6);
+			let skew = (r > 0.0) ? r * 0.4 : r * 1.2;
+
+			let resBase = 260;
+			let resAmp  = 140;
+			let resVal = resBase + resAmp * skew;
+
+			// Clamp
+			zoomVal = Math.min(4.0, Math.max(0.1, zoomVal));
+			resVal  = Math.min(600, Math.max(50, resVal));
+
+			// Update sliders
+			controls.zoom.value = zoomVal;
+			controls.resolution.value = resVal;
+
+			values.zoomVal.textContent = zoomVal.toFixed(2);
+			values.resolutionVal.textContent = Math.round(resVal);
+
+			// Re-render
+			render();
+
+			// Continue loop
+			requestAnimationFrame(animateZoomResolution);
+		}
+
+		// ------------------ START/STOP ANIMATION ------------------
+		function toggleAnimation() {
+			animating = !animating;
+
+			if (animating) {
+				toggleAnimBtn.textContent = "Stop Animation";
+				toggleAnimBtn.classList.add("active");
+				t0_ZR = performance.now();
+				animateZoomResolution();
+			} else {
+				toggleAnimBtn.textContent = "Start Animation";
+				toggleAnimBtn.classList.remove("active");
+			}
+		}
+
+		toggleAnimBtn.addEventListener('click', toggleAnimation);
+		canvas.addEventListener('dblclick', toggleAnimation);
+
+		// ------------------ MAIN RENDER ------------------
+		function render() {
+			ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+			const zoom = parseFloat(controls.zoom.value);
+			const resolution = parseInt(controls.resolution.value);
+			const alpha = parseFloat(controls.lineAlpha.value);
+			const useRadical = controls.radicalMode.checked;
+
+			if (controls.showTranscendental.checked)
+				drawTranscendental(zoom, resolution, alpha, useRadical);
+
+			if (animating === false)
+				requestAnimationFrame(render);
+		}
+		requestAnimationFrame(render);
+	  // Animation control event listeners
+        toggleAnimBtn.addEventListener('click', toggleAnimation);
+
+        // Double-click canvas to toggle animation (legacy support)
+        canvas.addEventListener('dblclick', toggleAnimation);
         // Initial render
         render();
 	  
@@ -454,7 +536,7 @@
             }
             return false
         }
-	  
+	    
         // Fullscreen toggle
         const fullscreenToggle = document.getElementById('fullscreenToggle');
         fullscreenToggle.addEventListener('click', () => {
@@ -476,6 +558,7 @@
 				if(typeof rfs!="undefined" && rfs){
 					rfs.call(el);
 				}
+				
             } else {
 				cancelFullScreen();
 
