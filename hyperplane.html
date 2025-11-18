@@ -206,6 +206,12 @@
         let centerX = canvas.width / 2;
         let centerY = canvas.height / 2;
 
+        const cacheCanvas = document.createElement('canvas');
+        const cacheCtx = cacheCanvas.getContext('2d');
+        
+        let cachedZoom = null;
+        let cachedResolution = null;
+        
         const controls = {
             showAxes: document.getElementById('showAxes'),
             showTranscendental: document.getElementById('showTranscendental'),
@@ -349,7 +355,7 @@
                     const world = canvasToWorld(px, py, zoom);
                     const val = evaluateTranscendental(world.x, world.y, useRadical);
                     
-                    if (val !== null && Math.abs(val - 1.0) < 0.5) {
+                    if (val !== null && Math.abs(val - 1.0) < 0.1) {
                         // Check neighbors to draw continuous lines
                         const worldRight = canvasToWorld(px + step, py, zoom);
                         const worldDown = canvasToWorld(px, py + step, zoom);
@@ -373,6 +379,29 @@
                     }
                 }
             }
+        }
+
+        function renderTranscendentalCached(zoom, resolution, alpha, radicalMode) {
+            if (zoom === cachedZoom && resolution === cachedResolution) {
+                // draw cached version directly
+                ctx.drawImage(cacheCanvas, 0, 0);
+                return;
+            }
+        
+            // Update cache dimensions
+            cacheCanvas.width = canvas.width;
+            cacheCanvas.height = canvas.height;
+        
+            // Draw expensive stuff into cache
+            cacheCtx.clearRect(0, 0, cacheCanvas.width, cacheCanvas.height);
+            drawTranscendental.call({ ctx: cacheCtx }, zoom, resolution, alpha, radicalMode);
+        
+            // Store parameters for re-use
+            cachedZoom = zoom;
+            cachedResolution = resolution;
+        
+            // Render cache to visible canvas
+            ctx.drawImage(cacheCanvas, 0, 0);
         }
         
         // Draw axes
@@ -405,6 +434,7 @@
             ctx.fill();
             ctx.stroke();
         }
+        
 	    function toggleAnimation() {
 		  if (!animating) {
 		    // Start smooth looping rotation
@@ -495,13 +525,19 @@
 			const useRadical = controls.radicalMode.checked;
 
 			if (controls.showTranscendental.checked)
-				drawTranscendental(zoom, resolution, alpha, useRadical);
+				//drawTranscendental(zoom, resolution, alpha, useRadical);
+				//use cached version instead:
+				renderTranscendentalCached(zoom, resolution, alpha, useRadical);
 
-			if (animating === false)
+			if (animating === false) {
+				// If not animating, simply draw it uncached? (not sure if that is best option)
+				drawTranscendental(zoom, resolution, alpha, useRadical);
 				requestAnimationFrame(render);
+			}
 		}
+		
 		requestAnimationFrame(render);
-	  // Animation control event listeners
+	  	// Animation control event listeners
         toggleAnimBtn.addEventListener('click', toggleAnimation);
 
         // Double-click canvas to toggle animation (legacy support)
