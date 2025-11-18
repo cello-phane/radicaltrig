@@ -165,23 +165,13 @@
         <h3>Controls</h3>
 
         <div class="control-group">
-            <label>Show Transcendental:</label>
-            <input type="checkbox" id="showTranscendental" checked>
-        </div>
-        
-        <div class="control-group">
-            <label>Show Axes:</label>
-            <input type="checkbox" id="showAxes" checked>
-        </div>
-        
-        <div class="control-group">
             <label>Radical Mode (RAU):</label>
             <input type="checkbox" id="radicalMode">
         </div>
         
         <div class="control-group">
             <label>Zoom:</label>
-            <input type="range" id="zoom" min="0.1" max="4.0" step="0.05" value="1.0">
+            <input type="range" id="zoom" min="0.1" max="4.0" step="0.01" value="1.0">
             <span class="value" id="zoomVal">1.0</span>
         </div>
         
@@ -213,8 +203,6 @@
         let cachedResolution = null;
         
         const controls = {
-            showAxes: document.getElementById('showAxes'),
-            showTranscendental: document.getElementById('showTranscendental'),
             radicalMode: document.getElementById('radicalMode'),
             zoom: document.getElementById('zoom'),
             resolution: document.getElementById('resolution'),
@@ -382,18 +370,12 @@
         }
 
         function renderTranscendentalCached(zoom, resolution, alpha, radicalMode) {
-            if (zoom === cachedZoom && resolution === cachedResolution) {
-                // draw cached version directly
-                ctx.drawImage(cacheCanvas, 0, 0);
-                return;
-            }
         
             // Update cache dimensions
             cacheCanvas.width = canvas.width;
             cacheCanvas.height = canvas.height;
         
             // Draw expensive stuff into cache
-            cacheCtx.clearRect(0, 0, cacheCanvas.width, cacheCanvas.height);
             drawTranscendental.call({ ctx: cacheCtx }, zoom, resolution, alpha, radicalMode);
         
             // Store parameters for re-use
@@ -402,37 +384,6 @@
         
             // Render cache to visible canvas
             ctx.drawImage(cacheCanvas, 0, 0);
-        }
-        
-        // Draw axes
-        function drawAxes(zoom, alpha) {
-            ctx.strokeStyle = `rgba(255, 255, 255, ${alpha * 0.4})`;
-            ctx.lineWidth = 2;
-            
-            const extent = 10;
-            
-            // X-axis
-            const xLeft = worldToCanvas(-extent, 0, zoom);
-            const xRight = worldToCanvas(extent, 0, zoom);
-            ctx.beginPath();
-            ctx.moveTo(xLeft.x, xLeft.y);
-            ctx.lineTo(xRight.x, xRight.y);
-            ctx.stroke();
-            
-            // Y-axis
-            const yTop = worldToCanvas(0, extent, zoom);
-            const yBottom = worldToCanvas(0, -extent, zoom);
-            ctx.beginPath();
-            ctx.moveTo(yTop.x, yTop.y);
-            ctx.lineTo(yBottom.x, yBottom.y);
-            ctx.stroke();
-
-            // Draw center point
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-            ctx.beginPath();
-            ctx.arc(centerX, centerY, 4, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.stroke();
         }
         
 	    function toggleAnimation() {
@@ -524,10 +475,9 @@
 			const alpha = parseFloat(controls.lineAlpha.value);
 			const useRadical = controls.radicalMode.checked;
 
-			if (controls.showTranscendental.checked)
-				//drawTranscendental(zoom, resolution, alpha, useRadical);
-				//use cached version instead:
-				renderTranscendentalCached(zoom, resolution, alpha, useRadical);
+			//drawTranscendental(zoom, resolution, alpha, useRadical);
+			//use cached version instead:
+			renderTranscendentalCached(zoom, resolution, alpha, useRadical);
 
 			if (animating === false) {
 				// If not animating, simply draw it uncached? (not sure if that is best option)
