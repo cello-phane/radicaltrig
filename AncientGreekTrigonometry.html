@@ -15,15 +15,18 @@
   <link rel="icon" type="image/x-icon" href="./AncientGreekTrigonometry_files/assets/images/favicon.ico">
 <link rel="stylesheet" href="./AncientGreekTrigonometry_files/styles.css">
 <style>
-.content {
-  flex-grow: 1;
-  max-width: 850px;
-  margin: 0 auto;          /* center on page */
-  padding: 2rem 1.5rem;
-  line-height: 1.6;
-	width: 70%;
-}
 
+
+/* Fix broken media query from original snippet */
+@media only screen and (max-width: 1400px) {
+
+/* Ensure content centers properly on smaller screens */
+.content {
+		width: 70%;
+		max-width: 850px;
+		margin: 0 auto;
+		}
+}
 /* Error block preserved */
 .content__error {
   border-radius: 0.5rem;
@@ -41,6 +44,19 @@
   left: 1.5rem;
   font-weight: bold;
   font-size: 1.3rem;
+}
+
+/* Make images smaller and centered */
+.content img {
+  max-width: 60%;          /* ~40% reduction */
+  display: block;
+  margin: 1rem auto;       /* centered */
+  height: auto;
+}
+
+/* Optional: keep KaTeX blocks tidy */
+.katex-display {
+  margin: 1.6rem 0 !important;
 }
 
 .navigation {
@@ -64,29 +80,6 @@
     padding: 2rem;
 }
 
-/* Fix broken media query from original snippet */
-@media only screen and (max-width: 1400px) {
-
-  /* Ensure content centers properly on smaller screens */
-  .content {
-    width: 100%;
-    max-width: 850px;
-    margin: 0 auto;
-  }
-}
-
-/* Make images smaller and centered */
-.content img {
-  max-width: 60%;          /* ~40% reduction */
-  display: block;
-  margin: 1rem auto;       /* centered */
-  height: auto;
-}
-
-/* Optional: keep KaTeX blocks tidy */
-.katex-display {
-  margin: 1.6rem 0 !important;
-}
 </style>
 </head>
 
