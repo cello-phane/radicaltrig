@@ -1914,13 +1914,6 @@ pre[class*=language-] {
    - Limit max width
    ========================================================== */
 
-body {
-  display: flex;
-  justify-content: center;
-  padding: 2rem 0;
-}
-
-/* The container that holds your HTML content */
 .content-container,
 markdown {
   width: 100%;
@@ -1929,7 +1922,6 @@ markdown {
   padding: 0 1.2rem;
 }
 
-/* Reduce size of all images inside content */
 markdown img {
   width: 60% !important;     /* ~40% smaller */
   margin-left: auto;
