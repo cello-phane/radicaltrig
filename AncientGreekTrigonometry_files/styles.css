@@ -275,28 +275,28 @@ table.tus-table--tus-custom tr:nth-of-type(even) td:nth-of-type(odd) p {
 }
 @font-face {
   font-family: "Menlo";
-  src: url(/assets/fonts/Menlo-Bold.woff2) format("woff2"), url(/assets/fonts/Menlo-Bold.woff) format("woff");
+  src: url(./AncientGreekTrigonometry_files/assets/fonts/Menlo-Bold.woff2) format("woff2"), url(./AncientGreekTrigonometry_files/assets/fonts/Menlo-Bold.woff) format("woff");
   font-weight: bold;
   font-style: normal;
   font-display: swap;
 }
 @font-face {
   font-family: "Menlo";
-  src: url(/assets/fonts/Menlo-BoldItalic.woff2) format("woff2"), url(/assets/fonts/Menlo-BoldItalic.woff) format("woff");
+  src: url(./AncientGreekTrigonometry_files/assets/fonts/Menlo-BoldItalic.woff2) format("woff2"), url(./AncientGreekTrigonometry_files/assets/fonts/Menlo-BoldItalic.woff) format("woff");
   font-weight: bold;
   font-style: italic;
   font-display: swap;
 }
 @font-face {
   font-family: "Menlo";
-  src: url(/assets/fonts/Menlo-Italic.woff2) format("woff2"), url(/assets/fonts/Menlo-Italic.woff) format("woff");
+  src: url(./AncientGreekTrigonometry_files/assets/fonts/Menlo-Italic.woff2) format("woff2"), url(./AncientGreekTrigonometry_files/assets/fonts/Menlo-Italic.woff) format("woff");
   font-weight: normal;
   font-style: italic;
   font-display: swap;
 }
 @font-face {
   font-family: "Menlo";
-  src: url(/assets/fonts/Menlo-Regular.woff2) format("woff2"), url(/assets/fonts/Menlo-Regular.woff) format("woff");
+  src: url(./AncientGreekTrigonometry_files/assets/fonts/Menlo-Regular.woff2) format("woff2"), url(./AncientGreekTrigonometry_files/assets/fonts/Menlo-Regular.woff) format("woff");
   font-weight: normal;
   font-style: normal;
   font-display: swap;
@@ -573,7 +573,7 @@ markdown .markdown-headline.collapsible::before {
   transition: transform 100ms ease-in-out;
   width: 1rem;
   height: 1rem;
-  background: url(/assets/icons/dropdown.svg) center center/contain no-repeat;
+  background: url(./AncientGreekTrigonometry_files/assets/icons/dropdown.svg) center center/contain no-repeat;
 }
 markdown .markdown-headline.collapsible--expanded::before {
   transform: rotate(180deg) translateY(50%);
