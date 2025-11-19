@@ -1,0 +1,308 @@
+$white: rgb(202, 206, 222);
+$black: #000000;
+
+em.tus-highlight {
+  $transparency: .3;
+
+  &--blue {
+    background-color: transparentize(rgb(87, 137, 221), $transparency);
+  }
+
+  &--gray {
+    background-color: transparentize(rgb(88, 92, 114), $transparency);
+  }
+
+  &--purple {
+    background-color: transparentize(rgb(127, 83, 230), $transparency);
+  }
+
+  &--red {
+    background-color: transparentize(rgb(211, 33, 33), $transparency);
+  }
+
+  &--orange {
+    background-color: transparentize(rgb(187, 105, 11), $transparency);
+  }
+}
+
+.tus-white-wrap {
+  background: $white;
+  padding: .5rem;
+  margin: .5rem;
+  display: inline-block;
+  border-radius: .2rem;
+
+  p, em {
+    margin: 0;
+    color: $black;
+  }
+}
+
+table.tus-table {
+  background: $white;
+
+  &, p, td, th, em {
+    border-color: black;
+    color: black;
+    padding: 0;
+    font-weight: normal;
+  }
+
+  p, td, th, em {
+    margin: 0;
+  }
+
+  td {
+    padding: .5rem;
+  }
+
+  td, th {
+    text-align: center;
+  }
+
+  &--2-col td {
+    width: 50%;
+  }
+
+  &--3-col td {
+    width: calc(100%/3);
+  }
+
+  &--tus-custom {
+    $doorway-width: 4rem;
+
+    table-layout: fixed;
+
+    // Fix for safari, because the table is totally messed up otherwise...
+    width: auto;
+    min-width: 100%;
+
+    p a {
+      color: inherit;
+    }
+
+    tr:nth-of-type(odd) {
+      td:nth-of-type(even) {
+        width: $doorway-width;
+        word-break: break-all;
+      }
+
+      td:nth-of-type(odd) {
+        width: calc((100% - (2 * $doorway-width)) / 3);
+      }
+    }
+
+    tr:nth-of-type(even) {
+      td:nth-of-type(even) {
+        width: $doorway-width;
+      }
+
+      td:nth-of-type(odd) {
+        width: calc((100% - (2 * $doorway-width)) / 3);
+
+        &, img, p {
+          vertical-align: middle;
+        }
+      }
+    }
+  }
+}
+
+.tus-vertical-text {
+  writing-mode: vertical-rl;
+  text-orientation: upright;
+  display: inline-block;
+
+  // Fix for safari, where p has only the height of one letter
+  min-height: max-content;
+}
+
+.tus-align {
+
+  @mixin base {
+    width: 100%;
+  }
+
+  &--right {
+    text-align: right;
+    @include base;
+  }
+
+  &--left {
+    text-align: left;
+    @include base;
+  }
+}
+
+.tus-arrow {
+
+  @mixin base {
+    height: 2rem;
+    width: 2rem;
+    transform-origin: center center;
+  }
+
+  &--right {
+    @include base;
+  }
+
+  &--up {
+    @include base;
+    transform: rotate(-90deg);
+  }
+
+  &--down {
+    @include base;
+    transform: rotate(90deg);
+  }
+}
+
+.tus-floating-arrow {
+  position: relative;
+
+  @mixin base {
+    position: relative;
+  }
+
+  @mixin base-after {
+    display: block;
+    position: absolute;
+    content: '';
+    background: url('/assets/images/the_ultimate_schematic__arrow.svg');
+    background-size: cover;
+    width: 1.5rem;
+    height: 1.5rem;
+    transform-origin: center center;
+  }
+
+  &--right-bottom-right-down {
+    @include base;
+
+    &::after {
+      @include base-after;
+      bottom: 0;
+      right: 0;
+      transform: translate(90%, 90%) rotate(45deg);
+    }
+  }
+
+  &--left-top-left-up {
+    @include base;
+
+    &::after {
+      @include base-after;
+      top: 0;
+      left: 0;
+      transform: translate(-90%, -90%) rotate(-135deg);
+    }
+  }
+
+  &--right-top-right-up {
+    @include base;
+
+    &::after {
+      @include base-after;
+      top: 0;
+      right: 0;
+      transform: translate(90%, -90%) rotate(-45deg);
+    }
+  }
+
+  &--left-center-left {
+    @include base;
+
+    &::after {
+      @include base-after;
+      top: 50%;
+      left: 0;
+      transform: translate(-100%, -50%) rotate(180deg);
+    }
+  }
+
+  &--left-bottom-right-up {
+    @include base;
+
+    &::after {
+      @include base-after;
+      bottom: 0;
+      left: 0;
+      transform: translate(-90%, 90%) rotate(-45deg);
+    }
+  }
+
+  &--left-bottom-left-down {
+    @include base;
+
+    &::after {
+      @include base-after;
+      bottom: 0;
+      left: 0;
+      transform: translate(-90%, 90%) rotate(90deg + 45deg);
+    }
+  }
+
+  &--left-top-right-down {
+    @include base;
+
+    &::after {
+      @include base-after;
+      top: 0;
+      left: 0;
+      transform: translate(-90%, -90%) rotate(45deg);
+    }
+  }
+}
+
+.tus-boxed {
+  outline: .15rem solid $black;
+  outline-offset: .2rem;
+  border-radius: .2rem;
+}
+
+.tus-dotted-circle {
+  position: relative;
+  z-index: 1;
+
+  &::after {
+    display: block;
+    position: absolute;
+    content: '';
+    width: 1.3rem;
+    height: 1.3rem;
+    border-radius: 50%;
+    border: .2rem solid black;
+    border-style: dotted;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: -1;
+  }
+}
+
+.tus-background {
+  @mixin base {
+    width: fit-content;
+  }
+
+  &--white {
+    background: white;
+    color: black;
+    @include base;
+  }
+
+  &--red {
+    background: rgb(229, 67, 67);
+    @include base;
+    color: white;
+  }
+}
+
+.tus-back-to-previous--disabled {
+  color: gray;
+
+  &:hover {
+    color: gray;
+    background-color: transparent;
+    cursor: auto;
+  }
+}

@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="304" height="307.442" viewBox="0 0 304 307.442">
+  <defs>
+    <linearGradient id="linear-gradient" x1="0.5" x2="0.5" y2="1" gradientUnits="objectBoundingBox">
+      <stop offset="0" stop-color="#9b80e5"/>
+      <stop offset="1" stop-color="#2d598b"/>
+    </linearGradient>
+  </defs>
+  <g id="Group_2" data-name="Group 2" transform="translate(-406 -222)">
+    <circle id="Ellipse_1" data-name="Ellipse 1" cx="152" cy="152" r="152" transform="translate(406 222)" fill="url(#linear-gradient)"/>
+    <g id="Group_1" data-name="Group 1" transform="translate(0.179 -33.234)">
+      <line id="Line_1" data-name="Line 1" x2="263" transform="translate(427.5 302.5)" fill="none" stroke="#ffd93c" stroke-linecap="round" stroke-width="13"/>
+      <line id="Line_2" data-name="Line 2" y1="251.401" x2="131.179" transform="translate(559.321 302.5)" fill="none" stroke="#ffd93c" stroke-linecap="round" stroke-width="13"/>
+      <line id="Line_3" data-name="Line 3" x2="131.821" y2="251.401" transform="translate(427.5 302.5)" fill="none" stroke="#ffd93c" stroke-linecap="round" stroke-width="13"/>
+    </g>
+    <g id="Group_172" data-name="Group 172" transform="translate(387.327 239.706)">
+      <rect id="Rectangle_1" data-name="Rectangle 1" width="211" height="177" rx="10" transform="translate(63.673 47.294)" fill="rgba(0,0,0,0.42)"/>
+      <text id="B" transform="translate(146.529 178.94) rotate(7)" fill="#c6c6c6" stroke="#c6c6c6" stroke-width="2.5" font-size="149" font-family="Arial-BoldMT, Arial" font-weight="700" opacity="0.998"><tspan x="0" y="0">B</tspan></text>
+      <text id="B-2" data-name="B" transform="translate(86.49 195.317) rotate(-4.992)" fill="#fff" stroke="#fff" stroke-width="2.5" font-size="165" font-family="Arial-BoldMT, Arial" font-weight="700"><tspan x="0" y="0">B</tspan></text>
+    </g>
+  </g>
+</svg>
