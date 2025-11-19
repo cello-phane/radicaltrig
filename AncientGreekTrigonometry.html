@@ -1,237 +1,76 @@
 <!DOCTYPE html>
-<!-- saved from url=(0053)http://localhost:4200/math/ancient-greek-trigonometry -->
-<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-  <script type="module" src="./AncientGreekTrigonometry_files/client"></script>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  
-  <title>Ancient Greek Trigonometry - BlvckBytes</title>
-  <!--<base href="/">--><base href=".">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="icon" type="image/x-icon" href="http://localhost:4200/assets/images/favicon.ico">
-<link rel="stylesheet" href="./AncientGreekTrigonometry_files/styles.css"><style>
+<title>Ancient Greek Trigonometry</title>
 
-[_nghost-ng-c582792440] {
-  display: flex;
-  flex-direction: column;
-}
-app-footer[_ngcontent-ng-c582792440], 
-app-header[_ngcontent-ng-c582792440] {
-  flex-shrink: 0;
-}
-/*# sourceMappingURL=app.component.css.map */</style><style>
+<!-- KaTeX (CDN, no local fonts needed) -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/contrib/auto-render.min.js"
+        onload="renderMathInElement(document.body);"></script>
 
-[_nghost-ng-c1174517489] {
-  display: flex;
-  align-items: center;
-  width: 100%;
-  height: 4rem;
-  background: var(--header-footer-color);
-  padding: 0 1rem;
-}
-.logo[_ngcontent-ng-c1174517489] {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-.logo[_ngcontent-ng-c1174517489]   img[_ngcontent-ng-c1174517489] {
-  width: 2rem;
-}
-.logo[_ngcontent-ng-c1174517489]   p[_ngcontent-ng-c1174517489] {
-  font-size: 1.1rem;
-  font-weight: bolder;
-}
-.logo__cursor[_ngcontent-ng-c1174517489] {
-  color: #a5a5a5;
-  animation: _ngcontent-ng-c1174517489_fade-in-out 1300ms infinite;
-}
-@keyframes _ngcontent-ng-c1174517489_fade-in-out {
-  0% {
-    opacity: 100%;
-  }
-  50% {
-    opacity: 0%;
-  }
-  100% {
-    opacity: 100%;
-  }
-}
-/*# sourceMappingURL=header.component.css.map */</style><style>
+<style>
+    body {
+        font-family: system-ui, sans-serif;
+        margin: 0;
+        padding: 20px;
+        max-width: 900px;
+        line-height: 1.65;
+        background: #fafafa;
+        color: #222;
+    }
+    h1, h2, h3 {
+        font-weight: 700;
+    }
+    .md-toc {
+        padding-left: 1rem;
+        margin-bottom: 2rem;
+    }
+    .md-toc a {
+        display: block;
+        text-decoration: none;
+        color: #0057FF;
+        margin: 4px 0;
+    }
+    blockquote {
+        border-left: 4px solid #aaa;
+        margin-left: 0;
+        padding-left: 1rem;
+        color: #444;
+        background: #f3f3f3;
+        padding: 10px 15px;
+    }
+</style>
+</head>
 
-[_nghost-ng-c2277644943] {
-  display: flex;
-  align-items: center;
-  width: 100%;
-  justify-content: space-between;
-  background: var(--header-footer-color);
-  padding: 2rem;
-}
-.copyright[_ngcontent-ng-c2277644943], 
-.source-info[_ngcontent-ng-c2277644943] {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-}
-@media screen and (max-width: 600px) {
-  [_nghost-ng-c2277644943] {
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    gap: 0.5rem;
-  }
-  .copyright[_ngcontent-ng-c2277644943] {
-    align-items: center;
-  }
-}
-/*# sourceMappingURL=footer.component.css.map */</style><style>
-
-[_nghost-ng-c2328172223] {
-  display: flex;
-  gap: 4rem;
-  padding: 4rem;
-  flex-grow: 1;
-  justify-content: center;
-}
-.navigation[_ngcontent-ng-c2328172223] {
-  height: 100%;
-  width: 25rem;
-  flex-shrink: 0;
-  z-index: 9999;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-}
-.navigation__toggle[_ngcontent-ng-c2328172223] {
-  display: none;
-  align-items: center;
-  justify-content: center;
-  padding: 1.4rem;
-  -webkit-user-select: none;
-  user-select: none;
-  background-color: var(--header-footer-color);
-  transition: background-color 150ms ease-in-out;
-  border-bottom-left-radius: 0.3rem;
-}
-.navigation__toggle--active[_ngcontent-ng-c2328172223] {
-  background-color: var(--primary-color);
-}
-.navigation__toggle--active[_ngcontent-ng-c2328172223]   img[_ngcontent-ng-c2328172223] {
-  filter: invert(1);
-}
-.navigation__toggle--active[_ngcontent-ng-c2328172223]    ~ .navigation__content[_ngcontent-ng-c2328172223] {
-  display: block;
-}
-.navigation__toggle[_ngcontent-ng-c2328172223]   img[_ngcontent-ng-c2328172223] {
-  height: 1.2rem;
-  transition: filter 150ms ease-in-out;
-}
-.content[_ngcontent-ng-c2328172223] {
-  flex-grow: 1;
-  max-width: 850px;
-}
-.content__error[_ngcontent-ng-c2328172223] {
-  border-radius: 0.5rem;
-  border: 2px solid var(--highlight-warning-color);
-  background-color: var(--highlight-warning-color--o);
-  padding: 1.5rem;
-  padding-top: 4rem;
-  position: relative;
-}
-.content__error[_ngcontent-ng-c2328172223]::before {
-  position: absolute;
-  content: "Request Error";
-  top: 1.5rem;
-  left: 1.5rem;
-  font-weight: bold;
-  font-size: 1.3rem;
-}
-@media print {
-  .navigation[_ngcontent-ng-c2328172223] {
-    display: none;
-  }
-}
-@media only screen and (max-width: 1400px) {
-  [_nghost-ng-c2328172223] {
-    flex-direction: column;
-    align-items: center;
-    padding: 2rem 1rem;
-    gap: 2rem;
-  }
-  .content[_ngcontent-ng-c2328172223] {
-    width: 100%;
-  }
-  .navigation[_ngcontent-ng-c2328172223] {
-    position: fixed;
-    inset: 0 auto auto 0;
-    height: max-content;
-    width: 100vw;
-  }
-  .navigation__toggle[_ngcontent-ng-c2328172223] {
-    display: inline-flex;
-  }
-  .navigation__content[_ngcontent-ng-c2328172223] {
-    max-height: 70vh;
-    overflow-y: scroll;
-    background-color: rgba(0, 0, 0, 0.8);
-    padding: 1rem;
-    max-width: max-content;
-    width: 100%;
-    border-radius: 0.3rem;
-    display: none;
-  }
-}
-/*# sourceMappingURL=main-page.component.css.map */</style><style>
-
-[_nghost-ng-c370390896] {
-  -webkit-user-select: none;
-  user-select: none;
-}
-.navigation-link[_ngcontent-ng-c370390896] {
-  display: block;
-  color: var(--primary-color);
-}
-.navigation-link[_ngcontent-ng-c370390896]:hover {
-  background-color: transparent;
-  cursor: default;
-  color: var(--primary-color);
-}
-.navigation-link[_ngcontent-ng-c370390896]:hover:not(.navigation-link:hover--active) {
-  color: black;
-  cursor: pointer;
-  background-color: var(--primary-color);
-}
-.navigation-link[_ngcontent-ng-c370390896]:hover:not(.navigation-link--active) {
-  color: black;
-  cursor: pointer;
-  background-color: var(--primary-color);
-}
-.navigation-link--categorized[_ngcontent-ng-c370390896] {
-  margin-left: 1rem;
-}
-.navigation-link--active[_ngcontent-ng-c370390896] {
-  padding-left: 1rem;
-  position: relative;
-}
-.navigation-link--active[_ngcontent-ng-c370390896]::before {
-  content: "";
-  width: 0.8rem;
-  height: 0.8rem;
-  border-radius: 0.1rem;
-  display: block;
-  background-color: var(--primary-color);
-  position: absolute;
-  top: 50%;
-  left: 0;
-  transform: translateY(-50%);
-}
-.navigation-headline[_ngcontent-ng-c370390896] {
-  margin-top: 0.5rem;
-  cursor: default;
-  font-style: italic;
-  color: var(--secondary-color);
-}
-/*# sourceMappingURL=navigation.component.css.map */</style></head>
 <body>
-  <app-root _nghost-ng-c582792440="" ng-version="18.2.5"><app-header _ngcontent-ng-c582792440="" _nghost-ng-c1174517489=""><div _ngcontent-ng-c1174517489="" class="logo"><img _ngcontent-ng-c1174517489="" src="./AncientGreekTrigonometry_files/logo.svg" alt="logo"><p _ngcontent-ng-c1174517489="">BlvckBytes<span _ngcontent-ng-c1174517489="" class="logo__cursor">|</span></p></div></app-header><router-outlet _ngcontent-ng-c582792440=""></router-outlet><app-main-page _nghost-ng-c2328172223=""><div _ngcontent-ng-c2328172223="" class="navigation"><div _ngcontent-ng-c2328172223="" class="navigation__toggle"><img _ngcontent-ng-c2328172223="" src="./AncientGreekTrigonometry_files/menu.svg" alt="menu"></div><div _ngcontent-ng-c2328172223="" class="navigation__content"><app-navigation _ngcontent-ng-c2328172223="" _nghost-ng-c370390896="" ng-reflect-navigation-data="[object Object]"><a _ngcontent-ng-c370390896="" class="navigation-link" ng-reflect-router-link="/home" href="http://localhost:4200/home">Home</a><a _ngcontent-ng-c370390896="" class="navigation-link" ng-reflect-router-link="/about-me" href="http://localhost:4200/about-me">About Me</a><!--container--><p _ngcontent-ng-c370390896="" class="navigation-headline">Math</p><a _ngcontent-ng-c370390896="" class="navigation-link navigation-link--categorized" ng-reflect-router-link="/math/din-a-paper-sizes" href="http://localhost:4200/math/din-a-paper-sizes">DIN A Paper Sizes</a><a _ngcontent-ng-c370390896="" class="navigation-link navigation-link--categorized" ng-reflect-router-link="/math/binomial-expansion" href="http://localhost:4200/math/binomial-expansion">Binomial Expansion</a><a _ngcontent-ng-c370390896="" class="navigation-link navigation-link--categorized" ng-reflect-router-link="/math/pythagorean-theorem" href="http://localhost:4200/math/pythagorean-theorem">Pythagorean Theorem</a><a _ngcontent-ng-c370390896="" class="navigation-link navigation-link--categorized" ng-reflect-router-link="/math/truncated-cone-volume" href="http://localhost:4200/math/truncated-cone-volume">Truncated Cone Volume</a><a _ngcontent-ng-c370390896="" class="navigation-link navigation-link--categorized" ng-reflect-router-link="/math/euclids-theorem-of-sides" href="http://localhost:4200/math/euclids-theorem-of-sides">Euclids Theorem Of Sides</a><a _ngcontent-ng-c370390896="" class="navigation-link navigation-link--categorized" ng-reflect-router-link="/math/archimedes--pi-approxima" href="http://localhost:4200/math/archimedes--pi-approximation">Archimedes' Pi Approximation</a><a _ngcontent-ng-c370390896="" class="navigation-link navigation-link--categorized" ng-reflect-router-link="/math/roman-numerals" href="http://localhost:4200/math/roman-numerals">Roman Numerals</a><a _ngcontent-ng-c370390896="" class="navigation-link navigation-link--categorized" ng-reflect-router-link="/math/orthogonal-circles" href="http://localhost:4200/math/orthogonal-circles">Orthogonal Circles</a><a _ngcontent-ng-c370390896="" class="navigation-link navigation-link--categorized" ng-reflect-router-link="/math/triangles" href="http://localhost:4200/math/triangles">Triangles</a><a _ngcontent-ng-c370390896="" class="navigation-link navigation-link--categorized" ng-reflect-router-link="/math/angles" href="http://localhost:4200/math/angles">Angles</a><a _ngcontent-ng-c370390896="" class="navigation-link navigation-link--categorized" ng-reflect-router-link="/math/thales--half-circle-theo" href="http://localhost:4200/math/thales--half-circle-theorem">Thales' Half Circle Theorem</a><a _ngcontent-ng-c370390896="" class="navigation-link navigation-link--categorized" ng-reflect-router-link="/math/trigonometric-functions" href="http://localhost:4200/math/trigonometric-functions">Trigonometric Functions</a><a _ngcontent-ng-c370390896="" class="navigation-link navigation-link--categorized" ng-reflect-router-link="/math/triangle-line-intersecti" href="http://localhost:4200/math/triangle-line-intersection-theorem">Triangle-Line Intersection Theorem</a><a _ngcontent-ng-c370390896="" class="navigation-link navigation-link--categorized" ng-reflect-router-link="/math/triangles-parallelograms" href="http://localhost:4200/math/triangles-parallelograms-base-relations">Triangles Parallelograms Base Relations</a><a _ngcontent-ng-c370390896="" class="navigation-link navigation-link--categorized" ng-reflect-router-link="/math/triangle-angle-bisection" href="http://localhost:4200/math/triangle-angle-bisection-theorem">Triangle Angle-Bisection Theorem</a><a _ngcontent-ng-c370390896="" class="navigation-link navigation-link--categorized" ng-reflect-router-link="/math/construction" href="http://localhost:4200/math/construction">Construction</a><a _ngcontent-ng-c370390896="" class="navigation-link navigation-link--categorized" ng-reflect-router-link="/math/circle-circle-intersecti" href="http://localhost:4200/math/circle-circle-intersection">Circle Circle Intersection</a><a _ngcontent-ng-c370390896="" class="navigation-link navigation-link--categorized" ng-reflect-router-link="/math/shifted-radian-measureme" href="http://localhost:4200/math/shifted-radian-measurement">Shifted Radian Measurement</a><a _ngcontent-ng-c370390896="" class="navigation-link navigation-link--categorized" ng-reflect-router-link="/math/rules-of-divisibility" href="http://localhost:4200/math/rules-of-divisibility">Rules Of Divisibility</a><a _ngcontent-ng-c370390896="" class="navigation-link navigation-link--categorized" ng-reflect-router-link="/math/loan-interests" href="http://localhost:4200/math/loan-interests">Loan Interests</a><a _ngcontent-ng-c370390896="" class="navigation-link navigation-link--categorized" ng-reflect-router-link="/math/shortest-path-between-tw" href="http://localhost:4200/math/shortest-path-between-two-points">Shortest Path Between Two Points</a><a _ngcontent-ng-c370390896="" class="navigation-link navigation-link--categorized" ng-reflect-router-link="/math/archimedes--circle-area-" href="http://localhost:4200/math/archimedes--circle-area-proof">Archimedes' Circle Area Proof</a><a _ngcontent-ng-c370390896="" class="navigation-link navigation-link--categorized" ng-reflect-router-link="/math/the-exponential-function" href="http://localhost:4200/math/the-exponential-function">The Exponential Function</a><a _ngcontent-ng-c370390896="" class="navigation-link navigation-link--categorized" ng-reflect-router-link="/math/taylor-series" href="http://localhost:4200/math/taylor-series">Taylor Series</a><a _ngcontent-ng-c370390896="" class="navigation-link navigation-link--categorized" ng-reflect-router-link="/math/new-calculus" href="http://localhost:4200/math/new-calculus">New Calculus</a><a _ngcontent-ng-c370390896="" class="navigation-link navigation-link--categorized" ng-reflect-router-link="/math/similar-binomial-expansi" href="http://localhost:4200/math/similar-binomial-expansion-multiplication">Similar Binomial Expansion Multiplication</a><a _ngcontent-ng-c370390896="" class="navigation-link navigation-link--categorized" ng-reflect-router-link="/math/level-magnitude" href="http://localhost:4200/math/level-magnitude">Level Magnitude</a><a _ngcontent-ng-c370390896="" class="navigation-link navigation-link--categorized navigation-link--active" ng-reflect-router-link="/math/ancient-greek-trigonomet" href="http://localhost:4200/math/ancient-greek-trigonometry">Ancient Greek Trigonometry</a><!--container--><p _ngcontent-ng-c370390896="" class="navigation-headline">Puzzles</p><a _ngcontent-ng-c370390896="" class="navigation-link navigation-link--categorized" ng-reflect-router-link="/puzzles/three-circles-in-a-sq" href="http://localhost:4200/puzzles/three-circles-in-a-square">Three Circles In A Square</a><a _ngcontent-ng-c370390896="" class="navigation-link navigation-link--categorized" ng-reflect-router-link="/puzzles/circle-sectors-inters" href="http://localhost:4200/puzzles/circle-sectors-intersect-in-a-square">Circle Sectors Intersect In A Square</a><a _ngcontent-ng-c370390896="" class="navigation-link navigation-link--categorized" ng-reflect-router-link="/puzzles/circle-in-rectangle-w" href="http://localhost:4200/puzzles/circle-in-rectangle-with-tangent-lines">Circle In Rectangle With Tangent Lines</a><a _ngcontent-ng-c370390896="" class="navigation-link navigation-link--categorized" ng-reflect-router-link="/puzzles/isosceles-triangle-sl" href="http://localhost:4200/puzzles/isosceles-triangle-slices-percentage">Isosceles Triangle Slices Percentage</a><!--container--><p _ngcontent-ng-c370390896="" class="navigation-headline">Philosophy</p><a _ngcontent-ng-c370390896="" class="navigation-link navigation-link--categorized" ng-reflect-router-link="/philosophy/chained-to-a-madma" href="http://localhost:4200/philosophy/chained-to-a-madman">Chained To A Madman</a><a _ngcontent-ng-c370390896="" class="navigation-link navigation-link--categorized" ng-reflect-router-link="/philosophy/the-ultimate-schem" href="http://localhost:4200/philosophy/the-ultimate-schematic">The Ultimate Schematic</a><a _ngcontent-ng-c370390896="" class="navigation-link navigation-link--categorized" ng-reflect-router-link="/philosophy/the-agonizing-reac" href="http://localhost:4200/philosophy/the-agonizing-reach-for-greatness">The Agonizing Reach For Greatness</a><a _ngcontent-ng-c370390896="" class="navigation-link navigation-link--categorized" ng-reflect-router-link="/philosophy/no-man-is-an-islan" href="http://localhost:4200/philosophy/no-man-is-an-island">No Man Is An Island</a><a _ngcontent-ng-c370390896="" class="navigation-link navigation-link--categorized" ng-reflect-router-link="/philosophy/the-nature-of-thin" href="http://localhost:4200/philosophy/the-nature-of-thinking">The Nature Of Thinking</a><a _ngcontent-ng-c370390896="" class="navigation-link navigation-link--categorized" ng-reflect-router-link="/philosophy/the-lens-of-approx" href="http://localhost:4200/philosophy/the-lens-of-approximation">The Lens Of Approximation</a><a _ngcontent-ng-c370390896="" class="navigation-link navigation-link--categorized" ng-reflect-router-link="/philosophy/the-state-of-mathe" href="http://localhost:4200/philosophy/the-state-of-mathematics">The State Of Mathematics</a><a _ngcontent-ng-c370390896="" class="navigation-link navigation-link--categorized" ng-reflect-router-link="/philosophy/connecting-minorit" href="http://localhost:4200/philosophy/connecting-minorities">Connecting Minorities</a><a _ngcontent-ng-c370390896="" class="navigation-link navigation-link--categorized" ng-reflect-router-link="/philosophy/the-pinnacle-of-ev" href="http://localhost:4200/philosophy/the-pinnacle-of-evolution">The Pinnacle Of Evolution</a><a _ngcontent-ng-c370390896="" class="navigation-link navigation-link--categorized" ng-reflect-router-link="/philosophy/project-arcadia" href="http://localhost:4200/philosophy/project-arcadia">Project Arcadia</a><a _ngcontent-ng-c370390896="" class="navigation-link navigation-link--categorized" ng-reflect-router-link="/philosophy/interpersonal-rela" href="http://localhost:4200/philosophy/interpersonal-relations">Interpersonal Relations</a><a _ngcontent-ng-c370390896="" class="navigation-link navigation-link--categorized" ng-reflect-router-link="/philosophy/free-will-dampenin" href="http://localhost:4200/philosophy/free-will-dampening">Free Will Dampening</a><a _ngcontent-ng-c370390896="" class="navigation-link navigation-link--categorized" ng-reflect-router-link="/philosophy/degenerating-distr" href="http://localhost:4200/philosophy/degenerating-distractions">Degenerating Distractions</a><a _ngcontent-ng-c370390896="" class="navigation-link navigation-link--categorized" ng-reflect-router-link="/philosophy/arnold-ehret-s-tea" href="http://localhost:4200/philosophy/arnold-ehret-s-teachings">Arnold Ehret's Teachings</a><a _ngcontent-ng-c370390896="" class="navigation-link navigation-link--categorized" ng-reflect-router-link="/philosophy/personal-relations" href="http://localhost:4200/philosophy/personal-relationship-definition">Personal Relationship Definition</a><a _ngcontent-ng-c370390896="" class="navigation-link navigation-link--categorized" ng-reflect-router-link="/philosophy/question-thoroughl" href="http://localhost:4200/philosophy/question-thoroughly">Question Thoroughly</a><a _ngcontent-ng-c370390896="" class="navigation-link navigation-link--categorized" ng-reflect-router-link="/philosophy/mentally-imprisone" href="http://localhost:4200/philosophy/mentally-imprisoned">Mentally Imprisoned</a><a _ngcontent-ng-c370390896="" class="navigation-link navigation-link--categorized" ng-reflect-router-link="/philosophy/deriving-ethics" href="http://localhost:4200/philosophy/deriving-ethics">Deriving Ethics</a><!--container--><p _ngcontent-ng-c370390896="" class="navigation-headline">Engineering</p><a _ngcontent-ng-c370390896="" class="navigation-link navigation-link--categorized" ng-reflect-router-link="/engineering/minified-url-safe" href="http://localhost:4200/engineering/minified-url-safe-uuids">Minified URL-Safe UUIDs</a><a _ngcontent-ng-c370390896="" class="navigation-link navigation-link--categorized" ng-reflect-router-link="/engineering/customizable-tool" href="http://localhost:4200/engineering/customizable-tool-wall">Customizable Tool Wall</a><!--container--><!--container--><!--container--></app-navigation></div></div><div _ngcontent-ng-c2328172223="" class="content"><!--container--><markdown _ngcontent-ng-c2328172223="" linenumbers="" katex="" ng-reflect-line-numbers="" ng-reflect-katex="" ng-reflect-katex-options="[object Object]" ng-reflect-data="## Table Of Contents {: #toc }" ng-reflect-disable-sanitizer="true"><h1>Ancient Greek Trigonometry</h1><h2 id="toc" class="markdown-headline ">Table Of Contents<img class="markdown-headline__to-top" src="./AncientGreekTrigonometry_files/arrow-up.svg"><img class="markdown-headline__to-bottom" src="./AncientGreekTrigonometry_files/arrow-up.svg"></h2><div class="md-toc"><a class="md-toc__link md-toc__link--indent-level-0" href="http://localhost:4200/math/ancient-greek-trigonometry#introduction">Introduction</a><a class="md-toc__link md-toc__link--indent-level-0" href="http://localhost:4200/math/ancient-greek-trigonometry#formula-derivation">Formula Derivation</a><a class="md-toc__link md-toc__link--indent-level-0" href="http://localhost:4200/math/ancient-greek-trigonometry#chord-length-by-radians">Chord-Length By Radians</a><a class="md-toc__link md-toc__link--indent-level-0" href="http://localhost:4200/math/ancient-greek-trigonometry#parameter-by-chord-length">Parameter By Chord-Length</a><a class="md-toc__link md-toc__link--indent-level-0" href="http://localhost:4200/math/ancient-greek-trigonometry#right-angle-at-b">Right Angle At B</a></div><h2 class="markdown-headline " id="introduction">Introduction<img class="markdown-headline__to-top" src="./AncientGreekTrigonometry_files/arrow-up.svg"><img class="markdown-headline__to-bottom" src="./AncientGreekTrigonometry_files/arrow-up.svg"></h2><p>The following information has been discovered by John Gabriel; you can find out more about him and his works at the <a href="http://localhost:4200/math/new-calculus">New Calculus</a> page, with a direct link to the corresponding article <a href="https://www.academia.edu/109334669/Ancient_Greek_trigonometric_formulas_better_than_anything_ever_known" target="_blank">here</a>. While the main idea behind this approach is to move away from degrees or radians, John hinted at the fact that there's a way to directly map between radians and right-angle units in one of his <a href="https://www.youtube.com/watch?v=B7a3Pq6WYUo" target="_blank">video</a>s, namely at 6:48, as follows:</p>
+
+<h1>Ancient Greek Trigonometry</h1>
+
+<h2 id="toc">Table Of Contents</h2>
+
+<div class="md-toc">
+    <a href="https://cello-phane.github.io/radicaltrig/AncientGreekTrigonometry.html#introduction">
+        Introduction
+    </a>
+    <a href="https://cello-phane.github.io/radicaltrig/AncientGreekTrigonometry.html#formula-derivation">
+        Formula Derivation
+    </a>
+    <a href="https://cello-phane.github.io/radicaltrig/AncientGreekTrigonometry.html#chord-length-by-radians">
+        Chord-Length By Radians
+    </a>
+    <a href="https://cello-phane.github.io/radicaltrig/AncientGreekTrigonometry.html#parameter-by-chord-length">
+        Parameter By Chord-Length
+    </a>
+    <a href="https://cello-phane.github.io/radicaltrig/AncientGreekTrigonometry.html#right-angle-at-b">
+        Right Angle At B
+    </a>
+</div>
+
+<h2 class="markdown-headline " id="introduction">Introduction<img class="markdown-headline__to-top" src="./AncientGreekTrigonometry_files/arrow-up.svg"><img class="markdown-headline__to-bottom" src="./AncientGreekTrigonometry_files/arrow-up.svg"></h2><p>The following information has been discovered by John Gabriel; you can find out more about him and his works at the New Calculus page, with a direct link to the corresponding article <a href="https://www.academia.edu/109334669/Ancient_Greek_trigonometric_formulas_better_than_anything_ever_known" target="_blank">here</a>. While the main idea behind this approach is to move away from degrees or radians, John hinted at the fact that there's a way to directly map between radians and right-angle units in one of his <a href="https://www.youtube.com/watch?v=B7a3Pq6WYUo" target="_blank">video</a>s, namely at 6:48, as follows:</p>
 <blockquote>
 <p>Somebody asked me: "is there a formula that can convert radians to <del>degrees</del> right angle units?". There is, and I'm not sharing it with you. [...] But I'll give you a clue! For any angle in radians, the arc is equal to the angle if the radius is one. [...] You can take a chord of this arc, and your next step [...] is to find the length of that chord. And then [...] there is a way to find the radical angle unit and also the parameter <strong>without any trigonometry</strong> [...].</p>
 </blockquote>
