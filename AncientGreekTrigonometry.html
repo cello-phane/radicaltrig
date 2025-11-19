@@ -42,6 +42,15 @@
   font-size: 1.3rem;
 }
 
+.navigation {
+    height: 100%;
+    width: 25rem;
+    flex-shrink: 0;
+    z-index: 9999;
+    display: flex
+    flex-direction: column;
+    align-items: flex-end;
+}
 
 /* Fix broken media query from original snippet */
 @media only screen and (max-width: 1400px) {
@@ -74,7 +83,7 @@
 <h1>Ancient Greek Trigonometry</h1>
 
 <h2 id="toc">Table Of Contents</h2>
-
+<div class="navigation">
 <div class="md-toc">
     <a href="https://cello-phane.github.io/radicaltrig/AncientGreekTrigonometry.html#introduction">
         Introduction
@@ -91,6 +100,7 @@
     <a href="https://cello-phane.github.io/radicaltrig/AncientGreekTrigonometry.html#right-angle-at-b">
         Right Angle At B
     </a>
+</div>
 </div>
 <div class="content">
 <h2 class="markdown-headline " id="introduction">Introduction</h2><p>The following information has been discovered by John Gabriel; you can find out more about him and his works at the New Calculus page, with a direct link to the corresponding article <a href="https://www.academia.edu/109334669/Ancient_Greek_trigonometric_formulas_better_than_anything_ever_known" target="_blank">here</a>. While the main idea behind this approach is to move away from degrees or radians, John hinted at the fact that there's a way to directly map between radians and right-angle units in one of his <a href="https://www.youtube.com/watch?v=B7a3Pq6WYUo" target="_blank">video</a>s, namely at 6:48, as follows:</p>
