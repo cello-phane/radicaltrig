@@ -12,38 +12,229 @@
 <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/contrib/auto-render.min.js"
         onload="renderMathInElement(document.body);"></script>
 
-<style>
-    body {
-        font-family: system-ui, sans-serif;
-        margin: 0;
-        padding: 20px;
-        max-width: 900px;
-        line-height: 1.65;
-        background: #fafafa;
-        color: #222;
-    }
-    h1, h2, h3 {
-        font-weight: 700;
-    }
-    .md-toc {
-        padding-left: 1rem;
-        margin-bottom: 2rem;
-    }
-    .md-toc a {
-        display: block;
-        text-decoration: none;
-        color: #0057FF;
-        margin: 4px 0;
-    }
-    blockquote {
-        border-left: 4px solid #aaa;
-        margin-left: 0;
-        padding-left: 1rem;
-        color: #444;
-        background: #f3f3f3;
-        padding: 10px 15px;
-    }
-</style>
+  <link rel="icon" type="image/x-icon" href="./AncientGreekTrigonometry_files/assets/images/favicon.ico">
+<link rel="stylesheet" href="./AncientGreekTrigonometry_files/styles.css"><style>
+
+[_nghost-ng-c582792440] {
+  display: flex;
+  flex-direction: column;
+}
+app-footer[_ngcontent-ng-c582792440], 
+app-header[_ngcontent-ng-c582792440] {
+  flex-shrink: 0;
+}
+/*# sourceMappingURL=app.component.css.map */</style><style>
+
+[_nghost-ng-c1174517489] {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 4rem;
+  background: var(--header-footer-color);
+  padding: 0 1rem;
+}
+.logo[_ngcontent-ng-c1174517489] {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.logo[_ngcontent-ng-c1174517489]   img[_ngcontent-ng-c1174517489] {
+  width: 2rem;
+}
+.logo[_ngcontent-ng-c1174517489]   p[_ngcontent-ng-c1174517489] {
+  font-size: 1.1rem;
+  font-weight: bolder;
+}
+.logo__cursor[_ngcontent-ng-c1174517489] {
+  color: #a5a5a5;
+  animation: _ngcontent-ng-c1174517489_fade-in-out 1300ms infinite;
+}
+@keyframes _ngcontent-ng-c1174517489_fade-in-out {
+  0% {
+    opacity: 100%;
+  }
+  50% {
+    opacity: 0%;
+  }
+  100% {
+    opacity: 100%;
+  }
+}
+/*# sourceMappingURL=header.component.css.map */</style><style>
+
+[_nghost-ng-c2277644943] {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  justify-content: space-between;
+  background: var(--header-footer-color);
+  padding: 2rem;
+}
+.copyright[_ngcontent-ng-c2277644943], 
+.source-info[_ngcontent-ng-c2277644943] {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+@media screen and (max-width: 600px) {
+  [_nghost-ng-c2277644943] {
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .copyright[_ngcontent-ng-c2277644943] {
+    align-items: center;
+  }
+}
+/*# sourceMappingURL=footer.component.css.map */</style><style>
+
+[_nghost-ng-c2328172223] {
+  display: flex;
+  gap: 4rem;
+  padding: 4rem;
+  flex-grow: 1;
+  justify-content: center;
+}
+.navigation[_ngcontent-ng-c2328172223] {
+  height: 100%;
+  width: 25rem;
+  flex-shrink: 0;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+.navigation__toggle[_ngcontent-ng-c2328172223] {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 1.4rem;
+  -webkit-user-select: none;
+  user-select: none;
+  background-color: var(--header-footer-color);
+  transition: background-color 150ms ease-in-out;
+  border-bottom-left-radius: 0.3rem;
+}
+.navigation__toggle--active[_ngcontent-ng-c2328172223] {
+  background-color: var(--primary-color);
+}
+.navigation__toggle--active[_ngcontent-ng-c2328172223]   img[_ngcontent-ng-c2328172223] {
+  filter: invert(1);
+}
+.navigation__toggle--active[_ngcontent-ng-c2328172223]    ~ .navigation__content[_ngcontent-ng-c2328172223] {
+  display: block;
+}
+.navigation__toggle[_ngcontent-ng-c2328172223]   img[_ngcontent-ng-c2328172223] {
+  height: 1.2rem;
+  transition: filter 150ms ease-in-out;
+}
+.content[_ngcontent-ng-c2328172223] {
+  flex-grow: 1;
+  max-width: 850px;
+}
+.content__error[_ngcontent-ng-c2328172223] {
+  border-radius: 0.5rem;
+  border: 2px solid var(--highlight-warning-color);
+  background-color: var(--highlight-warning-color--o);
+  padding: 1.5rem;
+  padding-top: 4rem;
+  position: relative;
+}
+.content__error[_ngcontent-ng-c2328172223]::before {
+  position: absolute;
+  content: "Request Error";
+  top: 1.5rem;
+  left: 1.5rem;
+  font-weight: bold;
+  font-size: 1.3rem;
+}
+@media print {
+  .navigation[_ngcontent-ng-c2328172223] {
+    display: none;
+  }
+}
+@media only screen and (max-width: 1400px) {
+  [_nghost-ng-c2328172223] {
+    flex-direction: column;
+    align-items: center;
+    padding: 2rem 1rem;
+    gap: 2rem;
+  }
+  .content[_ngcontent-ng-c2328172223] {
+    width: 100%;
+  }
+  .navigation[_ngcontent-ng-c2328172223] {
+    position: fixed;
+    inset: 0 auto auto 0;
+    height: max-content;
+    width: 100vw;
+  }
+  .navigation__toggle[_ngcontent-ng-c2328172223] {
+    display: inline-flex;
+  }
+  .navigation__content[_ngcontent-ng-c2328172223] {
+    max-height: 70vh;
+    overflow-y: scroll;
+    background-color: rgba(0, 0, 0, 0.8);
+    padding: 1rem;
+    max-width: max-content;
+    width: 100%;
+    border-radius: 0.3rem;
+    display: none;
+  }
+}
+/*# sourceMappingURL=main-page.component.css.map */</style><style>
+
+[_nghost-ng-c370390896] {
+  -webkit-user-select: none;
+  user-select: none;
+}
+.navigation-link[_ngcontent-ng-c370390896] {
+  display: block;
+  color: var(--primary-color);
+}
+.navigation-link[_ngcontent-ng-c370390896]:hover {
+  background-color: transparent;
+  cursor: default;
+  color: var(--primary-color);
+}
+.navigation-link[_ngcontent-ng-c370390896]:hover:not(.navigation-link:hover--active) {
+  color: black;
+  cursor: pointer;
+  background-color: var(--primary-color);
+}
+.navigation-link[_ngcontent-ng-c370390896]:hover:not(.navigation-link--active) {
+  color: black;
+  cursor: pointer;
+  background-color: var(--primary-color);
+}
+.navigation-link--categorized[_ngcontent-ng-c370390896] {
+  margin-left: 1rem;
+}
+.navigation-link--active[_ngcontent-ng-c370390896] {
+  padding-left: 1rem;
+  position: relative;
+}
+.navigation-link--active[_ngcontent-ng-c370390896]::before {
+  content: "";
+  width: 0.8rem;
+  height: 0.8rem;
+  border-radius: 0.1rem;
+  display: block;
+  background-color: var(--primary-color);
+  position: absolute;
+  top: 50%;
+  left: 0;
+  transform: translateY(-50%);
+}
+.navigation-headline[_ngcontent-ng-c370390896] {
+  margin-top: 0.5rem;
+  cursor: default;
+  font-style: italic;
+  color: var(--secondary-color);
+}
+/*# sourceMappingURL=navigation.component.css.map */</style>
 </head>
 
 <body>
