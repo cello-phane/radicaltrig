@@ -1,0 +1,1908 @@
+@charset "UTF-8";
+
+/* src/styles.scss */
+em.tus-highlight--blue {
+  background-color: rgba(87, 137, 221, 0.7);
+}
+em.tus-highlight--gray {
+  background-color: rgba(88, 92, 114, 0.7);
+}
+em.tus-highlight--purple {
+  background-color: rgba(127, 83, 230, 0.7);
+}
+em.tus-highlight--red {
+  background-color: rgba(211, 33, 33, 0.7);
+}
+em.tus-highlight--orange {
+  background-color: rgba(187, 105, 11, 0.7);
+}
+.tus-white-wrap {
+  background: rgb(202, 206, 222);
+  padding: 0.5rem;
+  margin: 0.5rem;
+  display: inline-block;
+  border-radius: 0.2rem;
+}
+.tus-white-wrap p,
+.tus-white-wrap em {
+  margin: 0;
+  color: #000000;
+}
+table.tus-table {
+  background: rgb(202, 206, 222);
+}
+table.tus-table,
+table.tus-table p,
+table.tus-table td,
+table.tus-table th,
+table.tus-table em {
+  border-color: black;
+  color: black;
+  padding: 0;
+  font-weight: normal;
+}
+table.tus-table p,
+table.tus-table td,
+table.tus-table th,
+table.tus-table em {
+  margin: 0;
+}
+table.tus-table td {
+  padding: 0.5rem;
+}
+table.tus-table td,
+table.tus-table th {
+  text-align: center;
+}
+table.tus-table--2-col td {
+  width: 50%;
+}
+table.tus-table--3-col td {
+  width: 33.3333333333%;
+}
+table.tus-table--tus-custom {
+  table-layout: fixed;
+  width: auto;
+  min-width: 100%;
+}
+table.tus-table--tus-custom p a {
+  color: inherit;
+}
+table.tus-table--tus-custom tr:nth-of-type(odd) td:nth-of-type(even) {
+  width: 4rem;
+  word-break: break-all;
+}
+table.tus-table--tus-custom tr:nth-of-type(odd) td:nth-of-type(odd) {
+  width: calc((100% - 8rem) / 3);
+}
+table.tus-table--tus-custom tr:nth-of-type(even) td:nth-of-type(even) {
+  width: 4rem;
+}
+table.tus-table--tus-custom tr:nth-of-type(even) td:nth-of-type(odd) {
+  width: calc((100% - 8rem) / 3);
+}
+table.tus-table--tus-custom tr:nth-of-type(even) td:nth-of-type(odd),
+table.tus-table--tus-custom tr:nth-of-type(even) td:nth-of-type(odd) img,
+table.tus-table--tus-custom tr:nth-of-type(even) td:nth-of-type(odd) p {
+  vertical-align: middle;
+}
+.tus-vertical-text {
+  writing-mode: vertical-rl;
+  text-orientation: upright;
+  display: inline-block;
+  min-height: max-content;
+}
+.tus-align--right {
+  text-align: right;
+  width: 100%;
+}
+.tus-align--left {
+  text-align: left;
+  width: 100%;
+}
+.tus-arrow--right {
+  height: 2rem;
+  width: 2rem;
+  transform-origin: center center;
+}
+.tus-arrow--up {
+  height: 2rem;
+  width: 2rem;
+  transform-origin: center center;
+  transform: rotate(-90deg);
+}
+.tus-arrow--down {
+  height: 2rem;
+  width: 2rem;
+  transform-origin: center center;
+  transform: rotate(90deg);
+}
+.tus-floating-arrow {
+  position: relative;
+}
+.tus-floating-arrow--right-bottom-right-down {
+  position: relative;
+}
+.tus-floating-arrow--right-bottom-right-down::after {
+  display: block;
+  position: absolute;
+  content: "";
+  background: url(/assets/images/the_ultimate_schematic__arrow.svg);
+  background-size: cover;
+  width: 1.5rem;
+  height: 1.5rem;
+  transform-origin: center center;
+  bottom: 0;
+  right: 0;
+  transform: translate(90%, 90%) rotate(45deg);
+}
+.tus-floating-arrow--left-top-left-up {
+  position: relative;
+}
+.tus-floating-arrow--left-top-left-up::after {
+  display: block;
+  position: absolute;
+  content: "";
+  background: url(/assets/images/the_ultimate_schematic__arrow.svg);
+  background-size: cover;
+  width: 1.5rem;
+  height: 1.5rem;
+  transform-origin: center center;
+  top: 0;
+  left: 0;
+  transform: translate(-90%, -90%) rotate(-135deg);
+}
+.tus-floating-arrow--right-top-right-up {
+  position: relative;
+}
+.tus-floating-arrow--right-top-right-up::after {
+  display: block;
+  position: absolute;
+  content: "";
+  background: url(/assets/images/the_ultimate_schematic__arrow.svg);
+  background-size: cover;
+  width: 1.5rem;
+  height: 1.5rem;
+  transform-origin: center center;
+  top: 0;
+  right: 0;
+  transform: translate(90%, -90%) rotate(-45deg);
+}
+.tus-floating-arrow--left-center-left {
+  position: relative;
+}
+.tus-floating-arrow--left-center-left::after {
+  display: block;
+  position: absolute;
+  content: "";
+  background: url(/assets/images/the_ultimate_schematic__arrow.svg);
+  background-size: cover;
+  width: 1.5rem;
+  height: 1.5rem;
+  transform-origin: center center;
+  top: 50%;
+  left: 0;
+  transform: translate(-100%, -50%) rotate(180deg);
+}
+.tus-floating-arrow--left-bottom-right-up {
+  position: relative;
+}
+.tus-floating-arrow--left-bottom-right-up::after {
+  display: block;
+  position: absolute;
+  content: "";
+  background: url(/assets/images/the_ultimate_schematic__arrow.svg);
+  background-size: cover;
+  width: 1.5rem;
+  height: 1.5rem;
+  transform-origin: center center;
+  bottom: 0;
+  left: 0;
+  transform: translate(-90%, 90%) rotate(-45deg);
+}
+.tus-floating-arrow--left-bottom-left-down {
+  position: relative;
+}
+.tus-floating-arrow--left-bottom-left-down::after {
+  display: block;
+  position: absolute;
+  content: "";
+  background: url(/assets/images/the_ultimate_schematic__arrow.svg);
+  background-size: cover;
+  width: 1.5rem;
+  height: 1.5rem;
+  transform-origin: center center;
+  bottom: 0;
+  left: 0;
+  transform: translate(-90%, 90%) rotate(135deg);
+}
+.tus-floating-arrow--left-top-right-down {
+  position: relative;
+}
+.tus-floating-arrow--left-top-right-down::after {
+  display: block;
+  position: absolute;
+  content: "";
+  background: url(/assets/images/the_ultimate_schematic__arrow.svg);
+  background-size: cover;
+  width: 1.5rem;
+  height: 1.5rem;
+  transform-origin: center center;
+  top: 0;
+  left: 0;
+  transform: translate(-90%, -90%) rotate(45deg);
+}
+.tus-boxed {
+  outline: 0.15rem solid #000000;
+  outline-offset: 0.2rem;
+  border-radius: 0.2rem;
+}
+.tus-dotted-circle {
+  position: relative;
+  z-index: 1;
+}
+.tus-dotted-circle::after {
+  display: block;
+  position: absolute;
+  content: "";
+  width: 1.3rem;
+  height: 1.3rem;
+  border-radius: 50%;
+  border: 0.2rem solid black;
+  border-style: dotted;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: -1;
+}
+.tus-background--white {
+  background: white;
+  color: black;
+  width: fit-content;
+}
+.tus-background--red {
+  background: rgb(229, 67, 67);
+  width: fit-content;
+  color: white;
+}
+.tus-back-to-previous--disabled {
+  color: gray;
+}
+.tus-back-to-previous--disabled:hover {
+  color: gray;
+  background-color: transparent;
+  cursor: auto;
+}
+@font-face {
+  font-family: "Menlo";
+  src: url(/assets/fonts/Menlo-Bold.woff2) format("woff2"), url(/assets/fonts/Menlo-Bold.woff) format("woff");
+  font-weight: bold;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Menlo";
+  src: url(/assets/fonts/Menlo-BoldItalic.woff2) format("woff2"), url(/assets/fonts/Menlo-BoldItalic.woff) format("woff");
+  font-weight: bold;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Menlo";
+  src: url(/assets/fonts/Menlo-Italic.woff2) format("woff2"), url(/assets/fonts/Menlo-Italic.woff) format("woff");
+  font-weight: normal;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Menlo";
+  src: url(/assets/fonts/Menlo-Regular.woff2) format("woff2"), url(/assets/fonts/Menlo-Regular.woff) format("woff");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+body,
+html {
+  font-family: "Menlo", sans-serif;
+  height: 100%;
+  --global-font-size: 15px;
+  --global-line-height: 1.4em;
+  --primary-color: #62c4ff;
+  --primary-color--o: rgba(98, 196, 255, 0.35);
+  --secondary-color: #a3abba;
+  --font-color: #e8e9ed;
+  --code-bg-color: #3f3f44;
+  --background-color: #222225;
+  --header-footer-color: #111;
+  --highlight-todo-color: #FFCA3A;
+  --highlight-warning-color: #FF595E;
+  --highlight-warning-color--o: rgba(255, 89, 94, 0.15);
+  --highlight-info-color: #8AC926;
+  --canvas-primary-color: rgba(239, 0, 255, .3);
+  --canvas-secondary-color: rgba(0, 255, 234, .3);
+  font-size: var(--global-font-size);
+  line-height: var(--global-line-height);
+}
+body {
+  background-color: var(--background-color);
+  color: var(--font-color);
+}
+a {
+  text-decoration: underline;
+  color: var(--primary-color);
+}
+a:hover {
+  background-color: var(--primary-color);
+  color: var(--background-color);
+}
+.katex-display > .katex {
+  text-align: left !important;
+}
+markdown h1 {
+  font-size: calc(var(--global-font-size) * 1.5);
+  font-weight: bold;
+  padding: 1.33rem 0 1.33rem;
+}
+markdown h2,
+markdown h3,
+markdown h4,
+markdown h5,
+markdown h6 {
+  font-weight: bolder !important;
+  text-decoration: underline;
+  background: rgba(255, 255, 255, 0.1);
+}
+markdown h2 {
+  margin: var(--global-line-height) 0 var(--global-line-height);
+  font-size: calc(var(--global-font-size) * 1.3);
+}
+markdown h3 {
+  margin: var(--global-line-height) 0 var(--global-line-height);
+  font-size: calc(var(--global-font-size) * 1.1);
+}
+markdown h4 {
+  margin: var(--global-line-height) 0 var(--global-line-height);
+  font-size: calc(var(--global-font-size) * 0.9);
+}
+markdown h5 {
+  margin: var(--global-line-height) 0 var(--global-line-height);
+  font-size: calc(var(--global-font-size) * 0.8);
+}
+markdown h6 {
+  margin: var(--global-line-height) 0 var(--global-line-height);
+  font-size: calc(var(--global-font-size) * 0.7);
+}
+markdown pre {
+  border: 1px solid var(--secondary-color);
+  margin: 1rem 0 !important;
+}
+markdown code {
+  background-color: var(--code-bg-color);
+  padding: 0.1rem;
+}
+markdown p,
+markdown hr {
+  margin-bottom: var(--global-line-height);
+}
+markdown table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: var(--global-line-height) 0;
+  color: var(--font-color);
+  font-size: var(--global-font-size);
+}
+markdown table td,
+markdown table th {
+  vertical-align: top;
+  border: 1px solid var(--font-color);
+  line-height: var(--global-line-height);
+  padding: 0.3rem;
+  font-size: 1em;
+}
+markdown ol,
+markdown ul {
+  margin: 1.3rem 0 1.3rem 0;
+}
+markdown ul li::after {
+  content: "-";
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+markdown ol {
+  counter-reset: ordered-list-item;
+}
+markdown ol li::before {
+  font-family: Menlo;
+  counter-increment: ordered-list-item;
+  content: counter(ordered-list-item) ". ";
+}
+markdown li {
+  position: relative;
+  display: block;
+  padding-left: 1.3rem;
+}
+markdown li ol,
+markdown li ul {
+  margin: 0;
+}
+markdown img {
+  width: 100%;
+  display: block;
+  margin: var(--global-line-height) 0 var(--global-line-height);
+}
+markdown .third-width-image {
+  display: block;
+  width: 33%;
+}
+markdown .half-width-canvas {
+  width: 50%;
+}
+markdown .half-width-image {
+  display: block;
+  width: 50%;
+}
+markdown .full-width-image {
+  display: block;
+  width: 100%;
+}
+@media only screen and (max-width: 1200px) {
+  markdown .third-width-image {
+    width: 40%;
+  }
+}
+@media only screen and (max-width: 850px) {
+  markdown .third-width-image {
+    width: 50%;
+  }
+  markdown .half-width-canvas {
+    width: 100%;
+  }
+}
+markdown .md-toc {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+markdown .md-toc__link {
+  position: relative;
+}
+markdown .md-toc__link--indent-level-0 {
+  padding-left: 1.5rem;
+  margin-top: 1rem;
+}
+markdown .md-toc__link--indent-level-0::before {
+  position: absolute;
+  top: 50%;
+  left: 0.7rem;
+  transform: translateY(-50%);
+  content: "\bb";
+}
+markdown .md-toc__link--indent-level-1 {
+  padding-left: 3rem;
+}
+markdown .md-toc__link--indent-level-1::before {
+  position: absolute;
+  top: 50%;
+  left: 2.2rem;
+  transform: translateY(-50%);
+  content: "L";
+}
+markdown .md-toc__link--indent-level-2 {
+  padding-left: 4.5rem;
+}
+markdown .md-toc__link--indent-level-2::before {
+  position: absolute;
+  top: 50%;
+  left: 3.7rem;
+  transform: translateY(-50%);
+  content: "L";
+}
+markdown .md-toc__link--indent-level-3 {
+  padding-left: 6rem;
+}
+markdown .md-toc__link--indent-level-3::before {
+  position: absolute;
+  top: 50%;
+  left: 5.2rem;
+  transform: translateY(-50%);
+  content: "L";
+}
+markdown .md-toc__link--indent-level-4 {
+  padding-left: 7.5rem;
+}
+markdown .md-toc__link--indent-level-4::before {
+  position: absolute;
+  top: 50%;
+  left: 6.7rem;
+  transform: translateY(-50%);
+  content: "L";
+}
+markdown .md-toc__link--indent-level-5 {
+  padding-left: 9rem;
+}
+markdown .md-toc__link--indent-level-5::before {
+  position: absolute;
+  top: 50%;
+  left: 8.2rem;
+  transform: translateY(-50%);
+  content: "L";
+}
+markdown .md-toc__link:first-of-type {
+  margin-top: 0;
+}
+markdown .markdown-headline {
+  width: 100%;
+  position: relative;
+}
+markdown .markdown-headline__to-top,
+markdown .markdown-headline__to-bottom {
+  position: absolute;
+  margin: 0;
+  top: 50%;
+  right: 0;
+  transform: translateY(-50%);
+  transform-origin: center center;
+  width: 1.1rem;
+  padding: 0.2rem;
+  box-sizing: content-box;
+  cursor: pointer;
+}
+markdown .markdown-headline__to-bottom {
+  transform: translateY(-50%) rotate(180deg);
+  right: 1.4rem;
+}
+markdown .markdown-headline--active {
+  background-color: var(--primary-color--o);
+}
+markdown .markdown-headline.collapsible {
+  padding-left: 2rem;
+}
+markdown .markdown-headline.collapsible::before {
+  position: absolute;
+  content: "";
+  left: 0.4rem;
+  top: 50%;
+  transform: translateY(-50%);
+  transform-origin: center center;
+  transition: transform 100ms ease-in-out;
+  width: 1rem;
+  height: 1rem;
+  background: url(/assets/icons/dropdown.svg) center center/contain no-repeat;
+}
+markdown .markdown-headline.collapsible--expanded::before {
+  transform: rotate(180deg) translateY(50%);
+}
+markdown .collapsible-container {
+  display: none;
+}
+markdown .collapsible-container--expanded {
+  display: block;
+}
+markdown .highlighted-paragraph {
+  background-color: rgba(0, 0, 0, 0.25);
+  padding: 0.8rem 0.5rem 0.8rem 1.1rem;
+  border-radius: 0.1rem;
+  position: relative;
+}
+markdown .highlighted-paragraph::before {
+  border-radius: 0.1rem 0 0 0.1rem;
+  content: "";
+  height: 100%;
+  width: 0.5rem;
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+markdown .highlighted-paragraph--info::before {
+  background-color: var(--highlight-info-color);
+}
+markdown .highlighted-paragraph--info .highlighted-paragraph__marker {
+  color: var(--highlight-info-color);
+}
+markdown .highlighted-paragraph--warning::before {
+  background-color: var(--highlight-warning-color);
+}
+markdown .highlighted-paragraph--warning .highlighted-paragraph__marker {
+  color: var(--highlight-warning-color);
+}
+markdown .highlighted-paragraph--todo::before {
+  background-color: var(--highlight-todo-color);
+}
+markdown .highlighted-paragraph--todo .highlighted-paragraph__marker {
+  color: var(--highlight-todo-color);
+}
+markdown blockquote {
+  border-left: 0.4rem solid var(--secondary-color);
+  padding-left: 0.8rem;
+}
+
+/* node_modules/katex/dist/katex.min.css */
+@font-face {
+  font-family: KaTeX_AMS;
+  font-style: normal;
+  font-weight: 400;
+  src:
+    url("./media/KaTeX_AMS-Regular.woff2") format("woff2"),
+    url("./media/KaTeX_AMS-Regular.woff") format("woff"),
+    url("./media/KaTeX_AMS-Regular.ttf") format("truetype");
+}
+@font-face {
+  font-family: KaTeX_Caligraphic;
+  font-style: normal;
+  font-weight: 700;
+  src:
+    url("./media/KaTeX_Caligraphic-Bold.woff2") format("woff2"),
+    url("./media/KaTeX_Caligraphic-Bold.woff") format("woff"),
+    url("./media/KaTeX_Caligraphic-Bold.ttf") format("truetype");
+}
+@font-face {
+  font-family: KaTeX_Caligraphic;
+  font-style: normal;
+  font-weight: 400;
+  src:
+    url("./media/KaTeX_Caligraphic-Regular.woff2") format("woff2"),
+    url("./media/KaTeX_Caligraphic-Regular.woff") format("woff"),
+    url("./media/KaTeX_Caligraphic-Regular.ttf") format("truetype");
+}
+@font-face {
+  font-family: KaTeX_Fraktur;
+  font-style: normal;
+  font-weight: 700;
+  src:
+    url("./media/KaTeX_Fraktur-Bold.woff2") format("woff2"),
+    url("./media/KaTeX_Fraktur-Bold.woff") format("woff"),
+    url("./media/KaTeX_Fraktur-Bold.ttf") format("truetype");
+}
+@font-face {
+  font-family: KaTeX_Fraktur;
+  font-style: normal;
+  font-weight: 400;
+  src:
+    url("./media/KaTeX_Fraktur-Regular.woff2") format("woff2"),
+    url("./media/KaTeX_Fraktur-Regular.woff") format("woff"),
+    url("./media/KaTeX_Fraktur-Regular.ttf") format("truetype");
+}
+@font-face {
+  font-family: KaTeX_Main;
+  font-style: normal;
+  font-weight: 700;
+  src:
+    url("./media/KaTeX_Main-Bold.woff2") format("woff2"),
+    url("./media/KaTeX_Main-Bold.woff") format("woff"),
+    url("./media/KaTeX_Main-Bold.ttf") format("truetype");
+}
+@font-face {
+  font-family: KaTeX_Main;
+  font-style: italic;
+  font-weight: 700;
+  src:
+    url("./media/KaTeX_Main-BoldItalic.woff2") format("woff2"),
+    url("./media/KaTeX_Main-BoldItalic.woff") format("woff"),
+    url("./media/KaTeX_Main-BoldItalic.ttf") format("truetype");
+}
+@font-face {
+  font-family: KaTeX_Main;
+  font-style: italic;
+  font-weight: 400;
+  src:
+    url("./media/KaTeX_Main-Italic.woff2") format("woff2"),
+    url("./media/KaTeX_Main-Italic.woff") format("woff"),
+    url("./media/KaTeX_Main-Italic.ttf") format("truetype");
+}
+@font-face {
+  font-family: KaTeX_Main;
+  font-style: normal;
+  font-weight: 400;
+  src:
+    url("./media/KaTeX_Main-Regular.woff2") format("woff2"),
+    url("./media/KaTeX_Main-Regular.woff") format("woff"),
+    url("./media/KaTeX_Main-Regular.ttf") format("truetype");
+}
+@font-face {
+  font-family: KaTeX_Math;
+  font-style: italic;
+  font-weight: 700;
+  src:
+    url("./media/KaTeX_Math-BoldItalic.woff2") format("woff2"),
+    url("./media/KaTeX_Math-BoldItalic.woff") format("woff"),
+    url("./media/KaTeX_Math-BoldItalic.ttf") format("truetype");
+}
+@font-face {
+  font-family: KaTeX_Math;
+  font-style: italic;
+  font-weight: 400;
+  src:
+    url("./media/KaTeX_Math-Italic.woff2") format("woff2"),
+    url("./media/KaTeX_Math-Italic.woff") format("woff"),
+    url("./media/KaTeX_Math-Italic.ttf") format("truetype");
+}
+@font-face {
+  font-family: "KaTeX_SansSerif";
+  font-style: normal;
+  font-weight: 700;
+  src:
+    url("./media/KaTeX_SansSerif-Bold.woff2") format("woff2"),
+    url("./media/KaTeX_SansSerif-Bold.woff") format("woff"),
+    url("./media/KaTeX_SansSerif-Bold.ttf") format("truetype");
+}
+@font-face {
+  font-family: "KaTeX_SansSerif";
+  font-style: italic;
+  font-weight: 400;
+  src:
+    url("./media/KaTeX_SansSerif-Italic.woff2") format("woff2"),
+    url("./media/KaTeX_SansSerif-Italic.woff") format("woff"),
+    url("./media/KaTeX_SansSerif-Italic.ttf") format("truetype");
+}
+@font-face {
+  font-family: "KaTeX_SansSerif";
+  font-style: normal;
+  font-weight: 400;
+  src:
+    url("./media/KaTeX_SansSerif-Regular.woff2") format("woff2"),
+    url("./media/KaTeX_SansSerif-Regular.woff") format("woff"),
+    url("./media/KaTeX_SansSerif-Regular.ttf") format("truetype");
+}
+@font-face {
+  font-family: KaTeX_Script;
+  font-style: normal;
+  font-weight: 400;
+  src:
+    url("./media/KaTeX_Script-Regular.woff2") format("woff2"),
+    url("./media/KaTeX_Script-Regular.woff") format("woff"),
+    url("./media/KaTeX_Script-Regular.ttf") format("truetype");
+}
+@font-face {
+  font-family: KaTeX_Size1;
+  font-style: normal;
+  font-weight: 400;
+  src:
+    url("./media/KaTeX_Size1-Regular.woff2") format("woff2"),
+    url("./media/KaTeX_Size1-Regular.woff") format("woff"),
+    url("./media/KaTeX_Size1-Regular.ttf") format("truetype");
+}
+@font-face {
+  font-family: KaTeX_Size2;
+  font-style: normal;
+  font-weight: 400;
+  src:
+    url("./media/KaTeX_Size2-Regular.woff2") format("woff2"),
+    url("./media/KaTeX_Size2-Regular.woff") format("woff"),
+    url("./media/KaTeX_Size2-Regular.ttf") format("truetype");
+}
+@font-face {
+  font-family: KaTeX_Size3;
+  font-style: normal;
+  font-weight: 400;
+  src:
+    url("./media/KaTeX_Size3-Regular.woff2") format("woff2"),
+    url("./media/KaTeX_Size3-Regular.woff") format("woff"),
+    url("./media/KaTeX_Size3-Regular.ttf") format("truetype");
+}
+@font-face {
+  font-family: KaTeX_Size4;
+  font-style: normal;
+  font-weight: 400;
+  src:
+    url("./media/KaTeX_Size4-Regular.woff2") format("woff2"),
+    url("./media/KaTeX_Size4-Regular.woff") format("woff"),
+    url("./media/KaTeX_Size4-Regular.ttf") format("truetype");
+}
+@font-face {
+  font-family: KaTeX_Typewriter;
+  font-style: normal;
+  font-weight: 400;
+  src:
+    url("./media/KaTeX_Typewriter-Regular.woff2") format("woff2"),
+    url("./media/KaTeX_Typewriter-Regular.woff") format("woff"),
+    url("./media/KaTeX_Typewriter-Regular.ttf") format("truetype");
+}
+.katex {
+  font:
+    normal 1.21em KaTeX_Main,
+    Times New Roman,
+    serif;
+  line-height: 1.2;
+  text-indent: 0;
+  text-rendering: auto;
+}
+.katex * {
+  -ms-high-contrast-adjust: none !important;
+  border-color: currentColor;
+}
+.katex .katex-version:after {
+  content: "0.16.11";
+}
+.katex .katex-mathml {
+  clip: rect(1px, 1px, 1px, 1px);
+  border: 0;
+  height: 1px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  width: 1px;
+}
+.katex .katex-html > .newline {
+  display: block;
+}
+.katex .base {
+  position: relative;
+  white-space: nowrap;
+  width: -webkit-min-content;
+  width: -moz-min-content;
+  width: min-content;
+}
+.katex .base,
+.katex .strut {
+  display: inline-block;
+}
+.katex .textbf {
+  font-weight: 700;
+}
+.katex .textit {
+  font-style: italic;
+}
+.katex .textrm {
+  font-family: KaTeX_Main;
+}
+.katex .textsf {
+  font-family: KaTeX_SansSerif;
+}
+.katex .texttt {
+  font-family: KaTeX_Typewriter;
+}
+.katex .mathnormal {
+  font-family: KaTeX_Math;
+  font-style: italic;
+}
+.katex .mathit {
+  font-family: KaTeX_Main;
+  font-style: italic;
+}
+.katex .mathrm {
+  font-style: normal;
+}
+.katex .mathbf {
+  font-family: KaTeX_Main;
+  font-weight: 700;
+}
+.katex .boldsymbol {
+  font-family: KaTeX_Math;
+  font-style: italic;
+  font-weight: 700;
+}
+.katex .amsrm,
+.katex .mathbb,
+.katex .textbb {
+  font-family: KaTeX_AMS;
+}
+.katex .mathcal {
+  font-family: KaTeX_Caligraphic;
+}
+.katex .mathfrak,
+.katex .textfrak {
+  font-family: KaTeX_Fraktur;
+}
+.katex .mathboldfrak,
+.katex .textboldfrak {
+  font-family: KaTeX_Fraktur;
+  font-weight: 700;
+}
+.katex .mathtt {
+  font-family: KaTeX_Typewriter;
+}
+.katex .mathscr,
+.katex .textscr {
+  font-family: KaTeX_Script;
+}
+.katex .mathsf,
+.katex .textsf {
+  font-family: KaTeX_SansSerif;
+}
+.katex .mathboldsf,
+.katex .textboldsf {
+  font-family: KaTeX_SansSerif;
+  font-weight: 700;
+}
+.katex .mathitsf,
+.katex .textitsf {
+  font-family: KaTeX_SansSerif;
+  font-style: italic;
+}
+.katex .mainrm {
+  font-family: KaTeX_Main;
+  font-style: normal;
+}
+.katex .vlist-t {
+  border-collapse: collapse;
+  display: inline-table;
+  table-layout: fixed;
+}
+.katex .vlist-r {
+  display: table-row;
+}
+.katex .vlist {
+  display: table-cell;
+  position: relative;
+  vertical-align: bottom;
+}
+.katex .vlist > span {
+  display: block;
+  height: 0;
+  position: relative;
+}
+.katex .vlist > span > span {
+  display: inline-block;
+}
+.katex .vlist > span > .pstrut {
+  overflow: hidden;
+  width: 0;
+}
+.katex .vlist-t2 {
+  margin-right: -2px;
+}
+.katex .vlist-s {
+  display: table-cell;
+  font-size: 1px;
+  min-width: 2px;
+  vertical-align: bottom;
+  width: 2px;
+}
+.katex .vbox {
+  align-items: baseline;
+  display: inline-flex;
+  flex-direction: column;
+}
+.katex .hbox {
+  width: 100%;
+}
+.katex .hbox,
+.katex .thinbox {
+  display: inline-flex;
+  flex-direction: row;
+}
+.katex .thinbox {
+  max-width: 0;
+  width: 0;
+}
+.katex .msupsub {
+  text-align: left;
+}
+.katex .mfrac > span > span {
+  text-align: center;
+}
+.katex .mfrac .frac-line {
+  border-bottom-style: solid;
+  display: inline-block;
+  width: 100%;
+}
+.katex .hdashline,
+.katex .hline,
+.katex .mfrac .frac-line,
+.katex .overline .overline-line,
+.katex .rule,
+.katex .underline .underline-line {
+  min-height: 1px;
+}
+.katex .mspace {
+  display: inline-block;
+}
+.katex .clap,
+.katex .llap,
+.katex .rlap {
+  position: relative;
+  width: 0;
+}
+.katex .clap > .inner,
+.katex .llap > .inner,
+.katex .rlap > .inner {
+  position: absolute;
+}
+.katex .clap > .fix,
+.katex .llap > .fix,
+.katex .rlap > .fix {
+  display: inline-block;
+}
+.katex .llap > .inner {
+  right: 0;
+}
+.katex .clap > .inner,
+.katex .rlap > .inner {
+  left: 0;
+}
+.katex .clap > .inner > span {
+  margin-left: -50%;
+  margin-right: 50%;
+}
+.katex .rule {
+  border: 0 solid;
+  display: inline-block;
+  position: relative;
+}
+.katex .hline,
+.katex .overline .overline-line,
+.katex .underline .underline-line {
+  border-bottom-style: solid;
+  display: inline-block;
+  width: 100%;
+}
+.katex .hdashline {
+  border-bottom-style: dashed;
+  display: inline-block;
+  width: 100%;
+}
+.katex .sqrt > .root {
+  margin-left: .2777777778em;
+  margin-right: -.5555555556em;
+}
+.katex .fontsize-ensurer.reset-size1.size1,
+.katex .sizing.reset-size1.size1 {
+  font-size: 1em;
+}
+.katex .fontsize-ensurer.reset-size1.size2,
+.katex .sizing.reset-size1.size2 {
+  font-size: 1.2em;
+}
+.katex .fontsize-ensurer.reset-size1.size3,
+.katex .sizing.reset-size1.size3 {
+  font-size: 1.4em;
+}
+.katex .fontsize-ensurer.reset-size1.size4,
+.katex .sizing.reset-size1.size4 {
+  font-size: 1.6em;
+}
+.katex .fontsize-ensurer.reset-size1.size5,
+.katex .sizing.reset-size1.size5 {
+  font-size: 1.8em;
+}
+.katex .fontsize-ensurer.reset-size1.size6,
+.katex .sizing.reset-size1.size6 {
+  font-size: 2em;
+}
+.katex .fontsize-ensurer.reset-size1.size7,
+.katex .sizing.reset-size1.size7 {
+  font-size: 2.4em;
+}
+.katex .fontsize-ensurer.reset-size1.size8,
+.katex .sizing.reset-size1.size8 {
+  font-size: 2.88em;
+}
+.katex .fontsize-ensurer.reset-size1.size9,
+.katex .sizing.reset-size1.size9 {
+  font-size: 3.456em;
+}
+.katex .fontsize-ensurer.reset-size1.size10,
+.katex .sizing.reset-size1.size10 {
+  font-size: 4.148em;
+}
+.katex .fontsize-ensurer.reset-size1.size11,
+.katex .sizing.reset-size1.size11 {
+  font-size: 4.976em;
+}
+.katex .fontsize-ensurer.reset-size2.size1,
+.katex .sizing.reset-size2.size1 {
+  font-size: .8333333333em;
+}
+.katex .fontsize-ensurer.reset-size2.size2,
+.katex .sizing.reset-size2.size2 {
+  font-size: 1em;
+}
+.katex .fontsize-ensurer.reset-size2.size3,
+.katex .sizing.reset-size2.size3 {
+  font-size: 1.1666666667em;
+}
+.katex .fontsize-ensurer.reset-size2.size4,
+.katex .sizing.reset-size2.size4 {
+  font-size: 1.3333333333em;
+}
+.katex .fontsize-ensurer.reset-size2.size5,
+.katex .sizing.reset-size2.size5 {
+  font-size: 1.5em;
+}
+.katex .fontsize-ensurer.reset-size2.size6,
+.katex .sizing.reset-size2.size6 {
+  font-size: 1.6666666667em;
+}
+.katex .fontsize-ensurer.reset-size2.size7,
+.katex .sizing.reset-size2.size7 {
+  font-size: 2em;
+}
+.katex .fontsize-ensurer.reset-size2.size8,
+.katex .sizing.reset-size2.size8 {
+  font-size: 2.4em;
+}
+.katex .fontsize-ensurer.reset-size2.size9,
+.katex .sizing.reset-size2.size9 {
+  font-size: 2.88em;
+}
+.katex .fontsize-ensurer.reset-size2.size10,
+.katex .sizing.reset-size2.size10 {
+  font-size: 3.4566666667em;
+}
+.katex .fontsize-ensurer.reset-size2.size11,
+.katex .sizing.reset-size2.size11 {
+  font-size: 4.1466666667em;
+}
+.katex .fontsize-ensurer.reset-size3.size1,
+.katex .sizing.reset-size3.size1 {
+  font-size: .7142857143em;
+}
+.katex .fontsize-ensurer.reset-size3.size2,
+.katex .sizing.reset-size3.size2 {
+  font-size: .8571428571em;
+}
+.katex .fontsize-ensurer.reset-size3.size3,
+.katex .sizing.reset-size3.size3 {
+  font-size: 1em;
+}
+.katex .fontsize-ensurer.reset-size3.size4,
+.katex .sizing.reset-size3.size4 {
+  font-size: 1.1428571429em;
+}
+.katex .fontsize-ensurer.reset-size3.size5,
+.katex .sizing.reset-size3.size5 {
+  font-size: 1.2857142857em;
+}
+.katex .fontsize-ensurer.reset-size3.size6,
+.katex .sizing.reset-size3.size6 {
+  font-size: 1.4285714286em;
+}
+.katex .fontsize-ensurer.reset-size3.size7,
+.katex .sizing.reset-size3.size7 {
+  font-size: 1.7142857143em;
+}
+.katex .fontsize-ensurer.reset-size3.size8,
+.katex .sizing.reset-size3.size8 {
+  font-size: 2.0571428571em;
+}
+.katex .fontsize-ensurer.reset-size3.size9,
+.katex .sizing.reset-size3.size9 {
+  font-size: 2.4685714286em;
+}
+.katex .fontsize-ensurer.reset-size3.size10,
+.katex .sizing.reset-size3.size10 {
+  font-size: 2.9628571429em;
+}
+.katex .fontsize-ensurer.reset-size3.size11,
+.katex .sizing.reset-size3.size11 {
+  font-size: 3.5542857143em;
+}
+.katex .fontsize-ensurer.reset-size4.size1,
+.katex .sizing.reset-size4.size1 {
+  font-size: .625em;
+}
+.katex .fontsize-ensurer.reset-size4.size2,
+.katex .sizing.reset-size4.size2 {
+  font-size: .75em;
+}
+.katex .fontsize-ensurer.reset-size4.size3,
+.katex .sizing.reset-size4.size3 {
+  font-size: .875em;
+}
+.katex .fontsize-ensurer.reset-size4.size4,
+.katex .sizing.reset-size4.size4 {
+  font-size: 1em;
+}
+.katex .fontsize-ensurer.reset-size4.size5,
+.katex .sizing.reset-size4.size5 {
+  font-size: 1.125em;
+}
+.katex .fontsize-ensurer.reset-size4.size6,
+.katex .sizing.reset-size4.size6 {
+  font-size: 1.25em;
+}
+.katex .fontsize-ensurer.reset-size4.size7,
+.katex .sizing.reset-size4.size7 {
+  font-size: 1.5em;
+}
+.katex .fontsize-ensurer.reset-size4.size8,
+.katex .sizing.reset-size4.size8 {
+  font-size: 1.8em;
+}
+.katex .fontsize-ensurer.reset-size4.size9,
+.katex .sizing.reset-size4.size9 {
+  font-size: 2.16em;
+}
+.katex .fontsize-ensurer.reset-size4.size10,
+.katex .sizing.reset-size4.size10 {
+  font-size: 2.5925em;
+}
+.katex .fontsize-ensurer.reset-size4.size11,
+.katex .sizing.reset-size4.size11 {
+  font-size: 3.11em;
+}
+.katex .fontsize-ensurer.reset-size5.size1,
+.katex .sizing.reset-size5.size1 {
+  font-size: .5555555556em;
+}
+.katex .fontsize-ensurer.reset-size5.size2,
+.katex .sizing.reset-size5.size2 {
+  font-size: .6666666667em;
+}
+.katex .fontsize-ensurer.reset-size5.size3,
+.katex .sizing.reset-size5.size3 {
+  font-size: .7777777778em;
+}
+.katex .fontsize-ensurer.reset-size5.size4,
+.katex .sizing.reset-size5.size4 {
+  font-size: .8888888889em;
+}
+.katex .fontsize-ensurer.reset-size5.size5,
+.katex .sizing.reset-size5.size5 {
+  font-size: 1em;
+}
+.katex .fontsize-ensurer.reset-size5.size6,
+.katex .sizing.reset-size5.size6 {
+  font-size: 1.1111111111em;
+}
+.katex .fontsize-ensurer.reset-size5.size7,
+.katex .sizing.reset-size5.size7 {
+  font-size: 1.3333333333em;
+}
+.katex .fontsize-ensurer.reset-size5.size8,
+.katex .sizing.reset-size5.size8 {
+  font-size: 1.6em;
+}
+.katex .fontsize-ensurer.reset-size5.size9,
+.katex .sizing.reset-size5.size9 {
+  font-size: 1.92em;
+}
+.katex .fontsize-ensurer.reset-size5.size10,
+.katex .sizing.reset-size5.size10 {
+  font-size: 2.3044444444em;
+}
+.katex .fontsize-ensurer.reset-size5.size11,
+.katex .sizing.reset-size5.size11 {
+  font-size: 2.7644444444em;
+}
+.katex .fontsize-ensurer.reset-size6.size1,
+.katex .sizing.reset-size6.size1 {
+  font-size: .5em;
+}
+.katex .fontsize-ensurer.reset-size6.size2,
+.katex .sizing.reset-size6.size2 {
+  font-size: .6em;
+}
+.katex .fontsize-ensurer.reset-size6.size3,
+.katex .sizing.reset-size6.size3 {
+  font-size: .7em;
+}
+.katex .fontsize-ensurer.reset-size6.size4,
+.katex .sizing.reset-size6.size4 {
+  font-size: .8em;
+}
+.katex .fontsize-ensurer.reset-size6.size5,
+.katex .sizing.reset-size6.size5 {
+  font-size: .9em;
+}
+.katex .fontsize-ensurer.reset-size6.size6,
+.katex .sizing.reset-size6.size6 {
+  font-size: 1em;
+}
+.katex .fontsize-ensurer.reset-size6.size7,
+.katex .sizing.reset-size6.size7 {
+  font-size: 1.2em;
+}
+.katex .fontsize-ensurer.reset-size6.size8,
+.katex .sizing.reset-size6.size8 {
+  font-size: 1.44em;
+}
+.katex .fontsize-ensurer.reset-size6.size9,
+.katex .sizing.reset-size6.size9 {
+  font-size: 1.728em;
+}
+.katex .fontsize-ensurer.reset-size6.size10,
+.katex .sizing.reset-size6.size10 {
+  font-size: 2.074em;
+}
+.katex .fontsize-ensurer.reset-size6.size11,
+.katex .sizing.reset-size6.size11 {
+  font-size: 2.488em;
+}
+.katex .fontsize-ensurer.reset-size7.size1,
+.katex .sizing.reset-size7.size1 {
+  font-size: .4166666667em;
+}
+.katex .fontsize-ensurer.reset-size7.size2,
+.katex .sizing.reset-size7.size2 {
+  font-size: .5em;
+}
+.katex .fontsize-ensurer.reset-size7.size3,
+.katex .sizing.reset-size7.size3 {
+  font-size: .5833333333em;
+}
+.katex .fontsize-ensurer.reset-size7.size4,
+.katex .sizing.reset-size7.size4 {
+  font-size: .6666666667em;
+}
+.katex .fontsize-ensurer.reset-size7.size5,
+.katex .sizing.reset-size7.size5 {
+  font-size: .75em;
+}
+.katex .fontsize-ensurer.reset-size7.size6,
+.katex .sizing.reset-size7.size6 {
+  font-size: .8333333333em;
+}
+.katex .fontsize-ensurer.reset-size7.size7,
+.katex .sizing.reset-size7.size7 {
+  font-size: 1em;
+}
+.katex .fontsize-ensurer.reset-size7.size8,
+.katex .sizing.reset-size7.size8 {
+  font-size: 1.2em;
+}
+.katex .fontsize-ensurer.reset-size7.size9,
+.katex .sizing.reset-size7.size9 {
+  font-size: 1.44em;
+}
+.katex .fontsize-ensurer.reset-size7.size10,
+.katex .sizing.reset-size7.size10 {
+  font-size: 1.7283333333em;
+}
+.katex .fontsize-ensurer.reset-size7.size11,
+.katex .sizing.reset-size7.size11 {
+  font-size: 2.0733333333em;
+}
+.katex .fontsize-ensurer.reset-size8.size1,
+.katex .sizing.reset-size8.size1 {
+  font-size: .3472222222em;
+}
+.katex .fontsize-ensurer.reset-size8.size2,
+.katex .sizing.reset-size8.size2 {
+  font-size: .4166666667em;
+}
+.katex .fontsize-ensurer.reset-size8.size3,
+.katex .sizing.reset-size8.size3 {
+  font-size: .4861111111em;
+}
+.katex .fontsize-ensurer.reset-size8.size4,
+.katex .sizing.reset-size8.size4 {
+  font-size: .5555555556em;
+}
+.katex .fontsize-ensurer.reset-size8.size5,
+.katex .sizing.reset-size8.size5 {
+  font-size: .625em;
+}
+.katex .fontsize-ensurer.reset-size8.size6,
+.katex .sizing.reset-size8.size6 {
+  font-size: .6944444444em;
+}
+.katex .fontsize-ensurer.reset-size8.size7,
+.katex .sizing.reset-size8.size7 {
+  font-size: .8333333333em;
+}
+.katex .fontsize-ensurer.reset-size8.size8,
+.katex .sizing.reset-size8.size8 {
+  font-size: 1em;
+}
+.katex .fontsize-ensurer.reset-size8.size9,
+.katex .sizing.reset-size8.size9 {
+  font-size: 1.2em;
+}
+.katex .fontsize-ensurer.reset-size8.size10,
+.katex .sizing.reset-size8.size10 {
+  font-size: 1.4402777778em;
+}
+.katex .fontsize-ensurer.reset-size8.size11,
+.katex .sizing.reset-size8.size11 {
+  font-size: 1.7277777778em;
+}
+.katex .fontsize-ensurer.reset-size9.size1,
+.katex .sizing.reset-size9.size1 {
+  font-size: .2893518519em;
+}
+.katex .fontsize-ensurer.reset-size9.size2,
+.katex .sizing.reset-size9.size2 {
+  font-size: .3472222222em;
+}
+.katex .fontsize-ensurer.reset-size9.size3,
+.katex .sizing.reset-size9.size3 {
+  font-size: .4050925926em;
+}
+.katex .fontsize-ensurer.reset-size9.size4,
+.katex .sizing.reset-size9.size4 {
+  font-size: .462962963em;
+}
+.katex .fontsize-ensurer.reset-size9.size5,
+.katex .sizing.reset-size9.size5 {
+  font-size: .5208333333em;
+}
+.katex .fontsize-ensurer.reset-size9.size6,
+.katex .sizing.reset-size9.size6 {
+  font-size: .5787037037em;
+}
+.katex .fontsize-ensurer.reset-size9.size7,
+.katex .sizing.reset-size9.size7 {
+  font-size: .6944444444em;
+}
+.katex .fontsize-ensurer.reset-size9.size8,
+.katex .sizing.reset-size9.size8 {
+  font-size: .8333333333em;
+}
+.katex .fontsize-ensurer.reset-size9.size9,
+.katex .sizing.reset-size9.size9 {
+  font-size: 1em;
+}
+.katex .fontsize-ensurer.reset-size9.size10,
+.katex .sizing.reset-size9.size10 {
+  font-size: 1.2002314815em;
+}
+.katex .fontsize-ensurer.reset-size9.size11,
+.katex .sizing.reset-size9.size11 {
+  font-size: 1.4398148148em;
+}
+.katex .fontsize-ensurer.reset-size10.size1,
+.katex .sizing.reset-size10.size1 {
+  font-size: .2410800386em;
+}
+.katex .fontsize-ensurer.reset-size10.size2,
+.katex .sizing.reset-size10.size2 {
+  font-size: .2892960463em;
+}
+.katex .fontsize-ensurer.reset-size10.size3,
+.katex .sizing.reset-size10.size3 {
+  font-size: .337512054em;
+}
+.katex .fontsize-ensurer.reset-size10.size4,
+.katex .sizing.reset-size10.size4 {
+  font-size: .3857280617em;
+}
+.katex .fontsize-ensurer.reset-size10.size5,
+.katex .sizing.reset-size10.size5 {
+  font-size: .4339440694em;
+}
+.katex .fontsize-ensurer.reset-size10.size6,
+.katex .sizing.reset-size10.size6 {
+  font-size: .4821600771em;
+}
+.katex .fontsize-ensurer.reset-size10.size7,
+.katex .sizing.reset-size10.size7 {
+  font-size: .5785920926em;
+}
+.katex .fontsize-ensurer.reset-size10.size8,
+.katex .sizing.reset-size10.size8 {
+  font-size: .6943105111em;
+}
+.katex .fontsize-ensurer.reset-size10.size9,
+.katex .sizing.reset-size10.size9 {
+  font-size: .8331726133em;
+}
+.katex .fontsize-ensurer.reset-size10.size10,
+.katex .sizing.reset-size10.size10 {
+  font-size: 1em;
+}
+.katex .fontsize-ensurer.reset-size10.size11,
+.katex .sizing.reset-size10.size11 {
+  font-size: 1.1996142719em;
+}
+.katex .fontsize-ensurer.reset-size11.size1,
+.katex .sizing.reset-size11.size1 {
+  font-size: .2009646302em;
+}
+.katex .fontsize-ensurer.reset-size11.size2,
+.katex .sizing.reset-size11.size2 {
+  font-size: .2411575563em;
+}
+.katex .fontsize-ensurer.reset-size11.size3,
+.katex .sizing.reset-size11.size3 {
+  font-size: .2813504823em;
+}
+.katex .fontsize-ensurer.reset-size11.size4,
+.katex .sizing.reset-size11.size4 {
+  font-size: .3215434084em;
+}
+.katex .fontsize-ensurer.reset-size11.size5,
+.katex .sizing.reset-size11.size5 {
+  font-size: .3617363344em;
+}
+.katex .fontsize-ensurer.reset-size11.size6,
+.katex .sizing.reset-size11.size6 {
+  font-size: .4019292605em;
+}
+.katex .fontsize-ensurer.reset-size11.size7,
+.katex .sizing.reset-size11.size7 {
+  font-size: .4823151125em;
+}
+.katex .fontsize-ensurer.reset-size11.size8,
+.katex .sizing.reset-size11.size8 {
+  font-size: .578778135em;
+}
+.katex .fontsize-ensurer.reset-size11.size9,
+.katex .sizing.reset-size11.size9 {
+  font-size: .6945337621em;
+}
+.katex .fontsize-ensurer.reset-size11.size10,
+.katex .sizing.reset-size11.size10 {
+  font-size: .8336012862em;
+}
+.katex .fontsize-ensurer.reset-size11.size11,
+.katex .sizing.reset-size11.size11 {
+  font-size: 1em;
+}
+.katex .delimsizing.size1 {
+  font-family: KaTeX_Size1;
+}
+.katex .delimsizing.size2 {
+  font-family: KaTeX_Size2;
+}
+.katex .delimsizing.size3 {
+  font-family: KaTeX_Size3;
+}
+.katex .delimsizing.size4 {
+  font-family: KaTeX_Size4;
+}
+.katex .delimsizing.mult .delim-size1 > span {
+  font-family: KaTeX_Size1;
+}
+.katex .delimsizing.mult .delim-size4 > span {
+  font-family: KaTeX_Size4;
+}
+.katex .nulldelimiter {
+  display: inline-block;
+  width: .12em;
+}
+.katex .delimcenter,
+.katex .op-symbol {
+  position: relative;
+}
+.katex .op-symbol.small-op {
+  font-family: KaTeX_Size1;
+}
+.katex .op-symbol.large-op {
+  font-family: KaTeX_Size2;
+}
+.katex .accent > .vlist-t,
+.katex .op-limits > .vlist-t {
+  text-align: center;
+}
+.katex .accent .accent-body {
+  position: relative;
+}
+.katex .accent .accent-body:not(.accent-full) {
+  width: 0;
+}
+.katex .overlay {
+  display: block;
+}
+.katex .mtable .vertical-separator {
+  display: inline-block;
+  min-width: 1px;
+}
+.katex .mtable .arraycolsep {
+  display: inline-block;
+}
+.katex .mtable .col-align-c > .vlist-t {
+  text-align: center;
+}
+.katex .mtable .col-align-l > .vlist-t {
+  text-align: left;
+}
+.katex .mtable .col-align-r > .vlist-t {
+  text-align: right;
+}
+.katex .svg-align {
+  text-align: left;
+}
+.katex svg {
+  fill: currentColor;
+  stroke: currentColor;
+  fill-rule: nonzero;
+  fill-opacity: 1;
+  stroke-width: 1;
+  stroke-linecap: butt;
+  stroke-linejoin: miter;
+  stroke-miterlimit: 4;
+  stroke-dasharray: none;
+  stroke-dashoffset: 0;
+  stroke-opacity: 1;
+  display: block;
+  height: inherit;
+  position: absolute;
+  width: 100%;
+}
+.katex svg path {
+  stroke: none;
+}
+.katex img {
+  border-style: none;
+  max-height: none;
+  max-width: none;
+  min-height: 0;
+  min-width: 0;
+}
+.katex .stretchy {
+  display: block;
+  overflow: hidden;
+  position: relative;
+  width: 100%;
+}
+.katex .stretchy:after,
+.katex .stretchy:before {
+  content: "";
+}
+.katex .hide-tail {
+  overflow: hidden;
+  position: relative;
+  width: 100%;
+}
+.katex .halfarrow-left {
+  left: 0;
+  overflow: hidden;
+  position: absolute;
+  width: 50.2%;
+}
+.katex .halfarrow-right {
+  overflow: hidden;
+  position: absolute;
+  right: 0;
+  width: 50.2%;
+}
+.katex .brace-left {
+  left: 0;
+  overflow: hidden;
+  position: absolute;
+  width: 25.1%;
+}
+.katex .brace-center {
+  left: 25%;
+  overflow: hidden;
+  position: absolute;
+  width: 50%;
+}
+.katex .brace-right {
+  overflow: hidden;
+  position: absolute;
+  right: 0;
+  width: 25.1%;
+}
+.katex .x-arrow-pad {
+  padding: 0 .5em;
+}
+.katex .cd-arrow-pad {
+  padding: 0 .55556em 0 .27778em;
+}
+.katex .mover,
+.katex .munder,
+.katex .x-arrow {
+  text-align: center;
+}
+.katex .boxpad {
+  padding: 0 .3em;
+}
+.katex .fbox,
+.katex .fcolorbox {
+  border: .04em solid;
+  box-sizing: border-box;
+}
+.katex .cancel-pad {
+  padding: 0 .2em;
+}
+.katex .cancel-lap {
+  margin-left: -.2em;
+  margin-right: -.2em;
+}
+.katex .sout {
+  border-bottom-style: solid;
+  border-bottom-width: .08em;
+}
+.katex .angl {
+  border-right: .049em solid;
+  border-top: .049em solid;
+  box-sizing: border-box;
+  margin-right: .03889em;
+}
+.katex .anglpad {
+  padding: 0 .03889em;
+}
+.katex .eqn-num:before {
+  content: "(" counter(katexEqnNo) ")";
+  counter-increment: katexEqnNo;
+}
+.katex .mml-eqn-num:before {
+  content: "(" counter(mmlEqnNo) ")";
+  counter-increment: mmlEqnNo;
+}
+.katex .mtr-glue {
+  width: 50%;
+}
+.katex .cd-vert-arrow {
+  display: inline-block;
+  position: relative;
+}
+.katex .cd-label-left {
+  display: inline-block;
+  position: absolute;
+  right: calc(50% + .3em);
+  text-align: left;
+}
+.katex .cd-label-right {
+  display: inline-block;
+  left: calc(50% + .3em);
+  position: absolute;
+  text-align: right;
+}
+.katex-display {
+  display: block;
+  margin: 1em 0;
+  text-align: center;
+}
+.katex-display > .katex {
+  display: block;
+  text-align: center;
+  white-space: nowrap;
+}
+.katex-display > .katex > .katex-html {
+  display: block;
+  position: relative;
+}
+.katex-display > .katex > .katex-html > .tag {
+  position: absolute;
+  right: 0;
+}
+.katex-display.leqno > .katex > .katex-html > .tag {
+  left: 0;
+  right: auto;
+}
+.katex-display.fleqn > .katex {
+  padding-left: 2em;
+  text-align: left;
+}
+body {
+  counter-reset: katexEqnNo mmlEqnNo;
+}
+
+/* node_modules/prismjs/plugins/line-numbers/prism-line-numbers.css */
+pre[class*=language-].line-numbers {
+  position: relative;
+  padding-left: 3.8em;
+  counter-reset: linenumber;
+}
+pre[class*=language-].line-numbers > code {
+  position: relative;
+  white-space: inherit;
+}
+.line-numbers .line-numbers-rows {
+  position: absolute;
+  pointer-events: none;
+  top: 0;
+  font-size: 100%;
+  left: -3.8em;
+  width: 3em;
+  letter-spacing: -1px;
+  border-right: 1px solid #999;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+.line-numbers-rows > span {
+  display: block;
+  counter-increment: linenumber;
+}
+.line-numbers-rows > span:before {
+  content: counter(linenumber);
+  color: #999;
+  display: block;
+  padding-right: 0.8em;
+  text-align: right;
+}
+
+/* src/assets/styles/prism-laserwave.css */
+code[class*=language-],
+pre[class*=language-] {
+  background: #27212e;
+  color: #ffffff;
+  font-family:
+    Consolas,
+    Monaco,
+    "Andale Mono",
+    "Ubuntu Mono",
+    monospace;
+  font-size: 1em;
+  direction: ltr;
+  text-align: left;
+  white-space: pre;
+  word-spacing: normal;
+  word-break: normal;
+  line-height: 1.5;
+  -moz-tab-size: 2;
+  -o-tab-size: 2;
+  tab-size: 2;
+  -webkit-hyphens: none;
+  -moz-hyphens: none;
+  -ms-hyphens: none;
+  hyphens: none;
+}
+code[class*=language-]::-moz-selection,
+code[class*=language-] ::-moz-selection,
+pre[class*=language-]::-moz-selection,
+pre[class*=language-] ::-moz-selection {
+  background: #eb64b927;
+  color: inherit;
+}
+code[class*=language-]::selection,
+code[class*=language-] ::selection,
+pre[class*=language-]::selection,
+pre[class*=language-] ::selection {
+  background: #eb64b927;
+  color: inherit;
+}
+pre[class*=language-] {
+  padding: 1em;
+  margin: 0.5em 0;
+  overflow: auto;
+  border-radius: 0.5em;
+}
+:not(pre) > code[class*=language-] {
+  padding: 0.2em 0.3em;
+  border-radius: 0.5rem;
+  white-space: normal;
+}
+.token.comment,
+.token.prolog,
+.token.cdata {
+  color: #91889b;
+}
+.token.punctuation {
+  color: #7b6995;
+}
+.token.builtin,
+.token.constant,
+.token.boolean {
+  color: #ffe261;
+}
+.token.number {
+  color: #b381c5;
+}
+.token.important,
+.token.atrule,
+.token.property,
+.token.keyword {
+  color: #40b4c4;
+}
+.token.doctype,
+.token.operator,
+.token.inserted,
+.token.tag,
+.token.class-name,
+.token.symbol {
+  color: #74dfc4;
+}
+.token.attr-name,
+.token.function,
+.token.deleted,
+.token.selector {
+  color: #eb64b9;
+}
+.token.attr-value,
+.token.regex,
+.token.char,
+.token.string {
+  color: #b4dce7;
+}
+.token.entity,
+.token.url,
+.token.variable {
+  color: #ffffff;
+}
+.token.bold {
+  font-weight: bold;
+}
+.token.italic {
+  font-style: italic;
+}
+.token.entity {
+  cursor: help;
+}
+.token.namespace {
+  opacity: 0.7;
+}
+
+/* angular:styles/global:styles */
+/*# sourceMappingURL=styles.css.map */
