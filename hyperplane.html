@@ -404,7 +404,7 @@
 		// ------------------ TRIANGLE WAVE ------------------
 		function triC(t) {
 			// Returns -1 → 1 → -1 with constant speed
-			return 2.0 * Math.abs((t % 2) - 1) - 1.0;
+			return 2.0 * Math.abs((t % 2) - 1) - 2.0;
 		}
 
 		// Animation state
@@ -415,20 +415,20 @@
 		function animateZoomResolution() {
 			if (!animating) return;
 
-			let t = (performance.now() - t0_ZR) * 0.00015;
+			let t = (performance.now() - t0_ZR) * 0.0001;
 
 			// ----- Zoom (constant speed triangle wave) -----
 			let z = triC(t);
-			let zoomBase = 1.2;
-			let zoomAmp  = 0.85;
-			let zoomVal  = zoomBase + zoomAmp * z;
+			let zoomBase = 0.5;
+			let zoomAmp  = 0.25;
+			let zoomVal  = z < zoomBase*5.0 ? zoomBase - zoomAmp * -z : 20*zoomBase - zoomAmp * z;
 
 			// ----- Resolution (skewed triangle wave) -----
 			let r = triC(t * 0.6);
 			let skew = (r > 0.0) ? r * 0.4 : r * 1.2;
 
-			let resBase = 260;
-			let resAmp  = 140;
+			let resBase = 300;
+			let resAmp  = 150;
 			let resVal = resBase + resAmp * skew;
 
 			// Clamp

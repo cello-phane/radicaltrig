@@ -223,15 +223,15 @@
         }
 
         // Convert from degrees to your frequency domain (period 4)
-        function degreesToFreq(degrees) {
+        function degreesToPhase(degrees) {
             return (degrees / 90.0); // Maps 0-360° to 0-4 frequency units
         }
         
         // Quadrant mapping for frequency domain trig
-        function getRotationComponents(freq) {
-		    const phase = ((freq % 4.0) + 4.0) % 4.0;  // Normalize to 0-4 range
-		    const quadrant = Math.floor(phase);
-		    const t = phase - quadrant;
+        function getRotationComponents(phase) {
+		    const phase_base = ((phase % 4.0) + 4.0) % 4.0;  // Normalize to 0-4 range
+		    const quadrant = Math.floor(phase_base);
+		    const t = phase_base - quadrant;
 		    const s = rsin(t);
 		    const c = rcos(t);
 		    const q0 = Number(quadrant === 0);
@@ -246,14 +246,14 @@
             } else { sin_result = -c; cos_result = s;
             }*/
             let cos_result = c*q0 - s*q1 - c*q2 + s*q3;
-            let sin_result = (s*q0 + c*q1 - s*q2 - c*q3) * (Math.sign(freq)); 
+            let sin_result = (s*q0 + c*q1 - s*q2 - c*q3) * (Math.sign(phase)); 
             return { sin: sin_result, cos: cos_result };
         }
 
         // 3D Rotations
         function rotateX(point, angleDegrees) {
-            const freq = degreesToFreq(angleDegrees);
-            const { sin, cos } = getRotationComponents(freq);
+            const phase = degreesToPhase(angleDegrees);
+            const { sin, cos } = getRotationComponents(phase);
             return {
                 x: point.x,
                 y: point.y * cos - point.z * sin,
@@ -262,8 +262,8 @@
         }
         
         function rotateZ(point, angleDegrees) {
-            const freq = degreesToFreq(angleDegrees);
-            const { sin, cos } = getRotationComponents(freq);
+            const phase = degreesToPhase(angleDegrees);
+            const { sin, cos } = getRotationComponents(phase);
             return {
                 x: point.x * cos + point.z * sin,
                 y: point.y,
@@ -272,8 +272,8 @@
         }
 
 		function rotateY(point, angleDegrees) {
-			const freq = degreesToFreq(angleDegrees);
-		    const { cos, sin } = getRotationComponents(freq);
+			const phase = degreesToPhase(angleDegrees);
+		    const { cos, sin } = getRotationComponents(phase);
 		    return { 
 		    	x: point.x * cos - point.y * sin, 
 		    	y: point.x * sin + point.y * cos, 
@@ -283,8 +283,8 @@
 
 		function rotateXandZ(point, rotX, rotZ) {
 		    // Combine for a plane axis rotation
-		    const { cos: c1, sin: s1 } = getRotationComponents(degreesToFreq(rotX)); // X-axis
-		    const { cos: c2, sin: s2 } = getRotationComponents(degreesToFreq(rotZ)); // Z-axis
+		    const { cos: c1, sin: s1 } = getRotationComponents(degreesToPhase(rotX)); // X-axis
+		    const { cos: c2, sin: s2 } = getRotationComponents(degreesToPhase(rotZ)); // Z-axis
 
 		    // First rotate X
 		    const y1 = point.y * c1 - point.z * s1;
@@ -329,15 +329,15 @@
             
             // Generate meridians using frequency domain (0-4 instead of 0-2π)
             for (let m = 0; m < meridianCount; m++) {
-                const phiFreq = (m / meridianCount) * 4.0; // Longitude
+                const phiPhase = (m / meridianCount) * 4.0; // Longitude
                 const meridianPoints = [];
                 
                 for (let p = 0; p <= parallelCount; p++) {
-                    const thetaFreq = (p / parallelCount) * 2.0; // Latitude
+                    const thetaPhase = (p / parallelCount) * 2.0; // Latitude
                     const semiCirc = semicircle(radius, scParam);
                     // Spherical to Cartesian
-                    const thetaTrig = getRotationComponents(thetaFreq);
-                    const phiTrig = getRotationComponents(phiFreq);
+                    const thetaTrig = getRotationComponents(thetaPhase);
+                    const phiTrig = getRotationComponents(phiPhase);
                     
                     const x = radius * thetaTrig.sin * phiTrig.cos;
                     const y = radius * thetaTrig.cos;
@@ -351,15 +351,15 @@
             // Generate parallels
             const parallelLines = [];
             for (let p = 0; p < parallelCount; p++) {
-                const thetaFreq = (p / parallelCount) * 2.0; // Latitude
+                const thetaPhase = (p / parallelCount) * 2.0; // Latitude
                 const parallelPoints = [];
                 
                 for (let m = 0; m <= meridianCount; m++) {
-                    const phiFreq = (m / meridianCount) * 4.0; // Longitude
+                    const phiPhase = (m / meridianCount) * 4.0; // Longitude
                     const semiCirc = semicircle(radius, scParam);
                     // Spherical to Cartesian
-                    const thetaTrig = getRotationComponents(thetaFreq);
-                    const phiTrig = getRotationComponents(phiFreq);
+                    const thetaTrig = getRotationComponents(thetaPhase);
+                    const phiTrig = getRotationComponents(phiPhase);
                     
                     const x = radius * thetaTrig.sin * phiTrig.cos;
                     const y = radius * thetaTrig.cos;
@@ -378,10 +378,10 @@
 		    
 		    // Generate field lines pointing radially inward
 		    for (let i = 0; i < rayCount; i++) {
-		        const thetaFreq = (i / rayCount) * 2.0; // Latitude (RAU)
+		        const thetaPhase = (i / rayCount) * 2.0; // Latitude (RAU)
 		        
 		        for (let j = 0; j < rayCount; j++) {
-		            const phiFreq = (j / rayCount) * 4.0; // Longitude (RAU)
+		            const phiPhase = (j / rayCount) * 4.0; // Longitude (RAU)
 		            
 		            // One field line with multiple shell points
 		            const line = [];
@@ -390,8 +390,8 @@
 		                const r = radius * shell / shellCount;
 		                const forceMagnitude = 1 / (r * r);
 		                
-		                const thetaTrig = getRotationComponents(thetaFreq);
-		                const phiTrig = getRotationComponents(phiFreq);
+		                const thetaTrig = getRotationComponents(thetaPhase);
+		                const phiTrig = getRotationComponents(phiPhase);
 		                
 		                const x = r * thetaTrig.sin * phiTrig.cos;
 		                const y = r * thetaTrig.cos;
