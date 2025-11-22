@@ -223,6 +223,3 @@ t₁=0.3, t₂=0.2 → z=(0.3+0.2-0.12)/(1-0.06) → z≈0.4255
 ```
 
 ---
-
-**Print this page for quick reference!**  
-Repository: [github.com/cello-phane/radicaltrig](https://github.com/cello-phane/radicaltrig)
