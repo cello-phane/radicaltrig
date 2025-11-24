@@ -282,7 +282,78 @@
 
             return table;
         }
-
+        
+		/*function drawSimpleSymbol(ctx, width, height, scaleFactor) {
+		  ctx.save();
+		  ctx.clearRect(0, 0, width, height);
+		  const cx = 2;
+		  const cy = 2;
+		
+		  // move origin to canvas center
+		  ctx.translate(width / 2, height / 2);
+		
+		  // scale the coordinate system
+		  ctx.scale(scaleFactor, scaleFactor);
+		
+		  const radius = Math.min(width, height) * 0.45;
+		
+		  // draw everything centered around (0,0)
+		  ctx.beginPath();
+		  ctx.arc(0, 0, radius, 0, 2 * Math.PI);
+		  ctx.stroke();
+		
+		  // Tick marks
+		  ctx.lineWidth = 1;
+		
+		  // Time
+		  const now = new Date();
+		  const sec = now.getSeconds() + now.getMilliseconds() / 1000;
+		  const min = now.getMinutes() + sec / 60;
+		  const hr = (now.getHours() % 12) + min / 60;
+		
+		  // Convert to RAU (4 = full turn)
+		  const secRAU = (sec / 60) * 4;
+		  const minRAU = (min / 60) * 4;
+		  const hrRAU = (hr / 12) * 4;
+		  
+		  const outerRX = width/1.886, outerRY = width/1.87;
+		  const innerRX = 70, innerRY = 50;
+		  // === Precompute RAU sin/cos for 60 divisions (seconds) ===
+		  const rauSinTable = [], rauCosTable = [];
+		  for (let i = 0; i < 60; i++) {
+				const t = (i / 60) * 4; // full circle in RAU
+				rauSinTable.push(radicalSine(t));
+				rauCosTable.push(radicalCosine(t));
+		  }
+		
+		  rauSinTable.forEach((val, i) => {
+		    const cosVal = rauCosTable[i];
+		  
+		    // fancy symbol thing
+		    const next = (i + 1) % 60;
+		    const prev = (i + 59) % 60;
+		    const s = 0.45, e = 0.55;
+		  
+		    const sx  = cx + rauSinTable[next] * innerRX * s;
+		    const sy  = cy - rauCosTable[prev] * innerRY * s;
+		    const ex  = cx + rauSinTable[prev] * innerRX * e;
+		    const ey  = cy - rauCosTable[next] * innerRY * e;
+		  
+		    const sxb = cx + rauSinTable[prev] * innerRX * s;
+		    const syb = cy - rauCosTable[next] * innerRY * s;
+		    const exb = cx + rauSinTable[next] * innerRX * e;
+		    const eyb = cy - rauCosTable[prev] * innerRY * e;
+		  
+		    ctx.beginPath();
+		    ctx.moveTo(sx, sy); ctx.lineTo(ex, ey);
+		    ctx.moveTo(sxb, syb); ctx.lineTo(exb, eyb);
+		    ctx.stroke();
+		  });
+		
+		  ctx.restore();
+		}
+		drawSimplySymbol(ctx, canvas.width, canvas.height, sizePercentageOfClock);*/
+		
         // ================================
         // Draw Uniform Velocity Ticks
         // ================================
@@ -296,22 +367,24 @@
                 const sin = entry.sin;
                 const cos = entry.cos;
 
-                const innerX = cx + sin * tickRadius;
-                const innerY = cy - cos * tickRadius;
+                let innerX = cx + sin * tickRadius;
+                let innerY = cy - cos * tickRadius;
                 const outerX = cx + sin * (tickRadius + tickLength);
                 const outerY = cy - cos * (tickRadius + tickLength);
 
-                ctx.beginPath();
-                ctx.moveTo(innerX, innerY);
-                ctx.lineTo(outerX, outerY);
-
                 if (index % 5 === 0) {
                     ctx.lineWidth = 3;
+                    innerX = cx + sin * tickRadius * 0.98;
+                    innerY = cy - cos * tickRadius * 0.98;
                     ctx.strokeStyle = `${color}1.0)`;
                 } else {
                     ctx.lineWidth = 1;
                     ctx.strokeStyle = `${color}${opacity})`;
                 }
+                
+                ctx.beginPath();
+                ctx.moveTo(innerX, innerY);
+                ctx.lineTo(outerX, outerY);
 
                 ctx.lineCap = "round";
                 ctx.stroke();
@@ -432,12 +505,6 @@
             staticCtx.arc(cx, cy, radius, 0, 2 * Math.PI);
             staticCtx.stroke();
 
-            // Center dot
-            ctx.fillStyle = 'rgba(255,255,255,0.5)';
-            ctx.beginPath();
-            ctx.arc(cx, cy, 6, 0, 2 * Math.PI);
-            ctx.fill();
-
             let rauTable = {
                 sin: 0,
                 cos: 0
@@ -448,8 +515,8 @@
                 rauTable = generateTable(60, false);
             }
 
-            // Uniform velocity ticks
-            drawVelocityTicks(staticCtx, cx, cy, radius, rauTable, 0.6, `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 0.8)`, uniformTrue);
+            // Uniform or non-uniform velocity ticks
+            drawVelocityTicks(staticCtx, cx, cy, radius, rauTable, 1.0, `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 0.5)`, uniformTrue);
 
             // Numbered markers
             drawNumberedMarkers(staticCtx, cx, cy, radius, rauTable, `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 0.8)`, uniformTrue);

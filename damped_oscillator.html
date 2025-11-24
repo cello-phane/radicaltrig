@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Damped Oscillator: RAU Trigonometry Demo</title>
+    <style>
+        body { font-family: monospace; background: #121830; color: #eee; margin: 0; }
+        .main-layout {
+            display: grid;
+            grid-template-columns: 290px auto;
+            grid-gap: 24px;
+            padding: 28px;
+        }
+        .controls {
+            background: #232c45;
+            border-radius: 8px;
+            padding: 20px 16px;
+            width: 260px;
+            margin-bottom: 18px;
+            margin-right: 0;
+        }
+        .controls label {
+            display: block;
+            font-size: 16px;
+            margin-bottom: 4px;
+            margin-top: 14px;
+        }
+        .controls input[type="range"] {
+            width: 100%;
+            margin-bottom: 4px;
+        }
+        .values {
+            margin-top: 10px;
+            color: #ffd93d;
+            font-size: 14px;
+        }
+        .canvas-stack {
+            display: flex;
+            flex-direction: row;
+            align-items: flex-start;
+            gap: 32px;
+            height: 350px;
+        }
+        #osc {
+            background: #191c2f;
+            border: 2px solid #363b57;
+            border-radius: 8px;
+        }
+        .circle-panel {
+            background: #191c2f;
+            border: 2px solid #363b57;
+            border-radius: 8px;
+            width: 180px;
+            height: 180px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h2 style="margin-left:33px;">Damped Oscillator with RAU Trig</h2>
+    <div class="main-layout">
+        <div>
+            <div class="controls">
+                <label>Amplitude
+                    <input type="range" id="amp" min="0.1" max="1.5" step="0.01" value="1.0">
+                </label>
+                <label>Damping
+                    <input type="range" id="damp" min="0.0" max="1.0" step="0.01" value="0.08">
+                </label>
+                <label>Frequency
+                    <input type="range" id="freq" min="0.1" max="2.0" step="0.01" value="1.0">
+                </label>
+                <label>Time Scale
+                    <input type="range" id="speed" min="0.1" max="2.0" step="0.01" value="1.0">
+                </label>
+                <div id="values" class="values"></div>
+            </div>
+            <div class="circle-panel">
+                <canvas id="phasecircle" width="160" height="160"></canvas>
+            </div>
+        </div>
+        <div class="canvas-stack">
+            <canvas id="osc" width="900" height="320"></canvas>
+        </div>
+    </div>
+    <script>
+    // RAU sine
+    function rauSin(t) {
+        let D = Math.sqrt(1 - 2*t + 2*t*t);
+        return t / D;
+    }
+    function rauSinFull(x) {
+        let phase = ((x % 4) + 4) % 4;
+        let q = Math.floor(phase);
+        let t = phase - q;
+        let s = rauSin(t), c = rauSin(1-t);
+        if      (q === 0) return s;
+        else if (q === 1) return c;
+        else if (q === 2) return -s;
+        else              return -c;
+    }
+
+    // Controls
+    let amp = document.getElementById("amp").value * 1;
+    let damp = document.getElementById("damp").value * 1;
+    let freq = document.getElementById("freq").value * 1;
+    let speed = document.getElementById("speed").value * 1;
+    function updateControls() {
+        amp = parseFloat(document.getElementById("amp").value);
+        damp = parseFloat(document.getElementById("damp").value);
+        freq = parseFloat(document.getElementById("freq").value);
+        speed = parseFloat(document.getElementById("speed").value);
+        document.getElementById("values").textContent =
+            `Amplitude: ${amp.toFixed(2)} | Damping: ${damp.toFixed(2)} | Frequency: ${freq.toFixed(2)} | Time Scale: ${speed.toFixed(2)}`;
+    }
+    ["amp","damp","freq","speed"].forEach(id =>
+        document.getElementById(id).addEventListener("input", updateControls)
+    );
+    updateControls();
+
+    // Main wave plot
+    const oscCanvas = document.getElementById("osc");
+    const ctx = oscCanvas.getContext("2d");
+
+    // Phase circle
+    const pcCanvas = document.getElementById("phasecircle");
+    const pc = pcCanvas.getContext("2d");
+
+    function drawOscillator(time) {
+        // Plot oscillator wave
+        ctx.clearRect(0,0,oscCanvas.width,oscCanvas.height);
+
+        const W = oscCanvas.width, H = oscCanvas.height, mid = H/2;
+        ctx.save();
+        ctx.translate(40, mid);
+
+        // Axes
+        ctx.strokeStyle = "#444";
+        ctx.lineWidth = 1.2;
+        ctx.beginPath();
+        ctx.moveTo(0,0); ctx.lineTo(W-80,0);
+        ctx.moveTo(0,-mid + 18); ctx.lineTo(0,mid - 18);
+        ctx.stroke();
+
+        // Wave
+        ctx.strokeStyle = "#38d0fd";
+        ctx.lineWidth = 2.3;
+        ctx.beginPath();
+        for (let px=0; px<W-80; ++px) {
+            let t = px/(W-80)*8; // time-axis (8 sec shown)
+            let val = amp * rauSinFull(freq * t) * Math.exp(-damp * t);
+            if (px === 0) ctx.moveTo(px, val * -mid * 0.9);
+            else          ctx.lineTo(px, val * -mid * 0.9);
+        }
+        ctx.stroke();
+
+        // Moving dot
+        let t_anim = (time * speed) % 8;
+        let val = amp * rauSinFull(freq * t_anim) * Math.exp(-damp * t_anim);
+        let px = t_anim / 8 * (W-80);
+        ctx.fillStyle="#ff6b9d";
+        ctx.beginPath();
+        ctx.arc(px, val * -mid * 0.9, 9, 0, 2*Math.PI);
+        ctx.fill();
+
+        // Labels
+        ctx.fillStyle="#eee";
+        ctx.font="16px monospace";
+        ctx.fillText("Time", W-110, mid + 38);
+        ctx.fillText("RAU-based Damped Oscillator", 48, 22);
+        ctx.font="13px monospace";
+        ctx.fillText("Value", 5, mid - 12);
+
+        ctx.fillStyle="#ffd93d";
+        ctx.font="15px monospace";
+        ctx.fillText(`t = ${t_anim.toFixed(2)} s`, W-160, 44);
+
+        ctx.restore();
+
+        // Draw phase circle
+        pc.clearRect(0,0,pcCanvas.width,pcCanvas.height);
+        pc.save();
+        const rad = 62, centX=80, centY=80;
+        // Circle outline
+        pc.strokeStyle = "#eee";
+        pc.lineWidth = 2.5;
+        pc.beginPath();
+        pc.arc(centX, centY, rad, 0, 2 * Math.PI);
+        pc.stroke();
+
+        // Phase point
+        let angle = (freq * t_anim) % 4;
+        let s = rauSinFull(angle);
+        let c = rauSinFull(angle + 1);
+        let ampRadius = rad * amp * Math.exp(-damp * t_anim);
+        pc.fillStyle = "#38fdc3";
+        pc.beginPath();
+        pc.arc(centX + c * ampRadius, centY - s * ampRadius, 11, 0, 2 * Math.PI);
+        pc.fill();
+        // Draw radius line
+        pc.strokeStyle = "#ffd93d";
+        pc.lineWidth = 2;
+        pc.beginPath();
+        pc.moveTo(centX, centY);
+        pc.lineTo(centX + c * ampRadius, centY - s * ampRadius);
+        pc.stroke();
+        // Label
+        pc.fillStyle="#ffe";
+        pc.font="14px monospace";
+        pc.fillText("Phase", centX-26, centY+rad+20);
+        pc.restore();
+    }
+
+    function animate() {
+        drawOscillator(performance.now()/1000);
+        requestAnimationFrame(animate);
+    }
+    animate();
+    </script>
+</body>
+</html>
