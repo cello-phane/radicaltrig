@@ -1,33 +1,33 @@
 // ===========================
 // RAU Unit Circle visualization
 // ===========================
+function getRAUComponents(t) {
+  const tt = Math.max(0, Math.min(0.999999, t));
+  const denom = 1 / Math.sqrt(1 - 2 * tt + 2 * tt * tt);
+  return { cos: (1 - tt) * denom, sin: tt * denom };
+}
+
+function getRotationComponents(param) {
+  let p = param;
+  if (!isFinite(p) || p < 0) p = 0;
+  const q = Math.floor(p) % 4;
+  const frac = p - Math.floor(p);
+  const { cos: c, sin: s } = getRAUComponents(frac);
+  let cos_val, sin_val;
+  switch (q) {
+    case 0: cos_val = c; sin_val = s; break;
+    case 1: cos_val = -s; sin_val = c; break;
+    case 2: cos_val = -c; sin_val = -s; break;
+    case 3: cos_val = s; sin_val = -c; break;
+  }
+  return { cos: cos_val, sin: sin_val, quadrant: q };
+}
+
 function initRAUCanvas() {
   const canvas = document.getElementById('vectorCanvas');
   const ctx = canvas.getContext('2d');
   const slider = document.getElementById('paramSlider');
   const valueDisplay = document.getElementById('paramValue');
-
-  function getRAUComponents(t) {
-    const tt = Math.max(0, Math.min(0.999999, t));
-    const denom = 1 / Math.sqrt(1 - 2 * tt + 2 * tt * tt);
-    return { cos: (1 - tt) * denom, sin: tt * denom };
-  }
-
-  function getRotationComponents(param) {
-    let p = param;
-    if (!isFinite(p) || p < 0) p = 0;
-    const q = Math.floor(p) % 4;
-    const frac = p - Math.floor(p);
-    const { cos: c, sin: s } = getRAUComponents(frac);
-    let cos_val, sin_val;
-    switch (q) {
-      case 0: cos_val = c; sin_val = s; break;
-      case 1: cos_val = -s; sin_val = c; break;
-      case 2: cos_val = -c; sin_val = -s; break;
-      case 3: cos_val = s; sin_val = -c; break;
-    }
-    return { cos: cos_val, sin: sin_val, quadrant: q };
-  }
 
   function drawGrid(cx, cy, w, h) {
     ctx.strokeStyle = '#eee';
@@ -173,6 +173,7 @@ function initVectorCanvas() {
     const vA = degToRad(vAngle);
     const u = { x: uLen * Math.cos(uA), y: -uLen * Math.sin(uA) };
     const v = { x: vLen * Math.cos(vA), y: -vLen * Math.sin(vA) };
+
     currentU = u;
     currentV = v;
 
