@@ -167,10 +167,11 @@ tan(θ) = ${Math.abs(rt) > 1e6 ? 'undefined' : formatValue(rt)}
 sin(θ) = ${formatValue(rs)}
 cos(θ) = ${formatValue(rc2)}`;
     } else {
+      const refvec = {x: 1,y: 0};
       const uD = uAng;
       const vD = vAng;
-      const uP = (uD / 360) * 4;
-      const vP = (vD / 360) * 4;
+      const uP = atanVec(u,refvec);
+      const vP = atanVec(v,refvec);
       const uS = radicalSine(uP);
       const uC = radicalCosine(uP);
       const vS = radicalSine(vP);
