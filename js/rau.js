@@ -126,4 +126,5 @@ function getInterpolatedFromTable(table, secondsFrac) {
 }
 // === Unit conversions ===
 const degToRad = deg => deg * Math.PI / 180;
-const rauToDeg = rau => (rau / 4) * 360;
+const rauToDeg = rau => Math.acos(1-rau*rau)*(180/Math.PI);
+const degToRau = deg => Math.sqrt(1-Math.cos(deg*(Math.PI/180)));
