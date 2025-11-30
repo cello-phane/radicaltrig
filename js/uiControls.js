@@ -121,9 +121,11 @@ function updateResultsDisplay() {
     const rt = radicalTan(p);
     const deg = rauToDeg(p);
     const rad = degToRad(deg);
+    const radian = p > 2 ? Math.abs(Math.acos(rc2)-Math.PI) + Math.PI : Math.acos(rc2);
+	const degrees = radian/(Math.PI/180);
 
     rc.textContent = `RAU Phase = ${formatValue(p)}
-Radian = ${formatValue(rad)} (${deg.toFixed(1)}°)
+Radian = ${formatValue(radian)} (${degrees.toFixed(1)}°)
 _______________________________
 tan(θ) = ${Math.abs(rt) > 1e6 ? 'undefined' : formatValue(rt)}
 sin(θ) = ${formatValue(rs)}

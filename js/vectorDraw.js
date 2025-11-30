@@ -216,8 +216,8 @@ function initVectorCanvas() {
 
     const signed = vAngle - uAngle;
     ccw = signed > 0;
-    //anglebetweenDeg = Math.abs(signed);
-    anglebetweenDeg = rauToDeg(atanVec(v,u));
+    anglebetweenDeg = Math.abs(signed);
+    //anglebetweenDeg = rauToDeg(atanVec(v,u));
     vectorPhase = (anglebetweenDeg / 360) * 4;
 
     updateResultsDisplay();
