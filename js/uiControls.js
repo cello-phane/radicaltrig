@@ -141,11 +141,11 @@ cos(θ) = ${formatValue(rc2)}`;
     const fmt = (n, w = 8, d = 2) => n.toFixed(d).padStart(w);
 
     if (mode === 'between') {
-      const p = vectorPhase;
+      const p = atanVec(u, v);
       const rs = radicalSine(p);
       const rc2 = radicalCosine(p);
       const rt = radicalTan(p);
-      const rad = degToRad(anglebetweenDeg);
+      const rad = rauToRad(p);
       let signedDeg = anglebetweenDeg * (ccw ? 1 : -1);
       signedDeg = formatValue(signedDeg, 1);
       const undirDeg = formatValue(Math.min(Math.abs(signedDeg), 360 - Math.abs(signedDeg)), 1);
