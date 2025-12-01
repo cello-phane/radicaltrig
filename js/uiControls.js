@@ -168,8 +168,9 @@ cos(θ) = ${formatValue(rc)}`;
     } else {
       const uD = uAng;
       const vD = vAng;
-      const uP = degToRad(uAng);
-      const vP = degToRad(vAng);
+		const refvec = {x: 1, y: 0};
+      const uP = atanVec(u, refvec);
+      const vP = atanVec(v, refvec);
       const uS = radicalSine(uP);
       const uC = radicalCosine(uP);
       const vS = radicalSine(vP);
