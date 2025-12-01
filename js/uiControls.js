@@ -110,26 +110,25 @@ function createPrecisionControl() {
 // ================================
 // Results panel
 function updateResultsDisplay() {
-  const rc = document.getElementById('resultsContent');
+  const results = document.getElementById('resultsContent');
   const s1 = document.getElementById('section1');
   const isS1 = s1.classList.contains('active');
 
   if (isS1) {
     const p = introPhase;
     const rs = radicalSine(p);
-    const rc2 = radicalCosine(p);
+    const rc = radicalCosine(p);
     const rt = radicalTan(p);
     const deg = rauToDeg(p);
-    const rad = degToRad(deg);
-    const radian = p > 2 ? Math.abs(Math.acos(rc2)-Math.PI) + Math.PI : Math.acos(rc2);
+    const radian = p > 2 ? Math.abs(Math.acos(rc)-Math.PI) + Math.PI : Math.acos(rc);
 	const degrees = radian/(Math.PI/180);
 
-    rc.textContent = `RAU Phase = ${formatValue(p)}
+    results.textContent = `RAU Phase = ${formatValue(p)}
 Radian = ${formatValue(radian)} (${degrees.toFixed(1)}°)
 _______________________________
 tan(θ) = ${Math.abs(rt) > 1e6 ? 'undefined' : formatValue(rt)}
 sin(θ) = ${formatValue(rs)}
-cos(θ) = ${formatValue(rc2)}`;
+cos(θ) = ${formatValue(rc)}`;
   } else {
     const mode = controls.angleMode.value;
     const u = currentU;
@@ -143,14 +142,14 @@ cos(θ) = ${formatValue(rc2)}`;
     if (mode === 'between') {
       const p = atanVec(u, v);
       const rs = radicalSine(p);
-      const rc2 = radicalCosine(p);
+      const rc = radicalCosine(p);
       const rt = radicalTan(p);
       const rad = rauToRad(p);
       let signedDeg = anglebetweenDeg * (ccw ? 1 : -1);
       signedDeg = formatValue(signedDeg, 1);
       const undirDeg = formatValue(Math.min(Math.abs(signedDeg), 360 - Math.abs(signedDeg)), 1);
 
-      rc.textContent = `Vector u = (${fmt(u.x)}, ${fmt(u.y)})
+      results.textContent = `Vector u = (${fmt(u.x)}, ${fmt(u.y)})
   |u| = ${fmt(uMag)}
 Vector v = (${fmt(v.x)}, ${fmt(v.y)})
   |v| = ${fmt(vMag)}
@@ -165,7 +164,7 @@ Radian = ${formatValue(rad)}
 _______________________________
 tan(θ) = ${Math.abs(rt) > 1e6 ? 'undefined' : formatValue(rt)}
 sin(θ) = ${formatValue(rs)}
-cos(θ) = ${formatValue(rc2)}`;
+cos(θ) = ${formatValue(rc)}`;
     } else {
       const refvec = {x: 1,y: 0};
       const uD = uAng;
@@ -177,7 +176,7 @@ cos(θ) = ${formatValue(rc2)}`;
       const vS = radicalSine(vP);
       const vC = radicalCosine(vP);
 
-      rc.textContent = `Vector u:
+      results.textContent = `Vector u:
   Components = (${fmt(u.x)}, ${fmt(u.y)})
   Magnitude = ${fmt(uMag)}
   _______________________________
@@ -202,4 +201,3 @@ Cross product = ${fmt(cross)}`;
     }
   }
 }
-
