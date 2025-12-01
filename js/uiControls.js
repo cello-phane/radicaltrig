@@ -144,8 +144,8 @@ cos(θ) = ${formatValue(rc)}`;
       const rs = radicalSine(p);
       const rc = radicalCosine(p);
       const rt = radicalTan(p);
-      const rad = rauToRad(p);
-      let signedDeg = anglebetweenDeg * (ccw ? 1 : -1);
+      const rad = p > 2 ? Math.abs(Math.acos(rc)-Math.PI) + Math.PI : Math.acos(rc);
+      let signedDeg = anglebetweenDeg * (ccw ? -1 : 1);
       signedDeg = formatValue(signedDeg, 1);
       const undirDeg = formatValue(Math.min(Math.abs(signedDeg), 360 - Math.abs(signedDeg)), 1);
 
