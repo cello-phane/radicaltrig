@@ -145,7 +145,7 @@ cos(θ) = ${formatValue(rc)}`;
       const rc = radicalCosine(p);
       const rt = radicalTan(p);
       const rad = p > 2 ? Math.abs(Math.acos(rc)-Math.PI) + Math.PI : Math.acos(rc);
-      let signedDeg = anglebetweenDeg * (ccw ? -1 : 1);
+      let signedDeg = anglebetweenDeg * (ccw ? 1 : -1);
       signedDeg = formatValue(signedDeg, 1);
       const undirDeg = formatValue(Math.min(Math.abs(signedDeg), 360 - Math.abs(signedDeg)), 1);
 
@@ -168,7 +168,7 @@ cos(θ) = ${formatValue(rc)}`;
     } else {
       const uD = uAng;
       const vD = vAng;
-		const refvec = {x: 1, y: 0};
+	  const refvec = {x: 1, y: 0};
       const uP = atanVec(u, refvec);
       const vP = atanVec(v, refvec);
       const uS = radicalSine(uP);
