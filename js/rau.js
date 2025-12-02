@@ -140,3 +140,19 @@ function rauToRad(p) {
     }
 }
 const rauToDeg = rau => rauToRad(rau)*(180/Math.PI);
+
+// Component-wis rotation function
+function getRAUComponents(t) {
+  const tt    = Math.max(0, Math.min(0.999999, t));
+  const denom = 1 / Math.sqrt(1 - 2 * tt + 2 * tt * tt);
+  return { cos: (1 - tt) * denom, sin: tt * denom };
+}
+
+function getRotationComponents(phase) {
+  let p = phase;
+  if (!isFinite(p) || p < 0) p = 0;
+  const q    = Math.floor(p) % 4;
+  let cos_val = radicalCosine(phase);
+  let sin_val = radicalSine(phase);
+  return { cos: Math.sign(phase)*cos_val, sin: sin_val, quadrant: q };
+}

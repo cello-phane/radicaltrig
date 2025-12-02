@@ -1,27 +1,6 @@
 // ===========================
 // RAU Unit Circle visualization
 // ===========================
-function getRAUComponents(t) {
-  const tt    = Math.max(0, Math.min(0.999999, t));
-  const denom = 1 / Math.sqrt(1 - 2 * tt + 2 * tt * tt);
-  return { cos: (1 - tt) * denom, sin: tt * denom };
-}
-
-function getRotationComponents(phase) {
-  let p = phase;
-  if (!isFinite(p) || p < 0) p = 0;
-  const q    = Math.floor(p) % 4;
-  const frac = p - Math.floor(p);
-  const { cos: c, sin: s } = getRAUComponents(frac);
-  let cos_val, sin_val;
-  switch (q) {
-    case 0: cos_val =  c; sin_val =  s; break;
-    case 1: cos_val = -s; sin_val =  c; break;
-    case 2: cos_val = -c; sin_val = -s; break;
-    case 3: cos_val =  s; sin_val = -c; break;
-  }
-  return { cos: Math.sign(phase)*cos_val, sin: sin_val, quadrant: q };
-}
 
 function initRAUCanvas() {
   const canvas       = document.getElementById('vectorCanvas');

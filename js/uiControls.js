@@ -147,7 +147,7 @@ cos(θ) = ${formatValue(rc)}`;
       const rad = p > 2 ? Math.abs(Math.acos(rc)-Math.PI) + Math.PI : Math.acos(rc);
       let signedDeg = anglebetweenDeg * (ccw ? 1 : -1);
       signedDeg = formatValue(signedDeg, 1);
-      const undirDeg = formatValue(Math.min(Math.abs(signedDeg), 360 - Math.abs(signedDeg)), 1);
+      const undirDeg = formatValue(Math.min(Math.abs(signedDeg), Math.abs(signedDeg)), 1);
 
       results.textContent = `Vector u = (${fmt(u.x)}, ${fmt(u.y)})
   |u| = ${fmt(uMag)}

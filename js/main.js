@@ -95,3 +95,5 @@ function initPrecisionControl() {
 
 // Call this after DOM is ready
 document.addEventListener('DOMContentLoaded', initPrecisionControl);
+
+
