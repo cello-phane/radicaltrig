@@ -222,11 +222,11 @@ function initVectorCanvas() {
 	const bias = ccw ? Math.PI*2 : degToRad(anglebetweenDeg);
 	const arcRadius = 0.5*Math.max(uLen,vLen);
 	let startAngle = 0, endAngle = 0;
-    if (angleWrapMode) {    
+    if (!angleWrapMode) {//Draw the angle arc between
 		startAngle = ccw ? Math.max(uA, vA) : (Math.PI/2) - bias;
 		endAngle = startAngle - degToRad(Math.max(startAngle, Math.abs(360 - (ccw ? 360+signed : anglebetweenDeg))));
     }
-	else {
+	else {//Draw the angle external angle if v > and past u going cw, otherwise between
 		let adjustedVA = vA;
 		if (ccw && vA < uA) adjustedVA += Math.PI * 2;
 		else if (!ccw && vA > uA) adjustedVA -= Math.PI * 2;
