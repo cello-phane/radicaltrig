@@ -141,14 +141,15 @@ cos(θ) = ${formatValue(rc)}`;
 
     if (mode === 'between') {
       let p = atanVec(u, v);
-      const rs = radicalSine(p);
+	  p = ccw ? 4-p : p;
+	  const rs = radicalSine(p);
       const rc = radicalCosine(p);
       const rt = radicalTan(p);
-      const rad = Math.abs((ccw ? Math.PI * 2 : 0) - rauToRad(p));
+      const rad = rauToRad(p);
       let signedDeg = anglebetweenDeg * (ccw ? 1 : -1);
       signedDeg = formatValue(signedDeg, 1);
       const undirDeg = formatValue(Math.min(Math.abs(signedDeg), Math.abs(signedDeg)), 1);
-	  p = ccw ? 4-p : p;
+	  
       results.textContent = `Vector u = (${fmt(u.x)}, ${fmt(u.y)})
   |u| = ${fmt(uMag)}
 Vector v = (${fmt(v.x)}, ${fmt(v.y)})
