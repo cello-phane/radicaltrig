@@ -9,7 +9,7 @@ let vAng = 0;
 let ccw = false;
 let displayPrecision = 5; // Default to 5 decimal places
 let maxDigitsofPrecision = 15;
-let angleWrapMode = 'wrap'; // 'wrap' | 'unwrap'
+let angleWrapMode = true;
 let introPhase = 0;
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -43,6 +43,14 @@ document.addEventListener('DOMContentLoaded', () => {
     toggleBtn.textContent = showing1
       ? 'Switch to Introduction'
       : 'Switch to Vector Diagram';
+  });
+
+  wrappedAngle.addEventListener("change", function() {
+  	if (this.checked) {
+  		angleWrapMode = true;
+  	} else {
+  		angleWrapMode = false;
+  	}
   });
 });
 

@@ -213,18 +213,31 @@ function initVectorCanvas() {
     ctx.beginPath();
     ctx.arc(cx + v.x, cy + v.y, 6, 0, Math.PI * 2);
     ctx.fill();
-
-    const signed = vAngle - uAngle;
+    
+	const signed = vAngle - uAngle;
     ccw = signed > 0;
     anglebetweenDeg = Math.abs(signed);
-    // anglebetweenDeg = rauToRad(atanVec(v,u))*(180/Math.PI);
-    vectorPhase = (anglebetweenDeg / 360) * 4;
-	const bias = ccw ? Math.PI*2 : degToRad(anglebetweenDeg);
-	const startAngle = ccw ? Math.max(uA, vA) : (Math.PI/2) - bias;
-	const endAngle = startAngle - degToRad(Math.max(startAngle, Math.abs(360 - (ccw ? 360+signed : anglebetweenDeg))));
-	//if (bias<Math.abs(uA)) console.log(-(vA+bias), uA+degToRad(signed)); // going CW
-	const arcRadius = 0.5*Math.max(uLen,vLen);
-	drawArcGradient(ctx, cx, cy, arcRadius, ccw ? bias - startAngle : -(vA+bias), ccw ? Math.abs(endAngle-Math.PI*2) : -(uA+degToRad(signed)), [255, 100, 100], [100, 100, 255]);
+    
+    if (angleWrapMode) {    
+	    vectorPhase = (anglebetweenDeg / 360) * 4;
+		const bias = ccw ? Math.PI*2 : degToRad(anglebetweenDeg);
+		const startAngle = ccw ? Math.max(uA, vA) : (Math.PI/2) - bias;
+		const endAngle = startAngle - degToRad(Math.max(startAngle, Math.abs(360 - (ccw ? 360+signed : anglebetweenDeg))));
+		//if (bias<Math.abs(uA)) console.log(-(vA+bias), uA+degToRad(signed)); // going CW
+		const arcRadius = 0.5*Math.max(uLen,vLen);
+		drawArcGradient(ctx, cx, cy, arcRadius, ccw ? bias - startAngle : -(vA+bias), ccw ? Math.abs(endAngle-Math.PI*2) : -(uA+degToRad(signed)), [255, 100, 100], [100, 100, 255]);
+    }
+	else {
+		// Unfold: adjust vA if it wraps around to maintain directional logic
+		let adjustedVA = vA;
+		if (ccw && vA < uA) adjustedVA += Math.PI * 2;
+		else if (!ccw && vA > uA) adjustedVA -= Math.PI * 2;
+		const bias = ccw ? Math.PI*2 : degToRad(anglebetweenDeg);
+		const startAngle = Math.min(uA, adjustedVA);
+		const endAngle = startAngle - degToRad(Math.max(startAngle, Math.abs(360 - (ccw ? signed : anglebetweenDeg))));
+		const arcRadius = 0.5 * Math.min(uLen, vLen);
+		drawArcGradient(ctx, cx, cy, arcRadius, ccw ? bias - startAngle : -(vA+bias), ccw ? Math.abs(endAngle-Math.PI*2) : -(uA+degToRad(signed)), [255, 100, 100], [100, 100, 255]);
+	}
     updateResultsDisplay();
  }
 
