@@ -131,7 +131,7 @@ function rauToRad(p) {
     const q = Math.floor(p);       // 0..3
     const u = p - q;               // 0..1
     const local = Math.atan2(u, 1-u);   // 0..π/2
-
+	if (q === 4) return Math.PI*2;//this edge case is needed?? since we can also wrap around back to 0
     switch(q) {
         case 0: return local;                // 0°–90°
         case 1: return Math.PI/2 + local;    // 90°–180°

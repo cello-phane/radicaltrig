@@ -120,7 +120,7 @@ function updateResultsDisplay() {
     const rc = radicalCosine(p);
     const rt = radicalTan(p);
     const deg = rauToDeg(p);
-    const radian = p > 2 ? Math.abs(Math.acos(rc)-Math.PI) + Math.PI : Math.acos(rc);
+    const radian = rauToRad(p);
 	const degrees = radian/(Math.PI/180);
 
     results.textContent = `RAU Phase = ${formatValue(p)}
