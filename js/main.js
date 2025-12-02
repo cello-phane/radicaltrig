@@ -9,7 +9,7 @@ let vAng = 0;
 let ccw = false;
 let displayPrecision = 5; // Default to 5 decimal places
 let maxDigitsofPrecision = 15;
-let angleWrapMode = true;
+let angleWrapMode = false;
 let introPhase = 0;
 
 document.addEventListener('DOMContentLoaded', () => {
