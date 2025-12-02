@@ -9,9 +9,9 @@ let vAng = 0;
 let ccw = false;
 let displayPrecision = 5; // Default to 5 decimal places
 let maxDigitsofPrecision = 15;
-let angleWrapMode = false;
+let angleWrapMode = true;
 let introPhase = 0;
-
+document.getElementById("wrappedAngle").checked = angleWrapMode;
 document.addEventListener('DOMContentLoaded', () => {
   initUI();
   initRAUCanvas();
