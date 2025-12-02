@@ -140,15 +140,15 @@ cos(θ) = ${formatValue(rc)}`;
     const fmt = (n, w = 8, d = 2) => n.toFixed(d).padStart(w);
 
     if (mode === 'between') {
-      const p = atanVec(u, v);
+      let p = atanVec(u, v);
       const rs = radicalSine(p);
       const rc = radicalCosine(p);
       const rt = radicalTan(p);
-      const rad = p > 2 ? Math.abs(Math.acos(rc)-Math.PI) + Math.PI : Math.acos(rc);
+      const rad = Math.abs((ccw ? Math.PI*2 : 0) - (p > 2 ? Math.abs(Math.acos(rc)-Math.PI) + Math.PI : Math.acos(rc)));
       let signedDeg = anglebetweenDeg * (ccw ? 1 : -1);
       signedDeg = formatValue(signedDeg, 1);
       const undirDeg = formatValue(Math.min(Math.abs(signedDeg), Math.abs(signedDeg)), 1);
-
+	  p = ccw ? 4-p : p;
       results.textContent = `Vector u = (${fmt(u.x)}, ${fmt(u.y)})
   |u| = ${fmt(uMag)}
 Vector v = (${fmt(v.x)}, ${fmt(v.y)})
