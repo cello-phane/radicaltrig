@@ -213,20 +213,26 @@ function initVectorCanvas() {
     ctx.beginPath();
     ctx.arc(cx + v.x, cy + v.y, 6, 0, Math.PI * 2);
     ctx.fill();
-    
+
 	const signed = vAngle - uAngle;
     ccw = signed > 0;
     anglebetweenDeg = Math.abs(signed);
-    vectorPhase = (anglebetweenDeg / 360) * 4;
+    //vectorPhase = (anglebetweenDeg / 360) * 4;
 
 	const bias = ccw ? Math.PI*2 : degToRad(anglebetweenDeg);
 	const arcRadius = 0.5*Math.max(uLen,vLen);
 	let startAngle = 0, endAngle = 0;
-    if (!angleWrapMode) {//Draw the angle arc between
+    if (!angleWrapMode) { /* Draw the angle arc between the vectors
+   	    CCW: starts at the larger angle, sweeps CCW
+	    CW: starts at a calculated bias position, sweeps CW
+    */
 		startAngle = ccw ? Math.max(uA, vA) : (Math.PI/2) - bias;
 		endAngle = startAngle - degToRad(Math.max(startAngle, Math.abs(360 - (ccw ? 360+signed : anglebetweenDeg))));
     }
-	else {//Draw the angle external angle if v > and past u going cw, otherwise between
+	else { /* Draw the external/reflex angle if applicable
+	    Adjusts vA to wrap around 2π if needed to capture the actual sweep direction
+	    Then calculates based on which is min/max
+    */
 		let adjustedVA = vA;
 		if (ccw && vA < uA) adjustedVA += Math.PI * 2;
 		else if (!ccw && vA > uA) adjustedVA -= Math.PI * 2;
@@ -234,8 +240,11 @@ function initVectorCanvas() {
 		endAngle = startAngle - degToRad(Math.max(startAngle, Math.abs(360 - (ccw ? signed : anglebetweenDeg))));
 	}
 
-	//if (bias<Math.abs(uA)) console.log(-(vA+bias), uA+degToRad(signed)); // going CW
-	drawArcGradient(ctx, cx, cy, arcRadius, ccw ? bias - startAngle : -(vA+bias), ccw ? Math.abs(endAngle-Math.PI*2) : -(uA+degToRad(signed)), [255, 100, 100], [100, 100, 255]);
+	//const switching = bias < Math.abs(uA); console.log(switching);
+	drawArcGradient(ctx, cx, cy, arcRadius, 
+		ccw ? bias - startAngle : -(vA+bias), // start
+		ccw ? Math.abs(endAngle-Math.PI*2) : -(uA+degToRad(signed)), // end
+		[255, 100, 100], [100, 100, 255]);
 
     updateResultsDisplay();
  }
