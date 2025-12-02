@@ -139,7 +139,28 @@ function initVectorCanvas() {
   });
 
   document.addEventListener('mouseup', () => dragging = null);
-
+  function drawArcGradient(ctx, cx, cy, radius, startAngle, endAngle, color1, color2) {
+    const segments = 120; // Smoothness
+    const angleStep = (endAngle - startAngle) / segments;
+    
+    for (let i = 0; i < segments; i++) {
+      const a1 = startAngle + angleStep * i;
+      const a2 = startAngle + angleStep * (i + 1);
+      
+      // Interpolate color
+      const t = i / segments;
+      const r = Math.round(color1[0] * (1 - t) + color2[0] * t);
+      const g = Math.round(color1[1] * (1 - t) + color2[1] * t);
+      const b = Math.round(color1[2] * (1 - t) + color2[2] * t);
+      
+      ctx.fillStyle = `rgb(${r},${g},${b})`;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.arc(cx, cy, radius, a1, a2);
+      ctx.lineTo(cx, cy);
+      ctx.fill();
+    }
+  }
   function render() {
     const mode = controls.angleMode.value;
     const uLen = parseFloat(controls.uLength.value);
@@ -198,7 +219,12 @@ function initVectorCanvas() {
     anglebetweenDeg = Math.abs(signed);
     // anglebetweenDeg = rauToRad(atanVec(v,u))*(180/Math.PI);
     vectorPhase = (anglebetweenDeg / 360) * 4;
-
+	const bias = ccw ? Math.PI*2 : degToRad(anglebetweenDeg);
+	const startAngle = ccw ? Math.max(uA, vA) : (Math.PI/2) - bias;
+	const endAngle = startAngle - degToRad(Math.max(startAngle, Math.abs(360 - (ccw ? 360+signed : anglebetweenDeg))));
+	//if (bias<Math.abs(uA)) console.log(-(vA+bias), uA+degToRad(signed)); // going CW
+	const arcRadius = 0.5*Math.max(uLen,vLen);
+	drawArcGradient(ctx, cx, cy, arcRadius, ccw ? bias - startAngle : -(vA+bias), ccw ? Math.abs(endAngle-Math.PI*2) : -(uA+degToRad(signed)), [255, 100, 100], [100, 100, 255]);
     updateResultsDisplay();
  }
 
