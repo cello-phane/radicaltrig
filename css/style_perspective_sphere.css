@@ -121,22 +121,17 @@ canvas {
 }
 
 .controls h3 {
-    margin: 0 0 12px 0;
-    font-size: 14px;
+    margin: 0 0 6px 0;
+    font-size: 12px;
     font-weight: normal;
     letter-spacing: 0.1em;
     color: var(--controls-h3-col);
-    border-bottom: var(--controls-border-bot);
-    padding-bottom: 8px;
+    padding-bottom: 2px;
 }
 
 .control-group {
-    margin-bottom: 14px;
-    padding-bottom: 8px;
-}
-
-.control-group:not(:last-child) {
-    border-bottom: var(--controls-lastchild-border-bot);
+    margin-bottom: 10px;
+    padding-bottom: 4px;
 }
 
 label {
