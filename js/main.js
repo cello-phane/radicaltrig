@@ -56,6 +56,7 @@ document.addEventListener('DOMContentLoaded', () => {
   	} else {
   		angleWrapMode = false;
   	}
+  	initVectorCanvas();
   });
 });
 
