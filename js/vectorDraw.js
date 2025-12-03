@@ -140,7 +140,7 @@ function initVectorCanvas() {
 
   document.addEventListener('mouseup', () => dragging = null);
   function drawArcGradient(ctx, cx, cy, radius, startAngle, endAngle, color1, color2) {
-    const segments = 120; // Smoothness
+    const segments = 1000; // Smoothness
     const angleStep = (endAngle - startAngle) / segments;
     
     for (let i = 0; i < segments; i++) {
