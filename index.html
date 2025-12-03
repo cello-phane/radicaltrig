@@ -30,7 +30,17 @@
     <button onclick="changeFontSize(1,'resultsContent')">+</button>
     <button onclick="changeFontSize(-1,'resultsContent')">-</button>
       <button onclick="toggleMathBlock()">Formulae</button>
-      <div id="mathBlock" class="collapsed">
+      
+	  <!-- Vector canvas only control -->
+	  <div id="angleModeSidebar" style="display:none; margin: 12px 0; padding: 8px; border: 1px solid #ddd; border-radius: 6px;">
+	    <label for="angleMode" style="display: block; font-weight: 600; margin-bottom: 8px;">Display Mode:</label>
+	    <select id="angleMode">
+	      <option value="between">Angle Between Vectors</option>
+	      <option value="individual">Individual Vector Angles</option>
+	    </select>
+	  </div>
+	  
+	  <div id="mathBlock" class="collapsed">
         <p style="margin:0 0 11px 0;font-weight:600">For parameter \(0.0 < t < 1.0\):</p>
         <div>\[\mathrm{rsin}(t)=\frac{t}{\sqrt{1-2t+2t^2}}\]</div>
         <div>\[\mathrm{rcos}(t)=\frac{1-t}{\sqrt{1-2t+2t^2}}\]</div>
@@ -40,7 +50,7 @@
         <div>\[\mathrm{rcos^{-1}}(t)=\frac{t^2-1+\sqrt{t^2-t^4}}{2t^2-1}\]</div>
         <div>\[\mathrm{rtan^{-1}}(t)=\frac{t}{1+t}\]</div>
       </div>
-
+      
       <pre id="resultsContent"></pre>
     </div>
   </div>
@@ -64,11 +74,6 @@
         <canvas id="simpleCanvas" width="600" height="400"></canvas>
         <div class="panel">
           <div>
-            <label for="angleMode">Display Mode:</label>
-            <select id="angleMode">
-              <option value="between">Angle Between Vectors</option>
-              <option value="individual">Individual Vector Angles</option>
-            </select>
             <input type="checkbox" id="wrappedAngle" name="wrappedAngle" checked="checked">
             <label for="wrappedAngle">Wrap Angle Arc</label>
           </div>

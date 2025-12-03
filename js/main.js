@@ -40,6 +40,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const showing1 = s1.classList.contains('active');
     s1.classList.toggle('active', !showing1);
     s2.classList.toggle('active', showing1);
+    
+    // Show/hide angleMode selector based on section
+    document.getElementById('angleModeSidebar').style.display = showing1 ? 'block' : 'none';
+    updateResultsDisplay();
+    
     toggleBtn.textContent = showing1
       ? 'Switch to Introduction'
       : 'Switch to Vector Diagram';
