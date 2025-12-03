@@ -139,21 +139,24 @@ function initVectorCanvas() {
   });
 
   document.addEventListener('mouseup', () => dragging = null);
-  function drawArcGradient(ctx, cx, cy, radius, startAngle, endAngle, color1, color2) {
-    const segments = 1000; // Smoothness
+
+
+  function drawArcGradient(ctx, cx, cy, radius, startAngle, endAngle, color1, color2, segments=180) {
     const angleStep = (endAngle - startAngle) / segments;
     
     for (let i = 0; i < segments; i++) {
-      const a1 = startAngle + angleStep * i;
-      const a2 = startAngle + angleStep * (i + 1);
+	  const t1 = i / segments;
+	  const t2 = (i+1) / segments;
+      const a1 = startAngle + t1 * (endAngle - startAngle);
+      const a2 = startAngle + t2 * (endAngle - startAngle);
       
-      // Interpolate color
-      const t = i / segments;
-      const r = Math.round(color1[0] * (1 - t) + color2[0] * t);
-      const g = Math.round(color1[1] * (1 - t) + color2[1] * t);
-      const b = Math.round(color1[2] * (1 - t) + color2[2] * t);
-      
-      ctx.fillStyle = `rgb(${r},${g},${b})`;
+      // Interpolate colors
+      const r = Math.round(color1[0] * (1 - t1) + color2[0] * t1);
+      const g = Math.round(color1[1] * (1 - t1) + color2[1] * t1);
+      const b = Math.round(color1[2] * (1 - t1) + color2[2] * t1);
+	  ctx.fillStyle = `rgb(${r},${g},${b})`;
+
+      // build path for the trapezoid-like wedge slice (two radii lines and two arcs)
       ctx.beginPath();
       ctx.moveTo(cx, cy);
       ctx.arc(cx, cy, radius, a1, a2);
@@ -162,11 +165,13 @@ function initVectorCanvas() {
     }
   }
   function render() {
-    const mode = controls.angleMode.value;
+    // const mode = controls.angleMode.value;
     const uLen = parseFloat(controls.uLength.value);
     const vLen = parseFloat(controls.vLength.value);
     const uAngle = parseFloat(controls.uAngle.value);
     const vAngle = parseFloat(controls.vAngle.value);
+    const arcSegments = parseInt(controls.segments.value, 10);
+
     uAng = uAngle;
     vAng = vAngle;
     const uA = degToRad(uAngle);
@@ -244,7 +249,7 @@ function initVectorCanvas() {
 	drawArcGradient(ctx, cx, cy, arcRadius, 
 		ccw ? bias - startAngle : -(vA+bias), // start
 		ccw ? Math.abs(endAngle-Math.PI*2) : -(uA+degToRad(signed)), // end
-		[255, 100, 100], [100, 100, 255]);
+		[255, 100, 100], [100, 100, 255], arcSegments);
 
     updateResultsDisplay();
  }

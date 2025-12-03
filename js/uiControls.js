@@ -2,13 +2,13 @@ const controls={uLength:document.getElementById('uLength'),
 	uAngle:document.getElementById('uAngle'),
 	vLength:document.getElementById('vLength'),
 	vAngle:document.getElementById('vAngle'),
-	angleMode:document.getElementById('angleMode')};
+	angleMode:document.getElementById('angleMode'),
+	segments:document.getElementById('segments')};
 
 function initUI() {
   const panel = document.getElementById('formulaPanel');
   const header = document.getElementById('formulaHeader');
   const chev = document.getElementById('formulaChevron');
-
   let isSlim = false;
   chev.addEventListener('click', () => {
     isSlim = !isSlim;
