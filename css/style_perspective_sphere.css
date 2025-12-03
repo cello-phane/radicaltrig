@@ -176,6 +176,7 @@ input[type="range"]::-moz-range-thumb {
 
 .value {
     display: inline-block;
+    float: right;
     margin-left: 8px;
     color: var(--value);
     font-weight: 600;
