@@ -95,22 +95,31 @@ canvas {
   background: var(--bg);
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  display: flex;
+  gap: 12px;
+  padding: 12px;
+}
+
+.panel > div:first-child {
+  flex: 1;
+  min-width: 0;
 }
 
 .control-group {
   display: flex;
   align-items: center;
-  gap: 1px;
-  margin: 2px 0;
+  gap: 8px;
+  margin: 8px 0;
 }
 
 .control-group label {
-  min-width: 110px;
+  min-width: 90px;
   font-weight: 500;
 }
 
 .control-group input[type=range] {
-  width: 500px;
+  flex: 1;
+  min-width: 200px;
 }
 
 .control-group select {
@@ -122,6 +131,7 @@ canvas {
   width: 56px;
   text-align: center;
   font-family: monospace;
+  flex-shrink: 0;
 }
 
 .muted {
@@ -131,8 +141,20 @@ canvas {
 }
 
 .displayProperties {
-	float: right;
-	width: 15%;
+  flex-shrink: 0;
+  width: auto;
+  min-width: 150px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.displayProperties table {
+  width: 100%;
+}
+
+.displayProperties td {
+  padding: 4px;
 }
 
 pre#resultsContent {
