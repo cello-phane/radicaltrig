@@ -20,7 +20,9 @@ document.addEventListener('DOMContentLoaded', () => {
   const themeBtn = document.getElementById('themeToggle');
   const s1 = document.getElementById('section1');
   const s2 = document.getElementById('section2');
-
+  if (s1) {
+      s1.classList.add("active");
+  }
   // --- Load saved theme ---
   if (localStorage.getItem('theme') === 'dark') {
     document.body.classList.add('dark-mode');
@@ -41,13 +43,13 @@ document.addEventListener('DOMContentLoaded', () => {
     s1.classList.toggle('active', !showing1);
     s2.classList.toggle('active', showing1);
     
-    // Show/hide angleMode selector based on section
-    document.getElementById('angleModeSidebar').style.display = showing1 ? 'block' : 'none';
-    updateResultsDisplay();
-    
-    toggleBtn.textContent = showing1
-      ? 'Switch to Introduction'
-      : 'Switch to Vector Diagram';
+  // Show/hide angleMode selector based on section
+  document.getElementById('angleModeSidebar').style.display = showing1 ? 'block' : 'none';
+  updateResultsDisplay();
+  
+  toggleBtn.textContent = showing1
+    ? 'Switch to Introduction'
+    : 'Switch to Vector Diagram';
   });
 
   wrappedAngle.addEventListener("change", function() {
@@ -109,5 +111,3 @@ function initPrecisionControl() {
 
 // Call this after DOM is ready
 document.addEventListener('DOMContentLoaded', initPrecisionControl);
-
-

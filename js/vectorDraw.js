@@ -2,81 +2,143 @@
 // RAU Unit Circle visualization
 // ===========================
 
+//section1
 function initRAUCanvas() {
-  const canvas       = document.getElementById('vectorCanvas');
-  const ctx          = canvas.getContext('2d');
+  const canvasSimple = document.getElementById('simpleCanvas');
+  const ctxSimple    = canvasSimple.getContext('2d');
   const slider       = document.getElementById('paramSlider');
   const valueDisplay = document.getElementById('paramValue');
 
-  function drawGrid(cx, cy, w, h) {
-    ctx.strokeStyle = '#eee';
-    ctx.lineWidth = 1;
-    for (let i = -10; i <= 10; i++) {
-      ctx.beginPath();
-      ctx.moveTo(cx + i * 40, 0);
-      ctx.lineTo(cx + i * 40, h);
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.moveTo(0, cy + i * 40);
-      ctx.lineTo(w, cy + i * 40);
-      ctx.stroke();
-    }
-    ctx.strokeStyle = '#666';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(cx, 0);
-    ctx.lineTo(cx, h);
-    ctx.moveTo(0, cy);
-    ctx.lineTo(w, cy);
-    ctx.stroke();
+  const cx = canvasSimple.width / 2;
+  const cy = canvasSimple.height / 2;
+  let dragging = false;
+
+  function currentEndpoint(param) {
+    const introPhaseParam = getRotationComponents(param); // {sin, cos}
+    const r = Math.min(canvasSimple.width, canvasSimple.height) * 0.34;
+    return {
+      x: cx + introPhaseParam.cos * r,
+      y: cy - introPhaseParam.sin * r
+    };
   }
 
+  // ------------------------
+  // DRAWING
+  // ------------------------
   function draw() {
-    const w = canvas.width, h = canvas.height;
-    ctx.clearRect(0, 0, w, h);
-    const cx = w / 2, cy = h / 2;
+    const w = canvasSimple.width, h = canvasSimple.height;
+    const r = Math.min(w, h) * 0.34;
+
+    ctxSimple.clearRect(0, 0, w, h);
+
     drawGrid(cx, cy, w, h);
 
-    const r = Math.min(w, h) * 0.34;
-    const param = parseFloat(slider.value);
-    introPhase = param;
+    // circle
+    ctxSimple.strokeStyle = '#333';
+    ctxSimple.lineWidth = 2;
+    ctxSimple.beginPath();
+    ctxSimple.arc(cx, cy, r, 0, Math.PI * 2);
+    ctxSimple.stroke();
 
-    const info = getRotationComponents(param);
-    const x = cx + info.cos * r;
-    const y = cy - info.sin * r;
+    // compute new endpoint from introPhase
+    const info = getRotationComponents(introPhase);
+    const px = cx + info.cos * r;
+    const py = cy - info.sin * r;
 
-    // Circle
-    ctx.strokeStyle = '#333';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.arc(cx, cy, r, 0, Math.PI * 2);
-    ctx.stroke();
+    // radius
+    ctxSimple.strokeStyle = '#ff4444';
+    ctxSimple.lineWidth = 2.5;
+    ctxSimple.beginPath();
+    ctxSimple.moveTo(cx, cy);
+    ctxSimple.lineTo(px, py);
+    ctxSimple.stroke();
 
-    // Radius
-    ctx.strokeStyle = '#ff4444';
-    ctx.lineWidth = 2.5;
-    ctx.beginPath();
-    ctx.moveTo(cx, cy);
-    ctx.lineTo(x, y);
-    ctx.stroke();
-
-    ctx.fillStyle = '#ff4444';
-    ctx.beginPath();
-    ctx.arc(x, y, 7, 0, Math.PI * 2);
-    ctx.fill();
-
-    valueDisplay.textContent = param.toFixed(4);
-    updateResultsDisplay();
+    // knob
+    ctxSimple.fillStyle = '#ff4444';
+    ctxSimple.beginPath();
+    ctxSimple.arc(px, py, 7, 0, Math.PI * 2);
+    ctxSimple.fill();
   }
 
-  slider.addEventListener('input', draw);
+  // ------------------------
+  // GRID (unchanged)
+  // ------------------------
+  function drawGrid(cx, cy, w, h) {
+    ctxSimple.strokeStyle = '#eee';
+    ctxSimple.lineWidth = 1;
+    for (let i = -10; i <= 10; i++) {
+      ctxSimple.beginPath();
+      ctxSimple.moveTo(cx + i * 40, 0);
+      ctxSimple.lineTo(cx + i * 40, h);
+      ctxSimple.stroke();
+      ctxSimple.beginPath();
+      ctxSimple.moveTo(0, cy + i * 40);
+      ctxSimple.lineTo(w, cy + i * 40);
+      ctxSimple.stroke();
+    }
+    ctxSimple.strokeStyle = '#666';
+    ctxSimple.lineWidth = 2;
+    ctxSimple.beginPath();
+    ctxSimple.moveTo(cx, 0);
+    ctxSimple.lineTo(cx, h);
+    ctxSimple.moveTo(0, cy);
+    ctxSimple.lineTo(w, cy);
+    ctxSimple.stroke();
+  }
+
+  // ------------------------
+  // DRAGGING HANDLERS
+  // ------------------------
+
+  canvasSimple.addEventListener('mousedown', e => {
+    const rect = canvasSimple.getBoundingClientRect();
+    const mx = e.clientX - rect.left;
+    const my = e.clientY - rect.top;
+
+    // compute current handle pos
+    const { x: hx, y: hy } = currentEndpoint(introPhase);
+    const d = Math.hypot(mx - hx, my - hy);
+
+    dragging = true;
+  });
+
+  canvasSimple.addEventListener('mousemove', e => {
+    if (!dragging) return;
+
+    const rect = canvasSimple.getBoundingClientRect();
+    const mx = e.clientX - rect.left - cx;
+    const my = e.clientY - rect.top - cy;
+    // Standard angle from X-axis for the sliders
+    // Now using atanVec with x and y as positive in xy order
+    let standardAng = atanVec({ x: mx, y: my}, {x: 1, y: 0 });
+
+    if (dragging) {
+      controls.simpleSliderParam.value = standardAng;
+      introPhase = parseFloat(slider.value);
+      updateValueDisplay('paramValue', standardAng); // slider below canvas
+      updateResultsDisplay(); // sidebar
+      draw();
+    }
+  });
+
+  // ------------------------
+  // SLIDER → CANVAS UPDATE
+  // ------------------------
+  slider.addEventListener('input', () => {
+    introPhase = parseFloat(slider.value);
+    updateValueDisplay('paramValue', introPhase.toFixed(4));
+    updateResultsDisplay();
+    draw();
+  });
+
+  document.addEventListener('mouseup', () => dragging = false);
   draw();
 }
 
 function updateValueDisplay(id, value, suffix = '') {
   const el = document.getElementById(id);
   if (!el) return;
-  
+
   // If value is already formatted, use it directly
   const displayValue = typeof value === 'number' ? formatValue(value) : value;
   el.textContent = `${displayValue}${suffix}`;
@@ -91,20 +153,24 @@ function updateAllDisplays() {
   updateResultsDisplay();
 }
 
+//section2
 function initVectorCanvas() {
-  const canvas = document.getElementById('simpleCanvas');
+  const canvas = document.getElementById('vectorCanvas');
   const ctx = canvas.getContext('2d');
   let cx = canvas.width / 2;
   let cy = canvas.height / 2;
-
-  let dragging = null; // 'u' or 'v'
-
   canvas.addEventListener('mousedown', e => {
     const rect = canvas.getBoundingClientRect();
     const mx = e.clientX - rect.left;
     const my = e.clientY - rect.top;
-    const uEnd = { x: cx + currentU.x, y: cy + currentU.y };
-    const vEnd = { x: cx + currentV.x, y: cy + currentV.y };
+    const uEnd = {
+      x: cx + currentU.x,
+      y: cy + currentU.y
+    };
+    const vEnd = {
+      x: cx + currentV.x,
+      y: cy + currentV.y
+    };
 
     const distU = Math.hypot(mx - uEnd.x, my - uEnd.y);
     const distV = Math.hypot(mx - vEnd.x, my - vEnd.y);
@@ -118,11 +184,13 @@ function initVectorCanvas() {
     const mx = e.clientX - rect.left - cx;
     const my = e.clientY - rect.top - cy;
     const len = Math.sqrt(mx * mx + my * my);
-    
+
     // Standard angle from X-axis for the sliders
-    const standardAng = Math.atan2(-my, mx) * 180 / Math.PI;
+    // Now using atanVec with x and y as positive in xy order
+    const standardAng = rauToDeg(atanVec({ x: mx, y: my }, { x: 1, y: 0 }));
+    //const standardAng = Math.atan2(-my, mx) * 180 / Math.PI;
     const angleDeg = (standardAng + 360) % 360;
-  
+
     if (dragging === 'u') {
       controls.uLength.value = len;
       controls.uAngle.value = angleDeg;
@@ -134,27 +202,26 @@ function initVectorCanvas() {
       updateValueDisplay('vLengthVal', formatValue(len, 0));
       updateValueDisplay('vAngleVal', formatValue(angleDeg, 0), '°');
     }
-  
+
     render(); // This calls updateResultsDisplay() which uses atanVec for sidebar
   });
 
   document.addEventListener('mouseup', () => dragging = null);
 
-
-  function drawArcGradient(ctx, cx, cy, radius, startAngle, endAngle, color1, color2, segments=180) {
+  function drawArcGradient(ctx, cx, cy, radius, startAngle, endAngle, color1, color2, segments = 180) {
     const angleStep = (endAngle - startAngle) / segments;
-    
+
     for (let i = 0; i < segments; i++) {
-	  const t1 = i / segments;
-	  const t2 = (i+1) / segments;
+      const t1 = i / segments;
+      const t2 = (i + 1) / segments;
       const a1 = startAngle + t1 * (endAngle - startAngle);
       const a2 = startAngle + t2 * (endAngle - startAngle);
-      
+
       // Interpolate colors
       const r = Math.round(color1[0] * (1 - t1) + color2[0] * t1);
       const g = Math.round(color1[1] * (1 - t1) + color2[1] * t1);
       const b = Math.round(color1[2] * (1 - t1) + color2[2] * t1);
-	  ctx.fillStyle = `rgb(${r},${g},${b})`;
+      ctx.fillStyle = `rgb(${r},${g},${b})`;
 
       // build path for the trapezoid-like wedge slice (two radii lines and two arcs)
       ctx.beginPath();
@@ -164,6 +231,7 @@ function initVectorCanvas() {
       ctx.fill();
     }
   }
+
   function render() {
     // const mode = controls.angleMode.value;
     const uLen = parseFloat(controls.uLength.value);
@@ -176,8 +244,14 @@ function initVectorCanvas() {
     vAng = vAngle;
     const uA = degToRad(uAngle);
     const vA = degToRad(vAngle);
-    const u = { x: uLen * Math.cos(uA), y: -uLen * Math.sin(uA) };
-    const v = { x: vLen * Math.cos(vA), y: -vLen * Math.sin(vA) };
+    const u = {
+      x: uLen * Math.cos(uA),
+      y: -uLen * Math.sin(uA)
+    };
+    const v = {
+      x: vLen * Math.cos(vA),
+      y: -vLen * Math.sin(vA)
+    };
 
     currentU = u;
     currentV = v;
@@ -199,6 +273,7 @@ function initVectorCanvas() {
     // draw u and v vectors
     ctx.strokeStyle = '#ff4444';
     ctx.beginPath();
+    ctx.beginPath();
     ctx.moveTo(cx, cy);
     ctx.lineTo(cx + u.x, cy + u.y);
     ctx.stroke();
@@ -219,42 +294,42 @@ function initVectorCanvas() {
     ctx.arc(cx + v.x, cy + v.y, 6, 0, Math.PI * 2);
     ctx.fill();
 
-	const signed = vAngle - uAngle;
+    const signed = vAngle - uAngle;
     ccw = signed > 0;
-    anglebetweenDeg = Math.abs(signed);
-    //vectorPhase = (anglebetweenDeg / 360) * 4;
+    vectorPhase = Math.abs(signed);
 
-	const bias = ccw ? Math.PI*2 : degToRad(anglebetweenDeg);
-	const arcRadius = 0.5*Math.max(uLen,vLen);
-	let startAngle = 0, endAngle = 0;
-    if (!angleWrapMode) { /* Draw the angle arc between the vectors
+    const bias = ccw ? Math.PI * 2 : degToRad(vectorPhase);
+    const arcRadius = 0.5 * Math.max(uLen, vLen);
+    let startAngle = 0,
+      endAngle = 0;
+    if (!angleWrapMode) {
+      /* Draw the angle arc between the vectors
    	    CCW: starts at the larger angle, sweeps CCW
 	    CW: starts at a calculated bias position, sweeps CW
     */
-		startAngle = ccw ? Math.max(uA, vA) : (Math.PI/2) - bias;
-		endAngle = startAngle - degToRad(Math.max(startAngle, Math.abs(360 - (ccw ? 360+signed : anglebetweenDeg))));
-    }
-	else { /* Draw the external/reflex angle if applicable
+      startAngle = ccw ? Math.max(uA, vA) : (Math.PI / 2) - bias;
+      endAngle = startAngle - degToRad(Math.max(startAngle, Math.abs(360 - (ccw ? 360 + signed : vectorPhase))));
+    } else {
+      /* Draw the external/reflex angle if applicable
 	    Adjusts vA to wrap around 2π if needed to capture the actual sweep direction
 	    Then calculates based on which is min/max
     */
-		let adjustedVA = vA;
-		if (ccw && vA < uA) adjustedVA += Math.PI * 2;
-		else if (!ccw && vA > uA) adjustedVA -= Math.PI * 2;
-		startAngle = Math.min(uA, adjustedVA);
-		endAngle = startAngle - degToRad(Math.max(startAngle, Math.abs(360 - (ccw ? signed : anglebetweenDeg))));
-	}
+      let adjustedVA = vA;
+      if (ccw && vA < uA) adjustedVA += Math.PI * 2;
+      else if (!ccw && vA > uA) adjustedVA -= Math.PI * 2;
+      startAngle = Math.min(uA, adjustedVA);
+      endAngle = startAngle - degToRad(Math.max(startAngle, Math.abs(360 - (ccw ? signed : vectorPhase))));
+    }
 
-	//const switching = bias < Math.abs(uA); console.log(switching);
-	drawArcGradient(ctx, cx, cy, arcRadius, 
-		ccw ? bias - startAngle : -(vA+bias), // start
-		ccw ? Math.abs(endAngle-Math.PI*2) : -(uA+degToRad(signed)), // end
-		[255, 100, 100], [100, 100, 255], arcSegments);
+    //const switching = bias < Math.abs(uA); console.log(switching);
+    drawArcGradient(ctx, cx, cy, arcRadius,
+      ccw ? bias - startAngle : -(vA + bias), // start
+      ccw ? Math.abs(endAngle - Math.PI * 2) : -(uA + degToRad(signed)), // end
+      [255, 100, 100], [100, 100, 255], arcSegments);
 
     updateResultsDisplay();
- }
-
-Object.entries(controls).forEach(([key, control]) => {
+  }
+  Object.entries(controls).forEach(([key, control]) => {
     control.addEventListener('input', e => {
       const val = e.target.value;
       if (key === 'uAngle' || key === 'vAngle')
@@ -264,5 +339,6 @@ Object.entries(controls).forEach(([key, control]) => {
       render();
     });
   });
+
   render();
 }
