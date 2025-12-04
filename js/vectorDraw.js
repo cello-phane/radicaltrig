@@ -297,7 +297,7 @@ function initVectorCanvas() {
     const signed = vAngle - uAngle;
     ccw = signed > 0;
     vectorPhase = Math.abs(signed);
-
+	anglebetweenDeg = vectorPhase; //TODO update the sidebar without using this vectorPhase variable
     const bias = ccw ? Math.PI * 2 : degToRad(vectorPhase);
     const arcRadius = 0.5 * Math.max(uLen, vLen);
     let startAngle = 0,
