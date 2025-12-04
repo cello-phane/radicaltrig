@@ -115,7 +115,7 @@ function initRAUCanvas() {
     if (dragging) {
       controls.simpleSliderParam.value = standardAng;
       introPhase = parseFloat(slider.value);
-      updateValueDisplay('paramValue', standardAng); // slider below canvas
+      updateValueDisplay('paramValue', standardAng.toFixed(4)); // slider below canvas
       updateResultsDisplay(); // sidebar
       draw();
     }
