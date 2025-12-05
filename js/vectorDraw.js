@@ -294,37 +294,33 @@ function initVectorCanvas() {
     ctx.arc(cx + v.x, cy + v.y, 6, 0, Math.PI * 2);
     ctx.fill();
 
-    const signed = vAngle - uAngle;
-    ccw = signed > 0;
-    vectorPhase = Math.abs(signed);
-	anglebetweenDeg = vectorPhase; //TODO update the sidebar without using this vectorPhase variable
-    const bias = ccw ? Math.PI * 2 : degToRad(vectorPhase);
+    const signed = vAngle - uAngle; // in degrees
+    ccw = signed > 0; // in degrees
+    unsigned = Math.abs(signed); // in degrees
+	anglebetweenDeg = unsigned; // TODO update the sidebar without using this vectorPhase variable
+    const bias = ccw ? Math.PI * 2 : degToRad(unsigned);
     const arcRadius = 0.5 * Math.max(uLen, vLen);
-    let startAngle = 0,
-      endAngle = 0;
+    let startAngle = 0, endAngle = 0; // to store radians
     if (!angleWrapMode) {
       /* Draw the angle arc between the vectors
    	    CCW: starts at the larger angle, sweeps CCW
 	    CW: starts at a calculated bias position, sweeps CW
     */
-      startAngle = ccw ? Math.max(uA, vA) : (Math.PI / 2) - bias;
-      endAngle = startAngle - degToRad(Math.max(startAngle, Math.abs(360 - (ccw ? 360 + signed : vectorPhase))));
+      startAngle = ccw ? Math.max(uA, vA) : Math.PI / 2 - bias;
+      endAngle = startAngle - degToRad(Math.max(startAngle, Math.abs(360 - (ccw ? 360 + signed : unsigned))));
     } else {
       /* Draw the external/reflex angle if applicable
 	    Adjusts vA to wrap around 2π if needed to capture the actual sweep direction
 	    Then calculates based on which is min/max
     */
-      let adjustedVA = vA;
-      if (ccw && vA < uA) adjustedVA += Math.PI * 2;
-      else if (!ccw && vA > uA) adjustedVA -= Math.PI * 2;
-      startAngle = Math.min(uA, adjustedVA);
-      endAngle = startAngle - degToRad(Math.max(startAngle, Math.abs(360 - (ccw ? signed : vectorPhase))));
+      startAngle = Math.min(uA, vA + (ccw && vA < uA ? vA - Math.PI * 2 : vA + Math.PI * 2));
+      endAngle = startAngle - degToRad(Math.max(startAngle, Math.abs(360 - (ccw ? signed : unsigned))));
     }
 
     //const switching = bias < Math.abs(uA); console.log(switching);
     drawArcGradient(ctx, cx, cy, arcRadius,
       ccw ? bias - startAngle : -(vA + bias), // start
-      ccw ? Math.abs(endAngle - Math.PI * 2) : -(uA + degToRad(signed)), // end
+      ccw ? Math.abs(endAngle - Math.PI * 2) : -(uA - degToRad(unsigned)), // end
       [255, 100, 100], [100, 100, 255], arcSegments);
 
     updateResultsDisplay();
