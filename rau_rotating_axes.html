@@ -219,7 +219,7 @@
       </div>
       
       <div class="matrix-section" id="relationship-section" style="display: none;">
-        <div id="relationship-info" class="explanation">
+        <div id="relationship-info" class="explanation" style="font-family: 'monospace'; font-size: 16px;">
         </div>
       </div>
     </div>
@@ -382,22 +382,23 @@ function calculateRelationship(p1, p2) {
   let matrixDesc = "";
   
   if (Math.abs(cos1 - cos2) < 0.01 && Math.abs(sin1 + sin2) < 0.01) {
-    transform = `cos stays ${cos1.toFixed(2)}, sin → -sin`;
+    transform = `cos stays ${cos1.toFixed(2)} <br> sin → -sin`;
     matrixDesc = "Reflection across x-axis";
   } else if (Math.abs(cos1 + cos2) < 0.01 && Math.abs(sin1 - sin2) < 0.01) {
-    transform = `cos → -cos, sin stays ${sin1.toFixed(2)}`;
+    transform = `cos → -cos <br> sin stays ${sin1.toFixed(2)}`;
     matrixDesc = "Reflection across y-axis";
   } else if (Math.abs(cos1 - sin2) < 0.01 && Math.abs(sin1 - cos2) < 0.01) {
-    transform = `cos → sin, sin → cos`;
+    transform = `cos → sin <br> sin → cos`;
     matrixDesc = "90° rotation + axis swap";
   } else if (Math.abs(cos1 + sin2) < 0.01 && Math.abs(sin1 + cos2) < 0.01) {
-    transform = `cos → -sin, sin → -cos`;
+    transform = `cos → -sin <br> sin → -cos`;
     matrixDesc = "270° rotation";
   } else if (Math.abs(cos1 + cos2) < 0.01 && Math.abs(sin1 + sin2) < 0.01) {
-    transform = `cos → -cos, sin → -sin`;
+    transform = `cos → -cos <br> sin → -sin`;
     matrixDesc = "180° rotation";
   } else {
-    transform = `(cos: ${cos1.toFixed(2)} → ${cos2.toFixed(2)}, sin: ${sin1.toFixed(2)} → ${sin2.toFixed(2)})`;
+    transform = `cos: ${cos1.toFixed(3)} → ${cos2.toFixed(3)}
+    			<br> sin:  ${sin1.toFixed(3)} → ${sin2.toFixed(3)}`;
     matrixDesc = `${(shift * 90)}° ${direction} rotation`;
   }
   
@@ -421,12 +422,12 @@ function updateRelationshipDisplay(rel) {
       <strong>Transformation from Point ${rel.rauP1} to Point ${rel.rauP2}</strong><br><br>
       <strong>Geometric:</strong> ${rel.shift} quadrant(s) ${rel.direction}<br>
       <strong>Matrix:</strong> ${rel.matrixDesc}<br>
-      <strong>Component Change:</strong> ${rel.transform}<br><br>
+      ${rel.transform}<br><br>
       <em>This represents the matrix product R(θ₂)·R(θ₁)⁻¹</em>
     `;
   } else {
     section.style.display = 'none';
-  }
+  } //Hide on mouseleave from the point
 }
 
 function drawAxes(param) {
@@ -476,7 +477,8 @@ function drawAxes(param) {
     ctx.stroke();
   }
 
-  if (selectedPoint !== null && hoveredPoint !== null && selectedPoint !== hoveredPoint) {
+  //if (selectedPoint !== null && hoveredPoint !== null && selectedPoint !== hoveredPoint) {
+  if (selectedPoint !== null && hoveredPoint !== null) {
     ctx.strokeStyle = "rgba(100,100,100,0.5)";
     ctx.lineWidth = 2;
     ctx.setLineDash([5, 5]);
@@ -488,9 +490,10 @@ function drawAxes(param) {
     
     const rel = calculateRelationship(points[selectedPoint], points[hoveredPoint]);
     updateRelationshipDisplay(rel);
-  } else {
-    updateRelationshipDisplay(null);
   }
+  /*} else {
+    updateRelationshipDisplay(null);
+  }*/
 
   points.forEach((p, idx) => {
     const isSelected = selectedPoint === idx;
@@ -621,7 +624,7 @@ canvas.addEventListener('mousemove', e => {
   const mouseX = e.clientX - rect.left;
   const mouseY = e.clientY - rect.top;
 
-  hoveredPoint = null;
+  //hoveredPoint = null;
   for (let i = 0; i < points.length; i++) {
     const dx = mouseX - points[i].x;
     const dy = mouseY - points[i].y;
@@ -635,7 +638,7 @@ canvas.addEventListener('mousemove', e => {
   if (hoveredPoint === null) canvas.style.cursor = 'default';
 });
 
-canvas.addEventListener('mouseleave', () => hoveredPoint = null);
+canvas.addEventListener('mousedown', () => hoveredPoint = selectedPoint);
 
 drawAxes(t);
 requestAnimationFrame(animate);
