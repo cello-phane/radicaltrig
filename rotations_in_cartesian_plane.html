@@ -1,0 +1,3611 @@
+<!-- Preview source code -->
+
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en-US">
+<head>
+<meta name="generator" content="LyX 2.4.3" />
+<title>LyX Document</title>
+<style>
+/* Layout-provided Styles */
+div.standard {
+	margin-bottom: 2ex;
+}
+
+
+</style>
+</head>
+<body dir="auto">
+<div class='standard' id='magicparlabel-6713'># Rotations in the Cartesian Plane</div>
+
+<div class='standard' id='magicparlabel-6714'>Consider a vector <math xmlns='http://www.w3.org/1998/Math/MathML'>
+<mover>
+ <mi>v</mi>
+ <mo stretchy='true'>&#x00AF;</mo>
+</mover>
+</math>
+ in the plane <math xmlns='http://www.w3.org/1998/Math/MathML'>
+<mrow>
+ <mover>
+  <mi>v</mi>
+  <mo stretchy='true'>&#x00AF;</mo>
+ </mover>
+ <mo stretchy='false'>=</mo>
+ <mo stretchy='false'>[</mo>
+ <mi>a</mi>
+ <mo stretchy='false'>,</mo>
+ <mi>b</mi>
+ <msup>
+  <mo stretchy='false'>]</mo>
+  <mi>T</mi>
+ </msup>
+</mrow>
+</math>
+ which represents the ordered pair <math xmlns='http://www.w3.org/1998/Math/MathML'>
+<mrow>
+ <mo stretchy='false'>(</mo>
+ <mrow>
+  <mi>a</mi>
+  <mo stretchy='false'>,</mo>
+  <mi>b</mi>
+ </mrow>
+ <mo stretchy='false'>)</mo>
+</mrow>
+</math>
+. To move such a vector <math xmlns='http://www.w3.org/1998/Math/MathML'>
+<mover>
+ <mi>v</mi>
+ <mo stretchy='true'>&#x00AF;</mo>
+</mover>
+</math>
+ to another vector <math xmlns='http://www.w3.org/1998/Math/MathML'>
+<mrow>
+ <mover>
+  <mi>v</mi>
+  <mo stretchy='true'>&#x00AF;</mo>
+ </mover>
+ <mo stretchy='false'>'</mo>
+</mrow>
+</math>
+ by travelling along the path of a circle, the rotation matrix <math xmlns='http://www.w3.org/1998/Math/MathML'>
+<mrow>
+ <mi>R</mi>
+ <mrow>
+  <mo stretchy='false'>(</mo>
+  <mi>&#x3B8;</mi>
+  <mo stretchy='false'>)</mo>
+ </mrow>
+</mrow>
+</math>
+ which achieves this is:</div>
+
+<div class='standard' id='magicparlabel-6715'>
+<math xmlns='http://www.w3.org/1998/Math/MathML' display='block'>
+<mrow>
+ <mi>R</mi>
+ <mrow>
+  <mo stretchy='false'>(</mo>
+  <mi>&#x3B8;</mi>
+  <mo stretchy='false'>)</mo>
+ </mrow>
+ <mo stretchy='false'>=</mo>
+ <mo form='prefix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>[</mo>
+ <mtable>
+  <mtr>
+   <mtd>
+    <mrow>
+     <mo>cos</mo>
+     <mi>&#x3B8;</mi>
+    </mrow>
+   </mtd>
+   <mtd>
+    <mrow>
+     <mo stretchy='false'>-</mo>
+     <mo>sin</mo>
+     <mi>&#x3B8;</mi>
+    </mrow>
+   </mtd>
+  </mtr>
+  <mtr>
+   <mtd>
+    <mrow>
+     <mo>sin</mo>
+     <mi>&#x3B8;</mi>
+    </mrow>
+   </mtd>
+   <mtd>
+    <mrow>
+     <mo>cos</mo>
+     <mi>&#x3B8;</mi>
+    </mrow>
+   </mtd>
+  </mtr>
+ </mtable>
+ <mo form='postfix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>]</mo>
+ <mrow class='mathbox'>
+  <mn>1</mn>
+ </mrow>
+</mrow>
+</math>
+</div>
+
+<div class='standard' id='magicparlabel-6716'>This matrix specifically moves a vector <math xmlns='http://www.w3.org/1998/Math/MathML'>
+<mi>&#x3B8;</mi>
+</math>
+ radians anti-clockwise in the plane. Consider how the ordered pair <math xmlns='http://www.w3.org/1998/Math/MathML'>
+<mrow>
+ <mo stretchy='false'>(</mo>
+ <mrow>
+  <mi>a</mi>
+  <mo stretchy='false'>,</mo>
+  <mi>b</mi>
+ </mrow>
+ <mo stretchy='false'>)</mo>
+</mrow>
+</math>
+ is moved to the ordered pair <math xmlns='http://www.w3.org/1998/Math/MathML'>
+<mrow>
+ <mo stretchy='false'>(</mo>
+ <mrow>
+  <mi>a</mi>
+  <mo stretchy='false'>'</mo>
+  <mo stretchy='false'>,</mo>
+  <mi>b</mi>
+  <mo stretchy='false'>'</mo>
+ </mrow>
+ <mo stretchy='false'>)</mo>
+</mrow>
+</math>
+:</div>
+
+<div class='standard' id='magicparlabel-6717'>
+<math xmlns='http://www.w3.org/1998/Math/MathML' display='block'>
+<mrow>
+ <mover>
+  <mi>v</mi>
+  <mo stretchy='true'>&#x00AF;</mo>
+ </mover>
+ <mo stretchy='false'>'</mo>
+ <mo stretchy='false'>=</mo>
+ <mi>R</mi>
+ <mrow>
+  <mo stretchy='false'>(</mo>
+  <mi>&#x3B8;</mi>
+  <mo stretchy='false'>)</mo>
+ </mrow>
+ <mover>
+  <mi>v</mi>
+  <mo stretchy='true'>&#x00AF;</mo>
+ </mover>
+</mrow>
+</math>
+</div>
+
+<div class='standard' id='magicparlabel-6718'>
+<math xmlns='http://www.w3.org/1998/Math/MathML' display='block'>
+<mrow>
+ <mo form='prefix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>[</mo>
+ <mtable>
+  <mtr>
+   <mtd>
+    <mrow>
+     <mi>a</mi>
+     <mo stretchy='false'>'</mo>
+    </mrow>
+   </mtd>
+  </mtr>
+  <mtr>
+   <mtd>
+    <mrow>
+     <mi>b</mi>
+     <mo stretchy='false'>'</mo>
+    </mrow>
+   </mtd>
+  </mtr>
+ </mtable>
+ <mo form='postfix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>]</mo>
+ <mo stretchy='false'>=</mo>
+ <mo form='prefix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>[</mo>
+ <mtable>
+  <mtr>
+   <mtd>
+    <mrow>
+     <mo>cos</mo>
+     <mi>&#x3B8;</mi>
+    </mrow>
+   </mtd>
+   <mtd>
+    <mrow>
+     <mo stretchy='false'>-</mo>
+     <mo>sin</mo>
+     <mi>&#x3B8;</mi>
+    </mrow>
+   </mtd>
+  </mtr>
+  <mtr>
+   <mtd>
+    <mrow>
+     <mo>sin</mo>
+     <mi>&#x3B8;</mi>
+    </mrow>
+   </mtd>
+   <mtd>
+    <mrow>
+     <mo>cos</mo>
+     <mi>&#x3B8;</mi>
+    </mrow>
+   </mtd>
+  </mtr>
+ </mtable>
+ <mo form='postfix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>]</mo>
+ <mo form='prefix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>[</mo>
+ <mtable>
+  <mtr>
+   <mtd>
+    <mi>a</mi>
+   </mtd>
+  </mtr>
+  <mtr>
+   <mtd>
+    <mi>b</mi>
+   </mtd>
+  </mtr>
+ </mtable>
+ <mo form='postfix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>]</mo>
+</mrow>
+</math>
+</div>
+
+<div class='standard' id='magicparlabel-6719'>
+<math xmlns='http://www.w3.org/1998/Math/MathML' display='block'>
+<mrow>
+ <mo form='prefix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>[</mo>
+ <mtable>
+  <mtr>
+   <mtd>
+    <mrow>
+     <mi>a</mi>
+     <mo stretchy='false'>'</mo>
+    </mrow>
+   </mtd>
+  </mtr>
+  <mtr>
+   <mtd>
+    <mrow>
+     <mi>b</mi>
+     <mo stretchy='false'>'</mo>
+    </mrow>
+   </mtd>
+  </mtr>
+ </mtable>
+ <mo form='postfix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>]</mo>
+ <mo stretchy='false'>=</mo>
+ <mo form='prefix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>[</mo>
+ <mtable>
+  <mtr>
+   <mtd>
+    <mrow>
+     <mi>a</mi>
+     <mo>cos</mo>
+     <mi>&#x3B8;</mi>
+     <mo stretchy='false'>-</mo>
+     <mi>b</mi>
+     <mo>sin</mo>
+     <mi>&#x3B8;</mi>
+    </mrow>
+   </mtd>
+  </mtr>
+  <mtr>
+   <mtd>
+    <mrow>
+     <mi>a</mi>
+     <mo>sin</mo>
+     <mi>&#x3B8;</mi>
+     <mo stretchy='false'>+</mo>
+     <mi>b</mi>
+     <mo>cos</mo>
+     <mi>&#x3B8;</mi>
+    </mrow>
+   </mtd>
+  </mtr>
+ </mtable>
+ <mo form='postfix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>]</mo>
+</mrow>
+</math>
+</div>
+
+<div class='standard' id='magicparlabel-6720'>For example let <math xmlns='http://www.w3.org/1998/Math/MathML'>
+<mrow>
+ <mi>&#x3B8;</mi>
+ <mo stretchy='false'>=</mo>
+ <mfrac>
+  <mi>&#x3C0;</mi>
+  <mn>2</mn>
+ </mfrac>
+</mrow>
+</math>
+, then:</div>
+
+<div class='standard' id='magicparlabel-6721'>
+<math xmlns='http://www.w3.org/1998/Math/MathML' display='block'>
+<mrow>
+ <mover>
+  <mi>v</mi>
+  <mo stretchy='true'>&#x00AF;</mo>
+ </mover>
+ <mo stretchy='false'>'</mo>
+ <mo stretchy='false'>=</mo>
+ <mi>R</mi>
+ <mrow>
+  <mo>(</mo>
+  <mfrac>
+   <mi>&#x3C0;</mi>
+   <mn>2</mn>
+  </mfrac>
+  <mo>)</mo>
+ </mrow>
+ <mover>
+  <mi>v</mi>
+  <mo stretchy='true'>&#x00AF;</mo>
+ </mover>
+</mrow>
+</math>
+</div>
+
+<div class='standard' id='magicparlabel-6722'>
+<math xmlns='http://www.w3.org/1998/Math/MathML' display='block'>
+<mrow>
+ <mo form='prefix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>[</mo>
+ <mtable>
+  <mtr>
+   <mtd>
+    <mrow>
+     <mi>a</mi>
+     <mo stretchy='false'>'</mo>
+    </mrow>
+   </mtd>
+  </mtr>
+  <mtr>
+   <mtd>
+    <mrow>
+     <mi>b</mi>
+     <mo stretchy='false'>'</mo>
+    </mrow>
+   </mtd>
+  </mtr>
+ </mtable>
+ <mo form='postfix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>]</mo>
+ <mo stretchy='false'>=</mo>
+ <mo form='prefix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>[</mo>
+ <mtable>
+  <mtr>
+   <mtd>
+    <mn>0</mn>
+   </mtd>
+   <mtd>
+    <mrow>
+     <mo stretchy='false'>-</mo>
+     <mn>1</mn>
+    </mrow>
+   </mtd>
+  </mtr>
+  <mtr>
+   <mtd>
+    <mn>1</mn>
+   </mtd>
+   <mtd>
+    <mn>0</mn>
+   </mtd>
+  </mtr>
+ </mtable>
+ <mo form='postfix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>]</mo>
+ <mo form='prefix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>[</mo>
+ <mtable>
+  <mtr>
+   <mtd>
+    <mi>a</mi>
+   </mtd>
+  </mtr>
+  <mtr>
+   <mtd>
+    <mi>b</mi>
+   </mtd>
+  </mtr>
+ </mtable>
+ <mo form='postfix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>]</mo>
+ <mo stretchy='false'>=</mo>
+ <mo form='prefix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>[</mo>
+ <mtable>
+  <mtr>
+   <mtd>
+    <mrow>
+     <mo stretchy='false'>-</mo>
+     <mi>b</mi>
+    </mrow>
+   </mtd>
+  </mtr>
+  <mtr>
+   <mtd>
+    <mi>a</mi>
+   </mtd>
+  </mtr>
+ </mtable>
+ <mo form='postfix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>]</mo>
+</mrow>
+</math>
+</div>
+
+<div class='standard' id='magicparlabel-6723'>Thus, the vector V has been moved to the new ordered pair <math xmlns='http://www.w3.org/1998/Math/MathML'>
+<mrow>
+ <mrow>
+  <mo stretchy='false'>(</mo>
+  <mrow>
+   <mi>a</mi>
+   <mo stretchy='false'>'</mo>
+   <mo stretchy='false'>,</mo>
+   <mi>b</mi>
+   <mo stretchy='false'>'</mo>
+  </mrow>
+  <mo stretchy='false'>)</mo>
+ </mrow>
+ <mo stretchy='false'>=</mo>
+ <mrow>
+  <mo stretchy='false'>(</mo>
+  <mrow>
+   <mo stretchy='false'>-</mo>
+   <mi>b</mi>
+   <mo stretchy='false'>,</mo>
+   <mi>a</mi>
+  </mrow>
+  <mo stretchy='false'>)</mo>
+ </mrow>
+</mrow>
+</math>
+ by <math xmlns='http://www.w3.org/1998/Math/MathML'>
+<mfrac>
+ <mi>&#x3C0;</mi>
+ <mn>2</mn>
+</mfrac>
+</math>
+ radians anti-clockwise (90 degrees). To illustrate an important property of these rotation matrices, we will multiply an initial ordered pair <math xmlns='http://www.w3.org/1998/Math/MathML'>
+<mrow>
+ <mo stretchy='false'>(</mo>
+ <mrow>
+  <mi>a</mi>
+  <mo stretchy='false'>,</mo>
+  <mi>b</mi>
+ </mrow>
+ <mo stretchy='false'>)</mo>
+</mrow>
+</math>
+ by the same rotation matrix <math xmlns='http://www.w3.org/1998/Math/MathML'>
+<mrow>
+ <mi>R</mi>
+ <mrow>
+  <mo>(</mo>
+  <mfrac>
+   <mi>&#x3C0;</mi>
+   <mn>2</mn>
+  </mfrac>
+  <mo>)</mo>
+ </mrow>
+</mrow>
+</math>
+ successively:</div>
+
+<div class='standard' id='magicparlabel-6724'>
+<math xmlns='http://www.w3.org/1998/Math/MathML' display='block'>
+<mrow>
+ <mo form='prefix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>[</mo>
+ <mtable>
+  <mtr>
+   <mtd>
+    <mrow>
+     <mo stretchy='false'>-</mo>
+     <mi>b</mi>
+    </mrow>
+   </mtd>
+  </mtr>
+  <mtr>
+   <mtd>
+    <mi>a</mi>
+   </mtd>
+  </mtr>
+ </mtable>
+ <mo form='postfix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>]</mo>
+ <mo stretchy='false'>=</mo>
+ <mo form='prefix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>[</mo>
+ <mtable>
+  <mtr>
+   <mtd>
+    <mn>0</mn>
+   </mtd>
+   <mtd>
+    <mrow>
+     <mo stretchy='false'>-</mo>
+     <mn>1</mn>
+    </mrow>
+   </mtd>
+  </mtr>
+  <mtr>
+   <mtd>
+    <mn>1</mn>
+   </mtd>
+   <mtd>
+    <mn>0</mn>
+   </mtd>
+  </mtr>
+ </mtable>
+ <mo form='postfix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>]</mo>
+ <mo form='prefix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>[</mo>
+ <mtable>
+  <mtr>
+   <mtd>
+    <mi>a</mi>
+   </mtd>
+  </mtr>
+  <mtr>
+   <mtd>
+    <mi>b</mi>
+   </mtd>
+  </mtr>
+ </mtable>
+ <mo form='postfix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>]</mo>
+</mrow>
+</math>
+</div>
+
+<div class='standard' id='magicparlabel-6725'>
+<math xmlns='http://www.w3.org/1998/Math/MathML' display='block'>
+<mrow>
+ <mo form='prefix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>[</mo>
+ <mtable>
+  <mtr>
+   <mtd>
+    <mrow>
+     <mo stretchy='false'>-</mo>
+     <mi>a</mi>
+    </mrow>
+   </mtd>
+  </mtr>
+  <mtr>
+   <mtd>
+    <mrow>
+     <mo stretchy='false'>-</mo>
+     <mi>b</mi>
+    </mrow>
+   </mtd>
+  </mtr>
+ </mtable>
+ <mo form='postfix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>]</mo>
+ <mo stretchy='false'>=</mo>
+ <mo form='prefix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>[</mo>
+ <mtable>
+  <mtr>
+   <mtd>
+    <mn>0</mn>
+   </mtd>
+   <mtd>
+    <mrow>
+     <mo stretchy='false'>-</mo>
+     <mn>1</mn>
+    </mrow>
+   </mtd>
+  </mtr>
+  <mtr>
+   <mtd>
+    <mn>1</mn>
+   </mtd>
+   <mtd>
+    <mn>0</mn>
+   </mtd>
+  </mtr>
+ </mtable>
+ <mo form='postfix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>]</mo>
+ <mo form='prefix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>[</mo>
+ <mtable>
+  <mtr>
+   <mtd>
+    <mrow>
+     <mo stretchy='false'>-</mo>
+     <mi>b</mi>
+    </mrow>
+   </mtd>
+  </mtr>
+  <mtr>
+   <mtd>
+    <mi>a</mi>
+   </mtd>
+  </mtr>
+ </mtable>
+ <mo form='postfix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>]</mo>
+</mrow>
+</math>
+</div>
+
+<div class='standard' id='magicparlabel-6726'>
+<math xmlns='http://www.w3.org/1998/Math/MathML' display='block'>
+<mrow>
+ <mo form='prefix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>[</mo>
+ <mtable>
+  <mtr>
+   <mtd>
+    <mi>b</mi>
+   </mtd>
+  </mtr>
+  <mtr>
+   <mtd>
+    <mrow>
+     <mo stretchy='false'>-</mo>
+     <mi>a</mi>
+    </mrow>
+   </mtd>
+  </mtr>
+ </mtable>
+ <mo form='postfix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>]</mo>
+ <mo stretchy='false'>=</mo>
+ <mo form='prefix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>[</mo>
+ <mtable>
+  <mtr>
+   <mtd>
+    <mn>0</mn>
+   </mtd>
+   <mtd>
+    <mrow>
+     <mo stretchy='false'>-</mo>
+     <mn>1</mn>
+    </mrow>
+   </mtd>
+  </mtr>
+  <mtr>
+   <mtd>
+    <mn>1</mn>
+   </mtd>
+   <mtd>
+    <mn>0</mn>
+   </mtd>
+  </mtr>
+ </mtable>
+ <mo form='postfix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>]</mo>
+ <mo form='prefix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>[</mo>
+ <mtable>
+  <mtr>
+   <mtd>
+    <mrow>
+     <mo stretchy='false'>-</mo>
+     <mi>a</mi>
+    </mrow>
+   </mtd>
+  </mtr>
+  <mtr>
+   <mtd>
+    <mrow>
+     <mo stretchy='false'>-</mo>
+     <mi>b</mi>
+    </mrow>
+   </mtd>
+  </mtr>
+ </mtable>
+ <mo form='postfix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>]</mo>
+</mrow>
+</math>
+</div>
+
+<div class='standard' id='magicparlabel-6727'>
+<math xmlns='http://www.w3.org/1998/Math/MathML' display='block'>
+<mrow>
+ <mo form='prefix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>[</mo>
+ <mtable>
+  <mtr>
+   <mtd>
+    <mi>a</mi>
+   </mtd>
+  </mtr>
+  <mtr>
+   <mtd>
+    <mi>b</mi>
+   </mtd>
+  </mtr>
+ </mtable>
+ <mo form='postfix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>]</mo>
+ <mo stretchy='false'>=</mo>
+ <mo form='prefix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>[</mo>
+ <mtable>
+  <mtr>
+   <mtd>
+    <mn>0</mn>
+   </mtd>
+   <mtd>
+    <mrow>
+     <mo stretchy='false'>-</mo>
+     <mn>1</mn>
+    </mrow>
+   </mtd>
+  </mtr>
+  <mtr>
+   <mtd>
+    <mn>1</mn>
+   </mtd>
+   <mtd>
+    <mn>0</mn>
+   </mtd>
+  </mtr>
+ </mtable>
+ <mo form='postfix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>]</mo>
+ <mo form='prefix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>[</mo>
+ <mtable>
+  <mtr>
+   <mtd>
+    <mi>b</mi>
+   </mtd>
+  </mtr>
+  <mtr>
+   <mtd>
+    <mrow>
+     <mo stretchy='false'>-</mo>
+     <mi>a</mi>
+    </mrow>
+   </mtd>
+  </mtr>
+ </mtable>
+ <mo form='postfix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>]</mo>
+</mrow>
+</math>
+</div>
+
+<div class='standard' id='magicparlabel-6728'>With four successive applications of <math xmlns='http://www.w3.org/1998/Math/MathML'>
+<mrow>
+ <mi>R</mi>
+ <mrow>
+  <mo>(</mo>
+  <mfrac>
+   <mi>&#x3C0;</mi>
+   <mn>2</mn>
+  </mfrac>
+  <mo>)</mo>
+ </mrow>
+</mrow>
+</math>
+, the ordered pair <math xmlns='http://www.w3.org/1998/Math/MathML'>
+<mrow>
+ <mo stretchy='false'>(</mo>
+ <mrow>
+  <mi>a</mi>
+  <mo stretchy='false'>,</mo>
+  <mi>b</mi>
+ </mrow>
+ <mo stretchy='false'>)</mo>
+</mrow>
+</math>
+ ends up back to where it started:</div>
+
+<div class='standard' id='magicparlabel-6729'>
+<math xmlns='http://www.w3.org/1998/Math/MathML' display='block'>
+<mrow>
+ <mrow>
+  <mo stretchy='false'>(</mo>
+  <mrow>
+   <mi>a</mi>
+   <mo stretchy='false'>,</mo>
+   <mi>b</mi>
+  </mrow>
+  <mo stretchy='false'>)</mo>
+ </mrow>
+ <munderover accent='false' accentunder='false'>
+  <mo>&#x2192;</mo>
+  <mrow/>
+  <mrow>
+   <mi>R</mi>
+   <mrow>
+    <mo stretchy='false'>(</mo>
+    <mfrac>
+     <mi>&#x3C0;</mi>
+     <mn>2</mn>
+    </mfrac>
+    <mo stretchy='false'>)</mo>
+   </mrow>
+  </mrow>
+ </munderover>
+ <mrow>
+  <mo stretchy='false'>(</mo>
+  <mrow>
+   <mo stretchy='false'>-</mo>
+   <mi>b</mi>
+   <mo stretchy='false'>,</mo>
+   <mi>a</mi>
+  </mrow>
+  <mo stretchy='false'>)</mo>
+ </mrow>
+ <munderover accent='false' accentunder='false'>
+  <mo>&#x2192;</mo>
+  <mrow/>
+  <mrow>
+   <mi>R</mi>
+   <mrow>
+    <mo stretchy='false'>(</mo>
+    <mfrac>
+     <mi>&#x3C0;</mi>
+     <mn>2</mn>
+    </mfrac>
+    <mo stretchy='false'>)</mo>
+   </mrow>
+  </mrow>
+ </munderover>
+ <mrow>
+  <mo stretchy='false'>(</mo>
+  <mrow>
+   <mo stretchy='false'>-</mo>
+   <mi>a</mi>
+   <mo stretchy='false'>,</mo>
+   <mo stretchy='false'>-</mo>
+   <mi>b</mi>
+  </mrow>
+  <mo stretchy='false'>)</mo>
+ </mrow>
+ <munderover accent='false' accentunder='false'>
+  <mo>&#x2192;</mo>
+  <mrow/>
+  <mrow>
+   <mi>R</mi>
+   <mrow>
+    <mo stretchy='false'>(</mo>
+    <mfrac>
+     <mi>&#x3C0;</mi>
+     <mn>2</mn>
+    </mfrac>
+    <mo stretchy='false'>)</mo>
+   </mrow>
+  </mrow>
+ </munderover>
+ <mrow>
+  <mo stretchy='false'>(</mo>
+  <mrow>
+   <mi>b</mi>
+   <mo stretchy='false'>,</mo>
+   <mo stretchy='false'>-</mo>
+   <mi>a</mi>
+  </mrow>
+  <mo stretchy='false'>)</mo>
+ </mrow>
+ <munderover accent='false' accentunder='false'>
+  <mo>&#x2192;</mo>
+  <mrow/>
+  <mrow>
+   <mi>R</mi>
+   <mrow>
+    <mo stretchy='false'>(</mo>
+    <mfrac>
+     <mi>&#x3C0;</mi>
+     <mn>2</mn>
+    </mfrac>
+    <mo stretchy='false'>)</mo>
+   </mrow>
+  </mrow>
+ </munderover>
+ <mrow>
+  <mo stretchy='false'>(</mo>
+  <mrow>
+   <mi>a</mi>
+   <mo stretchy='false'>,</mo>
+   <mi>b</mi>
+  </mrow>
+  <mo stretchy='false'>)</mo>
+ </mrow>
+</mrow>
+</math>
+</div>
+
+<div class='standard' id='magicparlabel-6730'>or:</div>
+
+<div class='standard' id='magicparlabel-6731'>
+<math xmlns='http://www.w3.org/1998/Math/MathML' display='block'>
+<mrow>
+ <mo form='prefix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>[</mo>
+ <mtable>
+  <mtr>
+   <mtd>
+    <mi>a</mi>
+   </mtd>
+  </mtr>
+  <mtr>
+   <mtd>
+    <mi>b</mi>
+   </mtd>
+  </mtr>
+ </mtable>
+ <mo form='postfix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>]</mo>
+ <mo stretchy='false'>=</mo>
+ <mo form='prefix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>[</mo>
+ <mtable>
+  <mtr>
+   <mtd>
+    <mn>0</mn>
+   </mtd>
+   <mtd>
+    <mrow>
+     <mo stretchy='false'>-</mo>
+     <mn>1</mn>
+    </mrow>
+   </mtd>
+  </mtr>
+  <mtr>
+   <mtd>
+    <mn>1</mn>
+   </mtd>
+   <mtd>
+    <mn>0</mn>
+   </mtd>
+  </mtr>
+ </mtable>
+ <mo form='postfix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>]</mo>
+ <mo form='prefix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>[</mo>
+ <mtable>
+  <mtr>
+   <mtd>
+    <mn>0</mn>
+   </mtd>
+   <mtd>
+    <mrow>
+     <mo stretchy='false'>-</mo>
+     <mn>1</mn>
+    </mrow>
+   </mtd>
+  </mtr>
+  <mtr>
+   <mtd>
+    <mn>1</mn>
+   </mtd>
+   <mtd>
+    <mn>0</mn>
+   </mtd>
+  </mtr>
+ </mtable>
+ <mo form='postfix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>]</mo>
+ <mo form='prefix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>[</mo>
+ <mtable>
+  <mtr>
+   <mtd>
+    <mn>0</mn>
+   </mtd>
+   <mtd>
+    <mrow>
+     <mo stretchy='false'>-</mo>
+     <mn>1</mn>
+    </mrow>
+   </mtd>
+  </mtr>
+  <mtr>
+   <mtd>
+    <mn>1</mn>
+   </mtd>
+   <mtd>
+    <mn>0</mn>
+   </mtd>
+  </mtr>
+ </mtable>
+ <mo form='postfix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>]</mo>
+ <mo form='prefix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>[</mo>
+ <mtable>
+  <mtr>
+   <mtd>
+    <mn>0</mn>
+   </mtd>
+   <mtd>
+    <mrow>
+     <mo stretchy='false'>-</mo>
+     <mn>1</mn>
+    </mrow>
+   </mtd>
+  </mtr>
+  <mtr>
+   <mtd>
+    <mn>1</mn>
+   </mtd>
+   <mtd>
+    <mn>0</mn>
+   </mtd>
+  </mtr>
+ </mtable>
+ <mo form='postfix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>]</mo>
+ <mo form='prefix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>[</mo>
+ <mtable>
+  <mtr>
+   <mtd>
+    <mi>a</mi>
+   </mtd>
+  </mtr>
+  <mtr>
+   <mtd>
+    <mi>b</mi>
+   </mtd>
+  </mtr>
+ </mtable>
+ <mo form='postfix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>]</mo>
+</mrow>
+</math>
+</div>
+
+<div class='standard' id='magicparlabel-6732'>It is possible to encode the first rotation by 90 degrees by combining the ordered pairs <math xmlns='http://www.w3.org/1998/Math/MathML'>
+<mrow>
+ <mo stretchy='false'>(</mo>
+ <mrow>
+  <mi>a</mi>
+  <mo stretchy='false'>,</mo>
+  <mi>b</mi>
+ </mrow>
+ <mo stretchy='false'>)</mo>
+</mrow>
+</math>
+ and <math xmlns='http://www.w3.org/1998/Math/MathML'>
+<mrow>
+ <mo stretchy='false'>(</mo>
+ <mrow>
+  <mo stretchy='false'>-</mo>
+  <mi>b</mi>
+  <mo stretchy='false'>,</mo>
+  <mi>a</mi>
+ </mrow>
+ <mo stretchy='false'>)</mo>
+</mrow>
+</math>
+ into one matrix by stacking them side by side as:</div>
+
+<div class='standard' id='magicparlabel-6733'>
+<math xmlns='http://www.w3.org/1998/Math/MathML' display='block'>
+<mrow>
+ <mi>M</mi>
+ <mo stretchy='false'>=</mo>
+ <mo form='prefix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>[</mo>
+ <mtable>
+  <mtr>
+   <mtd>
+    <mi>a</mi>
+   </mtd>
+   <mtd>
+    <mrow>
+     <mo stretchy='false'>-</mo>
+     <mi>b</mi>
+    </mrow>
+   </mtd>
+  </mtr>
+  <mtr>
+   <mtd>
+    <mi>b</mi>
+   </mtd>
+   <mtd>
+    <mi>a</mi>
+   </mtd>
+  </mtr>
+ </mtable>
+ <mo form='postfix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>]</mo>
+</mrow>
+</math>
+</div>
+
+<div class='standard' id='magicparlabel-6734'>If we rotate this matrix <math xmlns='http://www.w3.org/1998/Math/MathML'>
+<mi>M</mi>
+</math>
+ by <math xmlns='http://www.w3.org/1998/Math/MathML'>
+<mrow>
+ <mi>R</mi>
+ <mrow>
+  <mo>(</mo>
+  <mfrac>
+   <mi>&#x3C0;</mi>
+   <mn>2</mn>
+  </mfrac>
+  <mo>)</mo>
+ </mrow>
+</mrow>
+</math>
+:</div>
+
+<div class='standard' id='magicparlabel-6735'>
+<math xmlns='http://www.w3.org/1998/Math/MathML' display='block'>
+<mrow>
+ <mi>R</mi>
+ <mrow>
+  <mo>(</mo>
+  <mfrac>
+   <mi>&#x3C0;</mi>
+   <mn>2</mn>
+  </mfrac>
+  <mo>)</mo>
+ </mrow>
+ <mi>M</mi>
+ <mo stretchy='false'>=</mo>
+ <mo form='prefix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>[</mo>
+ <mtable>
+  <mtr>
+   <mtd>
+    <mn>0</mn>
+   </mtd>
+   <mtd>
+    <mrow>
+     <mo stretchy='false'>-</mo>
+     <mn>1</mn>
+    </mrow>
+   </mtd>
+  </mtr>
+  <mtr>
+   <mtd>
+    <mn>1</mn>
+   </mtd>
+   <mtd>
+    <mn>0</mn>
+   </mtd>
+  </mtr>
+ </mtable>
+ <mo form='postfix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>]</mo>
+ <mo form='prefix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>[</mo>
+ <mtable>
+  <mtr>
+   <mtd>
+    <mi>a</mi>
+   </mtd>
+   <mtd>
+    <mrow>
+     <mo stretchy='false'>-</mo>
+     <mi>b</mi>
+    </mrow>
+   </mtd>
+  </mtr>
+  <mtr>
+   <mtd>
+    <mi>b</mi>
+   </mtd>
+   <mtd>
+    <mi>a</mi>
+   </mtd>
+  </mtr>
+ </mtable>
+ <mo form='postfix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>]</mo>
+ <mo stretchy='false'>=</mo>
+ <mo form='prefix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>[</mo>
+ <mtable>
+  <mtr>
+   <mtd>
+    <mrow>
+     <mo stretchy='false'>-</mo>
+     <mi>b</mi>
+    </mrow>
+   </mtd>
+   <mtd>
+    <mrow>
+     <mo stretchy='false'>-</mo>
+     <mi>a</mi>
+    </mrow>
+   </mtd>
+  </mtr>
+  <mtr>
+   <mtd>
+    <mi>a</mi>
+   </mtd>
+   <mtd>
+    <mrow>
+     <mo stretchy='false'>-</mo>
+     <mi>b</mi>
+    </mrow>
+   </mtd>
+  </mtr>
+ </mtable>
+ <mo form='postfix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>]</mo>
+</mrow>
+</math>
+</div>
+
+<div class='standard' id='magicparlabel-6736'>Notice that rotating this matrix <math xmlns='http://www.w3.org/1998/Math/MathML'>
+<mi>M</mi>
+</math>
+ by <math xmlns='http://www.w3.org/1998/Math/MathML'>
+<mrow>
+ <mi>R</mi>
+ <mrow>
+  <mo>(</mo>
+  <mfrac>
+   <mi>&#x3C0;</mi>
+   <mn>2</mn>
+  </mfrac>
+  <mo>)</mo>
+ </mrow>
+</mrow>
+</math>
+, the ordered pairs <math xmlns='http://www.w3.org/1998/Math/MathML'>
+<mrow>
+ <mo stretchy='false'>(</mo>
+ <mrow>
+  <mo stretchy='false'>-</mo>
+  <mi>b</mi>
+  <mo stretchy='false'>,</mo>
+  <mi>a</mi>
+ </mrow>
+ <mo stretchy='false'>)</mo>
+</mrow>
+</math>
+ and <math xmlns='http://www.w3.org/1998/Math/MathML'>
+<mrow>
+ <mo stretchy='false'>(</mo>
+ <mrow>
+  <mo stretchy='false'>-</mo>
+  <mi>a</mi>
+  <mo stretchy='false'>,</mo>
+  <mo stretchy='false'>-</mo>
+  <mi>b</mi>
+ </mrow>
+ <mo stretchy='false'>)</mo>
+</mrow>
+</math>
+ are obtained in the columns. Without much effort, one can see that every ordered pair shown previously can be generated by multiplying <math xmlns='http://www.w3.org/1998/Math/MathML'>
+<mi>M</mi>
+</math>
+ by <math xmlns='http://www.w3.org/1998/Math/MathML'>
+<mrow>
+ <mi>R</mi>
+ <mrow>
+  <mo>(</mo>
+  <mfrac>
+   <mi>&#x3C0;</mi>
+   <mn>2</mn>
+  </mfrac>
+  <mo>)</mo>
+ </mrow>
+</mrow>
+</math>
+ and end up with the exact same matrix <math xmlns='http://www.w3.org/1998/Math/MathML'>
+<mi>M</mi>
+</math>
+ after four applications:</div>
+
+<div class='standard' id='magicparlabel-6737'>
+<math xmlns='http://www.w3.org/1998/Math/MathML' display='block'>
+<mrow>
+ <mo form='prefix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>[</mo>
+ <mtable>
+  <mtr>
+   <mtd>
+    <mi>a</mi>
+   </mtd>
+   <mtd>
+    <mrow>
+     <mo stretchy='false'>-</mo>
+     <mi>b</mi>
+    </mrow>
+   </mtd>
+  </mtr>
+  <mtr>
+   <mtd>
+    <mi>b</mi>
+   </mtd>
+   <mtd>
+    <mi>a</mi>
+   </mtd>
+  </mtr>
+ </mtable>
+ <mo form='postfix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>]</mo>
+ <munderover accent='false' accentunder='false'>
+  <mo>&#x2192;</mo>
+  <mrow/>
+  <mrow>
+   <mi>R</mi>
+   <mrow>
+    <mo stretchy='false'>(</mo>
+    <mfrac>
+     <mi>&#x3C0;</mi>
+     <mn>2</mn>
+    </mfrac>
+    <mo stretchy='false'>)</mo>
+   </mrow>
+  </mrow>
+ </munderover>
+ <mo form='prefix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>[</mo>
+ <mtable>
+  <mtr>
+   <mtd>
+    <mrow>
+     <mo stretchy='false'>-</mo>
+     <mi>b</mi>
+    </mrow>
+   </mtd>
+   <mtd>
+    <mrow>
+     <mo stretchy='false'>-</mo>
+     <mi>a</mi>
+    </mrow>
+   </mtd>
+  </mtr>
+  <mtr>
+   <mtd>
+    <mi>a</mi>
+   </mtd>
+   <mtd>
+    <mrow>
+     <mo stretchy='false'>-</mo>
+     <mi>b</mi>
+    </mrow>
+   </mtd>
+  </mtr>
+ </mtable>
+ <mo form='postfix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>]</mo>
+ <munderover accent='false' accentunder='false'>
+  <mo>&#x2192;</mo>
+  <mrow/>
+  <mrow>
+   <mi>R</mi>
+   <mrow>
+    <mo stretchy='false'>(</mo>
+    <mfrac>
+     <mi>&#x3C0;</mi>
+     <mn>2</mn>
+    </mfrac>
+    <mo stretchy='false'>)</mo>
+   </mrow>
+  </mrow>
+ </munderover>
+ <mo form='prefix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>[</mo>
+ <mtable>
+  <mtr>
+   <mtd>
+    <mrow>
+     <mo stretchy='false'>-</mo>
+     <mi>a</mi>
+    </mrow>
+   </mtd>
+   <mtd>
+    <mi>b</mi>
+   </mtd>
+  </mtr>
+  <mtr>
+   <mtd>
+    <mrow>
+     <mo stretchy='false'>-</mo>
+     <mi>b</mi>
+    </mrow>
+   </mtd>
+   <mtd>
+    <mrow>
+     <mo stretchy='false'>-</mo>
+     <mi>a</mi>
+    </mrow>
+   </mtd>
+  </mtr>
+ </mtable>
+ <mo form='postfix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>]</mo>
+ <munderover accent='false' accentunder='false'>
+  <mo>&#x2192;</mo>
+  <mrow/>
+  <mrow>
+   <mi>R</mi>
+   <mrow>
+    <mo stretchy='false'>(</mo>
+    <mfrac>
+     <mi>&#x3C0;</mi>
+     <mn>2</mn>
+    </mfrac>
+    <mo stretchy='false'>)</mo>
+   </mrow>
+  </mrow>
+ </munderover>
+ <mo form='prefix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>[</mo>
+ <mtable>
+  <mtr>
+   <mtd>
+    <mi>b</mi>
+   </mtd>
+   <mtd>
+    <mrow>
+     <mo stretchy='false'>-</mo>
+     <mi>a</mi>
+    </mrow>
+   </mtd>
+  </mtr>
+  <mtr>
+   <mtd>
+    <mi>a</mi>
+   </mtd>
+   <mtd>
+    <mi>b</mi>
+   </mtd>
+  </mtr>
+ </mtable>
+ <mo form='postfix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>]</mo>
+ <munderover accent='false' accentunder='false'>
+  <mo>&#x2192;</mo>
+  <mrow/>
+  <mrow>
+   <mi>R</mi>
+   <mrow>
+    <mo stretchy='false'>(</mo>
+    <mfrac>
+     <mi>&#x3C0;</mi>
+     <mn>2</mn>
+    </mfrac>
+    <mo stretchy='false'>)</mo>
+   </mrow>
+  </mrow>
+ </munderover>
+ <mo form='prefix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>[</mo>
+ <mtable>
+  <mtr>
+   <mtd>
+    <mi>a</mi>
+   </mtd>
+   <mtd>
+    <mrow>
+     <mo stretchy='false'>-</mo>
+     <mi>b</mi>
+    </mrow>
+   </mtd>
+  </mtr>
+  <mtr>
+   <mtd>
+    <mi>b</mi>
+   </mtd>
+   <mtd>
+    <mi>a</mi>
+   </mtd>
+  </mtr>
+ </mtable>
+ <mo form='postfix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>]</mo>
+</mrow>
+</math>
+</div>
+
+<div class='standard' id='magicparlabel-6738'>An important result is to notice something highly pertinent about the relationship between the ordered pairs as the columns of the matrix <math xmlns='http://www.w3.org/1998/Math/MathML'>
+<mi>M</mi>
+</math>
+ if viewed informally as:</div>
+
+<div class='standard' id='magicparlabel-6739'>
+<math xmlns='http://www.w3.org/1998/Math/MathML' display='block'>
+<mrow>
+ <mi>M</mi>
+ <mo stretchy='false'>=</mo>
+ <mrow>
+  <mo stretchy='false'>[</mo>
+  <mrow>
+   <mover>
+    <mi>v</mi>
+    <mo stretchy='true'>&#x00AF;</mo>
+   </mover>
+   <mspace width="20px"/>
+   <mover>
+    <mi>v</mi>
+    <mo stretchy='true'>&#x00AF;</mo>
+   </mover>
+   <mo stretchy='false'>'</mo>
+  </mrow>
+  <mo stretchy='false'>]</mo>
+ </mrow>
+ <mo stretchy='false'>=</mo>
+ <mrow>
+  <mo stretchy='false'>[</mo>
+  <mrow>
+   <mrow>
+    <mo stretchy='false'>(</mo>
+    <mrow>
+     <mi>a</mi>
+     <mo stretchy='false'>,</mo>
+     <mi>b</mi>
+    </mrow>
+    <mo stretchy='false'>)</mo>
+   </mrow>
+   <mspace width="20px"/>
+   <mrow>
+    <mo stretchy='false'>(</mo>
+    <mrow>
+     <mo stretchy='false'>-</mo>
+     <mi>b</mi>
+     <mo stretchy='false'>,</mo>
+     <mi>a</mi>
+    </mrow>
+    <mo stretchy='false'>)</mo>
+   </mrow>
+  </mrow>
+  <mo stretchy='false'>]</mo>
+ </mrow>
+ <mo stretchy='false'>=</mo>
+ <mrow>
+  <mo>[</mo>
+  <mrow>
+   <mo form='prefix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>[</mo>
+   <mtable>
+    <mtr>
+     <mtd>
+      <mi>a</mi>
+     </mtd>
+    </mtr>
+    <mtr>
+     <mtd>
+      <mi>b</mi>
+     </mtd>
+    </mtr>
+   </mtable>
+   <mo form='postfix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>]</mo>
+   <mo form='prefix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>[</mo>
+   <mtable>
+    <mtr>
+     <mtd>
+      <mrow>
+       <mo stretchy='false'>-</mo>
+       <mi>b</mi>
+      </mrow>
+     </mtd>
+    </mtr>
+    <mtr>
+     <mtd>
+      <mi>a</mi>
+     </mtd>
+    </mtr>
+   </mtable>
+   <mo form='postfix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>]</mo>
+  </mrow>
+  <mo>]</mo>
+ </mrow>
+</mrow>
+</math>
+</div>
+
+<div class='standard' id='magicparlabel-6740'>Notice that the ordered pair <math xmlns='http://www.w3.org/1998/Math/MathML'>
+<mrow>
+ <mo stretchy='false'>(</mo>
+ <mrow>
+  <mo stretchy='false'>-</mo>
+  <mi>b</mi>
+  <mo stretchy='false'>,</mo>
+  <mi>a</mi>
+ </mrow>
+ <mo stretchy='false'>)</mo>
+</mrow>
+</math>
+ is 90 degrees &#8217;ahead&#8217; of <math xmlns='http://www.w3.org/1998/Math/MathML'>
+<mrow>
+ <mo stretchy='false'>(</mo>
+ <mrow>
+  <mi>a</mi>
+  <mo stretchy='false'>,</mo>
+  <mi>b</mi>
+ </mrow>
+ <mo stretchy='false'>)</mo>
+</mrow>
+</math>
+ by assuming the anti-clockwise convention aforementioned and for <math xmlns='http://www.w3.org/1998/Math/MathML'>
+<mrow>
+ <mi>a</mi>
+ <mo stretchy='false'>,</mo>
+ <mi>b</mi>
+ <mo stretchy='false'>&gt;</mo>
+ <mn>0</mn>
+</mrow>
+</math>
+. Since the values of <math xmlns='http://www.w3.org/1998/Math/MathML'>
+<mi>a</mi>
+</math>
+ and <math xmlns='http://www.w3.org/1998/Math/MathML'>
+<mi>b</mi>
+</math>
+ are contained in both ordered pairs and it is simply a rotation between them, we technically have redundant information. This is indicative of an important pattern that can be utilised to condense rotations in the Cartesian Plane. It can be shown that the matrix <math xmlns='http://www.w3.org/1998/Math/MathML'>
+<mi>M</mi>
+</math>
+ can be viewed as a rotation matrix in its own right. For example, let <math xmlns='http://www.w3.org/1998/Math/MathML'>
+<mrow>
+ <mi>a</mi>
+ <mo stretchy='false'>=</mo>
+ <mo>cos</mo>
+ <mi>&#x3B8;</mi>
+</mrow>
+</math>
+ and <math xmlns='http://www.w3.org/1998/Math/MathML'>
+<mrow>
+ <mi>b</mi>
+ <mo stretchy='false'>=</mo>
+ <mo>sin</mo>
+ <mi>&#x3B8;</mi>
+</mrow>
+</math>
+:</div>
+
+<div class='standard' id='magicparlabel-6741'>
+<math xmlns='http://www.w3.org/1998/Math/MathML' display='block'>
+<mrow>
+ <mi>R</mi>
+ <mrow>
+  <mo stretchy='false'>(</mo>
+  <mi>&#x3B8;</mi>
+  <mo stretchy='false'>)</mo>
+ </mrow>
+ <mo stretchy='false'>=</mo>
+ <mo form='prefix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>[</mo>
+ <mtable>
+  <mtr>
+   <mtd>
+    <mrow>
+     <mo>cos</mo>
+     <mi>&#x3B8;</mi>
+    </mrow>
+   </mtd>
+   <mtd>
+    <mrow>
+     <mo stretchy='false'>-</mo>
+     <mo>sin</mo>
+     <mi>&#x3B8;</mi>
+    </mrow>
+   </mtd>
+  </mtr>
+  <mtr>
+   <mtd>
+    <mrow>
+     <mo>sin</mo>
+     <mi>&#x3B8;</mi>
+    </mrow>
+   </mtd>
+   <mtd>
+    <mrow>
+     <mo>cos</mo>
+     <mi>&#x3B8;</mi>
+    </mrow>
+   </mtd>
+  </mtr>
+ </mtable>
+ <mo form='postfix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>]</mo>
+ <mo stretchy='false'>=</mo>
+ <mo form='prefix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>[</mo>
+ <mtable>
+  <mtr>
+   <mtd>
+    <mi>a</mi>
+   </mtd>
+   <mtd>
+    <mrow>
+     <mo stretchy='false'>-</mo>
+     <mi>b</mi>
+    </mrow>
+   </mtd>
+  </mtr>
+  <mtr>
+   <mtd>
+    <mi>b</mi>
+   </mtd>
+   <mtd>
+    <mi>a</mi>
+   </mtd>
+  </mtr>
+ </mtable>
+ <mo form='postfix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>]</mo>
+ <mo stretchy='false'>=</mo>
+ <mrow>
+  <mo stretchy='false'>[</mo>
+  <mrow>
+   <mover>
+    <mi>v</mi>
+    <mo stretchy='true'>&#x00AF;</mo>
+   </mover>
+   <mspace width="20px"/>
+   <mover>
+    <mi>v</mi>
+    <mo stretchy='true'>&#x00AF;</mo>
+   </mover>
+   <mo stretchy='false'>'</mo>
+  </mrow>
+  <mo stretchy='false'>]</mo>
+ </mrow>
+</mrow>
+</math>
+</div>
+
+<div class='standard' id='magicparlabel-6742'>Now suppose there is another rotation matrix <math xmlns='http://www.w3.org/1998/Math/MathML'>
+<mrow>
+ <mi>R</mi>
+ <mrow>
+  <mo stretchy='false'>(</mo>
+  <mi>&#x3D5;</mi>
+  <mo stretchy='false'>)</mo>
+ </mrow>
+</mrow>
+</math>
+ and let <math xmlns='http://www.w3.org/1998/Math/MathML'>
+<mrow>
+ <mi>c</mi>
+ <mo stretchy='false'>=</mo>
+ <mo>cos</mo>
+ <mi>&#x3D5;</mi>
+</mrow>
+</math>
+ and <math xmlns='http://www.w3.org/1998/Math/MathML'>
+<mrow>
+ <mi>d</mi>
+ <mo stretchy='false'>=</mo>
+ <mo>sin</mo>
+ <mi>&#x3D5;</mi>
+</mrow>
+</math>
+, then:</div>
+
+<div class='standard' id='magicparlabel-6743'>
+<math xmlns='http://www.w3.org/1998/Math/MathML' display='block'>
+<mrow>
+ <mi>R</mi>
+ <mrow>
+  <mo stretchy='false'>(</mo>
+  <mi>&#x3D5;</mi>
+  <mo stretchy='false'>)</mo>
+ </mrow>
+ <mo stretchy='false'>=</mo>
+ <mo form='prefix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>[</mo>
+ <mtable>
+  <mtr>
+   <mtd>
+    <mrow>
+     <mo>cos</mo>
+     <mi>&#x3D5;</mi>
+    </mrow>
+   </mtd>
+   <mtd>
+    <mrow>
+     <mo stretchy='false'>-</mo>
+     <mo>sin</mo>
+     <mi>&#x3D5;</mi>
+    </mrow>
+   </mtd>
+  </mtr>
+  <mtr>
+   <mtd>
+    <mrow>
+     <mo>sin</mo>
+     <mi>&#x3D5;</mi>
+    </mrow>
+   </mtd>
+   <mtd>
+    <mrow>
+     <mo>cos</mo>
+     <mi>&#x3D5;</mi>
+    </mrow>
+   </mtd>
+  </mtr>
+ </mtable>
+ <mo form='postfix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>]</mo>
+ <mo stretchy='false'>=</mo>
+ <mo form='prefix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>[</mo>
+ <mtable>
+  <mtr>
+   <mtd>
+    <mi>c</mi>
+   </mtd>
+   <mtd>
+    <mrow>
+     <mo stretchy='false'>-</mo>
+     <mi>d</mi>
+    </mrow>
+   </mtd>
+  </mtr>
+  <mtr>
+   <mtd>
+    <mi>d</mi>
+   </mtd>
+   <mtd>
+    <mi>c</mi>
+   </mtd>
+  </mtr>
+ </mtable>
+ <mo form='postfix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>]</mo>
+</mrow>
+</math>
+</div>
+
+<div class='standard' id='magicparlabel-6744'>Now we multiply these matrices:</div>
+
+<div class='standard' id='magicparlabel-6745'>
+<math xmlns='http://www.w3.org/1998/Math/MathML' display='block'>
+<mrow>
+ <mi>R</mi>
+ <mrow>
+  <mo stretchy='false'>(</mo>
+  <mi>&#x3B8;</mi>
+  <mo stretchy='false'>)</mo>
+ </mrow>
+ <mi>R</mi>
+ <mrow>
+  <mo stretchy='false'>(</mo>
+  <mi>&#x3D5;</mi>
+  <mo stretchy='false'>)</mo>
+ </mrow>
+ <mo stretchy='false'>=</mo>
+ <mo form='prefix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>[</mo>
+ <mtable>
+  <mtr>
+   <mtd>
+    <mi>a</mi>
+   </mtd>
+   <mtd>
+    <mrow>
+     <mo stretchy='false'>-</mo>
+     <mi>b</mi>
+    </mrow>
+   </mtd>
+  </mtr>
+  <mtr>
+   <mtd>
+    <mi>b</mi>
+   </mtd>
+   <mtd>
+    <mi>a</mi>
+   </mtd>
+  </mtr>
+ </mtable>
+ <mo form='postfix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>]</mo>
+ <mo form='prefix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>[</mo>
+ <mtable>
+  <mtr>
+   <mtd>
+    <mi>c</mi>
+   </mtd>
+   <mtd>
+    <mrow>
+     <mo stretchy='false'>-</mo>
+     <mi>d</mi>
+    </mrow>
+   </mtd>
+  </mtr>
+  <mtr>
+   <mtd>
+    <mi>d</mi>
+   </mtd>
+   <mtd>
+    <mi>c</mi>
+   </mtd>
+  </mtr>
+ </mtable>
+ <mo form='postfix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>]</mo>
+ <mo stretchy='false'>=</mo>
+ <mo form='prefix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>[</mo>
+ <mtable>
+  <mtr>
+   <mtd>
+    <mrow>
+     <mi>a</mi>
+     <mi>c</mi>
+     <mo stretchy='false'>-</mo>
+     <mi>b</mi>
+     <mi>d</mi>
+    </mrow>
+   </mtd>
+   <mtd>
+    <mrow>
+     <mo stretchy='false'>-</mo>
+     <mi>a</mi>
+     <mi>d</mi>
+     <mo stretchy='false'>-</mo>
+     <mi>b</mi>
+     <mi>c</mi>
+    </mrow>
+   </mtd>
+  </mtr>
+  <mtr>
+   <mtd>
+    <mrow>
+     <mi>a</mi>
+     <mi>d</mi>
+     <mo stretchy='false'>+</mo>
+     <mi>b</mi>
+     <mi>c</mi>
+    </mrow>
+   </mtd>
+   <mtd>
+    <mrow>
+     <mi>a</mi>
+     <mi>c</mi>
+     <mo stretchy='false'>-</mo>
+     <mi>b</mi>
+     <mi>d</mi>
+    </mrow>
+   </mtd>
+  </mtr>
+ </mtable>
+ <mo form='postfix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>]</mo>
+</mrow>
+</math>
+</div>
+
+<div class='standard' id='magicparlabel-6746'>By examining the columns of the resultant matrix <math xmlns='http://www.w3.org/1998/Math/MathML'>
+<mrow>
+ <mi>R</mi>
+ <mrow>
+  <mo stretchy='false'>(</mo>
+  <mi>&#x3D5;</mi>
+  <mo stretchy='false'>)</mo>
+ </mrow>
+ <mi>R</mi>
+ <mrow>
+  <mo stretchy='false'>(</mo>
+  <mi>&#x3B8;</mi>
+  <mo stretchy='false'>)</mo>
+ </mrow>
+</mrow>
+</math>
+, they describe the result of two new ordered pairs being produced from the previous two matrices:</div>
+
+<div class='standard' id='magicparlabel-6747'>
+<math xmlns='http://www.w3.org/1998/Math/MathML' display='block'>
+<mrow>
+ <mrow>
+  <mo stretchy='false'>(</mo>
+  <mrow>
+   <mi>a</mi>
+   <mo stretchy='false'>,</mo>
+   <mi>b</mi>
+  </mrow>
+  <mo stretchy='false'>)</mo>
+ </mrow>
+ <mo>&#x00D7;</mo>
+ <mrow>
+  <mo stretchy='false'>(</mo>
+  <mrow>
+   <mi>c</mi>
+   <mo stretchy='false'>,</mo>
+   <mi>d</mi>
+  </mrow>
+  <mo stretchy='false'>)</mo>
+ </mrow>
+ <munderover accent='false' accentunder='false'>
+  <mo>&#x2192;</mo>
+  <mrow/>
+  <mrow>
+   <mi>R</mi>
+   <mrow>
+    <mo stretchy='false'>(</mo>
+    <mi>&#x3B8;</mi>
+    <mo stretchy='false'>)</mo>
+   </mrow>
+   <mi>R</mi>
+   <mrow>
+    <mo stretchy='false'>(</mo>
+    <mi>&#x3D5;</mi>
+    <mo stretchy='false'>)</mo>
+   </mrow>
+  </mrow>
+ </munderover>
+ <mrow>
+  <mo stretchy='false'>(</mo>
+  <mrow>
+   <mi>a</mi>
+   <mi>c</mi>
+   <mo stretchy='false'>-</mo>
+   <mi>b</mi>
+   <mi>d</mi>
+   <mo stretchy='false'>,</mo>
+   <mi>a</mi>
+   <mi>d</mi>
+   <mo stretchy='false'>+</mo>
+   <mi>b</mi>
+   <mi>c</mi>
+  </mrow>
+  <mo stretchy='false'>)</mo>
+ </mrow>
+</mrow>
+</math>
+</div>
+
+<div class='standard' id='magicparlabel-6748'>and</div>
+
+<div class='standard' id='magicparlabel-6749'>
+<math xmlns='http://www.w3.org/1998/Math/MathML' display='block'>
+<mrow>
+ <mrow>
+  <mo stretchy='false'>(</mo>
+  <mrow>
+   <mo stretchy='false'>-</mo>
+   <mi>b</mi>
+   <mo stretchy='false'>,</mo>
+   <mi>a</mi>
+  </mrow>
+  <mo stretchy='false'>)</mo>
+ </mrow>
+ <mo>&#x00D7;</mo>
+ <mrow>
+  <mo stretchy='false'>(</mo>
+  <mrow>
+   <mo stretchy='false'>-</mo>
+   <mi>d</mi>
+   <mo stretchy='false'>,</mo>
+   <mi>c</mi>
+  </mrow>
+  <mo stretchy='false'>)</mo>
+ </mrow>
+ <munderover accent='false' accentunder='false'>
+  <mo>&#x2192;</mo>
+  <mrow/>
+  <mrow>
+   <mi>R</mi>
+   <mrow>
+    <mo stretchy='false'>(</mo>
+    <mi>&#x3B8;</mi>
+    <mo stretchy='false'>)</mo>
+   </mrow>
+   <mi>R</mi>
+   <mrow>
+    <mo stretchy='false'>(</mo>
+    <mi>&#x3D5;</mi>
+    <mo stretchy='false'>)</mo>
+   </mrow>
+  </mrow>
+ </munderover>
+ <mrow>
+  <mo stretchy='false'>(</mo>
+  <mrow>
+   <mo stretchy='false'>-</mo>
+   <mi>a</mi>
+   <mi>d</mi>
+   <mo stretchy='false'>-</mo>
+   <mi>b</mi>
+   <mi>c</mi>
+   <mo stretchy='false'>,</mo>
+   <mi>a</mi>
+   <mi>c</mi>
+   <mo stretchy='false'>-</mo>
+   <mi>b</mi>
+   <mi>d</mi>
+  </mrow>
+  <mo stretchy='false'>)</mo>
+ </mrow>
+</mrow>
+</math>
+</div>
+
+<div class='standard' id='magicparlabel-6750'>Since the ordered pairs <math xmlns='http://www.w3.org/1998/Math/MathML'>
+<mrow>
+ <mo stretchy='false'>(</mo>
+ <mrow>
+  <mi>a</mi>
+  <mo stretchy='false'>,</mo>
+  <mi>b</mi>
+ </mrow>
+ <mo stretchy='false'>)</mo>
+</mrow>
+</math>
+ and <math xmlns='http://www.w3.org/1998/Math/MathML'>
+<mrow>
+ <mo stretchy='false'>(</mo>
+ <mrow>
+  <mi>c</mi>
+  <mo stretchy='false'>,</mo>
+  <mi>d</mi>
+ </mrow>
+ <mo stretchy='false'>)</mo>
+</mrow>
+</math>
+ are arbitrarily chosen, the accompanying ordered pairs <math xmlns='http://www.w3.org/1998/Math/MathML'>
+<mrow>
+ <mo stretchy='false'>(</mo>
+ <mrow>
+  <mo stretchy='false'>-</mo>
+  <mi>b</mi>
+  <mo stretchy='false'>,</mo>
+  <mi>a</mi>
+ </mrow>
+ <mo stretchy='false'>)</mo>
+</mrow>
+</math>
+ and <math xmlns='http://www.w3.org/1998/Math/MathML'>
+<mrow>
+ <mo stretchy='false'>(</mo>
+ <mrow>
+  <mo stretchy='false'>-</mo>
+  <mi>d</mi>
+  <mo stretchy='false'>,</mo>
+  <mi>c</mi>
+ </mrow>
+ <mo stretchy='false'>)</mo>
+</mrow>
+</math>
+ describe exactly the same rotational behaviour, but simply 90 degrees shifted.</div>
+
+<div class='standard' id='magicparlabel-6751'>To conclude, given two arbitrary ordered pairs <math xmlns='http://www.w3.org/1998/Math/MathML'>
+<mrow>
+ <mo stretchy='false'>(</mo>
+ <mrow>
+  <mi>a</mi>
+  <mo stretchy='false'>,</mo>
+  <mi>b</mi>
+ </mrow>
+ <mo stretchy='false'>)</mo>
+</mrow>
+</math>
+ and <math xmlns='http://www.w3.org/1998/Math/MathML'>
+<mrow>
+ <mo stretchy='false'>(</mo>
+ <mrow>
+  <mi>c</mi>
+  <mo stretchy='false'>,</mo>
+  <mi>d</mi>
+ </mrow>
+ <mo stretchy='false'>)</mo>
+</mrow>
+</math>
+, the rotation product of these pairs results in a resultant ordered pair <math xmlns='http://www.w3.org/1998/Math/MathML'>
+<mrow>
+ <mo stretchy='false'>(</mo>
+ <mrow>
+  <mi>a</mi>
+  <mi>c</mi>
+  <mo stretchy='false'>-</mo>
+  <mi>b</mi>
+  <mi>d</mi>
+  <mo stretchy='false'>,</mo>
+  <mi>a</mi>
+  <mi>d</mi>
+  <mo stretchy='false'>+</mo>
+  <mi>b</mi>
+  <mi>c</mi>
+ </mrow>
+ <mo stretchy='false'>)</mo>
+</mrow>
+</math>
+ which displays a clear shorthand method for generating a rotation in the plane which is derived from 2 by 2 matrix multiplication and trigonometric relations.</div>
+
+<div class='standard' id='magicparlabel-6752'>—</div>
+
+<div class='standard' id='magicparlabel-6753'># Trigonometric Simplification</div>
+
+<div class='standard' id='magicparlabel-6754'>It is possible to show in more detail, how these rotation matrices simplify using well known trigonometric angle formulae:</div>
+
+<div class='standard' id='magicparlabel-6755'>
+<math xmlns='http://www.w3.org/1998/Math/MathML' display='block'>
+<mrow>
+ <mi>R</mi>
+ <mrow>
+  <mo stretchy='false'>(</mo>
+  <mi>&#x3B8;</mi>
+  <mo stretchy='false'>)</mo>
+ </mrow>
+ <mi>R</mi>
+ <mrow>
+  <mo stretchy='false'>(</mo>
+  <mi>&#x3D5;</mi>
+  <mo stretchy='false'>)</mo>
+ </mrow>
+ <mo stretchy='false'>=</mo>
+ <mo form='prefix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>[</mo>
+ <mtable>
+  <mtr>
+   <mtd>
+    <mrow>
+     <mo>cos</mo>
+     <mi>&#x3B8;</mi>
+    </mrow>
+   </mtd>
+   <mtd>
+    <mrow>
+     <mo stretchy='false'>-</mo>
+     <mo>sin</mo>
+     <mi>&#x3B8;</mi>
+    </mrow>
+   </mtd>
+  </mtr>
+  <mtr>
+   <mtd>
+    <mrow>
+     <mo>sin</mo>
+     <mi>&#x3B8;</mi>
+    </mrow>
+   </mtd>
+   <mtd>
+    <mrow>
+     <mo>cos</mo>
+     <mi>&#x3B8;</mi>
+    </mrow>
+   </mtd>
+  </mtr>
+ </mtable>
+ <mo form='postfix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>]</mo>
+ <mo form='prefix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>[</mo>
+ <mtable>
+  <mtr>
+   <mtd>
+    <mrow>
+     <mo>cos</mo>
+     <mi>&#x3D5;</mi>
+    </mrow>
+   </mtd>
+   <mtd>
+    <mrow>
+     <mo stretchy='false'>-</mo>
+     <mo>sin</mo>
+     <mi>&#x3D5;</mi>
+    </mrow>
+   </mtd>
+  </mtr>
+  <mtr>
+   <mtd>
+    <mrow>
+     <mo>sin</mo>
+     <mi>&#x3D5;</mi>
+    </mrow>
+   </mtd>
+   <mtd>
+    <mrow>
+     <mo>cos</mo>
+     <mi>&#x3D5;</mi>
+    </mrow>
+   </mtd>
+  </mtr>
+ </mtable>
+ <mo form='postfix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>]</mo>
+</mrow>
+</math>
+</div>
+
+<div class='standard' id='magicparlabel-6756'>
+<math xmlns='http://www.w3.org/1998/Math/MathML' display='block'>
+<mrow>
+ <mo stretchy='false'>=</mo>
+ <mo form='prefix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>[</mo>
+ <mtable>
+  <mtr>
+   <mtd>
+    <mrow>
+     <mo>cos</mo>
+     <mi>&#x3B8;</mi>
+     <mo>cos</mo>
+     <mi>&#x3D5;</mi>
+     <mo stretchy='false'>-</mo>
+     <mo>sin</mo>
+     <mi>&#x3B8;</mi>
+     <mo>sin</mo>
+     <mi>&#x3D5;</mi>
+    </mrow>
+   </mtd>
+   <mtd>
+    <mrow>
+     <mo stretchy='false'>-</mo>
+     <mo>cos</mo>
+     <mi>&#x3B8;</mi>
+     <mo>sin</mo>
+     <mi>&#x3D5;</mi>
+     <mo stretchy='false'>-</mo>
+     <mo>sin</mo>
+     <mi>&#x3B8;</mi>
+     <mo>cos</mo>
+     <mi>&#x3D5;</mi>
+    </mrow>
+   </mtd>
+  </mtr>
+  <mtr>
+   <mtd>
+    <mrow>
+     <mo>cos</mo>
+     <mi>&#x3B8;</mi>
+     <mo>sin</mo>
+     <mi>&#x3D5;</mi>
+     <mo stretchy='false'>+</mo>
+     <mo>sin</mo>
+     <mi>&#x3B8;</mi>
+     <mo>cos</mo>
+     <mi>&#x3D5;</mi>
+    </mrow>
+   </mtd>
+   <mtd>
+    <mrow>
+     <mo>cos</mo>
+     <mi>&#x3B8;</mi>
+     <mo>cos</mo>
+     <mi>&#x3D5;</mi>
+     <mo stretchy='false'>-</mo>
+     <mo>sin</mo>
+     <mi>&#x3B8;</mi>
+     <mo>sin</mo>
+     <mi>&#x3D5;</mi>
+    </mrow>
+   </mtd>
+  </mtr>
+ </mtable>
+ <mo form='postfix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>]</mo>
+</mrow>
+</math>
+</div>
+
+<div class='standard' id='magicparlabel-6757'>Using trigonometric angle identities, the above can be simplified as:</div>
+
+<div class='standard' id='magicparlabel-6758'>
+<math xmlns='http://www.w3.org/1998/Math/MathML' display='block'>
+<mrow>
+ <mi>R</mi>
+ <mrow>
+  <mo stretchy='false'>(</mo>
+  <mi>&#x3B8;</mi>
+  <mo stretchy='false'>)</mo>
+ </mrow>
+ <mi>R</mi>
+ <mrow>
+  <mo stretchy='false'>(</mo>
+  <mi>&#x3D5;</mi>
+  <mo stretchy='false'>)</mo>
+ </mrow>
+ <mo stretchy='false'>=</mo>
+ <mo form='prefix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>[</mo>
+ <mtable>
+  <mtr>
+   <mtd>
+    <mrow>
+     <mo>cos</mo>
+     <mrow>
+      <mo stretchy='false'>(</mo>
+      <mrow>
+       <mi>&#x3B8;</mi>
+       <mo stretchy='false'>+</mo>
+       <mi>&#x3D5;</mi>
+      </mrow>
+      <mo stretchy='false'>)</mo>
+     </mrow>
+    </mrow>
+   </mtd>
+   <mtd>
+    <mrow>
+     <mo stretchy='false'>-</mo>
+     <mo>sin</mo>
+     <mrow>
+      <mo stretchy='false'>(</mo>
+      <mrow>
+       <mi>&#x3B8;</mi>
+       <mo stretchy='false'>+</mo>
+       <mi>&#x3D5;</mi>
+      </mrow>
+      <mo stretchy='false'>)</mo>
+     </mrow>
+    </mrow>
+   </mtd>
+  </mtr>
+  <mtr>
+   <mtd>
+    <mrow>
+     <mo>sin</mo>
+     <mrow>
+      <mo stretchy='false'>(</mo>
+      <mrow>
+       <mi>&#x3B8;</mi>
+       <mo stretchy='false'>+</mo>
+       <mi>&#x3D5;</mi>
+      </mrow>
+      <mo stretchy='false'>)</mo>
+     </mrow>
+    </mrow>
+   </mtd>
+   <mtd>
+    <mrow>
+     <mo>cos</mo>
+     <mrow>
+      <mo stretchy='false'>(</mo>
+      <mrow>
+       <mi>&#x3B8;</mi>
+       <mo stretchy='false'>+</mo>
+       <mi>&#x3D5;</mi>
+      </mrow>
+      <mo stretchy='false'>)</mo>
+     </mrow>
+    </mrow>
+   </mtd>
+  </mtr>
+ </mtable>
+ <mo form='postfix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>]</mo>
+</mrow>
+</math>
+</div>
+
+<div class='standard' id='magicparlabel-6759'>Thus, the rotation product <math xmlns='http://www.w3.org/1998/Math/MathML'>
+<mrow>
+ <mi>R</mi>
+ <mrow>
+  <mo stretchy='false'>(</mo>
+  <mi>&#x3B8;</mi>
+  <mo stretchy='false'>)</mo>
+ </mrow>
+ <mi>R</mi>
+ <mrow>
+  <mo stretchy='false'>(</mo>
+  <mi>&#x3D5;</mi>
+  <mo stretchy='false'>)</mo>
+ </mrow>
+</mrow>
+</math>
+ simply results in a new rotation matrix which is comprised of the sum of the two angles <math xmlns='http://www.w3.org/1998/Math/MathML'>
+<mrow>
+ <mi>&#x3B8;</mi>
+ <mo stretchy='false'>+</mo>
+ <mi>&#x3D5;</mi>
+</mrow>
+</math>
+, namely <math xmlns='http://www.w3.org/1998/Math/MathML'>
+<mrow>
+ <mi>R</mi>
+ <mrow>
+  <mo stretchy='false'>(</mo>
+  <mrow>
+   <mi>&#x3B8;</mi>
+   <mo stretchy='false'>+</mo>
+   <mi>&#x3D5;</mi>
+  </mrow>
+  <mo stretchy='false'>)</mo>
+ </mrow>
+</mrow>
+</math>
+:</div>
+
+<div class='standard' id='magicparlabel-6760'>
+<math xmlns='http://www.w3.org/1998/Math/MathML' display='block'>
+<mrow>
+ <mi>R</mi>
+ <mrow>
+  <mo stretchy='false'>(</mo>
+  <mrow>
+   <mi>&#x3B8;</mi>
+   <mo stretchy='false'>+</mo>
+   <mi>&#x3D5;</mi>
+  </mrow>
+  <mo stretchy='false'>)</mo>
+ </mrow>
+ <mo stretchy='false'>=</mo>
+ <mi>R</mi>
+ <mrow>
+  <mo stretchy='false'>(</mo>
+  <mi>&#x3B8;</mi>
+  <mo stretchy='false'>)</mo>
+ </mrow>
+ <mi>R</mi>
+ <mrow>
+  <mo stretchy='false'>(</mo>
+  <mi>&#x3D5;</mi>
+  <mo stretchy='false'>)</mo>
+ </mrow>
+</mrow>
+</math>
+</div>
+
+<div class='standard' id='magicparlabel-6761'>Hence it is now known that:</div>
+
+<div class='standard' id='magicparlabel-6762'>
+<math xmlns='http://www.w3.org/1998/Math/MathML' display='block'>
+<mrow>
+ <mi>R</mi>
+ <mrow>
+  <mo stretchy='false'>(</mo>
+  <mrow>
+   <mi>&#x3B8;</mi>
+   <mo stretchy='false'>+</mo>
+   <mi>&#x3D5;</mi>
+  </mrow>
+  <mo stretchy='false'>)</mo>
+ </mrow>
+ <mo stretchy='false'>=</mo>
+ <mo form='prefix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>[</mo>
+ <mtable>
+  <mtr>
+   <mtd>
+    <mrow>
+     <mo>cos</mo>
+     <mrow>
+      <mo stretchy='false'>(</mo>
+      <mrow>
+       <mi>&#x3B8;</mi>
+       <mo stretchy='false'>+</mo>
+       <mi>&#x3D5;</mi>
+      </mrow>
+      <mo stretchy='false'>)</mo>
+     </mrow>
+    </mrow>
+   </mtd>
+   <mtd>
+    <mrow>
+     <mo stretchy='false'>-</mo>
+     <mo>sin</mo>
+     <mrow>
+      <mo stretchy='false'>(</mo>
+      <mrow>
+       <mi>&#x3B8;</mi>
+       <mo stretchy='false'>+</mo>
+       <mi>&#x3D5;</mi>
+      </mrow>
+      <mo stretchy='false'>)</mo>
+     </mrow>
+    </mrow>
+   </mtd>
+  </mtr>
+  <mtr>
+   <mtd>
+    <mrow>
+     <mo>sin</mo>
+     <mrow>
+      <mo stretchy='false'>(</mo>
+      <mrow>
+       <mi>&#x3B8;</mi>
+       <mo stretchy='false'>+</mo>
+       <mi>&#x3D5;</mi>
+      </mrow>
+      <mo stretchy='false'>)</mo>
+     </mrow>
+    </mrow>
+   </mtd>
+   <mtd>
+    <mrow>
+     <mo>cos</mo>
+     <mrow>
+      <mo stretchy='false'>(</mo>
+      <mrow>
+       <mi>&#x3B8;</mi>
+       <mo stretchy='false'>+</mo>
+       <mi>&#x3D5;</mi>
+      </mrow>
+      <mo stretchy='false'>)</mo>
+     </mrow>
+    </mrow>
+   </mtd>
+  </mtr>
+ </mtable>
+ <mo form='postfix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>]</mo>
+ <mo>&#x2261;</mo>
+ <mo form='prefix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>[</mo>
+ <mtable>
+  <mtr>
+   <mtd>
+    <mrow>
+     <mi>a</mi>
+     <mi>c</mi>
+     <mo stretchy='false'>-</mo>
+     <mi>b</mi>
+     <mi>d</mi>
+    </mrow>
+   </mtd>
+   <mtd>
+    <mrow>
+     <mo stretchy='false'>-</mo>
+     <mi>a</mi>
+     <mi>d</mi>
+     <mo stretchy='false'>-</mo>
+     <mi>b</mi>
+     <mi>c</mi>
+    </mrow>
+   </mtd>
+  </mtr>
+  <mtr>
+   <mtd>
+    <mrow>
+     <mi>a</mi>
+     <mi>d</mi>
+     <mo stretchy='false'>+</mo>
+     <mi>b</mi>
+     <mi>c</mi>
+    </mrow>
+   </mtd>
+   <mtd>
+    <mrow>
+     <mi>a</mi>
+     <mi>c</mi>
+     <mo stretchy='false'>-</mo>
+     <mi>b</mi>
+     <mi>d</mi>
+    </mrow>
+   </mtd>
+  </mtr>
+ </mtable>
+ <mo form='postfix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>]</mo>
+</mrow>
+</math>
+</div>
+
+<div class='standard' id='magicparlabel-6763'>—</div>
+
+<div class='standard' id='magicparlabel-6764'># Another Alternative View</div>
+
+<div class='standard' id='magicparlabel-6765'>With what has been shown, it is now possible to work up to a &#8217;correct&#8217; interpretation of the &#8217;complex number&#8217; known as <math xmlns='http://www.w3.org/1998/Math/MathML'>
+<mi>i</mi>
+</math>
+, more commonly shown as <math xmlns='http://www.w3.org/1998/Math/MathML'>
+<mrow>
+ <msup>
+  <mi>i</mi>
+  <mn>2</mn>
+ </msup>
+ <mo stretchy='false'>=</mo>
+ <mo stretchy='false'>-</mo>
+ <mn>1</mn>
+</mrow>
+</math>
+. To begin this process, we will begin with a rotation matrix as before:</div>
+
+<div class='standard' id='magicparlabel-6766'>
+<math xmlns='http://www.w3.org/1998/Math/MathML' display='block'>
+<mrow>
+ <mi>R</mi>
+ <mrow>
+  <mo stretchy='false'>(</mo>
+  <mi>&#x3B8;</mi>
+  <mo stretchy='false'>)</mo>
+ </mrow>
+ <mo stretchy='false'>=</mo>
+ <mo form='prefix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>[</mo>
+ <mtable>
+  <mtr>
+   <mtd>
+    <mrow>
+     <mo>cos</mo>
+     <mi>&#x3B8;</mi>
+    </mrow>
+   </mtd>
+   <mtd>
+    <mrow>
+     <mo stretchy='false'>-</mo>
+     <mo>sin</mo>
+     <mi>&#x3B8;</mi>
+    </mrow>
+   </mtd>
+  </mtr>
+  <mtr>
+   <mtd>
+    <mrow>
+     <mo>sin</mo>
+     <mi>&#x3B8;</mi>
+    </mrow>
+   </mtd>
+   <mtd>
+    <mrow>
+     <mo>cos</mo>
+     <mi>&#x3B8;</mi>
+    </mrow>
+   </mtd>
+  </mtr>
+ </mtable>
+ <mo form='postfix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>]</mo>
+ <mo stretchy='false'>=</mo>
+ <mo form='prefix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>[</mo>
+ <mtable>
+  <mtr>
+   <mtd>
+    <mi>a</mi>
+   </mtd>
+   <mtd>
+    <mrow>
+     <mo stretchy='false'>-</mo>
+     <mi>b</mi>
+    </mrow>
+   </mtd>
+  </mtr>
+  <mtr>
+   <mtd>
+    <mi>b</mi>
+   </mtd>
+   <mtd>
+    <mi>a</mi>
+   </mtd>
+  </mtr>
+ </mtable>
+ <mo form='postfix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>]</mo>
+</mrow>
+</math>
+</div>
+
+<div class='standard' id='magicparlabel-6767'>This matrix may be split up into two parts as follows:</div>
+
+<div class='standard' id='magicparlabel-6768'>
+<math xmlns='http://www.w3.org/1998/Math/MathML' display='block'>
+<mrow>
+ <mi>R</mi>
+ <mrow>
+  <mo stretchy='false'>(</mo>
+  <mi>&#x3B8;</mi>
+  <mo stretchy='false'>)</mo>
+ </mrow>
+ <mo stretchy='false'>=</mo>
+ <mo>cos</mo>
+ <mi>&#x3B8;</mi>
+ <mo form='prefix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>[</mo>
+ <mtable>
+  <mtr>
+   <mtd>
+    <mn>1</mn>
+   </mtd>
+   <mtd>
+    <mn>0</mn>
+   </mtd>
+  </mtr>
+  <mtr>
+   <mtd>
+    <mn>0</mn>
+   </mtd>
+   <mtd>
+    <mn>1</mn>
+   </mtd>
+  </mtr>
+ </mtable>
+ <mo form='postfix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>]</mo>
+ <mo stretchy='false'>+</mo>
+ <mo>sin</mo>
+ <mi>&#x3B8;</mi>
+ <mo form='prefix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>[</mo>
+ <mtable>
+  <mtr>
+   <mtd>
+    <mn>0</mn>
+   </mtd>
+   <mtd>
+    <mrow>
+     <mo stretchy='false'>-</mo>
+     <mn>1</mn>
+    </mrow>
+   </mtd>
+  </mtr>
+  <mtr>
+   <mtd>
+    <mn>1</mn>
+   </mtd>
+   <mtd>
+    <mn>0</mn>
+   </mtd>
+  </mtr>
+ </mtable>
+ <mo form='postfix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>]</mo>
+</mrow>
+</math>
+</div>
+
+<div class='standard' id='magicparlabel-6769'>
+<math xmlns='http://www.w3.org/1998/Math/MathML' display='block'>
+<mrow>
+ <mo stretchy='false'>=</mo>
+ <mi>a</mi>
+ <mo form='prefix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>[</mo>
+ <mtable>
+  <mtr>
+   <mtd>
+    <mn>1</mn>
+   </mtd>
+   <mtd>
+    <mn>0</mn>
+   </mtd>
+  </mtr>
+  <mtr>
+   <mtd>
+    <mn>0</mn>
+   </mtd>
+   <mtd>
+    <mn>1</mn>
+   </mtd>
+  </mtr>
+ </mtable>
+ <mo form='postfix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>]</mo>
+ <mo stretchy='false'>+</mo>
+ <mi>b</mi>
+ <mo form='prefix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>[</mo>
+ <mtable>
+  <mtr>
+   <mtd>
+    <mn>0</mn>
+   </mtd>
+   <mtd>
+    <mrow>
+     <mo stretchy='false'>-</mo>
+     <mn>1</mn>
+    </mrow>
+   </mtd>
+  </mtr>
+  <mtr>
+   <mtd>
+    <mn>1</mn>
+   </mtd>
+   <mtd>
+    <mn>0</mn>
+   </mtd>
+  </mtr>
+ </mtable>
+ <mo form='postfix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>]</mo>
+</mrow>
+</math>
+</div>
+
+<div class='standard' id='magicparlabel-6770'>Now we assign the following labels for the two matrices revealed:</div>
+
+<div class='standard' id='magicparlabel-6771'>
+<math xmlns='http://www.w3.org/1998/Math/MathML' display='block'>
+<mrow>
+ <mstyle mathvariant='bold'>
+  <mi>I</mi>
+ </mstyle>
+ <mo stretchy='false'>=</mo>
+ <mo form='prefix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>[</mo>
+ <mtable>
+  <mtr>
+   <mtd>
+    <mn>1</mn>
+   </mtd>
+   <mtd>
+    <mn>0</mn>
+   </mtd>
+  </mtr>
+  <mtr>
+   <mtd>
+    <mn>0</mn>
+   </mtd>
+   <mtd>
+    <mn>1</mn>
+   </mtd>
+  </mtr>
+ </mtable>
+ <mo form='postfix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>]</mo>
+ <mspace width="40px"/>
+ <mstyle mathvariant='bold'>
+  <mover>
+   <mi>I</mi>
+   <mo stretchy='true'>&#x00AF;</mo>
+  </mover>
+ </mstyle>
+ <mo stretchy='false'>=</mo>
+ <mo form='prefix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>[</mo>
+ <mtable>
+  <mtr>
+   <mtd>
+    <mn>0</mn>
+   </mtd>
+   <mtd>
+    <mrow>
+     <mo stretchy='false'>-</mo>
+     <mn>1</mn>
+    </mrow>
+   </mtd>
+  </mtr>
+  <mtr>
+   <mtd>
+    <mn>1</mn>
+   </mtd>
+   <mtd>
+    <mn>0</mn>
+   </mtd>
+  </mtr>
+ </mtable>
+ <mo form='postfix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>]</mo>
+</mrow>
+</math>
+</div>
+
+<div class='standard' id='magicparlabel-6772'>which results in:</div>
+
+<div class='standard' id='magicparlabel-6773'>
+<math xmlns='http://www.w3.org/1998/Math/MathML' display='block'>
+<mrow>
+ <mi>R</mi>
+ <mrow>
+  <mo stretchy='false'>(</mo>
+  <mi>&#x3B8;</mi>
+  <mo stretchy='false'>)</mo>
+ </mrow>
+ <mo stretchy='false'>=</mo>
+ <mo>cos</mo>
+ <mi>&#x3B8;</mi>
+ <mstyle mathvariant='bold'>
+  <mi>I</mi>
+ </mstyle>
+ <mo stretchy='false'>+</mo>
+ <mo>sin</mo>
+ <mi>&#x3B8;</mi>
+ <mstyle mathvariant='bold'>
+  <mover>
+   <mi>I</mi>
+   <mo stretchy='true'>&#x00AF;</mo>
+  </mover>
+ </mstyle>
+ <mo stretchy='false'>=</mo>
+ <mi>a</mi>
+ <mstyle mathvariant='bold'>
+  <mi>I</mi>
+ </mstyle>
+ <mo stretchy='false'>+</mo>
+ <mi>b</mi>
+ <mstyle mathvariant='bold'>
+  <mover>
+   <mi>I</mi>
+   <mo stretchy='true'>&#x00AF;</mo>
+  </mover>
+ </mstyle>
+</mrow>
+</math>
+</div>
+
+<div class='standard' id='magicparlabel-6774'>Notice that <math xmlns='http://www.w3.org/1998/Math/MathML'>
+<mstyle mathvariant='bold'>
+ <mover>
+  <mi>I</mi>
+  <mo stretchy='true'>&#x00AF;</mo>
+ </mover>
+</mstyle>
+</math>
+ is exactly the same as the rotation matrix <math xmlns='http://www.w3.org/1998/Math/MathML'>
+<mrow>
+ <mi>R</mi>
+ <mrow>
+  <mo>(</mo>
+  <mfrac>
+   <mi>&#x3C0;</mi>
+   <mn>2</mn>
+  </mfrac>
+  <mo>)</mo>
+ </mrow>
+</mrow>
+</math>
+. Furthermore, the matrix <math xmlns='http://www.w3.org/1998/Math/MathML'>
+<mstyle mathvariant='bold'>
+ <mi>I</mi>
+</mstyle>
+</math>
+ is exactly the same as the identity matrix and produces no rotation at all. We can also identify some important identities:</div>
+
+<div class='standard' id='magicparlabel-6775'>
+<math xmlns='http://www.w3.org/1998/Math/MathML' display='block'>
+<mrow>
+ <mo form='prefix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>[</mo>
+ <mtable>
+  <mtr>
+   <mtd>
+    <mn>1</mn>
+   </mtd>
+   <mtd>
+    <mn>0</mn>
+   </mtd>
+  </mtr>
+  <mtr>
+   <mtd>
+    <mn>0</mn>
+   </mtd>
+   <mtd>
+    <mn>1</mn>
+   </mtd>
+  </mtr>
+ </mtable>
+ <mo form='postfix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>]</mo>
+ <mo form='prefix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>[</mo>
+ <mtable>
+  <mtr>
+   <mtd>
+    <mn>0</mn>
+   </mtd>
+   <mtd>
+    <mrow>
+     <mo stretchy='false'>-</mo>
+     <mn>1</mn>
+    </mrow>
+   </mtd>
+  </mtr>
+  <mtr>
+   <mtd>
+    <mn>1</mn>
+   </mtd>
+   <mtd>
+    <mn>0</mn>
+   </mtd>
+  </mtr>
+ </mtable>
+ <mo form='postfix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>]</mo>
+ <mo stretchy='false'>=</mo>
+ <mo form='prefix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>[</mo>
+ <mtable>
+  <mtr>
+   <mtd>
+    <mn>0</mn>
+   </mtd>
+   <mtd>
+    <mrow>
+     <mo stretchy='false'>-</mo>
+     <mn>1</mn>
+    </mrow>
+   </mtd>
+  </mtr>
+  <mtr>
+   <mtd>
+    <mn>1</mn>
+   </mtd>
+   <mtd>
+    <mn>0</mn>
+   </mtd>
+  </mtr>
+ </mtable>
+ <mo form='postfix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>]</mo>
+</mrow>
+</math>
+</div>
+
+<div class='standard' id='magicparlabel-6776'>
+<math xmlns='http://www.w3.org/1998/Math/MathML' display='block'>
+<mrow>
+ <mstyle mathvariant='bold'>
+  <mi>I</mi>
+ </mstyle>
+ <mstyle mathvariant='bold'>
+  <mover>
+   <mi>I</mi>
+   <mo stretchy='true'>&#x00AF;</mo>
+  </mover>
+ </mstyle>
+ <mo stretchy='false'>=</mo>
+ <mstyle mathvariant='bold'>
+  <mover>
+   <mi>I</mi>
+   <mo stretchy='true'>&#x00AF;</mo>
+  </mover>
+ </mstyle>
+</mrow>
+</math>
+</div>
+
+<div class='standard' id='magicparlabel-6777'>same for <math xmlns='http://www.w3.org/1998/Math/MathML'>
+<mrow>
+ <mstyle mathvariant='bold'>
+  <mover>
+   <mi>I</mi>
+   <mo stretchy='true'>&#x00AF;</mo>
+  </mover>
+ </mstyle>
+ <mstyle mathvariant='bold'>
+  <mi>I</mi>
+ </mstyle>
+ <mo stretchy='false'>=</mo>
+ <mstyle mathvariant='bold'>
+  <mover>
+   <mi>I</mi>
+   <mo stretchy='true'>&#x00AF;</mo>
+  </mover>
+ </mstyle>
+</mrow>
+</math>
+. Now for another:</div>
+
+<div class='standard' id='magicparlabel-6778'>
+<math xmlns='http://www.w3.org/1998/Math/MathML' display='block'>
+<mrow>
+ <mo form='prefix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>[</mo>
+ <mtable>
+  <mtr>
+   <mtd>
+    <mn>0</mn>
+   </mtd>
+   <mtd>
+    <mrow>
+     <mo stretchy='false'>-</mo>
+     <mn>1</mn>
+    </mrow>
+   </mtd>
+  </mtr>
+  <mtr>
+   <mtd>
+    <mn>1</mn>
+   </mtd>
+   <mtd>
+    <mn>0</mn>
+   </mtd>
+  </mtr>
+ </mtable>
+ <mo form='postfix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>]</mo>
+ <mo form='prefix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>[</mo>
+ <mtable>
+  <mtr>
+   <mtd>
+    <mn>0</mn>
+   </mtd>
+   <mtd>
+    <mrow>
+     <mo stretchy='false'>-</mo>
+     <mn>1</mn>
+    </mrow>
+   </mtd>
+  </mtr>
+  <mtr>
+   <mtd>
+    <mn>1</mn>
+   </mtd>
+   <mtd>
+    <mn>0</mn>
+   </mtd>
+  </mtr>
+ </mtable>
+ <mo form='postfix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>]</mo>
+ <mo stretchy='false'>=</mo>
+ <mo form='prefix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>[</mo>
+ <mtable>
+  <mtr>
+   <mtd>
+    <mrow>
+     <mo stretchy='false'>-</mo>
+     <mn>1</mn>
+    </mrow>
+   </mtd>
+   <mtd>
+    <mn>0</mn>
+   </mtd>
+  </mtr>
+  <mtr>
+   <mtd>
+    <mn>0</mn>
+   </mtd>
+   <mtd>
+    <mrow>
+     <mo stretchy='false'>-</mo>
+     <mn>1</mn>
+    </mrow>
+   </mtd>
+  </mtr>
+ </mtable>
+ <mo form='postfix' fence='true' stretchy='true' symmetric='true' lspace='0.1666em'>]</mo>
+</mrow>
+</math>
+</div>
+
+<div class='standard' id='magicparlabel-6779'>
+<math xmlns='http://www.w3.org/1998/Math/MathML' display='block'>
+<mrow>
+ <mstyle mathvariant='bold'>
+  <mover>
+   <mi>I</mi>
+   <mo stretchy='true'>&#x00AF;</mo>
+  </mover>
+ </mstyle>
+ <mstyle mathvariant='bold'>
+  <mover>
+   <mi>I</mi>
+   <mo stretchy='true'>&#x00AF;</mo>
+  </mover>
+ </mstyle>
+ <mo stretchy='false'>=</mo>
+ <msup>
+  <mstyle mathvariant='bold'>
+   <mover>
+    <mi>I</mi>
+    <mo stretchy='true'>&#x00AF;</mo>
+   </mover>
+  </mstyle>
+  <mn>2</mn>
+ </msup>
+ <mo stretchy='false'>=</mo>
+ <mo stretchy='false'>-</mo>
+ <mstyle mathvariant='bold'>
+  <mi>I</mi>
+ </mstyle>
+</mrow>
+</math>
+</div>
+
+<div class='standard' id='magicparlabel-6780'>Using these identities, we can show the same rotation product result as before:</div>
+
+<div class='standard' id='magicparlabel-6781'>
+<math xmlns='http://www.w3.org/1998/Math/MathML' display='block'>
+<mrow>
+ <mi>R</mi>
+ <mrow>
+  <mo stretchy='false'>(</mo>
+  <mi>&#x3B8;</mi>
+  <mo stretchy='false'>)</mo>
+ </mrow>
+ <mi>R</mi>
+ <mrow>
+  <mo stretchy='false'>(</mo>
+  <mi>&#x3D5;</mi>
+  <mo stretchy='false'>)</mo>
+ </mrow>
+ <mo stretchy='false'>=</mo>
+ <mrow>
+  <mo stretchy='false'>[</mo>
+  <mrow>
+   <mo>cos</mo>
+   <mi>&#x3B8;</mi>
+   <mo>&#x22C5;</mo>
+   <mstyle mathvariant='bold'>
+    <mi>I</mi>
+   </mstyle>
+   <mo stretchy='false'>+</mo>
+   <mo>sin</mo>
+   <mi>&#x3B8;</mi>
+   <mo>&#x22C5;</mo>
+   <mstyle mathvariant='bold'>
+    <mover>
+     <mi>I</mi>
+     <mo stretchy='true'>&#x00AF;</mo>
+    </mover>
+   </mstyle>
+  </mrow>
+  <mo stretchy='false'>]</mo>
+ </mrow>
+ <mrow>
+  <mo stretchy='false'>[</mo>
+  <mrow>
+   <mo>cos</mo>
+   <mi>&#x3D5;</mi>
+   <mo>&#x22C5;</mo>
+   <mstyle mathvariant='bold'>
+    <mi>I</mi>
+   </mstyle>
+   <mo stretchy='false'>+</mo>
+   <mo>sin</mo>
+   <mi>&#x3D5;</mi>
+   <mo>&#x22C5;</mo>
+   <mstyle mathvariant='bold'>
+    <mover>
+     <mi>I</mi>
+     <mo stretchy='true'>&#x00AF;</mo>
+    </mover>
+   </mstyle>
+  </mrow>
+  <mo stretchy='false'>]</mo>
+ </mrow>
+</mrow>
+</math>
+</div>
+
+<div class='standard' id='magicparlabel-6782'>
+<math xmlns='http://www.w3.org/1998/Math/MathML' display='block'>
+<mrow>
+ <mo stretchy='false'>=</mo>
+ <mrow>
+  <mo stretchy='false'>[</mo>
+  <mrow>
+   <mo>cos</mo>
+   <mi>&#x3B8;</mi>
+   <mo>cos</mo>
+   <mi>&#x3D5;</mi>
+   <mo stretchy='false'>-</mo>
+   <mo>sin</mo>
+   <mi>&#x3B8;</mi>
+   <mo>sin</mo>
+   <mi>&#x3D5;</mi>
+  </mrow>
+  <mo stretchy='false'>]</mo>
+ </mrow>
+ <mo>&#x22C5;</mo>
+ <mstyle mathvariant='bold'>
+  <mi>I</mi>
+ </mstyle>
+ <mo stretchy='false'>+</mo>
+ <mrow>
+  <mo stretchy='false'>[</mo>
+  <mrow>
+   <mo>cos</mo>
+   <mi>&#x3B8;</mi>
+   <mo>sin</mo>
+   <mi>&#x3D5;</mi>
+   <mo stretchy='false'>+</mo>
+   <mo>sin</mo>
+   <mi>&#x3B8;</mi>
+   <mo>cos</mo>
+   <mi>&#x3D5;</mi>
+  </mrow>
+  <mo stretchy='false'>]</mo>
+ </mrow>
+ <mo>&#x22C5;</mo>
+ <mstyle mathvariant='bold'>
+  <mover>
+   <mi>I</mi>
+   <mo stretchy='true'>&#x00AF;</mo>
+  </mover>
+ </mstyle>
+</mrow>
+</math>
+</div>
+
+<div class='standard' id='magicparlabel-6783'>Expanding the right-hand-side:</div>
+
+<div class='standard' id='magicparlabel-6784'>
+<math xmlns='http://www.w3.org/1998/Math/MathML' display='block'>
+<mrow>
+ <mi>&#x2026;</mi>
+ <mo stretchy='false'>=</mo>
+ <mrow>
+  <mo stretchy='false'>[</mo>
+  <mrow>
+   <mo>cos</mo>
+   <mi>&#x3B8;</mi>
+   <mstyle mathvariant='bold'>
+    <mi>I</mi>
+   </mstyle>
+  </mrow>
+  <mo stretchy='false'>]</mo>
+ </mrow>
+ <mo>&#x22C5;</mo>
+ <mrow>
+  <mo stretchy='false'>[</mo>
+  <mrow>
+   <mo>cos</mo>
+   <mi>&#x3D5;</mi>
+   <mo>&#x22C5;</mo>
+   <mstyle mathvariant='bold'>
+    <mi>I</mi>
+   </mstyle>
+  </mrow>
+  <mo stretchy='false'>]</mo>
+ </mrow>
+ <mo stretchy='false'>+</mo>
+ <mrow>
+  <mo stretchy='false'>[</mo>
+  <mrow>
+   <mo>cos</mo>
+   <mi>&#x3B8;</mi>
+   <mo>&#x22C5;</mo>
+   <mstyle mathvariant='bold'>
+    <mi>I</mi>
+   </mstyle>
+  </mrow>
+  <mo stretchy='false'>]</mo>
+ </mrow>
+ <mo>&#x22C5;</mo>
+ <mrow>
+  <mo stretchy='false'>[</mo>
+  <mrow>
+   <mo>sin</mo>
+   <mi>&#x3D5;</mi>
+   <mo>&#x22C5;</mo>
+   <mstyle mathvariant='bold'>
+    <mover>
+     <mi>I</mi>
+     <mo stretchy='true'>&#x00AF;</mo>
+    </mover>
+   </mstyle>
+  </mrow>
+  <mo stretchy='false'>]</mo>
+ </mrow>
+ <mo stretchy='false'>+</mo>
+ <mrow>
+  <mo stretchy='false'>[</mo>
+  <mrow>
+   <mo>sin</mo>
+   <mi>&#x3B8;</mi>
+   <mo>&#x22C5;</mo>
+   <mstyle mathvariant='bold'>
+    <mover>
+     <mi>I</mi>
+     <mo stretchy='true'>&#x00AF;</mo>
+    </mover>
+   </mstyle>
+  </mrow>
+  <mo stretchy='false'>]</mo>
+ </mrow>
+ <mo>&#x22C5;</mo>
+ <mrow>
+  <mo stretchy='false'>[</mo>
+  <mrow>
+   <mo>cos</mo>
+   <mi>&#x3D5;</mi>
+   <mo>&#x22C5;</mo>
+   <mstyle mathvariant='bold'>
+    <mi>I</mi>
+   </mstyle>
+  </mrow>
+  <mo stretchy='false'>]</mo>
+ </mrow>
+ <mo stretchy='false'>+</mo>
+ <mrow>
+  <mo stretchy='false'>[</mo>
+  <mrow>
+   <mo>sin</mo>
+   <mi>&#x3B8;</mi>
+   <mo>&#x22C5;</mo>
+   <mstyle mathvariant='bold'>
+    <mover>
+     <mi>I</mi>
+     <mo stretchy='true'>&#x00AF;</mo>
+    </mover>
+   </mstyle>
+  </mrow>
+  <mo stretchy='false'>]</mo>
+ </mrow>
+ <mo>&#x22C5;</mo>
+ <mrow>
+  <mo stretchy='false'>[</mo>
+  <mrow>
+   <mo>sin</mo>
+   <mi>&#x3D5;</mi>
+   <mo>&#x22C5;</mo>
+   <mstyle mathvariant='bold'>
+    <mover>
+     <mi>I</mi>
+     <mo stretchy='true'>&#x00AF;</mo>
+    </mover>
+   </mstyle>
+  </mrow>
+  <mo stretchy='false'>]</mo>
+ </mrow>
+</mrow>
+</math>
+</div>
+
+<div class='standard' id='magicparlabel-6785'>
+<math xmlns='http://www.w3.org/1998/Math/MathML' display='block'>
+<mrow>
+ <mo stretchy='false'>=</mo>
+ <mrow>
+  <mo stretchy='false'>[</mo>
+  <mrow>
+   <mo>cos</mo>
+   <mi>&#x3B8;</mi>
+   <mo>cos</mo>
+   <mi>&#x3D5;</mi>
+   <mo>&#x22C5;</mo>
+   <mstyle mathvariant='bold'>
+    <mi>I</mi>
+   </mstyle>
+   <mo>&#x22C5;</mo>
+   <mstyle mathvariant='bold'>
+    <mi>I</mi>
+   </mstyle>
+  </mrow>
+  <mo stretchy='false'>]</mo>
+ </mrow>
+ <mo stretchy='false'>+</mo>
+ <mrow>
+  <mo stretchy='false'>[</mo>
+  <mrow>
+   <mo>cos</mo>
+   <mi>&#x3B8;</mi>
+   <mo>sin</mo>
+   <mi>&#x3D5;</mi>
+   <mo>&#x22C5;</mo>
+   <mstyle mathvariant='bold'>
+    <mi>I</mi>
+   </mstyle>
+   <mo>&#x22C5;</mo>
+   <mstyle mathvariant='bold'>
+    <mover>
+     <mi>I</mi>
+     <mo stretchy='true'>&#x00AF;</mo>
+    </mover>
+   </mstyle>
+  </mrow>
+  <mo stretchy='false'>]</mo>
+ </mrow>
+ <mo stretchy='false'>+</mo>
+ <mrow>
+  <mo stretchy='false'>[</mo>
+  <mrow>
+   <mo>sin</mo>
+   <mi>&#x3B8;</mi>
+   <mo>cos</mo>
+   <mi>&#x3D5;</mi>
+   <mo>&#x22C5;</mo>
+   <mstyle mathvariant='bold'>
+    <mover>
+     <mi>I</mi>
+     <mo stretchy='true'>&#x00AF;</mo>
+    </mover>
+   </mstyle>
+   <mo>&#x22C5;</mo>
+   <mstyle mathvariant='bold'>
+    <mi>I</mi>
+   </mstyle>
+  </mrow>
+  <mo stretchy='false'>]</mo>
+ </mrow>
+ <mo stretchy='false'>+</mo>
+ <mrow>
+  <mo stretchy='false'>[</mo>
+  <mrow>
+   <mo>sin</mo>
+   <mi>&#x3B8;</mi>
+   <mo>sin</mo>
+   <mi>&#x3D5;</mi>
+   <mo>&#x22C5;</mo>
+   <mstyle mathvariant='bold'>
+    <mover>
+     <mi>I</mi>
+     <mo stretchy='true'>&#x00AF;</mo>
+    </mover>
+   </mstyle>
+   <mo>&#x22C5;</mo>
+   <mstyle mathvariant='bold'>
+    <mover>
+     <mi>I</mi>
+     <mo stretchy='true'>&#x00AF;</mo>
+    </mover>
+   </mstyle>
+  </mrow>
+  <mo stretchy='false'>]</mo>
+ </mrow>
+</mrow>
+</math>
+</div>
+
+<div class='standard' id='magicparlabel-6786'>Using the mentioned identities:</div>
+
+<div class='standard' id='magicparlabel-6787'>
+<math xmlns='http://www.w3.org/1998/Math/MathML' display='block'>
+<mrow>
+ <mi>R</mi>
+ <mrow>
+  <mo stretchy='false'>(</mo>
+  <mi>&#x3B8;</mi>
+  <mo stretchy='false'>)</mo>
+ </mrow>
+ <mi>R</mi>
+ <mrow>
+  <mo stretchy='false'>(</mo>
+  <mi>&#x3D5;</mi>
+  <mo stretchy='false'>)</mo>
+ </mrow>
+ <mo stretchy='false'>=</mo>
+ <mrow>
+  <mo stretchy='false'>[</mo>
+  <mrow>
+   <mo>cos</mo>
+   <mi>&#x3B8;</mi>
+   <mo>cos</mo>
+   <mi>&#x3D5;</mi>
+   <mo stretchy='false'>-</mo>
+   <mo>sin</mo>
+   <mi>&#x3B8;</mi>
+   <mo>sin</mo>
+   <mi>&#x3D5;</mi>
+  </mrow>
+  <mo stretchy='false'>]</mo>
+ </mrow>
+ <mo>&#x22C5;</mo>
+ <mstyle mathvariant='bold'>
+  <mi>I</mi>
+ </mstyle>
+ <mo stretchy='false'>+</mo>
+ <mrow>
+  <mo stretchy='false'>[</mo>
+  <mrow>
+   <mo>cos</mo>
+   <mi>&#x3B8;</mi>
+   <mo>sin</mo>
+   <mi>&#x3D5;</mi>
+   <mo stretchy='false'>+</mo>
+   <mo>sin</mo>
+   <mi>&#x3B8;</mi>
+   <mo>cos</mo>
+   <mi>&#x3D5;</mi>
+  </mrow>
+  <mo stretchy='false'>]</mo>
+ </mrow>
+ <mo>&#x22C5;</mo>
+ <mstyle mathvariant='bold'>
+  <mover>
+   <mi>I</mi>
+   <mo stretchy='true'>&#x00AF;</mo>
+  </mover>
+ </mstyle>
+</mrow>
+</math>
+</div>
+
+<div class='standard' id='magicparlabel-6788'>
+<math xmlns='http://www.w3.org/1998/Math/MathML' display='block'>
+<mrow>
+ <mo stretchy='false'>=</mo>
+ <mo>cos</mo>
+ <mrow>
+  <mo stretchy='false'>(</mo>
+  <mrow>
+   <mi>&#x3B8;</mi>
+   <mo stretchy='false'>+</mo>
+   <mi>&#x3D5;</mi>
+  </mrow>
+  <mo stretchy='false'>)</mo>
+ </mrow>
+ <mo>&#x22C5;</mo>
+ <mstyle mathvariant='bold'>
+  <mi>I</mi>
+ </mstyle>
+ <mo stretchy='false'>+</mo>
+ <mo>sin</mo>
+ <mrow>
+  <mo stretchy='false'>(</mo>
+  <mrow>
+   <mi>&#x3B8;</mi>
+   <mo stretchy='false'>+</mo>
+   <mi>&#x3D5;</mi>
+  </mrow>
+  <mo stretchy='false'>)</mo>
+ </mrow>
+ <mo>&#x22C5;</mo>
+ <mstyle mathvariant='bold'>
+  <mover>
+   <mi>I</mi>
+   <mo stretchy='true'>&#x00AF;</mo>
+  </mover>
+ </mstyle>
+</mrow>
+</math>
+</div>
+
+<div class='standard' id='magicparlabel-6789'>All that has happened, is that the exact same rotation product has been demonstrated in a slightly different way by decomposing the original rotation matrix into an identity matrix term and a 90 degree rotation term.</div>
+</body>
+</html>
+
