@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagonal Parameterization</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: #1a1a2e;
+            color: #eee;
+            font-family: 'Courier New', monospace;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            color: #00ff88;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .subtitle {
+            color: #888;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        .container {
+            display: grid;
+            grid-template-columns: 600px 450px;
+            gap: 30px;
+            max-width: 1100px;
+        }
+        canvas {
+            border: 2px solid #444;
+            background: #0a0e27;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+        }
+        .controls {
+            background: #16213e;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #0f3460;
+        }
+        .control-group {
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #0f3460;
+        }
+        .control-group:last-child {
+            border-bottom: none;
+        }
+        .control-group h3 {
+            color: #00ff88;
+            margin: 0 0 10px 0;
+            font-size: 14px;
+        }
+        label {
+            display: block;
+            color: #aaa;
+            margin: 10px 0 5px 0;
+            font-size: 12px;
+        }
+        input[type="range"] {
+            width: 100%;
+        }
+        .value-display {
+            color: #00ff88;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        button {
+            background: #0f3460;
+            color: #00ff88;
+            border: 1px solid #00ff88;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px 5px 5px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+        }
+        button:hover {
+            background: #00ff88;
+            color: #0f3460;
+        }
+        .formula-box {
+            background: #0a0e27;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 10px 0;
+            font-size: 12px;
+            line-height: 1.8;
+            border: 1px solid #0f3460;
+        }
+        .highlight {
+            color: #ffd93d;
+            font-weight: bold;
+        }
+        .cyan {
+            color: #00d4ff;
+        }
+        .green {
+            color: #00ff88;
+        }
+        .pink {
+            color: #ff6b9d;
+        }
+        .orange {
+            color: #ffa500;
+        }
+        code {
+            background: #16213e;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 11px;
+        }
+    </style>
+</head>
+<body>
+    <h1>📐 Diagonal Parameterization</h1>
+    <div class="subtitle">Along the Diagonal</div>
+    
+    <div class="container">
+        <div>
+            <canvas id="canvas" width="600" height="600"></canvas>
+        </div>
+        
+        <div class="controls">
+            <div class="control-group">
+                <h3>Parameter Control</h3>
+                <label>
+                    Parameter t (distance along diagonal): 
+                    <span class="value-display" id="tValue">0.500</span>
+                </label>
+                <input type="range" id="tSlider" min="0" max="1" value="0.5" step="0.001">
+                
+                <div style="margin-top: 10px;">
+                    <button onclick="setT(0)">t = 0</button>
+                    <button onclick="setT(0.25)">t = 0.25</button>
+                    <button onclick="setT(0.5)">t = 0.5</button>
+                    <button onclick="setT(0.75)">t = 0.75</button>
+                    <button onclick="setT(1)">t = 1</button>
+                </div>
+            </div>
+            
+            <div class="control-group">
+                <h3>Display Options</h3>
+                <label><input type="checkbox" id="showGrid" checked> Show Grid</label>
+                <label><input type="checkbox" id="showLabels" checked> Show Labels</label>
+                <label><input type="checkbox" id="showConstruction" checked> Show Lines</label>
+            </div>
+            
+            <div class="formula-box">
+                <strong class="green">Current Values:</strong><br><br>
+                
+                <strong class="orange">On Diagonal:</strong><br>
+                Point: (<code>1-t</code>, <code>t</code>) = 
+                (<span class="value-display" id="diagX">0.500</span>, 
+                <span class="value-display" id="diagY">0.500</span>)<br><br>
+                
+                <strong class="cyan">Distance from origin:</strong><br>
+                r = √(1 - 2t + 2t²) = <span class="value-display" id="rValue">0.7071</span><br><br>
+                
+                <strong class="pink">On Unit Circle:</strong><br>
+                cos = (1-t)/r = <span class="value-display" id="cosValue">0.7071</span><br>
+                sin = t/r = <span class="value-display" id="sinValue">0.7071</span><br><br>
+                
+                <strong class="highlight">Angle:</strong> 
+                <span class="value-display" id="angleValue">45.0°</span>
+            </div>
+            
+            <div class="formula-box">
+                <strong class="green">The Derivation:</strong><br><br>
+                
+                <strong>1. Diagonal Line:</strong><br>
+                <code>x + y = 1</code> (from (1,0) to (0,1))<br><br>
+                
+                <strong>2. Point on Diagonal:</strong><br>
+                At parameter t: <code>(x, y) = (1-t, t)</code><br><br>
+                
+                <strong>3. Distance from Origin:</strong><br>
+                <code>r = √((1-t)² + t²)</code><br>
+                <code>r = √(1 - 2t + t² + t²)</code><br>
+                <code class="highlight">r = √(1 - 2t + 2t²)</code><br><br>
+                
+                <strong>4. Project to Unit Circle:</strong><br>
+                <code class="pink">cos(θ) = (1-t) / √(1 - 2t + 2t²)</code><br>
+                <code class="pink">sin(θ) = t / √(1 - 2t + 2t²)</code><br><br>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const scale = 250; // pixels per unit
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height / 2;
+        
+        function toCanvas(x, y) {
+            return {
+                x: centerX + x * scale,
+                y: centerY - y * scale
+            };
+        }
+        
+        function drawGrid() {
+            if (!document.getElementById('showGrid').checked) return;
+            
+            ctx.strokeStyle = '#1a1a2e';
+            ctx.lineWidth = 1;
+            
+            for (let i = -2; i <= 2; i += 0.2) {
+                const p1 = toCanvas(i, -2);
+                const p2 = toCanvas(i, 2);
+                ctx.beginPath();
+                ctx.moveTo(p1.x, p1.y);
+                ctx.lineTo(p2.x, p2.y);
+                ctx.stroke();
+                
+                const p3 = toCanvas(-2, i);
+                const p4 = toCanvas(2, i);
+                ctx.beginPath();
+                ctx.moveTo(p3.x, p3.y);
+                ctx.lineTo(p4.x, p4.y);
+                ctx.stroke();
+            }
+        }
+        
+        function drawAxes() {
+            ctx.strokeStyle = '#555';
+            ctx.lineWidth = 2;
+            
+            // X-axis
+            const xStart = toCanvas(-1.3, 0);
+            const xEnd = toCanvas(1.3, 0);
+            ctx.beginPath();
+            ctx.moveTo(xStart.x, xStart.y);
+            ctx.lineTo(xEnd.x, xEnd.y);
+            ctx.stroke();
+            
+            // Y-axis
+            const yStart = toCanvas(0, -1.3);
+            const yEnd = toCanvas(0, 1.3);
+            ctx.beginPath();
+            ctx.moveTo(yStart.x, yStart.y);
+            ctx.lineTo(yEnd.x, yEnd.y);
+            ctx.stroke();
+            
+            if (document.getElementById('showLabels').checked) {
+                ctx.fillStyle = '#888';
+                ctx.font = '12px monospace';
+                
+                const p1 = toCanvas(1, 0);
+                ctx.fillText('1', p1.x + 5, p1.y + 15);
+                
+                const p2 = toCanvas(0, 1);
+                ctx.fillText('1', p2.x - 15, p2.y + 5);
+            }
+        }
+        
+        function drawUnitCircle() {
+            const center = toCanvas(0, 0);
+            
+            ctx.strokeStyle = '#00ff88';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(center.x, center.y, scale, 0, 2 * Math.PI);
+            ctx.stroke();
+        }
+        
+        function drawDiagonal() {
+            const p1 = toCanvas(1, 0);
+            const p2 = toCanvas(0, 1);
+            
+            ctx.strokeStyle = '#ffa500';
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.moveTo(p1.x, p1.y);
+            ctx.lineTo(p2.x, p2.y);
+            ctx.stroke();
+            
+            if (document.getElementById('showLabels').checked) {
+                ctx.fillStyle = '#ffa500';
+                ctx.font = 'bold 14px monospace';
+                const mid = toCanvas(0.5, 0.5);
+                ctx.fillText('x + y = 1', mid.x + 10, mid.y - 10);
+            }
+            
+            // Draw start and end points
+            ctx.fillStyle = '#ffa500';
+            ctx.beginPath();
+            ctx.arc(p1.x, p1.y, 5, 0, 2 * Math.PI);
+            ctx.fill();
+            
+            ctx.beginPath();
+            ctx.arc(p2.x, p2.y, 5, 0, 2 * Math.PI);
+            ctx.fill();
+            
+            if (document.getElementById('showLabels').checked) {
+                ctx.fillStyle = '#ffa500';
+                ctx.font = '12px monospace';
+                ctx.fillText('(1, 0)', p1.x + 10, p1.y + 15);
+                ctx.fillText('(0, 1)', p2.x - 35, p2.y - 5);
+            }
+        }
+        
+        function drawConstruction(t) {
+            const showConstruction = document.getElementById('showConstruction').checked;
+            const showLabels = document.getElementById('showLabels').checked;
+            
+            // Point on diagonal: (1-t, t)
+            const diagX = 1 - t;
+            const diagY = t;
+            const pDiag = toCanvas(diagX, diagY);
+            
+            // Distance from origin
+            const r = Math.sqrt(1 - 2*t + 2*t*t);
+            
+            // Point on unit circle
+            const circleX = diagX / r;
+            const circleY = diagY / r;
+            const pCircle = toCanvas(circleX, circleY);
+            
+            const origin = toCanvas(0, 0);
+            
+            if (showConstruction) {
+                // Line from origin to diagonal point
+                ctx.strokeStyle = '#00d4ff';
+                ctx.lineWidth = 3;
+                ctx.setLineDash([5, 5]);
+                ctx.beginPath();
+                ctx.moveTo(origin.x, origin.y);
+                ctx.lineTo(pDiag.x, pDiag.y);
+                ctx.stroke();
+                ctx.setLineDash([]);
+                
+                if (showLabels) {
+                    ctx.fillStyle = '#00d4ff';
+                    ctx.font = '12px monospace';
+                    const midX = (origin.x + pDiag.x) / 2;
+                    const midY = (origin.y + pDiag.y) / 2;
+                    ctx.fillText('√2 · t', midX + 10, midY - 5);
+                }
+                
+                // Vertical and horizontal from diagonal point
+                ctx.strokeStyle = '#888';
+                ctx.lineWidth = 1;
+                ctx.setLineDash([3, 3]);
+                
+                const pDiagBottom = toCanvas(diagX, 0);
+                ctx.beginPath();
+                ctx.moveTo(pDiag.x, pDiag.y);
+                ctx.lineTo(pDiagBottom.x, pDiagBottom.y);
+                ctx.stroke();
+                
+                const pDiagLeft = toCanvas(0, diagY);
+                ctx.beginPath();
+                ctx.moveTo(pDiag.x, pDiag.y);
+                ctx.lineTo(pDiagLeft.x, pDiagLeft.y);
+                ctx.stroke();
+                
+                ctx.setLineDash([]);
+                
+                if (showLabels) {
+                    ctx.fillStyle = '#888';
+                    ctx.font = '11px monospace';
+                    ctx.fillText('1-t', pDiagBottom.x, pDiagBottom.y + 15);
+                    ctx.fillText('t', pDiagLeft.x - 20, pDiagLeft.y);
+                }
+            }
+            
+            // Line from origin through diagonal to circle
+            ctx.strokeStyle = '#ff6b9d';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(origin.x, origin.y);
+            ctx.lineTo(pCircle.x, pCircle.y);
+            ctx.stroke();
+            
+            if (showConstruction && showLabels) {
+                ctx.fillStyle = '#ff6b9d';
+                ctx.font = '12px monospace';
+                const midX = (origin.x + pCircle.x) / 2;
+                const midY = (origin.y + pCircle.y) / 2;
+                ctx.fillText('r = 1', midX - 30, midY + 15);
+            }
+            
+            // Draw points
+            // Diagonal point
+            ctx.fillStyle = '#ffa500';
+            ctx.beginPath();
+            ctx.arc(pDiag.x, pDiag.y, 6, 0, 2 * Math.PI);
+            ctx.fill();
+            
+            if (showLabels) {
+                ctx.fillStyle = '#ffa500';
+                ctx.font = 'bold 13px monospace';
+                ctx.fillText(`(${diagX.toFixed(3)}, ${diagY.toFixed(3)})`, pDiag.x + 10, pDiag.y - 10);
+            }
+            
+            // Circle point
+            ctx.fillStyle = '#ff6b9d';
+            ctx.beginPath();
+            ctx.arc(pCircle.x, pCircle.y, 7, 0, 2 * Math.PI);
+            ctx.fill();
+            
+            if (showLabels) {
+                ctx.fillStyle = '#ff6b9d';
+                ctx.font = 'bold 13px monospace';
+                ctx.fillText(`(${circleX.toFixed(3)}, ${circleY.toFixed(3)})`, pCircle.x + 10, pCircle.y + 20);
+            }
+            
+            // Draw angle arc
+            const angleRad = Math.atan2(circleY, circleX);
+            ctx.strokeStyle = '#ffd93d';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(origin.x, origin.y, scale * 0.2, 0, -angleRad, true);
+            ctx.stroke();
+            
+            if (showLabels) {
+                ctx.fillStyle = '#ffd93d';
+                ctx.font = '12px monospace';
+                const labelDist = scale * 0.25;
+                const labelX = origin.x + labelDist * Math.cos(-angleRad / 2);
+                const labelY = origin.y + labelDist * Math.sin(-angleRad / 2);
+                ctx.fillText('θ', labelX, labelY);
+            }
+            
+            // Update display values
+            document.getElementById('diagX').textContent = diagX.toFixed(4);
+            document.getElementById('diagY').textContent = diagY.toFixed(4);
+            document.getElementById('rValue').textContent = r.toFixed(4);
+            document.getElementById('cosValue').textContent = circleX.toFixed(4);
+            document.getElementById('sinValue').textContent = circleY.toFixed(4);
+            document.getElementById('angleValue').textContent = (angleRad * 180 / Math.PI).toFixed(1) + '°';
+        }
+        
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            const t = parseFloat(document.getElementById('tSlider').value);
+            document.getElementById('tValue').textContent = t.toFixed(3);
+            
+            drawGrid();
+            drawAxes();
+            drawUnitCircle();
+            drawDiagonal();
+            drawConstruction(t);
+        }
+        
+        function setT(value) {
+            document.getElementById('tSlider').value = value;
+            draw();
+        }
+        
+        // Event listeners
+        document.getElementById('tSlider').addEventListener('input', draw);
+        document.getElementById('showGrid').addEventListener('change', draw);
+        document.getElementById('showLabels').addEventListener('change', draw);
+        document.getElementById('showConstruction').addEventListener('change', draw);
+        
+        // Initial draw
+        draw();
+    </script>
+</body>
+</html>
