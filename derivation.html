@@ -279,15 +279,6 @@
             ctx.lineTo(p2.x, p2.y);
             ctx.stroke();
             
-            /*
-            if (document.getElementById('showLabels').checked) {
-                ctx.fillStyle = '#ffa500';
-                ctx.font = 'bold 14px monospace';
-                const mid = toCanvas(0.5, 0.5);
-                ctx.fillText('x + y = 1', mid.x + 10, mid.y - 10);
-            }
-			*/
-            
             // Draw start and end points
             ctx.fillStyle = '#ffa500';
             ctx.beginPath();
@@ -341,7 +332,7 @@
                     ctx.font = '12px monospace';
                     const midX = (origin.x + pDiag.x) / 2;
                     const midY = (origin.y + pDiag.y) / 2;
-                    ctx.fillText('√2 · t', midX + 10, midY - 5);
+                    ctx.fillText('√(1 - 2t + 2t²)', midX + 10, midY - 5);
                 }
                 
                 // Vertical and horizontal from diagonal point
