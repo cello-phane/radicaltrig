@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>RAU Axis Reflection with Endpoint Labels</title>
+  <title>RAU Axis Reflection</title>
   <style>
     body {
       background: #fff;
@@ -35,7 +35,7 @@
 <canvas id="canvas" width="500" height="500"></canvas>
 <br>
 <label>Phase:
-  <input type="range" id="slider" min="0" max="1" step="0.0001" value="0">
+  <input type="range" id="slider" min="0" max="1" step="0.0001" value="1">
 </label>
 <label><input type="checkbox" id="auto"> Auto</label>
 <label>Speed:
@@ -308,7 +308,7 @@ function animate(timestamp) {
 
   if (auto.checked) {
     const speed = parseFloat(speedSlider.value);
-    t = (t + dt * speed) % 4;
+    t = (t + dt * speed) % 1;
     slider.value = t;
   }
 
