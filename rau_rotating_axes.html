@@ -3,44 +3,284 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>RAU Axis Reflection</title>
+  <title>RAU Axis Reflection with Matrix Notation</title>
   <style>
     body {
-      background: #fff;
+      background: #f8f9fa;
       color: #222;
-      text-align: center;
-      font-family: monospace;
+      font-family: 'Georgia', serif;
       margin: 0;
-      padding: 10px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
+    
+    .container {
+      max-width: 1200px;
+      width: 100%;
+    }
+    
+    h1 {
+      text-align: center;
+      font-size: 28px;
+      margin-bottom: 10px;
+    }
+    
+    .subtitle {
+      text-align: center;
+      color: #666;
+      margin-bottom: 30px;
+      font-style: italic;
+    }
+    
+    .main-content {
+      display: grid;
+      grid-template-columns: 500px 1fr;
+      gap: 30px;
+      align-items: start;
+    }
+    
+    .canvas-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    
     canvas {
-      border: 1px solid #ccc;
-      margin-top: 10px;
+      border: 2px solid #ddd;
       border-radius: 8px;
       background: #fff;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
       cursor: default;
     }
-    label { 
-      margin: 0 8px;
-      display: inline-block;
+    
+    .controls {
+      margin-top: 20px;
+      padding: 15px;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      width: 100%;
     }
+    
+    label { 
+      margin: 0 10px;
+      display: inline-block;
+      font-family: monospace;
+    }
+    
     input[type="range"] {
       width: 150px;
+    }
+    
+    .matrix-panel {
+      background: white;
+      padding: 25px;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    
+    .matrix-section {
+      margin-bottom: 25px;
+    }
+    
+    .matrix-section h3 {
+      margin-top: 0;
+      margin-bottom: 15px;
+      color: #2c3e50;
+      font-size: 18px;
+      border-bottom: 2px solid #3498db;
+      padding-bottom: 5px;
+    }
+    
+    .matrix {
+      display: inline-grid;
+      grid-template-columns: auto auto;
+      gap: 10px 15px;
+      padding: 15px 25px;
+      border-left: 2px solid #333;
+      border-right: 2px solid #333;
+      margin: 10px;
+      font-family: 'Courier New', monospace;
+      font-size: 16px;
+      position: relative;
+    }
+    
+    .matrix::before,
+    .matrix::after {
+      content: '';
+      position: absolute;
+      width: 8px;
+      height: 2px;
+      background: #333;
+    }
+    
+    .matrix::before {
+      top: 0;
+      left: 0;
+    }
+    
+    .matrix::after {
+      bottom: 0;
+      right: 0;
+    }
+    
+    .matrix-label {
+      font-weight: bold;
+      margin-right: 10px;
+      font-style: italic;
+    }
+    
+    .matrix-value {
+      text-align: right;
+      font-weight: bold;
+    }
+    
+    .matrix-value.cos-val {
+      color: #e74c3c;
+    }
+    
+    .matrix-value.sin-val {
+      color: #3498db;
+    }
+    
+    .matrix-value.neg {
+      color: #95a5a6;
+    }
+    
+    .formula {
+      background: #ecf0f1;
+      padding: 15px;
+      border-radius: 5px;
+      margin: 10px 0;
+      font-family: 'Courier New', monospace;
+      font-size: 14px;
+    }
+    
+    .explanation {
+      margin-top: 10px;
+      padding: 10px;
+      background: #fff9e6;
+      border-left: 4px solid #f39c12;
+      border-radius: 3px;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    
+    .vector-notation {
+      margin-top: 15px;
+    }
+    
+    .vector {
+      display: inline-grid;
+      grid-template-columns: auto;
+      gap: 8px;
+      padding: 10px 20px;
+      border-left: 2px solid #333;
+      border-right: 2px solid #333;
+      font-family: 'Courier New', monospace;
+      font-size: 16px;
+      margin: 0 10px;
+    }
+    
+    .identity-matrix {
+      color: #27ae60;
+    }
+    
+    .rotation-matrix {
+      color: #9b59b6;
+    }
+    
+    @media (max-width: 900px) {
+      .main-content {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </head>
 <body>
 
-<h2>RAU Axis Reflection — Symmetry Mapping</h2>
-<canvas id="canvas" width="500" height="500"></canvas>
-<br>
-<label>Phase:
-  <input type="range" id="slider" min="0" max="1" step="0.0001" value="1">
-</label>
-<label><input type="checkbox" id="auto"> Auto</label>
-<label>Speed:
-  <input type="range" id="speed" min="0.1" max="2" step="0.1" value="0.1">
-</label>
+<div class="container">
+  <h1>RAU Rotation with Matrix Notation</h1>
+  <div class="subtitle">Connecting Geometric Rotations to Matrix Representations</div>
+  
+  <div class="main-content">
+    <div class="canvas-section">
+      <canvas id="canvas" width="600" height="600"></canvas>
+      <div class="controls">
+        <label>Phase:
+          <input type="range" id="slider" min="0" max="1" step="0.0001" value="1">
+        </label>
+        <label><input type="checkbox" id="auto"> Auto</label>
+        <label>Speed:
+          <input type="range" id="speed" min="0.1" max="2" step="0.1" value="0.1">
+        </label>
+      </div>
+      
+      <div class="matrix-section" id="relationship-section" style="display: none;">
+        <div id="relationship-info" class="explanation">
+        </div>
+      </div>
+    </div>
+    
+    <div class="matrix-panel">
+      <div class="matrix-section">
+        <h3>Current Rotation Matrix R(θ)</h3>
+        <div>
+          <span class="matrix-label">R(θ) =</span>
+          <div class="matrix" id="rotation-matrix">
+            <span class="matrix-value cos-val" id="r11">1.000</span>
+            <span class="matrix-value sin-val" id="r12">0.000</span>
+            <span class="matrix-value sin-val" id="r21">0.000</span>
+            <span class="matrix-value cos-val" id="r22">1.000</span>
+          </div>
+        </div>
+        <div class="formula" id="matrix-formula">
+          R(θ) = cos(θ)·<span class="identity-matrix">I</span> + sin(θ)·<span class="rotation-matrix">Ī</span>
+        </div>
+      </div>
+      
+      <div class="matrix-section">
+        <h3>Matrix Components</h3>
+        <div>
+          <span class="matrix-label identity-matrix">I</span> (Identity) =
+          <div class="matrix">
+            <span>1</span><span>0</span>
+            <span>0</span><span>1</span>
+          </div>
+        </div>
+        <div style="margin-top: 15px;">
+          <span class="matrix-label rotation-matrix">Ī</span> (90° Rotation) =
+          <div class="matrix">
+            <span>0</span><span>-1</span>
+            <span>1</span><span>0</span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="matrix-section">
+        <h3>Vector Transformation</h3>
+        <div class="vector-notation">
+          <span class="matrix-label">v̄ =</span>
+          <div class="vector">
+            <span class="matrix-value cos-val" id="v1">a</span>
+            <span class="matrix-value sin-val" id="v2">b</span>
+          </div>
+          <span style="font-size: 20px; margin: 0 10px;">→</span>
+          <span class="matrix-label">v̄' =</span>
+          <div class="vector">
+            <span class="matrix-value" id="v1-prime">a'</span>
+            <span class="matrix-value" id="v2-prime">b'</span>
+          </div>
+        </div>
+        <div class="explanation" id="transform-explanation">
+          Apply R(θ) to vector v̄ to rotate it by angle θ.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
 <script>
 const canvas = document.getElementById('canvas');
@@ -69,14 +309,7 @@ function getRotationComponents(param) {
   const q = Math.floor(p) % 4;
   const frac = p - Math.floor(p);
   const { rcos: c, rsin: s } = getRAUComponents(frac);
-  /*
-  let cos_result, sin_result;
-  switch (q) {
-    case 0: cos_result = c; sin_result = s; break;
-    case 1: cos_result = -s; sin_result = c; break;
-    case 2: cos_result = -c; sin_result = -s; break;
-    case 3: cos_result = s; sin_result = -c; break;
-  }*/
+  
   const q0 = Number(q === 0);
   const q1 = Number(q === 1);
   const q2 = Number(q === 2);
@@ -84,6 +317,30 @@ function getRotationComponents(param) {
   let cos_result = c*q0 - s*q1 - c*q2 + s*q3;
   let sin_result = (s*q0 + c*q1 - s*q2 - c*q3) * Math.sign(param); 
   return { cos: cos_result, sin: sin_result };
+}
+
+function updateMatrixDisplay(cos, sin) {
+  document.getElementById('r11').textContent = cos.toFixed(3);
+  document.getElementById('r12').textContent = (-sin).toFixed(3);
+  document.getElementById('r21').textContent = sin.toFixed(3);
+  document.getElementById('r22').textContent = cos.toFixed(3);
+  
+  const theta = Math.atan2(sin, cos) * 180 / Math.PI;
+  document.getElementById('matrix-formula').innerHTML = 
+    `R(${theta.toFixed(1)}°) = ${cos.toFixed(3)}·<span class="identity-matrix">I</span> + ${sin.toFixed(3)}·<span class="rotation-matrix">Ī</span>`;
+}
+
+function updateVectorDisplay(cos, sin) {
+  document.getElementById('v1').textContent = 'a';
+  document.getElementById('v2').textContent = 'b';
+  document.getElementById('v1-prime').textContent = `a·${cos.toFixed(2)} - b·${sin.toFixed(2)}`;
+  document.getElementById('v2-prime').textContent = `a·${sin.toFixed(2)} + b·${cos.toFixed(2)}`;
+  
+  document.getElementById('transform-explanation').innerHTML = 
+    `<strong>v̄' = R(θ)·v̄</strong><br>
+    The rotation matrix transforms (a,b) to:<br>
+    a' = a·cos(θ) - b·sin(θ)<br>
+    b' = a·sin(θ) + b·cos(θ)`;
 }
 
 function generateRAUPoints(cx, cy, radius, cos, sin) {
@@ -122,21 +379,26 @@ function calculateRelationship(p1, p2) {
   const sin2 = parseFloat(p2.sinVal);
   
   let transform = "";
+  let matrixDesc = "";
   
   if (Math.abs(cos1 - cos2) < 0.01 && Math.abs(sin1 + sin2) < 0.01) {
     transform = `cos stays ${cos1.toFixed(2)}, sin → -sin`;
+    matrixDesc = "Reflection across x-axis";
   } else if (Math.abs(cos1 + cos2) < 0.01 && Math.abs(sin1 - sin2) < 0.01) {
     transform = `cos → -cos, sin stays ${sin1.toFixed(2)}`;
+    matrixDesc = "Reflection across y-axis";
   } else if (Math.abs(cos1 - sin2) < 0.01 && Math.abs(sin1 - cos2) < 0.01) {
     transform = `cos → sin, sin → cos`;
+    matrixDesc = "90° rotation + axis swap";
   } else if (Math.abs(cos1 + sin2) < 0.01 && Math.abs(sin1 + cos2) < 0.01) {
     transform = `cos → -sin, sin → -cos`;
+    matrixDesc = "270° rotation";
   } else if (Math.abs(cos1 + cos2) < 0.01 && Math.abs(sin1 + sin2) < 0.01) {
     transform = `cos → -cos, sin → -sin`;
-  } else if (Math.abs(cos1 - sin2) < 0.01 && Math.abs(sin1 + cos2) < 0.01) {
-    transform = `cos → sin, sin → -cos`;
+    matrixDesc = "180° rotation";
   } else {
     transform = `(cos: ${cos1.toFixed(2)} → ${cos2.toFixed(2)}, sin: ${sin1.toFixed(2)} → ${sin2.toFixed(2)})`;
+    matrixDesc = `${(shift * 90)}° ${direction} rotation`;
   }
   
   return { 
@@ -144,8 +406,27 @@ function calculateRelationship(p1, p2) {
     rauP2: rauP2.toFixed(1),
     shift: shift,
     direction,
-    transform
+    transform,
+    matrixDesc
   };
+}
+
+function updateRelationshipDisplay(rel) {
+  const section = document.getElementById('relationship-section');
+  const info = document.getElementById('relationship-info');
+  
+  if (rel) {
+    section.style.display = 'block';
+    info.innerHTML = `
+      <strong>Transformation from Point ${rel.rauP1} to Point ${rel.rauP2}</strong><br><br>
+      <strong>Geometric:</strong> ${rel.shift} quadrant(s) ${rel.direction}<br>
+      <strong>Matrix:</strong> ${rel.matrixDesc}<br>
+      <strong>Component Change:</strong> ${rel.transform}<br><br>
+      <em>This represents the matrix product R(θ₂)·R(θ₁)⁻¹</em>
+    `;
+  } else {
+    section.style.display = 'none';
+  }
 }
 
 function drawAxes(param) {
@@ -175,6 +456,9 @@ function drawAxes(param) {
   ctx.stroke();
 
   const { cos, sin } = getRotationComponents(param % 4);
+  
+  updateMatrixDisplay(cos, sin);
+  updateVectorDisplay(cos, sin);
 
   points.length = 0;
   points.push(...generateRAUPoints(cx, cy, radius, cos, sin));
@@ -201,6 +485,11 @@ function drawAxes(param) {
     ctx.lineTo(points[hoveredPoint].x, points[hoveredPoint].y);
     ctx.stroke();
     ctx.setLineDash([]);
+    
+    const rel = calculateRelationship(points[selectedPoint], points[hoveredPoint]);
+    updateRelationshipDisplay(rel);
+  } else {
+    updateRelationshipDisplay(null);
   }
 
   points.forEach((p, idx) => {
@@ -290,15 +579,6 @@ function drawAxes(param) {
   ctx.font = "14px monospace";
   ctx.textAlign = "left";
   ctx.fillText(`RAU param: ${param.toFixed(3)}`, 15, 25);
-
-  if (selectedPoint !== null && hoveredPoint !== null && selectedPoint !== hoveredPoint) {
-    const rel = calculateRelationship(points[selectedPoint], points[hoveredPoint]);
-    ctx.font = "12px monospace";
-    ctx.fillStyle = "#333";
-    ctx.fillText(`RAU Point ${rel.rauP1} → RAU Point ${rel.rauP2}`, 15, 45);
-    ctx.fillText(`Shift: ${rel.shift} quadrant(s) ${rel.direction}`, 15, 60);
-    ctx.fillText(`Transform: ${rel.transform}`, 15, 75);
-  }
 }
 
 function animate(timestamp) {
