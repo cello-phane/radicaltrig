@@ -3,7 +3,6 @@ const controls={uLength:document.getElementById('uLength'),
 	vLength:document.getElementById('vLength'),
 	vAngle:document.getElementById('vAngle'),
 	angleMode:document.getElementById('angleMode'),
-	segments:document.getElementById('segments'),
 	simpleSliderParam:document.getElementById('paramSlider')};
 
 function initUI() {

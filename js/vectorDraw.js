@@ -208,37 +208,97 @@ function initVectorCanvas() {
 
   document.addEventListener('mouseup', () => dragging = null);
 
-  function drawArcGradient(ctx, cx, cy, radius, startAngle, endAngle, color1, color2, segments = 180) {
-    const angleStep = (endAngle - startAngle) / segments;
-
-    for (let i = 0; i < segments; i++) {
-      const t1 = i / segments;
-      const t2 = (i + 1) / segments;
-      const a1 = startAngle + t1 * (endAngle - startAngle);
-      const a2 = startAngle + t2 * (endAngle - startAngle);
-
-      // Interpolate colors
-      const r = Math.round(color1[0] * (1 - t1) + color2[0] * t1);
-      const g = Math.round(color1[1] * (1 - t1) + color2[1] * t1);
-      const b = Math.round(color1[2] * (1 - t1) + color2[2] * t1);
-      ctx.fillStyle = `rgb(${r},${g},${b})`;
-
-      // build path for the trapezoid-like wedge slice (two radii lines and two arcs)
-      ctx.beginPath();
-      ctx.moveTo(cx, cy);
-      ctx.arc(cx, cy, radius, a1, a2);
-      ctx.lineTo(cx, cy);
-      ctx.fill();
-    }
+  function drawArcGradient(ctx, cx, cy, radius, startAngle, endAngle, color1, color2) {
+	  // Normalize angle difference
+	  let angleDiff = endAngle - startAngle;
+	  while (angleDiff > Math.PI * 2) angleDiff -= Math.PI * 2;
+	  while (angleDiff < -Math.PI * 2) angleDiff += Math.PI * 2;
+	  
+	  const absAngleDiff = Math.abs(angleDiff);
+	  
+	  // For tiny arcs, just use solid color (performance optimization)
+	  if (absAngleDiff < 0.01) {
+	    ctx.fillStyle = `rgb(${color1[0]},${color1[1]},${color1[2]})`;
+	    ctx.beginPath();
+	    ctx.moveTo(cx, cy);
+	    ctx.arc(cx, cy, radius, startAngle, endAngle);
+	    ctx.closePath();
+	    ctx.fill();
+	    return;
+	  }
+	  
+	  // Try conic gradient (best performance, single draw call)
+	  if (ctx.createConicGradient) {
+	    const gradient = ctx.createConicGradient(startAngle, cx, cy);
+	    const fraction = absAngleDiff / (Math.PI * 2);
+	    
+	    gradient.addColorStop(0, `rgb(${color1[0]},${color1[1]},${color1[2]})`);
+	    gradient.addColorStop(fraction, `rgb(${color2[0]},${color2[1]},${color2[2]})`);
+	    
+	    // For arcs larger than 180°, add intermediate stops for better gradient
+	    if (fraction > 0.5) {
+	      const midR = Math.round((color1[0] + color2[0]) / 2);
+	      const midG = Math.round((color1[1] + color2[1]) / 2);
+	      const midB = Math.round((color1[2] + color2[2]) / 2);
+	      gradient.addColorStop(0.5, `rgb(${midR},${midG},${midB})`);
+	    }
+	    
+	    ctx.fillStyle = gradient;
+	    ctx.beginPath();
+	    ctx.moveTo(cx, cy);
+	    ctx.arc(cx, cy, radius, startAngle, endAngle);
+	    ctx.closePath();
+	    ctx.fill();
+	    return;
+	  }
+	  
+	  // Fallback: segment-based approach with adaptive quality
+	  const segments = Math.max(6, Math.min(48, Math.ceil(arcLength / 15)));
+	  const arcLength = absAngleDiff * radius;
+	  const angleStep = angleDiff / segments;
+	  
+	  for (let i = 0; i < segments; i++) {
+	    const t1 = i / segments;
+	    const t2 = (i + 1) / segments;
+	    const a1 = startAngle + angleStep * i;
+	    const a2 = startAngle + angleStep * (i + 1);
+	    
+	    // Get edge points for linear gradient
+	    const x1 = cx + Math.cos(a1) * radius;
+	    const y1 = cy + Math.sin(a1) * radius;
+	    const x2 = cx + Math.cos(a2) * radius;
+	    const y2 = cy + Math.sin(a2) * radius;
+	    
+	    // Create gradient for this segment
+	    const gradient = ctx.createLinearGradient(x1, y1, x2, y2);
+	    
+	    // Interpolate colors
+	    const r1 = Math.round(color1[0] * (1 - t1) + color2[0] * t1);
+	    const g1 = Math.round(color1[1] * (1 - t1) + color2[1] * t1);
+	    const b1 = Math.round(color1[2] * (1 - t1) + color2[2] * t1);
+	    
+	    const r2 = Math.round(color1[0] * (1 - t2) + color2[0] * t2);
+	    const g2 = Math.round(color1[1] * (1 - t2) + color2[1] * t2);
+	    const b2 = Math.round(color1[2] * (1 - t2) + color2[2] * t2);
+	    
+	    gradient.addColorStop(0, `rgb(${r1},${g1},${b1})`);
+	    gradient.addColorStop(1, `rgb(${r2},${g2},${b2})`);
+	    
+	    ctx.fillStyle = gradient;
+	    ctx.beginPath();
+	    ctx.moveTo(cx, cy);
+	    ctx.arc(cx, cy, radius, a1, a2);
+	    ctx.closePath();
+	    ctx.fill();
+	  }
   }
-
+  
   function render() {
     // const mode = controls.angleMode.value;
     const uLen = parseFloat(controls.uLength.value);
     const vLen = parseFloat(controls.vLength.value);
     const uAngle = parseFloat(controls.uAngle.value);
     const vAngle = parseFloat(controls.vAngle.value);
-    const arcSegments = parseInt(controls.segments.value, 10);
 
     uAng = uAngle;
     vAng = vAngle;
@@ -307,7 +367,7 @@ function initVectorCanvas() {
       drawArcGradient(ctx, cx, cy, arcRadius,
             ccw ? bias - startAngle : -(vA + bias), // start
             ccw ? Math.abs(endAngle - Math.PI * 2) : -(uA - degToRad(unsigned)), // end
-            [255, 100, 100], [100, 100, 255], arcSegments);
+            [255, 100, 100], [100, 100, 255]);
     }
     else if (angleWrapMode) {
       // Calculate the wrapped (long) arc
@@ -321,17 +381,17 @@ function initVectorCanvas() {
         drawArcGradient(ctx, cx, cy, arcRadius,
           -uA + 2 * Math.PI,           // Start at u + full circle
           -uA + 2 * Math.PI + degToRad(wrappedDeg), // Add wrapped angle
-          [255, 100, 100], [100, 100, 255], arcSegments);
+          [255, 100, 100], [100, 100, 255]);
       } else {
         // Draw from v going the long way CW  
         drawArcGradient(ctx, cx, cy, arcRadius,
           -vA - 2 * Math.PI,           // Start at v - full circle
           -vA - 2 * Math.PI + degToRad(wrappedDeg), // Add wrapped angle
-          [255, 100, 100], [100, 100, 255], arcSegments);
+          [255, 100, 100], [100, 100, 255]);
       }
     }
     else if (defaultMode) {
-      drawArcGradient(ctx, cx, cy, arcRadius, -Math.max(uA, vA), -Math.min(uA, vA), [255, 100, 100], [100, 100, 255], arcSegments);
+      drawArcGradient(ctx, cx, cy, arcRadius, -Math.max(uA, vA), -Math.min(uA, vA), [255, 100, 100], [100, 100, 255]);
     }
 	
     updateResultsDisplay();
