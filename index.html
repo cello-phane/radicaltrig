@@ -95,13 +95,21 @@
 		      <div class="value" id="vAngleVal">90°</div>
 		    </div>
 		  </div>
-		  
+
 		  <div class="displayProperties">
 		    <table>
 		    <tr>
 		    <td><label for="wrappedAngle">Wrap Angle Arc</label></td>
-		  	<td><input type="checkbox" id="wrappedAngle" name="wrappedAngle" checked="checked"></td>
+		  	<td><input type="checkbox" id="wrappedAngle" name="wrappedAngle" onclick="call(0,this.id)"></td>
 		    </tr>
+		    <tr>
+   		    <td><label for="biasAngle">Bias Angle Arc</label></td>
+   		  	<td><input type="checkbox" id="biasAngle" name="biasAngle" onclick="call(1,this.id)"></td>
+   		    </tr>
+   		    <tr>
+   		    <td><label for="defaultAngle">Between Arc</label></td>
+   		  	<td><input type="checkbox" id="defaultAngle" name="defaultAngle" onclick="call(2,this.id)"></td>
+   		    </tr>
 		    <tr>
 		    <td><label style="padding-top: 10px;">Arc Segments</label>
 		    <div style="padding-top: 10px;" class="muted" id="segmentsVal">8</div></td> 			

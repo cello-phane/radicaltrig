@@ -9,9 +9,13 @@ let vAng = 0;
 let ccw = false;
 let displayPrecision = 5; // Default to 5 decimal places
 let maxDigitsofPrecision = 15;
-let angleWrapMode = true;
+let angleWrapMode;
+let biasMode;
+let defaultMode = true;
 let introPhase = 0;
 document.getElementById("wrappedAngle").checked = angleWrapMode;
+document.getElementById("biasAngle").checked = biasMode;
+document.getElementById("defaultAngle").checked = defaultMode;
 document.addEventListener('DOMContentLoaded', () => {
   initUI();
   initRAUCanvas();
@@ -57,6 +61,22 @@ document.addEventListener('DOMContentLoaded', () => {
   		angleWrapMode = true;
   	} else {
   		angleWrapMode = false;
+  	}
+  	initVectorCanvas();
+  });
+  biasAngle.addEventListener("change", function() {
+  	if (this.checked) {
+  		biasMode = true;
+  	} else {
+  		biasMode = false;
+  	}
+  	initVectorCanvas();
+  });
+  defaultAngle.addEventListener("change", function() {
+  	if (this.checked) {
+  		defaultMode = true;
+  	} else {
+  		defaultMode = false;
   	}
   	initVectorCanvas();
   });

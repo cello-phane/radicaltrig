@@ -300,7 +300,7 @@ function initVectorCanvas() {
 	anglebetweenDeg = unsigned;
     const arcRadius = 0.5 * Math.max(uLen, vLen);
     let startAngle = 0, endAngle = 0; // to store radians
-    if (angleWrapMode) { 
+    if (biasMode) { 
       const bias = ccw ? Math.PI * 2 : degToRad(unsigned);
       startAngle = Math.min(uA, vA + (ccw && vA < uA ? vA - Math.PI * 2 : vA + Math.PI * 2));
       endAngle = startAngle - degToRad(Math.max(startAngle, Math.abs(360 - (ccw ? signed : unsigned))));
@@ -309,7 +309,28 @@ function initVectorCanvas() {
             ccw ? Math.abs(endAngle - Math.PI * 2) : -(uA - degToRad(unsigned)), // end
             [255, 100, 100], [100, 100, 255], arcSegments);
     }
-    else {
+    else if (angleWrapMode) {
+      // Calculate the wrapped (long) arc
+      const signedDeg = vAngle - uAngle;
+      const ccw = signedDeg > 0;
+      const unsignedDeg = Math.abs(signedDeg);
+      const wrappedDeg = 360 - unsignedDeg;
+      
+      if (ccw) {
+        // Draw from u going the long way CCW
+        drawArcGradient(ctx, cx, cy, arcRadius,
+          -uA + 2 * Math.PI,           // Start at u + full circle
+          -uA + 2 * Math.PI + degToRad(wrappedDeg), // Add wrapped angle
+          [255, 100, 100], [100, 100, 255], arcSegments);
+      } else {
+        // Draw from v going the long way CW  
+        drawArcGradient(ctx, cx, cy, arcRadius,
+          -vA - 2 * Math.PI,           // Start at v - full circle
+          -vA - 2 * Math.PI + degToRad(wrappedDeg), // Add wrapped angle
+          [255, 100, 100], [100, 100, 255], arcSegments);
+      }
+    }
+    else if (defaultMode) {
       drawArcGradient(ctx, cx, cy, arcRadius, -Math.max(uA, vA), -Math.min(uA, vA), [255, 100, 100], [100, 100, 255], arcSegments);
     }
 	
