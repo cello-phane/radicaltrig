@@ -370,8 +370,8 @@ function calculateRelationship(p1, p2) {
   const shift = sameAxis ? 2 : 1;
   
   const ccwPairs = [[0,2], [2,1], [1,3], [3,0]];
-  const isCounterClockwise = ccwPairs.some(pair => pair[0] === rauP1 && pair[1] === rauP2);
-  const direction = isCounterClockwise ? "counter-clockwise" : "clockwise";
+  const isClockwise = ccwPairs.some(pair => pair[0] === rauP1 && pair[1] === rauP2);
+  const direction = isClockwise ? "clockwise" : "counter-clockwise";
   
   const cos1 = parseFloat(p1.cosVal);
   const sin1 = parseFloat(p1.sinVal);
