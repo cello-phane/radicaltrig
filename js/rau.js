@@ -64,7 +64,7 @@ function uniformRAU(t) {
   return mapped / (1 + mapped);
 }
 
-function atanVec(u, v) {
+/*function atanVec(u, v) {
     const cross_uv_mag = u.x * v.y - u.y * v.x; // signed
     const dot_uv   = u.x * v.x + u.y * v.y;
     // 0..1 inside quadrant
@@ -83,6 +83,21 @@ function atanVec(u, v) {
         // Q4: 3..4
         return 4.0 - a;
     }
+}*/
+// If-less version of above
+function atanVec(u, v) {
+    const cross_uv = u.x * v.y - u.y * v.x;  // signed
+    const dot_uv = u.x * v.x + u.y * v.y;
+    const a = Math.abs(cross_uv) / (Math.abs(dot_uv) + Math.abs(cross_uv));
+    const q1 = a;                    // Q1: dot≥0, cross≥0 → a
+    const q2 = 2.0 - a;              // Q2: dot<0, cross≥0 → 2-a
+    const q3 = 2.0 + a;              // Q3: dot<0, cross<0 → 2+a
+    const q4 = 4.0 - a;              // Q4: dot≥0, cross<0 → 4-a
+    // reduce to two separate choices
+    const upper = cross_uv >= 0.0 ? q1 : q4;
+    const lower = cross_uv >= 0.0 ? q2 : q3;
+    // reduce to choice of two each stated above
+    return dot_uv >= 0.0 ? upper : lower;
 }
 
 // ================================
