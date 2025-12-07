@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Rotating along the circle's axes with Matrix Notation</title>
+  <title>Connecting Geometric Rotations to Matrix Representations</title>
   <style>
     body {
       background: #f8f9fa;
@@ -418,11 +418,9 @@ function updateRelationshipDisplay(rel) {
   if (rel) {
     section.style.display = 'block';
     info.innerHTML = `
-      <strong>Transformation from Point ${rel.rauP1} to Point ${rel.rauP2}</strong><br><br>
       <strong>Geometric:</strong> ${rel.shift} quadrant(s) ${rel.direction}<br>
       <strong>Matrix:</strong> ${rel.matrixDesc}<br>
-      ${rel.transform}<br><br>
-      <em>This represents the matrix product R(θ₂)·R(θ₁)⁻¹</em>
+      ${rel.transform}<br>
     `;
   } else {
     section.style.display = 'none';
