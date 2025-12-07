@@ -362,18 +362,18 @@ function initVectorCanvas() {
     let startAngle = 0, endAngle = 0; // to store radians
     if (biasMode) { 
       const bias = ccw ? Math.PI * 2 : degToRad(unsigned);
-      startAngle = Math.min(uA, vA + vA + (ccw && vA < uA ? -Math.PI * 2 : Math.PI * 2));
-      endAngle = startAngle - degToRad(Math.max(startAngle, Math.abs(360 - (ccw ? signed : unsigned))));
+      startAngle = Math.min(uA, bias);
+      endAngle = startAngle - degToRad(Math.abs(360 - (ccw ? signed : unsigned)));
       drawArcGradient(ctx, cx, cy, arcRadius,
             ccw ? bias - startAngle : -(vA + bias), // Start at v always
-            ccw ? Math.abs(endAngle - Math.PI * 2) : -(uA - degToRad(unsigned)), // wrap around ccw if going positive
+            ccw ? Math.abs(endAngle - Math.PI * 2) : -(uA - degToRad(unsigned)), // Wrap around ccw if going positive
             [255, 100, 100], [100, 100, 255]);
     }
     else if (angleWrapMode) {
       // Draw from u going the long way CCW
       drawArcGradient(ctx, cx, cy, arcRadius,
-        (ccw ? -uA : -vA) + 2 * Math.PI,  // Start at u or v + full circle
-        (ccw ? -uA : -vA) + 2 * Math.PI + degToRad(360 - unsigned), // Add wrapped angle
+        (ccw ? -uA : -vA) + 2 * Math.PI, // Start at u or v + full circle
+        (ccw ? -uA : -vA) + 2 * Math.PI + degToRad(360 - unsigned), // Wrap angle
         [255, 100, 100], [100, 100, 255]);
     }
     else if (defaultMode) {
