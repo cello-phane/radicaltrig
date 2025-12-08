@@ -419,19 +419,7 @@
                 
                 return projRadius * 0.8 * angleTrig;
             }
-            float calculateAltitude(float ra, float dec) {
-                float ha = phaseTime - ra;
-                ha = mod(ha + 12.0, 24.0) - 12.0;
-                
-                float haRad = ha * 15.0 * PI / 180.0;
-                float decRad = clamp(dec, -90.0, 90.0) * PI / 180.0;
-                float latRad = latitude * PI / 180.0;
-                
-                float sinAlt = sin(decRad) * sin(latRad) + cos(decRad) * cos(latRad) * cos(haRad);
-                sinAlt = clamp(sinAlt, -1.0, 1.0);
-                return asin(sinAlt) * 180.0 / PI;
-            }
-            
+
             // Render hyperbolic geometry with motion-driven effects
             vec4 renderGeometry(vec2 uv) {
                 float d = 1000.0;
