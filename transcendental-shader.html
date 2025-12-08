@@ -163,7 +163,7 @@
         
         <div class="control-group">
             <label>Time Speed:</label>
-            <input type="range" id="timeSpeed" min="0" max="1" step="0.01" value="0.05">
+            <input type="range" id="timeSpeed" min="0" max="1" step="0.01" value="0.02">
             <span class="value" id="timeSpeedVal">0.02</span>
         </div>
         
@@ -181,8 +181,8 @@
         
         <div class="control-group">
             <label>Motion Coupling:</label>
-            <input type="range" id="motionCoupling" min="0.0" max="2.0" step="0.1" value="1.0">
-            <span class="value" id="motionCouplingVal">1.0</span>
+            <input type="range" id="motionCoupling" min="0.0" max="2.0" step="0.1" value="0.6">
+            <span class="value" id="motionCouplingVal">0.6</span>
         </div>
         
         <h3 class="section">Visual Settings</h3>
@@ -190,13 +190,13 @@
         <div class="control-group">
             <label>Zoom:</label>
             <input type="range" id="zoom" min="0.5" max="3.0" step="0.1" value="1.2">
-            <span class="value" id="zoomVal">1.2</span>
+            <span class="value" id="zoomVal">3.0</span>
         </div>
 
         <div class="control-group">
             <label>Line Thickness:</label>
-            <input type="range" id="lineThickness" min="0.5" max="5.0" step="0.1" value="1.5">
-            <span class="value" id="lineThicknessVal">1.5</span>
+            <input type="range" id="lineThickness" min="0.5" max="5.0" step="0.1" value="3.0">
+            <span class="value" id="lineThicknessVal">3.0</span>
         </div>
         
         <div class="control-group">
@@ -207,8 +207,8 @@
         
         <div class="control-group">
             <label>Geometry Opacity:</label>
-            <input type="range" id="geometryOpacity" min="0.0" max="1.0" step="0.1" value="0.6">
-            <span class="value" id="geometryOpacityVal">0.6</span>
+            <input type="range" id="geometryOpacity" min="0.0" max="1.0" step="0.1" value="0.8">
+            <span class="value" id="geometryOpacityVal">0.8</span>
         </div>
 
     </div>
@@ -523,16 +523,26 @@
         let phaseTime = 0;
         let animating = false;
         let startTime = Date.now();
-        
+        let zoomInvert = 0.0;
 		// ------------------ TRIANGLE WAVE ------------------
 		function triC(t) {
 			// Returns -1 → 1 → -1 with constant speed
 			return 2.0 * Math.abs((t % 2) - 1) - 2.0;
 		}
+
+   		controls.zoom.addEventListener('input', (event) => {
+   		  const rawValue = parseFloat(event.target.value, 0.01);
+   		  const min = parseFloat(controls.zoom.min, 0.01);
+   		  const max = parseFloat(controls.zoom.max-0.01, 0.01);
+   		
+   		  // Calculate the reversed value
+   		  const reversedValue = max - (rawValue - min); 
+   		  
+   		  document.getElementById('zoomVal').textContent = rawValue;
+   		});
    		
         function updateDisplays() {
             document.getElementById('timeSpeedVal').textContent = controls.timeSpeed.value;
-            document.getElementById('zoomVal').textContent = controls.zoom.value;
             document.getElementById('lineThicknessVal').textContent = controls.lineThickness.value;
             document.getElementById('matrixRotationVal').textContent = controls.matrixRotation.value + '°';
             document.getElementById('geometryOpacityVal').textContent = controls.geometryOpacity.value;
@@ -571,7 +581,7 @@
             gl.uniform2f(uniforms.iResolution, canvas.width, canvas.height);
             gl.uniform1f(uniforms.iTime, currentTime);
             gl.uniform1f(uniforms.phaseTime, phaseTime);
-            gl.uniform1f(uniforms.zoom, parseFloat(controls.zoom.value));
+            gl.uniform1f(uniforms.zoom, controls.zoom.max-0.02-parseFloat(controls.zoom.value));
             gl.uniform1f(uniforms.lineThickness, parseFloat(controls.lineThickness.value));
             gl.uniform1f(uniforms.timeSpeed, parseFloat(controls.timeSpeed.value));
             gl.uniform1f(uniforms.geometryOpacity, parseFloat(controls.geometryOpacity.value));
