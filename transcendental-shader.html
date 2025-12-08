@@ -170,29 +170,12 @@
         <h3>UV Grid transforms</h3>
         
         <div class="control-group">
-            <label>Show Stars:</label>
-            <input type="checkbox" id="showStars" checked>
-        </div>
-        
-        <div class="control-group">
-            <label>Celestial Latitude:</label>
-            <input type="range" id="latitude" min="20" max="90" value="45">
-            <span class="value" id="latitudeVal">45°</span>
-        </div>
-        
-        <div class="control-group">
             <label>Time Speed:</label>
             <input type="range" id="timeSpeed" min="0" max="1" step="0.01" value="0.05">
             <span class="value" id="timeSpeedVal">0.02</span>
         </div>
         
-        <div class="control-group">
-            <label>Star Intensity:</label>
-            <input type="range" id="starIntensity" min="0.5" max="3.0" step="0.1" value="1.5">
-            <span class="value" id="starIntensityVal">1.5</span>
-        </div>
-        
-        <h3 class="section">🌀 Hyperbolic Geometry</h3>
+        <h3 class="section">Hyperbolic Geometry</h3>
         
         <div class="control-group">
             <label>Show Transcendental:</label>
@@ -210,13 +193,7 @@
             <span class="value" id="motionCouplingVal">1.0</span>
         </div>
         
-        <div class="control-group">
-            <label>Oscillation Speed:</label>
-            <input type="range" id="oscillationSpeed" min="0.0" max="5.0" step="0.1" value="1.5">
-            <span class="value" id="oscillationSpeedVal">1.5</span>
-        </div>
-        
-        <h3 class="section">🎨 Visual Settings</h3>
+        <h3 class="section">Visual Settings</h3>
         
         <div class="control-group">
             <label>Zoom:</label>
@@ -248,7 +225,7 @@
         </div>
         
         <div class="time-display" id="timeDisplay">
-            Sidereal Time: 00:00<br>
+            phase Time: 00:00<br>
             Solar Time: 00:00
         </div>
     </div>
@@ -294,17 +271,14 @@
             
             uniform vec2 iResolution;
             uniform float iTime;
-            uniform float siderealTime;
+            uniform float phaseTime;
             uniform float latitude;
-            uniform float starIntensity;
             uniform float zoom;
             uniform float tunnelDepth;
             uniform float lineThickness;
             uniform float timeSpeed;
             uniform float geometryOpacity;
             uniform float motionCoupling;
-            uniform float oscillationSpeed;
-            uniform bool showStars;
             uniform bool showTranscendental;
             uniform bool showTessellation;
             uniform mat2 transformMatrix;
@@ -395,7 +369,7 @@
                 float val = cosX * cosX + sinY * sinY;
                 
                 // Smooth oscillation for coloring
-                float osc = seeSaw(siderealTime);
+                float osc = seeSaw(phaseTime);
                 float pulse = 0.6 + 0.4 * osc;
                 
                 // Rainbow-like color cycling
@@ -415,7 +389,7 @@
                 uv = transformMatrix * uv;
                 
                 // Apply oscillating warp
-                float osc = seeSaw(siderealTime);
+                float osc = seeSaw(phaseTime);
                 float warp = (osc - 0.5) * motionCoupling * 0.15;
                 uv += warp;
                 
@@ -474,8 +448,8 @@
             // Equatorial to projection using oscillation for rotation
             vec2 equatorialToProjection(float ra, float dec) {
                 // Use oscillation phase to drive rotation (24 hour period)
-                float siderealTime = siderealTime * 24.0;
-                float ha = siderealTime - ra;
+                float phaseTime = phaseTime * 24.0;
+                float ha = phaseTime - ra;
                 ha = mod(ha + 12.0, 24.0) - 12.0;
                 
                 dec = clamp(dec, -90.0, 90.0);
@@ -489,7 +463,7 @@
                 return projRadius * 0.8 * angleTrig;
             }
             float calculateAltitude(float ra, float dec) {
-                float ha = siderealTime - ra;
+                float ha = phaseTime - ra;
                 ha = mod(ha + 12.0, 24.0) - 12.0;
                 
                 float haRad = ha * 15.0 * PI / 180.0;
@@ -531,42 +505,6 @@
                 return vec4(color * alpha * geometryOpacity, alpha * geometryOpacity);
             }
             
-            // Render stars
-            vec3 renderStars(vec2 coord) {
-                vec3 color = vec3(0.0);
-                
-                for (int i = 0; i < 19; i++) {
-                    vec4 star = getStarData(i);
-                    float ra = star.x;
-                    float dec = star.y;
-                    float mag = star.z;
-                    float temp = star.w;
-                    
-                    vec2 starPos = equatorialToProjection(ra, dec);
-                    float dist = length(coord - starPos);
-                    
-                    if (dist > 0.3) continue; // Skip distant stars
-                    
-                    float size = starIntensity * (6.0 - mag) * 0.015;
-                    float brightness = (6.0 - mag) / 6.0;
-                    
-                    // Soft glow with core
-                    float starGlow = exp(-dist * dist / (size * size * 8.0));
-                    float starCore = exp(-dist * dist / (size * size * 0.5));
-                    
-                    vec3 starColor = temperatureToColor(temp);
-                    float intensity = brightness * starIntensity;
-                    
-                    // Subtle twinkle with oscillation
-                    float twinkle = 0.9 + 0.1 * sin(iTime * 6.0 + ra * 100.0);
-                    intensity *= twinkle;
-                    
-                    color += starColor * intensity * (starCore * 2.5 + starGlow * 0.4);
-                }
-                
-                return color;
-            }
-            
             void main() {
                 vec2 uv = (2.0 * gl_FragCoord.xy - iResolution.xy) / iResolution.y;
                 uv *= zoom;
@@ -578,19 +516,7 @@
                 // Render hyperbolic geometry
                 vec4 geom = renderGeometry(uv);
                 color = mix(color, geom.rgb, geom.a);
-                
-                // Render stars on top
-                if (showStars) {
-                    color += renderStars(uv);
-                }
-                
-                // Celestial pole indicator
-                /*float poleDist = length(uv);
-                if (poleDist < 0.025) {
-                    float poleGlow = (1.0 - poleDist / 0.025);
-                    color += vec3(1.0, 1.0, 0.6) * poleGlow * 0.8;
-                }*/
-                
+
                 gl_FragColor = vec4(color, 1.0);
             }
         `;
@@ -637,16 +563,13 @@
         const uniforms = {
             iResolution: gl.getUniformLocation(program, 'iResolution'),
             iTime: gl.getUniformLocation(program, 'iTime'),
-            siderealTime: gl.getUniformLocation(program, 'siderealTime'),
+            phaseTime: gl.getUniformLocation(program, 'phaseTime'),
             latitude: gl.getUniformLocation(program, 'latitude'),
-            starIntensity: gl.getUniformLocation(program, 'starIntensity'),
             zoom: gl.getUniformLocation(program, 'zoom'),
             lineThickness: gl.getUniformLocation(program, 'lineThickness'),
             timeSpeed: gl.getUniformLocation(program, 'timeSpeed'),
             geometryOpacity: gl.getUniformLocation(program, 'geometryOpacity'),
             motionCoupling: gl.getUniformLocation(program, 'motionCoupling'),
-            oscillationSpeed: gl.getUniformLocation(program, 'oscillationSpeed'),
-            showStars: gl.getUniformLocation(program, 'showStars'),
             showTranscendental: gl.getUniformLocation(program, 'showTranscendental'),
             showTessellation: gl.getUniformLocation(program, 'showTessellation'),
             transformMatrix: gl.getUniformLocation(program, 'transformMatrix')
@@ -654,21 +577,17 @@
         
         // Controls
         const controls = {
-            showStars: document.getElementById('showStars'),
             showTranscendental: document.getElementById('showTranscendental'),
             showTessellation: document.getElementById('showTessellation'),
-            latitude: document.getElementById('latitude'),
             timeSpeed: document.getElementById('timeSpeed'),
-            starIntensity: document.getElementById('starIntensity'),
             zoom: document.getElementById('zoom'),
             lineThickness: document.getElementById('lineThickness'),
             matrixRotation: document.getElementById('matrixRotation'),
             geometryOpacity: document.getElementById('geometryOpacity'),
             motionCoupling: document.getElementById('motionCoupling'),
-            oscillationSpeed: document.getElementById('oscillationSpeed')
         };
         const toggleAnimBtn = document.getElementById('toggleAnim');
-        let siderealTime = 0;
+        let phaseTime = 0;
         let animating = false;
         let startTime = Date.now();
         
@@ -679,18 +598,15 @@
 		}
    		
         function updateDisplays() {
-            document.getElementById('latitudeVal').textContent = controls.latitude.value + '°';
             document.getElementById('timeSpeedVal').textContent = controls.timeSpeed.value;
-            document.getElementById('starIntensityVal').textContent = controls.starIntensity.value;
             document.getElementById('zoomVal').textContent = controls.zoom.value;
             document.getElementById('lineThicknessVal').textContent = controls.lineThickness.value;
             document.getElementById('matrixRotationVal').textContent = controls.matrixRotation.value + '°';
             document.getElementById('geometryOpacityVal').textContent = controls.geometryOpacity.value;
             document.getElementById('motionCouplingVal').textContent = controls.motionCoupling.value;
-            document.getElementById('oscillationSpeedVal').textContent = controls.oscillationSpeed.value;
-            const lst = Math.floor(siderealTime) + ':' + String(Math.floor((siderealTime % 1) * 60)).padStart(2, '0');
-            const solar = Math.floor((siderealTime - 0.0657) % 24) + ':' + String(Math.floor(((siderealTime - 0.0657) % 1) * 60)).padStart(2, '0');
-            document.getElementById('timeDisplay').innerHTML = `Sidereal Time: ${lst}<br>Solar Time: ${solar}`;
+            const lst = Math.floor(phaseTime) + ':' + String(Math.floor((phaseTime % 1) * 60)).padStart(2, '0');
+            const solar = Math.floor((phaseTime - 0.0657) % 24) + ':' + String(Math.floor(((phaseTime - 0.0657) % 1) * 60)).padStart(2, '0');
+            document.getElementById('timeDisplay').innerHTML = `phase Time: ${lst}<br>Solar Time: ${solar}`;
         }
 
         // ------------------ START/STOP ANIMATION ------------------
@@ -713,8 +629,8 @@
             
             if (animating) {
                 const timeSpeed = parseFloat(controls.timeSpeed.value);
-                siderealTime += timeSpeed * 0.016;
-                if (siderealTime >= 24) siderealTime = -24;
+                phaseTime += timeSpeed * 0.016;
+                if (phaseTime >= 24) phaseTime = -24;
             }
             
             const rotation = parseFloat(controls.matrixRotation.value) * Math.PI / 180.0;
@@ -724,16 +640,12 @@
             
             gl.uniform2f(uniforms.iResolution, canvas.width, canvas.height);
             gl.uniform1f(uniforms.iTime, currentTime);
-            gl.uniform1f(uniforms.siderealTime, siderealTime);
-            gl.uniform1f(uniforms.latitude, parseFloat(controls.latitude.value));
-            gl.uniform1f(uniforms.starIntensity, parseFloat(controls.starIntensity.value));
+            gl.uniform1f(uniforms.phaseTime, phaseTime);
             gl.uniform1f(uniforms.zoom, parseFloat(controls.zoom.value));
             gl.uniform1f(uniforms.lineThickness, parseFloat(controls.lineThickness.value));
             gl.uniform1f(uniforms.timeSpeed, parseFloat(controls.timeSpeed.value));
             gl.uniform1f(uniforms.geometryOpacity, parseFloat(controls.geometryOpacity.value));
             gl.uniform1f(uniforms.motionCoupling, parseFloat(controls.motionCoupling.value));
-            gl.uniform1f(uniforms.oscillationSpeed, parseFloat(controls.oscillationSpeed.value));
-            gl.uniform1i(uniforms.showStars, controls.showStars.checked);
             gl.uniform1i(uniforms.showTranscendental, controls.showTranscendental.checked);
             gl.uniform1i(uniforms.showTessellation, controls.showTessellation.checked);
             gl.uniformMatrix2fv(uniforms.transformMatrix, false, transformMatrix);
@@ -763,7 +675,7 @@
         });
         
         document.getElementById('resetTime').addEventListener('click', () => {
-            siderealTime = 0;
+            phaseTime = 0;
         });
         
         updateDisplays();
