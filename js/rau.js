@@ -1,6 +1,9 @@
 // ================================
-// Radical Angle Unit (RAU) math
+// Radical Angle Unit (RAU)
 // ================================
+
+import { Geom } from './geom.js';
+const geom = new Geom();
 
 function radicalSine(t) {
   t = t % 4;
@@ -64,40 +67,23 @@ function uniformRAU(t) {
   return mapped / (1 + mapped);
 }
 
-/*function atanVec(u, v) {
-    const cross_uv_mag = u.x * v.y - u.y * v.x; // signed
-    const dot_uv   = u.x * v.x + u.y * v.y;
-    // 0..1 inside quadrant
-    let a = Math.abs(cross_uv_mag) / (Math.abs(dot_uv) + Math.abs(cross_uv_mag));
 
-    if (dot_uv >= 0.0 && cross_uv_mag >= 0.0) {
-        // Q1: 0..1
-        return a;
-    } else if (dot_uv < 0.0 && cross_uv_mag >= 0.0) {
-        // Q2: 1..2
-        return 2.0 - a;
-    } else if (dot_uv < 0.0 && cross_uv_mag < 0.0) {
-        // Q3: 2..3
-        return 2.0 + a;
-    } else {
-        // Q4: 3..4
-        return 4.0 - a;
-    }
-}*/
-// If-less version of above
-function atanVec(u, v) {
-    const cross_uv = u.x * v.y - u.y * v.x;  // signed
-    const dot_uv = u.x * v.x + u.y * v.y;
-    const a = Math.abs(cross_uv) / (Math.abs(dot_uv) + Math.abs(cross_uv));
-    const q1 = a;                    // Q1: dot≥0, cross≥0 → a
-    const q2 = 2.0 - a;              // Q2: dot<0, cross≥0 → 2-a
-    const q3 = 2.0 + a;              // Q3: dot<0, cross<0 → 2+a
-    const q4 = 4.0 - a;              // Q4: dot≥0, cross<0 → 4-a
-    // reduce to two separate choices
-    const upper = cross_uv >= 0.0 ? q1 : q4;
-    const lower = cross_uv >= 0.0 ? q2 : q3;
-    // reduce to choice of two each stated above
-    return dot_uv >= 0.0 ? upper : lower;
+// returns radical angle in [0,4]
+function atanVec(u, v){
+  // If either is zero-length return 0.0
+  const lu = len(u), lv = len(v);
+  if (lu < EPS || lv < EPS) return 0.0;
+  // Compute signed cross/dot of u (reference) and v (target)
+  const cr = geom.cross(u, v);
+  const dt = geom.dot(u, v);
+  const a = Math.abs(cr) / (Math.abs(dt) + Math.abs(cr) + EPS);
+  // q1..q4 mapping
+  // q1: dt >= 0, cr >= 0 => a
+  // q2: dt <  0, cr >= 0 => 2 - a
+  // q3: dt <  0, cr <  0 => 2 + a
+  // q4: dt >= 0, cr <  0 => 4 - a
+  if (dt >= 0.0) return (cr >= 0.0 ? a : 4.0 - a);
+  else return (cr >= 0.0 ? 2.0 - a : 2.0 + a);
 }
 
 // ================================
