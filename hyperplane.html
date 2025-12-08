@@ -386,21 +386,6 @@
             ctx.drawImage(cacheCanvas, 0, 0);
         }
         
-	    function toggleAnimation() {
-		  if (!animating) {
-		    // Start smooth looping rotation
-		  	toggleAnimBtn.textContent = 'Start Animation';
-		  	toggleAnimBtn.classList.remove('active');
-		    animateZoomResolution();
-		  	animating = true;
-		  } 
-		  else {
-		  	toggleAnimBtn.textContent = 'Stop Animation ';
-			toggleAnimBtn.classList.add('active');
-			animating = false;
-		  }
-		}
-	  
 		// ------------------ TRIANGLE WAVE ------------------
 		function triC(t) {
 			// Returns -1 → 1 → -1 with constant speed
@@ -463,9 +448,6 @@
 				toggleAnimBtn.classList.remove("active");
 			}
 		}
-
-		toggleAnimBtn.addEventListener('click', toggleAnimation);
-		canvas.addEventListener('dblclick', toggleAnimation);
 
 		// ------------------ MAIN RENDER ------------------
 		function render() {
