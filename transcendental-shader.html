@@ -390,18 +390,6 @@
                 return min(gridUV.x, gridUV.y) * 2.0;
             }
             
-            vec3 temperatureToColor(float temp) {
-                temp = clamp(temp, 3000.0, 12000.0);
-                float t = temp / 1000.0;
-                
-                vec3 color;
-                color.r = (t < 6.6) ? 1.0 : clamp(1.3 - 0.3 * log(t - 6.0) / log(10.0), 0.0, 1.0);
-                color.g = (t < 6.6) ? clamp(-0.4 + 0.7 * log(t - 2.0) / log(10.0), 0.0, 1.0) : 1.0;
-                color.b = (t < 2.0) ? 0.0 : (t < 6.6) ? clamp(0.4 + 0.6 * log(t - 1.5) / log(10.0), 0.0, 1.0) : 1.0;
-                
-                return color;
-            }
-            
             // Equatorial to projection using oscillation for rotation
             vec2 equatorialToProjection(float ra, float dec) {
                 // Use oscillation phase to drive rotation (24 hour period)
