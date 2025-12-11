@@ -89,7 +89,7 @@ function initRAUCanvas() {
   // ------------------------
   // DRAGGING HANDLERS
   // ------------------------
-
+	
   canvasSimple.addEventListener('mousedown', e => {
     const rect = canvasSimple.getBoundingClientRect();
     const mx = e.clientX - rect.left;
@@ -115,7 +115,9 @@ function initRAUCanvas() {
     if (dragging) {
       controls.simpleSliderParam.value = standardAng;
       introPhase = parseFloat(slider.value);
-      updateValueDisplay('paramValue', standardAng.toFixed(4)); // slider below canvas
+      controls.introPhaseTextBox.value = introPhase;
+
+      updateValueDisplay('paramValue', formatValue(standardAng)); // slider below canvas
       updateResultsDisplay(); // sidebar
       draw();
     }
@@ -126,11 +128,15 @@ function initRAUCanvas() {
   // ------------------------
   slider.addEventListener('input', () => {
     introPhase = parseFloat(slider.value);
-    updateValueDisplay('paramValue', introPhase.toFixed(4));
+    updateValueDisplay('paramValue',  formatValue(introPhase));
     updateResultsDisplay();
     draw();
   });
-
+  valueDisplay.addEventListener('change', () => {
+    introPhase = parseFloat(slider.value);
+    updateResultsDisplay();
+	draw();
+  });
   document.addEventListener('mouseup', () => dragging = false);
   draw();
 }
@@ -147,7 +153,7 @@ function updateValueDisplay(id, value, suffix = '') {
 function updateAllDisplays() {
   // Update RAU phase display
   if (introPhase !== undefined) {
-    updateValueDisplay('paramValue', formatValue(introPhase));
+    updateValueDisplay('paramValue', introPhase.toFixed(6));
   }
   // Update results content
   updateResultsDisplay();

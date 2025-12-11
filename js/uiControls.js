@@ -3,8 +3,40 @@ const controls={uLength:document.getElementById('uLength'),
 	vLength:document.getElementById('vLength'),
 	vAngle:document.getElementById('vAngle'),
 	angleMode:document.getElementById('angleMode'),
-	simpleSliderParam:document.getElementById('paramSlider')};
+	simpleSliderParam:document.getElementById('paramSlider'),
+	introPhaseTextBox:document.getElementById('paramValue')};
 
+// Function to sync the textbox value to the slider
+function updateTextboxFromSlider() {
+    controls.introPhaseTextBox.value = controls.simpleSliderParam.value;
+    updateResultsDisplay();
+}
+
+// Function to sync the slider value to the textbox
+function updateSliderFromTextbox() {
+    // Ensure the value entered is a valid number within the slider's range
+    const min = parseFloat(controls.simpleSliderParam.min);
+    const max = parseFloat(controls.simpleSliderParam.max);
+    let value = parseFloat(controls.introPhaseTextBox.value, 7);
+
+    if (isNaN(value)) {
+        // Handle non-numeric input if needed, maybe reset to current slider value
+        value = controls.simpleSliderParam.value;
+    } else if (value < min) {
+        value = min;
+    } else if (value > max) {
+        value = max;
+    }
+    
+    controls.simpleSliderParam.value = value;
+    controls.introPhaseTextBox.value = value; // Update textbox to a potentially corrected value
+    introPhase = value;
+    updateResultsDisplay();
+}
+
+// Add event listeners
+controls.simpleSliderParam.addEventListener('input', updateTextboxFromSlider);
+controls.introPhaseTextBox.addEventListener('change', updateSliderFromTextbox); // 'change'
 function initUI() {
   const panel = document.getElementById('formulaPanel');
   const header = document.getElementById('formulaHeader');
