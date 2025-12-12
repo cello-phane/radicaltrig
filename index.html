@@ -50,7 +50,7 @@
         <h2>Introduction to RAU</h2>
         <div class="desc"><strong>Quadrant-aware modular arithmetic</strong> - RAU maps a linear parameter (0–4) to a circle using integer and fractional parts.</div>
 				<style>
-				  .wrap{display:relative; gap:18px; padding:18px; align-items:flex-start; max-width:600px; margin:0 auto;}
+				  .wrap{display:relative; align-items:flex-start; max-width:600px; margin:0 auto;}
 				  .left{width:720px;}
 				  .right{width:320px; display:flex; flex-direction:column; gap:14px;}
 				  svg{width:100%; height:600px; display:block; background:transparent;}
@@ -69,7 +69,7 @@
 				    
 				    <!-- SVG overlay (non-interactive, visual only) -->
 				    <svg id="prosvg" 
-				      viewBox="-260 -6 518 10" 
+				      viewBox="-260 -6 520 10" 
 				      preserveAspectRatio="xMidYMid meet"
 				      style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
 				             z-index: 2; pointer-events: none; display: block;">
@@ -246,8 +246,8 @@
         const deg = -theta * 180 / Math.PI;
     
         // pushing label slightly outside radius
-        const lx = v.x * (R + 18);
-        const ly = -v.y * (R + 18);
+        const lx = v.x * (R + 20);
+        const ly = -v.y * (R + 20);
     
         const tx = create('text', {
             x: lx,
@@ -263,36 +263,9 @@
     }
   }
 
-    // Draw current angle ray
-    drawCurrentRay();
-  
     // small center guide line for angle zero
     const axis = create('line', {x1:0,y1:0,x2:R,y2:0, stroke:'rgba(255,255,255,0.03)', 'stroke-width':1});
     svg.appendChild(axis);
-  }
-  
-  // draw the ray for current t
-  function drawCurrentRay(){
-    // remove previous if any
-    const old = svg.querySelector('#curRay');
-    if(old) old.remove();
-    const t = state.curT;
-    const v = RAU.tToVector(t);
-    const R = state.radius;
-    const x = v.x*R, y = -v.y*R;
-    const ray = create('line', {id:'curRay', x1:0, y1:0, x2:x, y2:y, stroke:'url(#g1)', 'stroke-width':4, 'stroke-linecap':'round'});
-    // gradient for line
-    let g = svg.querySelector('#g1');
-    if(!g){
-      g = create('defs');
-      const lg = create('linearGradient'); lg.setAttribute('id','g1'); lg.setAttribute('x1','0'); lg.setAttribute('y1','0'); lg.setAttribute('x2','1'); lg.setAttribute('y2','1');
-      const s1 = create('stop'); s1.setAttribute('offset','0'); s1.setAttribute('stop-color','#ff8d6b');
-      const s2 = create('stop'); s2.setAttribute('offset','1'); s2.setAttribute('stop-color','#2ee2c4');
-      lg.appendChild(s1); lg.appendChild(s2);
-      g.appendChild(lg);
-      svg.insertBefore(g, svg.firstChild);
-    }
-    svg.appendChild(ray);
   }
   
 	function screenToSvg(clientX, clientY){
@@ -315,7 +288,6 @@
   document.getElementById('labelMode').addEventListener('change', (e)=>{ state.labelMode = e.target.value; drawProtractor();});
 	document.getElementById('themeToggle').addEventListener('click', (e)=>{ drawProtractor();});
 	svg.removeEventListener('click', hand);
-	 drawProtractor()
   /* ---------- initialization ---------- */
   drawProtractor();
   

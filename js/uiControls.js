@@ -48,7 +48,6 @@ function initUI() {
     chev.textContent = isSlim ? '▶' : '◀';
     if (!isSlim && window.MathJax) MathJax.typesetPromise().catch(console.error);
   });
-
   // Drag functionality
   let dragging = false, offsetX, offsetY;
   header.addEventListener('mousedown', e => {

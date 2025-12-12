@@ -9,8 +9,8 @@ function initRAUCanvas() {
   const slider       = document.getElementById('paramSlider');
   const valueDisplay = document.getElementById('paramValue');
 
-  const cx = canvasSimple.width / 2;
-  const cy = canvasSimple.height / 2;
+  let cx = canvasSimple.width / 2;
+  let cy = canvasSimple.height / 2;
   let dragging = false;
 
   function currentEndpoint(param) {
@@ -56,7 +56,7 @@ function initRAUCanvas() {
     // knob
     ctxSimple.fillStyle = '#ff4444';
     ctxSimple.beginPath();
-    ctxSimple.arc(px, py, 7, 0, Math.PI * 2);
+    ctxSimple.arc(px, py, 2, 0, Math.PI * 2);
     ctxSimple.fill();
   }
 
@@ -64,19 +64,19 @@ function initRAUCanvas() {
   // GRID (unchanged)
   // ------------------------
   function drawGrid(cx, cy, w, h) {
-    ctxSimple.strokeStyle = '#eee';
+    ctxSimple.strokeStyle = '#555';
     ctxSimple.lineWidth = 1;
     for (let i = -10; i <= 10; i++) {
       ctxSimple.beginPath();
-      ctxSimple.moveTo(cx + i * 40, 0);
-      ctxSimple.lineTo(cx + i * 40, h);
+      ctxSimple.moveTo(cx + i * 67, 0);
+      ctxSimple.lineTo(cx + i * 67, h);
       ctxSimple.stroke();
       ctxSimple.beginPath();
-      ctxSimple.moveTo(0, cy + i * 40);
-      ctxSimple.lineTo(w, cy + i * 40);
+      ctxSimple.moveTo(0, cy + i * 34);
+      ctxSimple.lineTo(w, cy + i * 34);
       ctxSimple.stroke();
     }
-    ctxSimple.strokeStyle = '#666';
+    ctxSimple.strokeStyle = '#444';
     ctxSimple.lineWidth = 2;
     ctxSimple.beginPath();
     ctxSimple.moveTo(cx, 0);
@@ -104,10 +104,9 @@ function initRAUCanvas() {
 
   canvasSimple.addEventListener('mousemove', e => {
     if (!dragging) return;
-
     const rect = canvasSimple.getBoundingClientRect();
-    const mx = e.clientX - rect.left - cx;
-    const my = e.clientY - rect.top - cy;
+    const mx = e.clientX - rect.left - cx + 10;
+    const my = e.clientY - rect.top - cy + 10;
     // Standard angle from X-axis for the sliders
     // Now using atanVec with x and y as positive in xy order
     let standardAng = atanVec({ x: mx, y: my}, {x: 1, y: 0 });
