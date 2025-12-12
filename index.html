@@ -30,8 +30,7 @@
     <div id="formulaBody">
     <button onclick="changeFontSize(1,'resultsContent')">+</button>
     <button onclick="changeFontSize(-1,'resultsContent')">-</button>
-      <button onclick="toggleMathBlock()">Formulae</button>
-      
+
 	  <!-- Vector canvas only control -->
 	  <div id="angleModeSidebar" style="display:none; margin: 12px 0; padding: 8px; border: 1px solid #ddd; border-radius: 6px;">
 	    <label for="angleMode" style="display: block; font-weight: 600; margin-bottom: 8px;">Display Mode:</label>
@@ -40,36 +39,70 @@
 	      <option value="individual">Individual Vector Angles</option>
 	    </select>
 	  </div>
-	  
-	  <div id="mathBlock" class="collapsed">
-        <p style="margin:0 0 11px 0;font-weight:600">For parameter \(0.0 < t < 1.0\):</p>
-        <div>\[\mathrm{rsin}(t)=\frac{t}{\sqrt{1-2t+2t^2}}\]</div>
-        <div>\[\mathrm{rcos}(t)=\frac{1-t}{\sqrt{1-2t+2t^2}}\]</div>
-        <div>\[\mathrm{rtan}(t)=\frac{t}{1-t}\]</div>
-        <div>\[\mathrm{Inverse\ Functions (-1 < t <1)}\]</div>
-        <div>\[\mathrm{rsin^{-1}}(t)=\frac{t^2-\sqrt{t^2-t^4}}{2t^2-1}\]</div>
-        <div>\[\mathrm{rcos^{-1}}(t)=\frac{t^2-1+\sqrt{t^2-t^4}}{2t^2-1}\]</div>
-        <div>\[\mathrm{rtan^{-1}}(t)=\frac{t}{1+t}\]</div>
-      </div>
-      
+
       <pre id="resultsContent"></pre>
     </div>
   </div>
-
+  <div class="wrap">
   <div class="content">
     <section id="section1" class="active">
-      <div class="card">
+      <div class="card" style="position: relative; width: 100%; max-width: 600px; margin: 0 auto;background:transparent;">
         <h2>Introduction to RAU</h2>
         <div class="desc"><strong>Quadrant-aware modular arithmetic</strong> - RAU maps a linear parameter (0–4) to a circle using integer and fractional parts.</div>
-        <canvas id="simpleCanvas" width="600" height="400"></canvas>
-        <div style="padding-left: 20%;" class="controls">
-          <!--<span id="paramValue">0.00</span>-->
-          <input type="text" id="paramValue" name="RAU angle"/>
-          <input aria-label="Phase(Angle)" type="range" id="paramSlider" min="0" max="4" step="0.00001" value="0"/>
-        </div>
-      </div>
-    </section>
+				<style>
+				  .wrap{display:relative; gap:18px; padding:18px; align-items:flex-start; max-width:600px; margin:0 auto;}
+				  .left{width:720px;}
+				  .right{width:320px; display:flex; flex-direction:column; gap:14px;}
+				  svg{width:100%; height:600px; display:block; background:transparent;}
+				  input[type=range]{width:100%;}
+				  .row{display:flex; gap:8px; align-items:center; }
+				  .small{font-size:12px; color:var(--muted);}
+				  .clockCard{display:flex; flex-direction:column; align-items:center; gap:8px; padding:12px; width:100%;}
+				  .muted{color:var(--muted); font-size:13px;}
+				</style>
+					<div style="position: relative; width: 100%; max-width: 600px; margin: 0 auto;">
+				    <!-- Canvas (interactive) -->
+				    <canvas id="simpleCanvas" 
+				      width="600" height="400"
+				      style="display: block; z-index: 1; position: relative;">
+				    </canvas>
+				    
+				    <!-- SVG overlay (non-interactive, visual only) -->
+				    <svg id="prosvg" 
+				      viewBox="-260 -6 518 10" 
+				      preserveAspectRatio="xMidYMid meet"
+				      style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+				             z-index: 2; pointer-events: none; display: block;">
+				    </svg>
+				  </div>
 
+				<div class="controls">
+		        <div style="displaY: flex;" class="controls">
+		          <label style="margin-top:8px;">Radical Angle Unit:</label>
+		          <input aria-label="Phase(Angle)" type="range" id="paramSlider" min="0" max="4" step="0.00001" value="0"/>
+		          <input type="text" id="paramValue" style="width:8.5%;" name="RAU angle"/>
+		        </div>
+		      </div>
+				  <div class="row">
+				    <label style="flex:1">Ticks:</label>
+				    <input id="tickCount" type="range" min="4" max="120" step="1" value="24" />
+				    <div class="small" id="tickVal">24</div>
+				  </div>
+
+				  <div class="row">
+				    <label style="flex:1">Label mode:</label>
+				    <select id="labelMode">
+				      <option value="t">t (RAU param)</option>
+				      <option value="deg">degrees</option>
+				      <option value="rad">radians</option>
+				      <option value="none">none</option>
+				    </select>
+				  </div>
+			
+		 </div>
+    </section>
+    </div>
+		</div>
     <section id="section2" class"inactive">
       <div class="card">
         <h2>Vector + Radical Angle Unit</h2>
@@ -118,6 +151,177 @@
 
     </section>
   </div>
+  <script>
+  /* ---------- RAU math utilities (reusable) ---------- */
+  const RAU = (function(){
+    const pi = Math.PI;
+    return {
+      // t in [0,1] -> vector (x,y) normalized direction of (1-t, t)
+      tToVector(t){
+        // vector = (1-t, t) ; normalize
+        const vx = 1 - t, vy = t;
+        const len = Math.hypot(vx, vy) || 1;
+        return { x: vx/len, y: vy/len };
+      },
+      // t -> angle in radians (standard polar angle measured from +x towards +y)
+      tToAngle(t){
+        const v = this.tToVector(t);
+        return Math.atan2(v.y, v.x); // range (-pi,pi) but for t in [0,1] gives [0,pi/2]
+      },
+      // angle (radians) -> t (inverse mapping), theta in (0, pi/2)
+      angleToT(theta){
+        // tan(theta) = t/(1-t) => t = tan/(1+tan)
+        const tanv = Math.tan(theta);
+        const t = tanv / (1 + tanv);
+        // clamp
+        return Math.max(0, Math.min(1, t));
+      },
+      // format helpers
+      formatT(t, decimals=3){ return t.toFixed(decimals); },
+      formatDeg(theta, decimals=2){ return (theta*180/Math.PI).toFixed(decimals); },
+      formatRad(theta, decimals=3){ return theta.toFixed(decimals); }
+    };
+  })();
+  
+  /* ---------- Rendering code ---------- */
+  const svg = document.getElementById('prosvg');
+  let state = {
+    ticks: 24,
+    radius: 120,
+    labelMode: 't',
+    curT: 0.0
+  };
+  
+  const NS = "http://www.w3.org/2000/svg";
+  function create(tag, attrs={}) {
+    const el = document.createElementNS(NS, tag);
+    for(const k in attrs) el.setAttribute(k, attrs[k]);
+    return el;
+  }
+  
+  // Clear svg
+  function clearSvg() {
+    while(svg.firstChild) svg.removeChild(svg.firstChild);
+  }
+  
+  // draw protractor base (quarter circle from 0..90deg)
+  function drawProtractor(){
+    clearSvg();
+    const R = state.radius;
+    // center at (0,0) for simplicity but shifted a bit so tick labels fit
+    const cx = 0, cy = 0;
+  
+    // Quarter circle path from angle 0->90 (SVG coordinates: y down -> we use negative for up)
+    const start = {x: R, y: 0}, end = {x: 0, y: -R};
+    const arcPath = `M ${start.x} ${start.y} A ${R} ${R} 0 0 0 ${end.x} ${end.y}`;
+    const arc = create('path', {d:arcPath, stroke: 'rgba(255,255,255,0.06)', 'stroke-width':2, fill:'none'});
+    svg.appendChild(arc);
+
+    // draw ticks uniformly in t
+    const ticks = state.ticks;
+    for(let i=0;i<=ticks;i++){
+      const t = i / ticks;
+      const v = RAU.tToVector(t);
+      // screen coords: use (x*R, -y*R) because in math +y is up
+      const px = v.x * R, py = -v.y * R;
+      // tick length
+      const inner = {x: v.x*(R-8), y: -v.y*(R-8)};
+      const line = create('line', {
+        x1: px, y1: py, x2: inner.x, y2: inner.y,
+        stroke: (i%4===0? 'rgba(46,226,196,0.95)': 'rgba(255,255,255,0.12)'),
+        'stroke-width': (i%4===0?2:1)
+      });
+      svg.appendChild(line);
+    
+    // labels
+    const labelMode = state.labelMode;
+    if(labelMode !== 'none' && (i === 0 || i === ticks || i % Math.max(1, Math.floor(ticks/12)) === 0)){
+        let text = '';
+        if(labelMode === 't') text = RAU.formatT(t,3);
+        else if(labelMode === 'deg') text = RAU.formatDeg(RAU.tToAngle(t),1) + '°';
+        else if(labelMode === 'rad') text = RAU.formatRad(RAU.tToAngle(t),2) + 'r';
+    
+        // compute rotated position + rotation angle
+        const theta = RAU.tToAngle(t);
+        const deg = -theta * 180 / Math.PI;
+    
+        // pushing label slightly outside radius
+        const lx = v.x * (R + 18);
+        const ly = -v.y * (R + 18);
+    
+        const tx = create('text', {
+            x: lx,
+            y: ly,
+            fill: 'var(--text)',
+            'font-size': (i%4===0 ? 10 : 8),
+            'text-anchor':'middle',
+            'dominant-baseline':'middle',
+            transform: `rotate(${deg} ${lx} ${ly})`
+        });
+        tx.textContent = text;
+        svg.appendChild(tx);
+    }
+  }
+
+    // Draw current angle ray
+    drawCurrentRay();
+  
+    // small center guide line for angle zero
+    const axis = create('line', {x1:0,y1:0,x2:R,y2:0, stroke:'rgba(255,255,255,0.03)', 'stroke-width':1});
+    svg.appendChild(axis);
+  }
+  
+  // draw the ray for current t
+  function drawCurrentRay(){
+    // remove previous if any
+    const old = svg.querySelector('#curRay');
+    if(old) old.remove();
+    const t = state.curT;
+    const v = RAU.tToVector(t);
+    const R = state.radius;
+    const x = v.x*R, y = -v.y*R;
+    const ray = create('line', {id:'curRay', x1:0, y1:0, x2:x, y2:y, stroke:'url(#g1)', 'stroke-width':4, 'stroke-linecap':'round'});
+    // gradient for line
+    let g = svg.querySelector('#g1');
+    if(!g){
+      g = create('defs');
+      const lg = create('linearGradient'); lg.setAttribute('id','g1'); lg.setAttribute('x1','0'); lg.setAttribute('y1','0'); lg.setAttribute('x2','1'); lg.setAttribute('y2','1');
+      const s1 = create('stop'); s1.setAttribute('offset','0'); s1.setAttribute('stop-color','#ff8d6b');
+      const s2 = create('stop'); s2.setAttribute('offset','1'); s2.setAttribute('stop-color','#2ee2c4');
+      lg.appendChild(s1); lg.appendChild(s2);
+      g.appendChild(lg);
+      svg.insertBefore(g, svg.firstChild);
+    }
+    svg.appendChild(ray);
+  }
+  
+	function screenToSvg(clientX, clientY){
+	  const rect = svg.getBoundingClientRect();
+	  const relX = clientX - rect.left;
+	  const relY = clientY - rect.top;
+	  
+	  // Map from pixel coords to viewBox coords
+	  const pt = svg.createSVGPoint();
+	  pt.x = relX * (520 / rect.width) - 260;  // viewBox width/pixel width, offset by viewBox x
+	  pt.y = relY * (10 / rect.height) - 20;   // viewBox height/pixel height, offset by viewBox y
+	  
+	  return pt.matrixTransform(svg.getScreenCTM().inverse());
+	}
+	  
+  const hand = document.getElementById('hand');
+  
+  /* ---------- UI wiring ---------- */
+  document.getElementById('tickCount').addEventListener('input', (e)=>{ state.ticks = +e.target.value; document.getElementById('tickVal').textContent = e.target.value; drawProtractor();});
+  document.getElementById('labelMode').addEventListener('change', (e)=>{ state.labelMode = e.target.value; drawProtractor();});
+	document.getElementById('themeToggle').addEventListener('click', (e)=>{ drawProtractor();});
+	svg.removeEventListener('click', hand);
+	 drawProtractor()
+  /* ---------- initialization ---------- */
+  drawProtractor();
+  
+  // Expose RAU to global for easy integration into other files
+  window.RAU = RAU;
+  </script>
   <script src="js/main.js"></script>
   <script src="js/geom.js"></script>
   <script src="js/vectorDraw.js"></script>

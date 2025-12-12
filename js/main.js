@@ -82,17 +82,6 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
-function toggleMathBlock() {
-    const mb = document.getElementById('mathBlock');
-    if (mb.classList.contains('collapsed')) {
-        mb.classList.remove('collapsed');
-        mb.style.maxHeight = mb.scrollHeight + 'px';
-    } else {
-        mb.style.maxHeight = '0';
-        mb.classList.add('collapsed');
-    }
-}
-
 function changeFontSize(changeAmount, id) {
     let el = document.getElementById(id);
     if (el) {
@@ -120,13 +109,7 @@ function initPrecisionControl() {
   const formulaBody = document.getElementById('formulaBody');
   if (!formulaBody) return;
   
-  // Insert precision control after the formulas
-  const mathBlock = document.getElementById('mathBlock');
-  if (mathBlock && mathBlock.nextSibling) {
-    mathBlock.parentNode.insertBefore(createPrecisionControl(), mathBlock.nextSibling);
-  } else {
-    formulaBody.insertBefore(createPrecisionControl(), formulaBody.firstChild);
-  }
+  formulaBody.insertBefore(createPrecisionControl(), formulaBody.firstChild);
 }
 
 // Call this after DOM is ready
