@@ -7,7 +7,7 @@ let anglebetweenDeg = 0;
 let uAng = 0;
 let vAng = 0;
 let ccw = false;
-let displayPrecision = 5; // Default to 5 decimal places
+let displayPrecision = 6; // Default to 5 decimal places
 let maxDigitsofPrecision = 15;
 let angleWrapMode;
 let biasMode;

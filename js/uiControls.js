@@ -146,7 +146,7 @@ function updateResultsDisplay() {
   const isS1 = s1.classList.contains('active');
 
   if (isS1) {
-    const p = introPhase;
+    const p = parseFloat(controls.introPhaseTextBox.value);
     const rs = radicalSine(p);
     const rc = radicalCosine(p);
     const rt = radicalTan(p);
@@ -154,8 +154,8 @@ function updateResultsDisplay() {
     const radian = rauToRad(p);
 	const degrees = radian/(Math.PI/180);
 
-    results.textContent = `RAU Phase = ${formatValue(p)}
-Radian = ${formatValue(radian)} (${degrees.toFixed(1)}°)
+    results.textContent = `RAU Phase = ${formatValue(p, 6)}
+Radian = ${formatValue(radian)} (${degrees.toFixed(3)}°)
 _______________________________
 tan(θ) = ${Math.abs(rt) > 1e6 ? 'undefined' : formatValue(rt)}
 sin(θ) = ${formatValue(rs)}
