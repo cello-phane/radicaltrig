@@ -52,150 +52,150 @@
         </div>
     </div>
     <div class="content">
-        <section id="section1" class="active">
-            <div class="card" style="position: relative; width: 100%; max-width: 600px; margin: 0 auto;background:transparent;">
-                <h2>Introduction to RAU</h2>
-                <div class="desc"><strong>Quadrant-aware modular arithmetic</strong> - RAU maps a linear parameter (0–4) to a circle using integer and fractional parts.</div>
-                <style>
-                    .wrap {
-                        display: relative;
-                        align-items: flex-start;
-                        max-width: 600px;
-                        margin: 0 auto;
-                    }
+      <section id="section1" class="active">
+          <div class="card" style="position: relative; width: 100%; max-width: 600px; margin: 0 auto;background:transparent;">
+              <h2>Introduction to RAU</h2>
+              <div class="desc"><strong>Quadrant-aware modular arithmetic</strong> - RAU maps a linear parameter (0–4) to a circle using integer and fractional parts.</div>
+              <style>
+                  .wrap {
+                      display: relative;
+                      align-items: flex-start;
+                      max-width: 600px;
+                      margin: 0 auto;
+                  }
 
-                    .left {
-                        width: 720px;
-                    }
+                  .left {
+                      width: 720px;
+                  }
 
-                    .right {
-                        width: 320px;
-                        display: flex;
-                        flex-direction: column;
-                        gap: 14px;
-                    }
+                  .right {
+                      width: 320px;
+                      display: flex;
+                      flex-direction: column;
+                      gap: 14px;
+                  }
 
-                    svg {
-                        width: 100%;
-                        height: 600px;
-                        display: block;
-                        background: transparent;
-                    }
+                  svg {
+                      width: 100%;
+                      height: 600px;
+                      display: block;
+                      background: transparent;
+                  }
 
-                    input[type=range] {
-                        width: 100%;
-                    }
+                  input[type=range] {
+                      width: 100%;
+                  }
 
-                    .row {
-                        display: flex;
-                        gap: 8px;
-                        align-items: center;
-                    }
+                  .row {
+                      display: flex;
+                      gap: 8px;
+                      align-items: center;
+                  }
 
-                    .small {
-                        font-size: 12px;
-                        color: var(--muted);
-                    }
+                  .small {
+                      font-size: 12px;
+                      color: var(--muted);
+                  }
 
-                    .clockCard {
-                        display: flex;
-                        flex-direction: column;
-                        align-items: center;
-                        gap: 8px;
-                        padding: 12px;
-                        width: 100%;
-                    }
+                  .clockCard {
+                      display: flex;
+                      flex-direction: column;
+                      align-items: center;
+                      gap: 8px;
+                      padding: 12px;
+                      width: 100%;
+                  }
 
-                    .muted {
-                        color: var(--muted);
-                        font-size: 13px;
-                    }
-                </style>
-                <div style="position: relative; width: 100%; max-width: 600px; margin: 0 auto;">
-                    <!-- Canvas (interactive) -->
-                    <canvas id="simpleCanvas" width="600" height="400" style="display: block; z-index: 1; position: relative;">
-                    </canvas>
+                  .muted {
+                      color: var(--muted);
+                      font-size: 13px;
+                  }
+              </style>
+              <div style="position: relative; width: 100%; max-width: 600px; margin: 0 auto;">
+                  <!-- Canvas (interactive) -->
+                  <canvas id="simpleCanvas" width="600" height="400" style="display: block; z-index: 1; position: relative;">
+                  </canvas>
 
-                    <!-- SVG overlay (non-interactive, visual only) -->
-                    <svg id="prosvg" viewBox="-260 -5 518 10" preserveAspectRatio="xMidYMid meet" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
-				             z-index: 2; pointer-events: none; display: block;">
-                    </svg>
-                </div>
+                  <!-- SVG overlay (non-interactive, visual only) -->
+                  <svg id="prosvg" viewBox="-260 -5 518 10" preserveAspectRatio="xMidYMid meet" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+		             z-index: 2; pointer-events: none; display: block;">
+                  </svg>
+              </div>
 
-                <div class="controls">
-                    <div style="displaY: flex;" class="controls">
-                        <label style="margin-top:8px;">Radical Angle Unit:</label>
-                        <input aria-label="Phase(Angle)" type="range" id="paramSlider" min="0" max="4" step="0.00025" value="0" />
-                        <input type="text" id="paramValue" style="width:8.5%;" name="RAU angle" />
-                    </div>
-                </div>
-                <div class="row">
-                    <label style="flex:1">Ticks:</label>
-                    <input id="tickCount" type="range" min="4" max="120" step="1" value="24" />
-                    <div class="small" id="tickVal">24</div>
-                </div>
+              <div class="controls">
+                  <div style="displaY: flex;" class="controls">
+                      <label style="margin-top:8px;">Radical Angle Unit:</label>
+                      <input aria-label="Phase(Angle)" type="range" id="paramSlider" min="0" max="4" step="0.00025" value="0" />
+                      <input type="text" id="paramValue" style="width:8.5%;" name="RAU angle" />
+                  </div>
+              </div>
+              <div class="row">
+                  <label style="flex:1">Ticks:</label>
+                  <input id="tickCount" type="range" min="4" max="120" step="1" value="24" />
+                  <div class="small" id="tickVal">24</div>
+              </div>
 
-                <div class="row">
-                    <label style="flex:1">Label mode:</label>
-                    <select id="labelMode">
-                        <option value="t">t (RAU param)</option>
-                        <option value="deg">degrees</option>
-                        <option value="rad">radians</option>
-                        <option value="none">none</option>
-                    </select>
-                </div>
+              <div class="row">
+                  <label style="flex:1">Label mode:</label>
+                  <select id="labelMode">
+                      <option value="t">t (RAU param)</option>
+                      <option value="deg">degrees</option>
+                      <option value="rad">radians</option>
+                      <option value="none">none</option>
+                  </select>
+              </div>
 
-            </div>
-        </section>
+          </div>
+      </section>
+
+	    <section id="section2" class"inactive">
+	        <div class="card">
+	            <h2>Vector + Radical Angle Unit</h2>
+	            <canvas id="vectorCanvas" width="600" height="400"></canvas>
+	            <div class="panel">
+	                <div>
+	                    <div class="control-group">
+	                        <label for="uLength">u length:</label>
+	                        <input id="uLength" type="range" min="1" max="200" value="120">
+	                        <div class="value" id="uLengthVal">120</div>
+	                    </div>
+	                    <div class="control-group">
+	                        <label for="uAngle">u rotate:</label>
+	                        <input id="uAngle" type="range" min="0" max="360" value="30">
+	                        <div class="value" id="uAngleVal">30°</div>
+	                    </div>
+	                    <div class="control-group">
+	                        <label for="vLength">v length:</label>
+	                        <input id="vLength" type="range" min="1" max="200" value="100">
+	                        <div class="value" id="vLengthVal">100</div>
+	                    </div>
+	                    <div class="control-group">
+	                        <label for="vAngle">v rotate:</label>
+	                        <input id="vAngle" type="range" min="0" max="360" value="90">
+	                        <div class="value" id="vAngleVal">90°</div>
+	                    </div>
+	                </div>
+
+	                <div class="displayProperties">
+	                    <table>
+	                        <tr>
+	                            <td><label for="wrappedAngle">Wrap Angle Arc</label></td>
+	                            <td><input type="checkbox" id="wrappedAngle" name="wrappedAngle" onclick="call(0,this.id)"></td>
+	                        </tr>
+	                        <tr>
+	                            <td><label for="biasAngle">Bias Angle Arc</label></td>
+	                            <td><input type="checkbox" id="biasAngle" name="biasAngle" onclick="call(1,this.id)"></td>
+	                        </tr>
+	                        <tr>
+	                            <td><label for="defaultAngle">Between Arc</label></td>
+	                            <td><input type="checkbox" id="defaultAngle" name="defaultAngle" onclick="call(2,this.id)"></td>
+	                        </tr>
+	                    </table>
+	                </div>
+	            </div>
+				</div>
+	    </section>
     </div>
-    <section id="section2" class"inactive">
-        <div class="card">
-            <h2>Vector + Radical Angle Unit</h2>
-            <canvas id="vectorCanvas" width="600" height="400"></canvas>
-            <div class="panel">
-                <div>
-                    <div class="control-group">
-                        <label for="uLength">u length:</label>
-                        <input id="uLength" type="range" min="1" max="200" value="120">
-                        <div class="value" id="uLengthVal">120</div>
-                    </div>
-                    <div class="control-group">
-                        <label for="uAngle">u rotate:</label>
-                        <input id="uAngle" type="range" min="0" max="360" value="30">
-                        <div class="value" id="uAngleVal">30°</div>
-                    </div>
-                    <div class="control-group">
-                        <label for="vLength">v length:</label>
-                        <input id="vLength" type="range" min="1" max="200" value="100">
-                        <div class="value" id="vLengthVal">100</div>
-                    </div>
-                    <div class="control-group">
-                        <label for="vAngle">v rotate:</label>
-                        <input id="vAngle" type="range" min="0" max="360" value="90">
-                        <div class="value" id="vAngleVal">90°</div>
-                    </div>
-                </div>
-
-                <div class="displayProperties">
-                    <table>
-                        <tr>
-                            <td><label for="wrappedAngle">Wrap Angle Arc</label></td>
-                            <td><input type="checkbox" id="wrappedAngle" name="wrappedAngle" onclick="call(0,this.id)"></td>
-                        </tr>
-                        <tr>
-                            <td><label for="biasAngle">Bias Angle Arc</label></td>
-                            <td><input type="checkbox" id="biasAngle" name="biasAngle" onclick="call(1,this.id)"></td>
-                        </tr>
-                        <tr>
-                            <td><label for="defaultAngle">Between Arc</label></td>
-                            <td><input type="checkbox" id="defaultAngle" name="defaultAngle" onclick="call(2,this.id)"></td>
-                        </tr>
-                    </table>
-                </div>
-            </div>
-		</div>
-    </section>
-
     <script src="js/main.js"></script>
     <script src="js/geom.js"></script>
     <script src="js/vectorDraw.js"></script>

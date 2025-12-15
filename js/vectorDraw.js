@@ -8,13 +8,12 @@ function initRAUCanvas() {
   const ctxSimple    = canvasSimple.getContext('2d');
   const slider       = document.getElementById('paramSlider');
   const valueDisplay = document.getElementById('paramValue');
-
   let cx = canvasSimple.width / 2;
   let cy = canvasSimple.height / 2;
   let dragging = false;
 
   function currentEndpoint(param) {
-    const introPhaseParam = getRotationComponents(param); // {sin, cos}
+    const introPhaseParam = getRotationComponents(param);
     const r = Math.min(canvasSimple.width, canvasSimple.height) * 0.34;
     return {
       x: cx + introPhaseParam.cos * r,
@@ -28,9 +27,7 @@ function initRAUCanvas() {
   function draw() {
     const w = canvasSimple.width, h = canvasSimple.height;
     const r = Math.min(w, h) * 0.34;
-
     ctxSimple.clearRect(0, 0, w, h);
-
     drawGrid(cx, cy, w, h);
 
     // circle
@@ -56,12 +53,12 @@ function initRAUCanvas() {
     // knob
     ctxSimple.fillStyle = '#ff4444';
     ctxSimple.beginPath();
-    ctxSimple.arc(px, py, 2, 0, Math.PI * 2);
+    ctxSimple.arc(px, py, 6, 0, Math.PI * 2);
     ctxSimple.fill();
   }
 
   // ------------------------
-  // GRID (unchanged)
+  // GRID
   // ------------------------
   function drawGrid(cx, cy, w, h) {
     ctxSimple.strokeStyle = '#555';
@@ -87,39 +84,52 @@ function initRAUCanvas() {
   }
 
   // ------------------------
-  // DRAGGING HANDLERS
+  // UPDATE POSITION (shared logic)
   // ------------------------
-	
-  canvasSimple.addEventListener('mousedown', e => {
+  function updatePosition(mx, my) {
+    const standardAng = atanVec({ x: mx - cx, y: my - cy }, { x: 1, y: 0 });
+    
+    controls.simpleSliderParam.value = standardAng;
+    introPhase = standardAng;
+    controls.introPhaseTextBox.value = standardAng;
+    
+    updateValueDisplay('paramValue', formatValue(standardAng));
+    updateResultsDisplay();
+    draw();
+  }
+
+  // ------------------------
+  // CLICK HANDLER
+  // ------------------------
+  canvasSimple.addEventListener('click', e => {
+    if (dragging) return; // Don't trigger on drag release
+    
     const rect = canvasSimple.getBoundingClientRect();
     const mx = e.clientX - rect.left;
     const my = e.clientY - rect.top;
-
-    // compute current handle pos
-    const { x: hx, y: hy } = currentEndpoint(introPhase);
-    const d = Math.hypot(mx - hx, my - hy);
-
-    dragging = true;
+    
+    updatePosition(mx, my);
   });
 
+  // ------------------------
+  // DRAGGING HANDLERS
+  // ------------------------
+  canvasSimple.addEventListener('mousedown', e => {
+    dragging = true;
+  });
+	
   canvasSimple.addEventListener('mousemove', e => {
     if (!dragging) return;
+    
     const rect = canvasSimple.getBoundingClientRect();
-    const mx = e.clientX - rect.left - cx + 10;
-    const my = e.clientY - rect.top - cy + 10;
-    // Standard angle from X-axis for the sliders
-    // Now using atanVec with x and y as positive in xy order
-    let standardAng = atanVec({ x: mx, y: my}, {x: 1, y: 0 });
+    const mx = e.clientX - rect.left;
+    const my = e.clientY - rect.top;
+    
+    updatePosition(mx, my);
+  });
 
-    if (dragging) {
-      controls.simpleSliderParam.value = standardAng;
-      introPhase = parseFloat(slider.value);
-      controls.introPhaseTextBox.value = introPhase;
-
-      updateValueDisplay('paramValue', formatValue(standardAng)); // slider below canvas
-      updateResultsDisplay(); // sidebar
-      draw();
-    }
+  document.addEventListener('mouseup', () => {
+    dragging = false;
   });
 
   // ------------------------
@@ -127,16 +137,18 @@ function initRAUCanvas() {
   // ------------------------
   slider.addEventListener('input', () => {
     introPhase = parseFloat(slider.value);
-    updateValueDisplay('paramValue',  formatValue(introPhase));
+    updateValueDisplay('paramValue', formatValue(introPhase));
     updateResultsDisplay();
     draw();
   });
+
   valueDisplay.addEventListener('change', () => {
-    introPhase = parseFloat(slider.value);
+    introPhase = parseFloat(valueDisplay.value);
+    slider.value = introPhase;
     updateResultsDisplay();
-	draw();
+    draw();
   });
-  document.addEventListener('mouseup', () => dragging = false);
+
   draw();
 }
 
