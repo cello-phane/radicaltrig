@@ -56,7 +56,13 @@ cos_result = c * q0 - s * q1 - c * q2 + s * q3;
 sin_result = (s * q0 + c * q1 - s * q2 - c * q3) * Math.sign(param);
 ```
 
-## Vectors atan function which returns RAU parameter
+## Atan2 function which returns a radian (Javascript version)
+Math.Atan2(y, x) returns the angle in the plane between the 
+positive x-axis and the ray from the origin (0, 0) to the point (x, y)
+It is the standard way to calculate the angle that accounts for all four quadrants, 
+ensuring the correct sign and range for the angle (-π to π) which is (-180 to 180 degrees)
+
+## atanVec function which returns RAU parameter
 Convert angle between two vectors directly to RAU parameter:
 ```javascript
 function atanVec(u, v) {
