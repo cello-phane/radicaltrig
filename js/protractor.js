@@ -32,8 +32,8 @@ const RAU = (function(){
 /* ---------- Rendering code ---------- */
 const svg = document.getElementById('prosvg');
 let state = {
-  ticks: 24,
-  radius: 118,
+  ticks: 72,
+  radius: 117,
   labelMode: 't',
   curT: 0.0
 };
