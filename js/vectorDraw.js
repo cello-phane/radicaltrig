@@ -65,13 +65,13 @@ function initRAUCanvas() {
     ctxSimple.lineWidth = 1;
     for (let i = -10; i <= 10; i++) {
       ctxSimple.beginPath();
-      ctxSimple.moveTo(cx + i * 67, 0);
-      ctxSimple.lineTo(cx + i * 67, h);
+      ctxSimple.moveTo(cx + i * 68, 0);
+      ctxSimple.lineTo(cx + i * 68, h);
       ctxSimple.stroke();
       ctxSimple.beginPath();
       ctxSimple.moveTo(0, cy + i * 34);
       ctxSimple.lineTo(w, cy + i * 34);
-      ctxSimple.stroke();
+      ctxSimple.stroke()
     }
     ctxSimple.strokeStyle = '#444';
     ctxSimple.lineWidth = 2;
@@ -120,11 +120,9 @@ function initRAUCanvas() {
 	
   canvasSimple.addEventListener('mousemove', e => {
     if (!dragging) return;
-    
     const rect = canvasSimple.getBoundingClientRect();
     const mx = e.clientX - rect.left;
     const my = e.clientY - rect.top;
-    
     updatePosition(mx, my);
   });
 
@@ -374,7 +372,7 @@ function initVectorCanvas() {
     const signed = vAngle - uAngle; // in degrees
     ccw = signed > 0; // in degrees
     unsigned = Math.abs(signed); // in degrees
-	anglebetweenDeg = unsigned;
+		anglebetweenDeg = unsigned; // update the global var
     const arcRadius = 0.5 * Math.max(uLen, vLen);
     let startAngle = 0, endAngle = 0; // to store radians
     if (biasMode) { 

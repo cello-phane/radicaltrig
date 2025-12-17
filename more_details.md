@@ -101,6 +101,24 @@ function atanVec(u, v) {
     return dot_uv >= 0.0 ? upper : lower;
 }
 
+//-----------Similar to Atan2 in codebases------------//
+function atanVecFromXAxis(p) {
+  const apx = Math.abs(p.x);
+  const apy = Math.abs(p.y);
+
+  if (apx + apy === 0) return 0;
+
+  let t = apy / (apx + apy);
+
+  const qx = +(p.x < 0);
+  const qy = +(p.y < 0);
+
+  const q = qx + qx * qy + 3 * qy * (1 - qx);
+	//if q is mod 2
+  if ((q & 1) === 0) t = 1 - t;
+
+  return q + t;
+}
 //Works with unnormalized vectors
 ```
 
