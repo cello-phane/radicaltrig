@@ -114,8 +114,7 @@ function atanVecFromXAxis(p) {
   const qy = +(p.y < 0);
 
   const q = qx + qx * qy + 3 * qy * (1 - qx);
-	//if q is mod 2
-  if ((q & 1) === 0) t = 1 - t;
+  if (q & 1) t = 1 - t;  // flip t when q is odd
 
   return q + t;
 }

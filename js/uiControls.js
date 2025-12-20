@@ -152,7 +152,7 @@ function updateResultsDisplay() {
     const rt = radicalTan(p);
     const deg = rauToDeg(p);
     const radian = rauToRad(p);
-	const degrees = radian/(Math.PI/180);
+	 const degrees = radian/(Math.PI/180);
 
     results.textContent = `RAU Phase = ${formatValue(p, 6)}
 Radian = ${formatValue(radian)} (${degrees.toFixed(3)}°)
@@ -177,10 +177,31 @@ cos(θ) = ${formatValue(rc)}`;
       const rc = radicalCosine(p);
       const rt = radicalTan(p);
       const rad = rauToRad(p);
-      let signedDeg = anglebetweenDeg * (ccw ? 1 : -1);
-      signedDeg = formatValue(signedDeg, 1);
+      let signedDeg = formatValue(anglebetweenDeg * (ccw ? 1 : -1), 1);
       const undirDeg = formatValue(Math.min(Math.abs(signedDeg), Math.abs(signedDeg)), 1);
-	  
+      if (biasMode) { 
+      	signedDeg = -Math.abs(signedDeg);
+      	if (signedDeg < 0) ccw = true; 
+     	} 
+      else {
+			signedDeg = undirDeg < signedDeg && signedDeg < 0 || !biasMode ? signedDeg : -signedDeg;
+			signedDeg = angleWrapMode ? Math.max(Math.abs(360-undirDeg), Math.abs(360-signedDeg)) : 360-Math.max(-signedDeg, 360-signedDeg);
+			if(angleWrapMode && signedDeg > 360) { 
+				signedDeg = (360-Math.abs(signedDeg-360))
+			}
+			if (signedDeg < 0 && angleWrapMode) {
+				ccw = false;
+			}
+		}
+		if (defaultMode) {
+			ccw = false;
+			if (signedDeg < 0) {
+				ccw = true;
+			}
+		};
+		if (angleWrapMode && ccw) {
+			signedDeg = -signedDeg;
+		}
       results.textContent = `Vector u = (${fmt(u.x)}, ${fmt(u.y)})
   |u| = ${fmt(uMag)}
 Vector v = (${fmt(v.x)}, ${fmt(v.y)})
@@ -188,7 +209,7 @@ Vector v = (${fmt(v.x)}, ${fmt(v.y)})
 Dot product = ${fmt(dot)}
 Cross product = ${fmt(cross)}
 _______________________________
-Signed angle (u→v) = ${signedDeg}° ${ccw ? '(CCW)' : '(CW)'}
+Signed angle (u→v) = ${ signedDeg }° ${ ccw ? '(CW)' : '(CCW)'}
 Angle between = ${undirDeg}°
 _______________________________
 RAU Phase = ${formatValue(p)}

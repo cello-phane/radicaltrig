@@ -372,7 +372,7 @@ function initVectorCanvas() {
     const signed = vAngle - uAngle; // in degrees
     ccw = signed > 0; // in degrees
     unsigned = Math.abs(signed); // in degrees
-		anglebetweenDeg = unsigned; // update the global var
+	 anglebetweenDeg = unsigned; // update the global var
     const arcRadius = 0.5 * Math.max(uLen, vLen);
     let startAngle = 0, endAngle = 0; // to store radians
     if (biasMode) { 
@@ -380,9 +380,10 @@ function initVectorCanvas() {
       startAngle = Math.min(uA, bias);
       endAngle = startAngle - degToRad(Math.abs(360 - (ccw ? signed : unsigned)));
       drawArcGradient(ctx, cx, cy, arcRadius,
-            ccw ? bias - startAngle : -(vA + bias), // Start at v always
+            ccw ? bias - startAngle : -(vA + bias), // Start at u always
             ccw ? Math.abs(endAngle - Math.PI * 2) : -(uA - degToRad(unsigned)), // Wrap around ccw if going positive
             [255, 100, 100], [100, 100, 255]);
+      anglebetweenDeg = !ccw ? 360 + radToDeg(endAngle - startAngle) : radToDeg(startAngle - endAngle);
     }
     else if (angleWrapMode) {
       // Draw from u going the long way CCW
