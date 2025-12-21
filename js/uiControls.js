@@ -172,7 +172,7 @@ cos(θ) = ${formatValue(rc)}`;
 
     if (mode === 'between') {
      let p = atanVec(u, v);
-	  p = biasMode ? p : (ccw ? p : (angleWrapMode ? 4-p : p));
+	  p = biasMode ? p : (ccw ? (defaultMode ? 4-p : p) : (angleWrapMode ? 4-p : p));
 	  const rs = radicalSine(p);
       const rc = radicalCosine(p);
       const rt = radicalTan(p);
