@@ -171,8 +171,8 @@ cos(θ) = ${formatValue(rc)}`;
     const fmt = (n, w = 8, d = 2) => n.toFixed(d).padStart(w);
 
     if (mode === 'between') {
-      let p = atanVec(u, v);
-	  p = ccw ? 4-p : p;
+     let p = atanVec(u, v);
+	  p = biasMode ? p : (ccw ? p : (angleWrapMode ? 4-p : p));
 	  const rs = radicalSine(p);
       const rc = radicalCosine(p);
       const rt = radicalTan(p);
@@ -181,7 +181,7 @@ cos(θ) = ${formatValue(rc)}`;
       const undirDeg = formatValue(Math.min(Math.abs(signedDeg), Math.abs(signedDeg)), 1);
       if (biasMode) { 
       	signedDeg = -Math.abs(signedDeg);
-      	if (signedDeg < 0) ccw = true; 
+      	if (signedDeg < 0) ccw = true;
      	} 
       else {
 			signedDeg = undirDeg < signedDeg && signedDeg < 0 || !biasMode ? signedDeg : -signedDeg;
