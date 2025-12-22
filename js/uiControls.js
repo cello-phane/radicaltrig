@@ -133,7 +133,7 @@ function calculateAngleMode(u, v, angleWrapMode, biasMode, defaultMode) {
             rau: p,
             signedDeg: -Math.abs(anglebetweenDeg),
             unsignedDeg: Math.abs(anglebetweenDeg),
-            ccw: true
+            ccw: false
         };
     }
     
