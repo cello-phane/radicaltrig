@@ -17,9 +17,9 @@ document.getElementById("wrappedAngle").checked = angleWrapMode;
 document.getElementById("biasAngle").checked = biasMode;
 document.getElementById("defaultAngle").checked = defaultMode;
 document.addEventListener('DOMContentLoaded', () => {
-  initUI();
   initRAUCanvas();
   initVectorCanvas();
+
   const toggleBtn = document.getElementById('toggleButton');
   const themeBtn = document.getElementById('themeToggle');
   const s1 = document.getElementById('section1');
@@ -81,6 +81,69 @@ document.addEventListener('DOMContentLoaded', () => {
   	initVectorCanvas();
   });
 });
+
+// Precision Control
+function createPrecisionControl() {
+    const container = document.createElement('div');
+    container.id = 'precisionControl';
+    Object.assign(container.style, {
+        margin: '12px 0',
+        padding: '12px',
+        background: 'var(--bg)',
+        borderRadius: '6px',
+        border: '1px solid #ddd'
+    });
+
+    const label = document.createElement('label');
+    Object.assign(label.style, {
+        display: 'flex',
+        alignItems: 'center',
+        gap: '8px',
+        fontWeight: '600',
+        fontSize: '13px'
+    });
+    label.textContent = 'Precision: ';
+
+    const input = document.createElement('input');
+    input.type = 'number';
+    input.id = 'precisionInput';
+    input.min = '0';
+    input.max = maxDigitsofPrecision.toString();
+    input.value = displayPrecision.toString();
+    Object.assign(input.style, {
+        width: '60px',
+        padding: '4px',
+        border: '1px solid #ccc',
+        borderRadius: '4px',
+        fontSize: '13px'
+    });
+
+    const display = document.createElement('span');
+    display.id = 'precisionDisplay';
+    Object.assign(display.style, {
+        marginLeft: '8px',
+        padding: '4px 8px',
+        background: 'var(--accent)',
+        borderRadius: '3px',
+        fontFamily: 'monospace',
+        fontSize: '12px',
+        color: 'var(--card)'
+    });
+    display.textContent = formatValue(Math.PI, displayPrecision);
+
+    // Update precision on input
+    input.addEventListener('input', (e) => {
+        const precision = parseInt(e.target.value) || 0;
+        setPrecision(precision);
+        display.textContent = formatValue(Math.PI, precision);
+    });
+
+    label.appendChild(input);
+    label.appendChild(display);
+    container.appendChild(label);
+
+    return container;
+}
 
 function changeFontSize(changeAmount, id) {
     let el = document.getElementById(id);

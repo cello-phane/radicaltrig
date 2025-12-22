@@ -35,13 +35,14 @@
             <div class="title">Sidebar</div>
             <div class="chev" id="formulaChevron">◀</div>
         </div>
-        <div id="formulaBody">
-            <button onclick="changeFontSize(1,'resultsContent')">+</button>
-            <button onclick="changeFontSize(-1,'resultsContent')">-</button>
+        <button onclick="changeFontSize(1,'resultsContent')">+</button>
+        <button onclick="changeFontSize(-1,'resultsContent')">-</button>
+		  <button id="toggleHeaderControls" style="float:right">◀</button>
 
+        <div id="formulaBody">
             <!-- Vector canvas only control -->
             <div id="angleModeSidebar" style="display:none; margin: 12px 0; padding: 8px; border: 1px solid #ddd; border-radius: 6px;">
-                <label for="angleMode" style="display: block; font-weight: 600; margin-bottom: 8px;">Display Mode:</label>
+                <label for="angleMode" style="display: block; font-weight: 600; margin-bottom: 8px;">Display Mode:</label> 
                 <select id="angleMode">
                     <option value="between">Angle Between Vectors</option>
                     <option value="individual">Individual Vector Angles</option>
