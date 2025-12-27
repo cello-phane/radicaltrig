@@ -154,9 +154,9 @@ function calculateAngleMode(u, v, angleWrapMode, biasMode, defaultMode) {
         const wrapped = 360 - Math.abs(anglebetweenDeg);
         return {
             rau: p,
-            signedDeg: ccwDirection ? -wrapped : wrapped,
+            signedDeg: ccwDirection || anglebetweenDeg == 0 ? -wrapped : wrapped,
             unsignedDeg: Math.min(Math.abs(anglebetweenDeg), wrapped),
-            ccw: ccwDirection ? false : true
+            ccw: ccwDirection || anglebetweenDeg == 0 ? false : true
         };
     }
     
