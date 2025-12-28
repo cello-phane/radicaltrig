@@ -79,7 +79,7 @@
             systemSettingLight
         });
         window.onload = function() {
-        		if (localStorageTheme !== "light") {
+        		if (localStorageTheme == "light" && currentThemeSetting != "light") {
         			fontColor = invertColor(fontColor);
         			values.fontColorVal.textContent = fontColor;
         		}
@@ -206,7 +206,7 @@
         }
 
         let fontSize = 11;
-        let fontColor = "#773b28";
+        let fontColor = currentThemeSetting === "light" ? "#773b28" : "#88c4dc";
         // ======================================================================================        
         // Create a static buffer for the background that gets called from outside animating loop
         // ======================================================================================
