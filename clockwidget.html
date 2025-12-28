@@ -110,7 +110,7 @@
         });
 
         buttonFont.addEventListener("click", () => {
-            const newTheme = currentThemeSetting === "light" ? "dark" : "light";
+            const newTheme = currentThemeSetting === "light" ? "light" : "dark";
 
             // Automatically invert font color when switching theme
             if (newTheme === "dark") {
@@ -127,7 +127,7 @@
         });
 
         function getThemeColors() {
-            const theme = localStorage.getItem("theme") || "dark" || "light";
+            const theme = localStorage.getItem("theme") || "light";
 
             if (theme === "light") {
                 return {
@@ -398,7 +398,7 @@
         // ================================
         function drawNumberedMarkers(ctx, cx, cy, radius, rauTable, color = "white", uniform = true) {
             ctx.save();
-            ctx.font = `${fontSize}px monospace`;
+            ctx.font = `${fontSize}px serif`;
             ctx.fillStyle = fontColor;
             ctx.textAlign = "center";
             ctx.textBaseline = "middle";
