@@ -47,120 +47,6 @@
     <canvas id="rauClock" width="750" height="750" style="background: transparent; --canvas-border: transparent;"></canvas>
     <script src="js/geom.js"></script>
     <script>
-        // ======================
-        // Setup light/dark theme
-        // ======================
-        (function() {
-            const theme = localStorage.getItem("theme") || "light";
-            document.documentElement.dataset.theme = theme;
-        })();
-
-        function calculateSettingAsThemeString({
-            localStorageTheme,
-            systemSettingDark
-        }) {
-            if (localStorageTheme !== null) {
-                return localStorageTheme;
-            }
-
-            if (systemSettingDark.matches) {
-                return "dark";
-            }
-
-            return "light";
-        }
-        
-        let localStorageTheme = "light";
-
-        const systemSettingDark = window.matchMedia("(prefers-color-scheme: dark)");
-        const systemSettingLight = window.matchMedia("(prefers-color-scheme: light)");
-        let currentThemeSetting = calculateSettingAsThemeString({
-            localStorageTheme,
-            systemSettingLight
-        });
-        window.onload = function() {
-        		if (localStorageTheme == "light" && currentThemeSetting != "light") {
-        			fontColor = invertColor(fontColor);
-        			values.fontColorVal.textContent = fontColor;
-        		}
-   		};
-
-        const buttonTheme = document.getElementById("buttonTheme");
-        const buttonFont = document.getElementById("buttonFont");
-        buttonTheme.addEventListener("click", () => {
-            const newTheme = currentThemeSetting === "dark" ? "light" : "dark";
-            const newCta = newTheme === "dark" ? "Switch to Light" : "Switch to Dark";
-            buttonTheme.innerText = newCta;
-            buttonTheme.setAttribute("aria-label", newCta);
-            document.querySelector("html").setAttribute("data-theme", newTheme);
-            localStorage.setItem("theme", newTheme);
-            currentThemeSetting = newTheme;
-            // Automatically invert font color when switching theme
-            if (newTheme === "dark") {
-                fontColor = invertColor(fontColor);
-                controls.fontColor.value = fontColor; // update slider
-                values.fontColorVal.textContent = fontColor;
-            }
-            else {
-            	fontColor = invertColor(fontColor);
-                controls.fontColor.value = fontColor; // update slider
-                values.fontColorVal.textContent = fontColor;
-            }
-            drawStaticBackgroundOnce();
-        });
-
-        buttonFont.addEventListener("click", () => {
-            const newTheme = currentThemeSetting === "light" ? "light" : "dark";
-
-            // Automatically invert font color when switching theme
-            if (newTheme === "dark") {
-                fontColor = invertColor(fontColor);
-                controls.fontColor.value = fontColor; // update slider
-                values.fontColorVal.textContent = fontColor;
-            } else {
-                // invert back if switching to dark
-                fontColor = invertColor(fontColor);
-                controls.fontColor.value = fontColor;
-                values.fontColorVal.textContent = fontColor;
-            }
-            drawStaticBackgroundOnce();
-        });
-
-        function getThemeColors() {
-            const theme = localStorage.getItem("theme") || "light";
-
-            if (theme === "light") {
-                return {
-                    meridianRGB: [92, 74, 61],
-                    parallelRGB: [201, 181, 160],
-                    fieldLineRGB: [139, 0, 0]
-                };
-            } else {
-                return {
-                    meridianRGB: [0, 255, 136],
-                    parallelRGB: [136, 136, 255],
-                    fieldLineRGB: [255, 255, 255]
-                };
-            }
-        }
-
-        function invertColor(hex) {
-            hex = hex.replace('#', '');
-
-            // Support 3-digit hex
-            if (hex.length === 3) {
-                hex = hex.split('').map(c => c + c).join('');
-            }
-
-            const r = 255 - parseInt(hex.slice(0, 2), 16);
-            const g = 255 - parseInt(hex.slice(2, 4), 16);
-            const b = 255 - parseInt(hex.slice(4, 6), 16);
-
-            return "#" +
-                r.toString(16).padStart(2, '0') +
-                g.toString(16).padStart(2, '0') +
-                b.toString(16).padStart(2, '0');
-        }
 
         // ======================
         // Set up for main canvas
@@ -170,7 +56,7 @@
         const cx = canvas.width / 2;
         const cy = canvas.height / 2;
         const radius = Math.min(cx, cy) * 0.9;
-
+		  let fontSize = 14;
         // ===============================
         // Get the values from the sliders
         // ===============================
@@ -204,9 +90,86 @@
                 contentElement.style.display = "none";
             }
         }
+		// ======================
+		// Theme (single source of truth)
+		// ======================
+		const THEME_KEY = "theme";
+		const prefersDark = matchMedia("(prefers-color-scheme: dark)");
 
-        let fontSize = 11;
-        let fontColor = currentThemeSetting === "light" ? "#773b28" : "#88c4dc";
+		const THEMES = {
+		    light: {
+		        font: "#773b28",
+		        meridianRGB: [92, 74, 61],
+		        parallelRGB: [201, 181, 160],
+		        fieldLineRGB: [139, 0, 0]
+		    },
+		    dark: {
+		        font: "#88c4dc",
+		        meridianRGB: [0, 255, 136],
+		        parallelRGB: [136, 136, 255],
+		        fieldLineRGB: [255, 255, 255]
+		    }
+		};
+
+		function getTheme() {
+		    return localStorage.getItem(THEME_KEY)
+		        ?? (prefersDark.matches ? "dark" : "light");
+		}
+		function invertColor(hex) {
+            hex = hex.replace('#', '');
+
+            // Support 3-digit hex
+            if (hex.length === 3) {
+                hex = hex.split('').map(c => c + c).join('');
+            }
+
+            const r = 255 - parseInt(hex.slice(0, 2), 16);
+            const g = 255 - parseInt(hex.slice(2, 4), 16);
+            const b = 255 - parseInt(hex.slice(4, 6), 16);
+
+            return "#" +
+                r.toString(16).padStart(2, '0') +
+                g.toString(16).padStart(2, '0') +
+                b.toString(16).padStart(2, '0');
+        }
+		let currentTheme = getTheme();
+		document.documentElement.dataset.theme = currentTheme;
+
+		// Initialize font color from theme
+		let fontColor = THEMES[currentTheme].font;
+		controls.fontColor.value = fontColor;
+		values.fontColorVal.textContent = fontColor;
+        
+      function applyTheme(theme, invertFont = false) {
+            currentTheme = theme;
+            document.documentElement.dataset.theme = theme;
+            localStorage.setItem(THEME_KEY, theme);
+        
+            if (invertFont) {
+                fontColor = invertColor(fontColor);
+            } else {
+                fontColor = THEMES[theme].font;
+            }
+        
+            controls.fontColor.value = fontColor;
+            values.fontColorVal.textContent = fontColor;
+        
+            drawStaticBackgroundOnce();
+        }
+        
+        // Theme toggle
+        buttonTheme.addEventListener("click", () => {
+            applyTheme(currentTheme === "dark" ? "light" : "dark", true);
+        });
+        
+        // Manual font invert
+        buttonFont.addEventListener("click", () => {
+            fontColor = invertColor(fontColor);
+            controls.fontColor.value = fontColor;
+            values.fontColorVal.textContent = fontColor;
+            drawStaticBackgroundOnce();
+        });
+        
         // ======================================================================================        
         // Create a static buffer for the background that gets called from outside animating loop
         // ======================================================================================
@@ -482,7 +445,7 @@
             staticCtx.clearRect(0, 0, staticBuffer.width, staticBuffer.height);
 
             staticCtx.save();
-            const colors = getThemeColors();
+            const colors = THEMES[currentTheme];
             const rgb = colors.parallelRGB;
 
             // Outer circle
