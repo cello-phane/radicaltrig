@@ -20,4 +20,5 @@ After a 90 degree sweep, every point(all 4) has covered the circle, enabling per
 [3D rotation of a sphere on Javascript 2D canvas](https://cello-phane.github.io/radicaltrig/perspective_sphere.html)  
 Graphing:  
 [Trig Ratios in geogebra](https://www.geogebra.org/calculator/kvnpt4f3)
+[Sine/Cosine comparisons](https://www.geogebra.org/calculator/jyxv3pvz)
 [Uniform Motion conversion parameter](https://www.desmos.com/calculator/qku0curcwb)
