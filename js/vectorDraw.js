@@ -318,9 +318,10 @@ function initVectorCanvas() {
     const uA = degToRad(uAngle);
     const vA = degToRad(vAngle);
 	  
-	// Lose precision from an integral degree input
-	let uCS = getRotationComponents(radToRau(degToRad(uAngle)));
-	let vCS = getRotationComponents(radToRau(degToRad(vAngle)));
+	// Lose precision from an integral degree input if this is used
+	// (would need higher precision float!)
+	// let uCS = getRotationComponents(radToRau(degToRad(uAngle)));
+	// let vCS = getRotationComponents(radToRau(degToRad(vAngle)));
 
     const u = {
       x: uLen * Math.cos(uA),
