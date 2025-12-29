@@ -297,34 +297,24 @@ function getInterpolatedFromTable(table, secondsFrac) {
 // === Unit conversions ===
 const degToRad = deg => deg * Math.PI / 180;
 const radToDeg = rad => rad / (Math.PI / 180);
+
 function degToRau(deg) {
 	const q = deg % 360;
 	const f = q / 90;
-	if (deg == 360) return 4;
-
-	switch(f-(f%4)) {
-		case 0: return (f);
-		case 1: return 1+(f);
-		case 2: return 2+(f);
-		case 3: return 3+(f);
-	}
+	return f;
 }
+
 function radToRau(radian) {
 	const q = radian % (2*Math.PI);
 	const f = q / (Math.PI/2);
-	if (radian == Math.PI*2) return 4;
-	switch(f-(f%4)) {
-		case 0: return (f);
-		case 1: return 1+(f);
-		case 2: return 2+(f);
-		case 3: return 3+(f);
-	}
+	return f;
 }
+
 function rauToRad(p) {
     const q = Math.floor(p);       // 0..3
     const u = p - q;               // 0..1
     const local = Math.atan2(u, 1-u);   // 0..π/2
-	if (q === 4) return Math.PI*2;//this edge case is needed?? since we can also wrap around back to 0
+	if (q === 4) return Math.PI*2;
     switch(q) {
         case 0: return local;                // 0°–90°
         case 1: return Math.PI/2 + local;    // 90°–180°
