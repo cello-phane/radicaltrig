@@ -115,11 +115,11 @@ function initRAUCanvas() {
   // DRAGGING HANDLERS
   // ------------------------
   canvasSimple.addEventListener('mousedown', e => {
-    dragging = true;
+    dragging = true; // Activate
   });
 	
   canvasSimple.addEventListener('mousemove', e => {
-    if (!dragging) return;
+    if (!dragging) return; // Detect if mouse is held and dragging
     const rect = canvasSimple.getBoundingClientRect();
     const mx = e.clientX - rect.left;
     const my = e.clientY - rect.top;
@@ -127,7 +127,7 @@ function initRAUCanvas() {
   });
 
   document.addEventListener('mouseup', () => {
-    dragging = false;
+    dragging = false; // Don't trigger on mouse hover
   });
 
   // ------------------------
@@ -315,20 +315,26 @@ function initVectorCanvas() {
     const uAngle = parseFloat(controls.uAngle.value);
     const vAngle = parseFloat(controls.vAngle.value);
 
-    uAng = uAngle;
-    vAng = vAngle;
     const uA = degToRad(uAngle);
     const vA = degToRad(vAngle);
+	  
+	// Lose precision from an integral degree input
+	// let uCS = getRotationComponents(radToRau(degToRad(uAngle)));
+	// let vCS = getRotationComponents(radToRau(degToRad(vAngle)));
+
     const u = {
       x: uLen * Math.cos(uA),
       y: -uLen * Math.sin(uA)
-    };
+      // x: uLen * uCS.cos,
+      // y: -uLen * uCS.sin
+	};
     const v = {
       x: vLen * Math.cos(vA),
       y: -vLen * Math.sin(vA)
+	  // x: vLen * vCS.cos,
+      // y: -vLen * vCS.sin
     };
-
-    currentU = u;
+	currentU = u;
     currentV = v;
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
