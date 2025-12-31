@@ -1,342 +1,592 @@
-const Geom = (function(){
-  const EPS = 1e-12;
+/**
+ * Geometry Utilities for Radical Angle Unit System
+ * Provides vector operations, angle calculations, and polygon intersection tests
+ */
 
-  // ---- basic vector helpers (2D)
-  function vx(x,y){ return {x:x, y:y}; }
-  function sub(a,b){ return {x: a.x - b.x, y: a.y - b.y}; }
-  function dot(a,b){ return a.x*b.x + a.y*b.y; }
-  function cross(a,b){ return a.x*b.y - a.y*b.x; }
-  function len(a){ return Math.hypot(a.x, a.y); }
-  function nearlyZero(v){ return Math.abs(v) < 1e-12; }
+const Geom = (function() {
+  // Configuration constants
+  const CONFIG = {
+    EPSILON: 1e-12,
+    RAU_FULL_CIRCLE: 4.0,
+    RAU_HALF_CIRCLE: 2.0
+  };
 
-  // ---- normalize mod 4 to [0,4]
-  function mod4(x){
-    let r = x % 4.0;
-    if (r < 0) r += 4.0;
-    // clamp tiny negative due to FP
-    if (r < EPS) r = 0.0;
-    if (r >= 4.0 - EPS) r = 0.0;
+  // ============================================================================
+  // VECTOR OPERATIONS (2D)
+  // ============================================================================
+
+  /**
+   * Create a 2D vector
+   * @param {number} x - X component
+   * @param {number} y - Y component
+   * @returns {{x: number, y: number}}
+   */
+  function vec(x, y) {
+    return { x, y };
+  }
+
+  /**
+   * Subtract vector b from vector a
+   * @param {{x: number, y: number}} a
+   * @param {{x: number, y: number}} b
+   * @returns {{x: number, y: number}}
+   */
+  function sub(a, b) {
+    return { x: a.x - b.x, y: a.y - b.y };
+  }
+
+  /**
+   * Dot product of two vectors
+   * @param {{x: number, y: number}} a
+   * @param {{x: number, y: number}} b
+   * @returns {number}
+   */
+  function dot(a, b) {
+    return a.x * b.x + a.y * b.y;
+  }
+
+  /**
+   * Cross product (2D) - returns scalar z-component
+   * @param {{x: number, y: number}} a
+   * @param {{x: number, y: number}} b
+   * @returns {number}
+   */
+  function cross(a, b) {
+    return a.x * b.y - a.y * b.x;
+  }
+
+  /**
+   * Vector magnitude (length)
+   * @param {{x: number, y: number}} a
+   * @returns {number}
+   */
+  function len(a) {
+    return Math.hypot(a.x, a.y);
+  }
+
+  /**
+   * Check if value is nearly zero (within epsilon)
+   * @param {number} v
+   * @returns {boolean}
+   */
+  function nearlyZero(v) {
+    return Math.abs(v) < CONFIG.EPSILON;
+  }
+
+  // ============================================================================
+  // RAU ANGLE UTILITIES
+  // ============================================================================
+
+  /**
+   * Normalize RAU parameter to [0, 4) range
+   * @param {number} x - RAU parameter
+   * @returns {number} Normalized value in [0, 4)
+   */
+  function mod4(x) {
+    let r = x % CONFIG.RAU_FULL_CIRCLE;
+    if (r < 0) r += CONFIG.RAU_FULL_CIRCLE;
+    
+    // Clamp tiny negatives due to floating point errors
+    if (r < CONFIG.EPSILON) r = 0.0;
+    if (r >= CONFIG.RAU_FULL_CIRCLE - CONFIG.EPSILON) r = 0.0;
+    
     return r;
   }
 
-  // ---- signed delta from a -> b, range [-2,2]
-  // i.e. the minimal signed sweep going CCW from a to b
-  function delta(a, b){
-    // map into [0,4)
-    a = mod4(a); b = mod4(b);
-    // direct difference
+  /**
+   * Calculate signed delta from angle a to angle b
+   * Returns minimal signed sweep (CCW positive) in range [-2, 2]
+   * @param {number} a - Start angle (RAU)
+   * @param {number} b - End angle (RAU)
+   * @returns {number} Signed angular difference
+   */
+  function delta(a, b) {
+    // Normalize both angles to [0, 4)
+    a = mod4(a);
+    b = mod4(b);
+    
+    // Direct difference
     let d = b - a;
-    // wrap to (-2,2]
-    if (d <= -2.0) d += 4.0;
-    else if (d > 2.0) d -= 4.0;
+    
+    // Wrap to (-2, 2] for minimal arc
+    if (d <= -CONFIG.RAU_HALF_CIRCLE) {
+      d += CONFIG.RAU_FULL_CIRCLE;
+    } else if (d > CONFIG.RAU_HALF_CIRCLE) {
+      d -= CONFIG.RAU_FULL_CIRCLE;
+    }
+    
     return d;
   }
 
-  // ---- absolute circular span when you have a set of [0-4] radical angles:
-  // normalize relative to first angle and compute min/max in [0,4]
-  // returns {minR, maxR, span}
-  function circularSpan(angles){
-    if (!angles || angles.length === 0) return {minR:0,maxR:0,span:0};
+  /**
+   * Calculate circular span of a set of angles
+   * Returns the minimal arc containing all angles
+   * @param {number[]} angles - Array of RAU angles
+   * @returns {{minR: number, maxR: number, span: number}}
+   */
+  function circularSpan(angles) {
+    if (!angles || angles.length === 0) {
+      return { minR: 0, maxR: 0, span: 0 };
+    }
+    
+    // Normalize relative to first angle
     const a0 = mod4(angles[0]);
-    let minR =  1e9, maxR = -1e9;
-    for (let i=0;i<angles.length;i++){
-      const r = mod4(angles[i] - a0 + 4.0); // now in [0,4)
+    let minR = Infinity;
+    let maxR = -Infinity;
+    
+    for (let i = 0; i < angles.length; i++) {
+      const r = mod4(angles[i] - a0 + CONFIG.RAU_FULL_CIRCLE);
       if (r < minR) minR = r;
       if (r > maxR) maxR = r;
     }
-    return {minR, maxR, span: maxR - minR};
+    
+    return { minR, maxR, span: maxR - minR };
   }
 
-  // ---- convex polygon intersection
-  // polygons are arrays of {x,y} in CCW or CW order (convex)
-  function convexPolygonsIntersect(poly1, poly2){
-    function testEdges(polyA, polyB){
+  // ============================================================================
+  // POLYGON INTERSECTION TESTS
+  // ============================================================================
+
+  /**
+   * Test if two convex polygons intersect using Separating Axis Theorem
+   * @param {Array<{x: number, y: number}>} poly1 - First polygon vertices (CCW)
+   * @param {Array<{x: number, y: number}>} poly2 - Second polygon vertices (CCW)
+   * @returns {boolean} True if polygons intersect
+   */
+  function convexPolygonsIntersect(poly1, poly2) {
+    /**
+     * Test edges of polyA for separating axis against polyB
+     */
+    function testEdges(polyA, polyB) {
       const n = polyA.length;
-      for (let i=0;i<n;i++){
-        const a = polyA[i], b = polyA[(i+1)%n];
-        const edge = sub(b,a);
-        // compute angles of all vertices of polyB relative to edge origin a
+      
+      for (let i = 0; i < n; i++) {
+        const a = polyA[i];
+        const b = polyA[(i + 1) % n];
+        const edge = sub(b, a);
+        
+        // Compute angles of all polyB vertices relative to edge
         const angles = polyB.map(p => atanVec(edge, sub(p, a)));
         const span = circularSpan(angles);
-        // if all points fall into span < 2 -> they lie on same halfplane => separating axis
-        if (span.span < 2.0 - 1e-12) return true; // separating axis found => no intersection
+        
+        // If all points in same half-plane, we found a separating axis
+        if (span.span < CONFIG.RAU_HALF_CIRCLE - CONFIG.EPSILON) {
+          return true; // Separating axis found
+        }
       }
-      return false;
+      
+      return false; // No separating axis found
     }
-    // if either set yields a separating axis -> no intersection
+    
+    // If either polygon has a separating axis, no intersection
     if (testEdges(poly1, poly2)) return false;
     if (testEdges(poly2, poly1)) return false;
-    return true; // no separating axis -> intersect (for convex)
+    
+    return true; // No separating axis found - polygons intersect
   }
 
-  // ---- point-in-polygon using winding sum
-  // returns true if point inside polygon (works for nonconvex too)
-  function pointInPolygon(point, poly){
-    // compute RAU angles from a fixed ref-vector (1,0) to each vertex as seen from point
-    const ref = {x:1, y:0};
+  /**
+   * Test if point is inside polygon using winding number
+   * @param {{x: number, y: number}} point - Test point
+   * @param {Array<{x: number, y: number}>} poly - Polygon vertices
+   * @returns {boolean} True if point is inside polygon
+   */
+  function pointInPolygon(point, poly) {
+    const ref = { x: 1, y: 0 }; // Reference vector
+    
+    // Compute RAU angles from reference to each vertex as seen from point
     const angles = poly.map(v => atanVec(ref, sub(v, point)));
-    // sum signed deltas between consecutive vertices
+    
+    // Sum signed deltas between consecutive vertices
     let total = 0.0;
-    for (let i=0;i<angles.length;i++){
-      const a = angles[i], b = angles[(i+1)%angles.length];
-      total += rauDelta(a, b); // signed delta
+    for (let i = 0; i < angles.length; i++) {
+      const a = angles[i];
+      const b = angles[(i + 1) % angles.length];
+      total += delta(a, b); // Fixed: was rauDelta, now using delta
     }
-    // total will be multiple of ~4 (full turns). If abs(total) > 2 => enclosed.
-    return Math.abs(total) > 2.0;
+    
+    // If total winding is > half circle, point is enclosed
+    return Math.abs(total) > CONFIG.RAU_HALF_CIRCLE;
   }
 
-  // ---- robust line segment intersection (standard cross-product approach)
-  function onSegment(a,b,p){
-    // p collinear with a-b and within bounding box
-    const minx = Math.min(a.x,b.x)-EPS, maxx = Math.max(a.x,b.x)+EPS;
-    const miny = Math.min(a.y,b.y)-EPS, maxy = Math.max(a.y,b.y)+EPS;
-    return p.x >= minx && p.x <= maxx && p.y >= miny && p.y <= maxy;
+  /**
+   * Check if point p is on segment a-b within epsilon tolerance
+   */
+  function onSegment(a, b, p) {
+    const eps = CONFIG.EPSILON;
+    const minX = Math.min(a.x, b.x) - eps;
+    const maxX = Math.max(a.x, b.x) + eps;
+    const minY = Math.min(a.y, b.y) - eps;
+    const maxY = Math.max(a.y, b.y) + eps;
+    
+    return p.x >= minX && p.x <= maxX && p.y >= minY && p.y <= maxY;
   }
-  function segmentsIntersect(p1,p2,q1,q2){
-    const r = sub(p2,p1), s = sub(q2,q1);
-    const rxs = cross(r,s), qpxr = cross(sub(q1,p1), r);
-    if (Math.abs(rxs) < EPS && Math.abs(qpxr) < EPS){
-      // collinear - check overlap by bbox compare
-      if (onSegment(p1,p2,q1) || onSegment(p1,p2,q2) || onSegment(q1,q2,p1) || onSegment(q1,q2,p2)) return true;
+
+  /**
+   * Test if two line segments intersect
+   * @param {{x: number, y: number}} p1 - First segment start
+   * @param {{x: number, y: number}} p2 - First segment end
+   * @param {{x: number, y: number}} q1 - Second segment start
+   * @param {{x: number, y: number}} q2 - Second segment end
+   * @returns {boolean} True if segments intersect
+   */
+  function segmentsIntersect(p1, p2, q1, q2) {
+    const r = sub(p2, p1);
+    const s = sub(q2, q1);
+    const rxs = cross(r, s);
+    const qpxr = cross(sub(q1, p1), r);
+    const eps = CONFIG.EPSILON;
+    
+    // Collinear case
+    if (Math.abs(rxs) < eps && Math.abs(qpxr) < eps) {
+      return (
+        onSegment(p1, p2, q1) ||
+        onSegment(p1, p2, q2) ||
+        onSegment(q1, q2, p1) ||
+        onSegment(q1, q2, p2)
+      );
+    }
+    
+    // Parallel non-intersecting
+    if (Math.abs(rxs) < eps && Math.abs(qpxr) >= eps) {
       return false;
     }
-    if (Math.abs(rxs) < EPS && Math.abs(qpxr) >= EPS) return false; // parallel non-intersecting
-    const t = cross(sub(q1,p1), s) / (rxs);
-    const u = cross(sub(q1,p1), r) / (rxs);
-    return t >= -EPS && t <= 1+EPS && u >= -EPS && u <= 1+EPS;
+    
+    // Standard intersection test
+    const t = cross(sub(q1, p1), s) / rxs;
+    const u = cross(sub(q1, p1), r) / rxs;
+    
+    return t >= -eps && t <= 1 + eps && u >= -eps && u <= 1 + eps;
   }
 
-  // ---- general polygon intersection (concave-safe)
-  function polygonsIntersect(polyA, polyB){
-    // quick bbox reject
-    function bbox(poly){
-      let minx=1e9,miny=1e9,maxx=-1e9,maxy=-1e9;
-      for (const p of poly){
-        if (p.x<minx) minx=p.x; if (p.y<miny) miny=p.y;
-        if (p.x>maxx) maxx=p.x; if (p.y>maxy) maxy=p.y;
-      }
-      return {minx,miny,maxx,maxy};
+  /**
+   * Calculate bounding box of polygon
+   */
+  function bbox(poly) {
+    let minX = Infinity, minY = Infinity;
+    let maxX = -Infinity, maxY = -Infinity;
+    
+    for (const p of poly) {
+      if (p.x < minX) minX = p.x;
+      if (p.y < minY) minY = p.y;
+      if (p.x > maxX) maxX = p.x;
+      if (p.y > maxY) maxY = p.y;
     }
-    const A = bbox(polyA), B = bbox(polyB);
-    if (A.maxx < B.minx - EPS || A.minx > B.maxx + EPS || A.maxy < B.miny - EPS || A.miny > B.maxy + EPS) return false;
+    
+    return { minX, minY, maxX, maxY };
+  }
 
-    // 1) SAT (edge test) - if separating axis found -> no intersection
-    function satSeparation(Apoly, Bpoly){
-      for (let i=0;i<Apoly.length;i++){
-        const a = Apoly[i], b = Apoly[(i+1)%Apoly.length];
-        const edge = sub(b,a);
-        const angles = Bpoly.map(p => atanVec(edge, sub(p,a)));
+  /**
+   * Test if two general polygons intersect (works for concave)
+   * @param {Array<{x: number, y: number}>} polyA - First polygon
+   * @param {Array<{x: number, y: number}>} polyB - Second polygon
+   * @returns {boolean} True if polygons intersect
+   */
+  function polygonsIntersect(polyA, polyB) {
+    const eps = CONFIG.EPSILON;
+    
+    // Quick bounding box rejection
+    const A = bbox(polyA);
+    const B = bbox(polyB);
+    
+    if (
+      A.maxX < B.minX - eps || A.minX > B.maxX + eps ||
+      A.maxY < B.minY - eps || A.minY > B.maxY + eps
+    ) {
+      return false;
+    }
+    
+    // SAT test for separation
+    function satSeparation(poly1, poly2) {
+      for (let i = 0; i < poly1.length; i++) {
+        const a = poly1[i];
+        const b = poly1[(i + 1) % poly1.length];
+        const edge = sub(b, a);
+        
+        const angles = poly2.map(p => atanVec(edge, sub(p, a)));
         const span = circularSpan(angles);
-        if (span.span < 2.0 - 1e-12) return true; // separation
+        
+        if (span.span < CONFIG.RAU_HALF_CIRCLE - eps) {
+          return true; // Separation found
+        }
       }
       return false;
     }
+    
     if (satSeparation(polyA, polyB)) return false;
     if (satSeparation(polyB, polyA)) return false;
-
-    // 2) Check edge-edge intersections (segment intersection)
-    for (let i=0;i<polyA.length;i++){
-      const a1 = polyA[i], a2 = polyA[(i+1)%polyA.length];
-      for (let j=0;j<polyB.length;j++){
-        const b1 = polyB[j], b2 = polyB[(j+1)%polyB.length];
-        if (segmentsIntersect(a1,a2,b1,b2)) return true;
+    
+    // Check edge-edge intersections
+    for (let i = 0; i < polyA.length; i++) {
+      const a1 = polyA[i];
+      const a2 = polyA[(i + 1) % polyA.length];
+      
+      for (let j = 0; j < polyB.length; j++) {
+        const b1 = polyB[j];
+        const b2 = polyB[(j + 1) % polyB.length];
+        
+        if (segmentsIntersect(a1, a2, b1, b2)) {
+          return true;
+        }
       }
     }
-
-    // 3) If no edge intersects, check containment (point-in-polygon)
+    
+    // Check containment
     if (pointInPolygon(polyA[0], polyB)) return true;
     if (pointInPolygon(polyB[0], polyA)) return true;
-
-    // otherwise: no intersection
+    
     return false;
   }
 
-  // ---- triangulate convex polygon naive helper (ear clipping not included)
-  // ( For faster concave handling use triangulation routine)
-  function triangulateConvex(poly){
-    // assumes convex & ordered; returns triangles as arrays of 3 pts
-    const tri = [];
-    for (let i=1;i<poly.length-1;i++){
-      tri.push([poly[0], poly[i], poly[i+1]]);
+  /**
+   * Triangulate convex polygon (simple fan triangulation)
+   * @param {Array<{x: number, y: number}>} poly - Convex polygon vertices
+   * @returns {Array<Array<{x: number, y: number}>>} Array of triangles
+   */
+  function triangulateConvex(poly) {
+    const triangles = [];
+    
+    for (let i = 1; i < poly.length - 1; i++) {
+      triangles.push([poly[0], poly[i], poly[i + 1]]);
     }
-    return tri;
+    
+    return triangles;
   }
 
-  // ---- export API
+  // ============================================================================
+  // PUBLIC API
+  // ============================================================================
+
   return {
-    mod4, delta, circularSpan,
-    convexPolygonsIntersect, pointInPolygon, polygonsIntersect,
-    segmentsIntersect, triangulateConvex,
-    vec: {sub, dot, cross, len, vx}
+    // Configuration
+    config: CONFIG,
+    
+    // Angle utilities
+    mod4,
+    delta,
+    circularSpan,
+    
+    // Collision detection
+    convexPolygonsIntersect,
+    pointInPolygon,
+    polygonsIntersect,
+    segmentsIntersect,
+    triangulateConvex,
+    
+    // Vector operations (namespaced)
+    vec: {
+      create: vec,
+      sub,
+      dot,
+      cross,
+      len,
+      nearlyZero
+    }
   };
 })();
 
+// ============================================================================
+// RADICAL ANGLE UNIT TRIGONOMETRIC FUNCTIONS
+// ============================================================================
 
-// ================================
-// Radical Angle Unit (RAU)
-// ================================
+/**
+ * Compute radical sine for RAU parameter
+ * @param {number} t - RAU parameter (0-4 maps to 0-360°)
+ * @returns {number} Sine value
+ */
 function radicalSine(t) {
   t = t % 4;
   const q = Math.floor(t);
   const lt = t - q;
-  const a = 1 - 2 * lt + 2 * lt * lt;
+  const denomSq = 1 - 2 * lt + 2 * lt * lt;
+  const denom = Math.sqrt(denomSq);
+  
   switch (q) {
-    case 0: return lt / Math.sqrt(a);
-    case 1: return (1 - lt) / Math.sqrt(a);
-    case 2: return -lt / Math.sqrt(a);
-    case 3: return -(1 - lt) / Math.sqrt(a);
+    case 0: return lt / denom;
+    case 1: return (1 - lt) / denom;
+    case 2: return -lt / denom;
+    case 3: return -(1 - lt) / denom;
+    default: return 0;
   }
 }
 
+/**
+ * Compute radical cosine for RAU parameter
+ * @param {number} t - RAU parameter (0-4 maps to 0-360°)
+ * @returns {number} Cosine value
+ */
 function radicalCosine(t) {
   t = t % 4;
   const q = Math.floor(t);
   const lt = t - q;
-  const a = 1 - 2 * lt + 2 * lt * lt;
+  const denomSq = 1 - 2 * lt + 2 * lt * lt;
+  const denom = Math.sqrt(denomSq);
+  
   switch (q) {
-    case 0: return (1 - lt) / Math.sqrt(a);
-    case 1: return -lt / Math.sqrt(a);
-    case 2: return -(1 - lt) / Math.sqrt(a);
-    case 3: return lt / Math.sqrt(a);
+    case 0: return (1 - lt) / denom;
+    case 1: return -lt / denom;
+    case 2: return -(1 - lt) / denom;
+    case 3: return lt / denom;
+    default: return 1;
   }
 }
 
+/**
+ * Compute radical tangent for RAU parameter
+ * @param {number} t - RAU parameter (0-4 maps to 0-360°)
+ * @returns {number} Tangent value
+ */
 function radicalTan(t) {
   t = ((t % 4) + 4) % 4;
   const q = Math.floor(t);
   const f = t - q;
-  if (f >= 0.999999) return 0;
+  
+  if (f >= 0.999999) return 0; // Avoid division by zero at transitions
+  
   const base = f / (1 - f);
   return (q === 1 || q === 3) ? -1 / base : base;
 }
 
-// --- Inverse Radical Functions ---
+/**
+ * Compute inverse radical sine (arcsine)
+ * @param {number} value - Sine value [-1, 1]
+ * @returns {number} RAU parameter in [0, 1] or NaN if invalid
+ */
 function radicalAsin(value) {
   const t = value;
   const denom = 2 * t * t - 1;
   const inner = t * t - t ** 4;
+  
   if (inner < 0 || denom === 0) return NaN;
+  
   return (t ** 2 - Math.sqrt(inner)) / denom;
 }
 
+/**
+ * Compute inverse radical cosine (arccosine)
+ * @param {number} value - Cosine value [-1, 1]
+ * @returns {number} RAU parameter in [0, 1] or NaN if invalid
+ */
 function radicalAcos(value) {
   const t = value;
   const denom = 2 * t * t - 1;
   const inner = t * t - t ** 4;
+  
   if (inner < 0 || denom === 0) return NaN;
+  
   return (t ** 2 - 1 + Math.sqrt(inner)) / denom;
 }
 
+/**
+ * Compute inverse radical tangent (arctangent)
+ * @param {number} value - Tangent value
+ * @returns {number} RAU parameter in [0, 1]
+ */
 function radicalAtan(value) {
   return value / (1 + value);
 }
 
+/**
+ * Compute RAU angle between two vectors (like atan2 but returns RAU)
+ * @param {{x: number, y: number}} u - Reference vector
+ * @param {{x: number, y: number}} v - Target vector
+ * @returns {number} RAU parameter [0, 4) representing angle from u to v
+ */
 function atanVec(u, v) {
-    const cross_uv = Geom.vec.cross(u, v);  // signed
-    const dot_uv = Geom.vec.dot(u, v);
-    // If either is zero-length, handle gracefully(but we don't allow zero-lengths yet)
-    /*const lu = Geom.vec.len(u), lv = Geom.vec.len(v);
-    if (lu + lv < Geom.EPS) return 0.0;*/
-    // Compute signed cross/dot of u (reference) and v (target)
-    const a = Math.abs(cross_uv) / (Math.abs(dot_uv) + Math.abs(cross_uv));
-    const q1 = a;                    // Q1: dot≥0, cross≥0 → a
-    const q2 = 2.0 - a;              // Q2: dot<0, cross≥0 → 2-a
-    const q3 = 2.0 + a;              // Q3: dot<0, cross<0 → 2+a
-    const q4 = 4.0 - a;              // Q4: dot≥0, cross<0 → 4-a
-    // reduce to two separate choices
-    const upper = cross_uv >= 0.0 ? q1 : q4;
-    const lower = cross_uv >= 0.0 ? q2 : q3;
-    // reduce to choice of two each stated above
-    return dot_uv >= 0.0 ? upper : lower;
+  const crossUV = Geom.vec.cross(u, v); // Signed cross product
+  const dotUV = Geom.vec.dot(u, v);      // Dot product
+  
+  // Compute normalized parameter in [0, 1] for current quadrant
+  const a = Math.abs(crossUV) / (Math.abs(dotUV) + Math.abs(crossUV));
+  
+  // Branchless quadrant selection
+  const q1 = a;           // Q0: dot≥0, cross≥0 → [0, 1]
+  const q2 = 2.0 - a;     // Q1: dot<0, cross≥0 → [1, 2]
+  const q3 = 2.0 + a;     // Q2: dot<0, cross<0 → [2, 3]
+  const q4 = 4.0 - a;     // Q3: dot≥0, cross<0 → [3, 4]
+  
+  const upper = crossUV >= 0.0 ? q1 : q4;
+  const lower = crossUV >= 0.0 ? q2 : q3;
+  
+  return dotUV >= 0.0 ? upper : lower;
 }
 
-// --- Uniform-time parameterization ---
+/**
+ * Apply uniform velocity mapping to RAU parameter
+ * Converts linear time parameter to constant angular velocity
+ * @param {number} t - Time parameter [0, 1]
+ * @returns {number} Adjusted RAU parameter
+ */
 function uniformRAU(t) {
   const mapped = Math.tan(t * Math.PI / 2);
   return mapped / (1 + mapped);
 }
 
-// ================================
-// Precomputed Uniform Velocity RAU Table
-// ================================
-function generateUniformVelocityTable(divisions = 60) {
-  const table = [];
-  
-  for (let i = 0; i < divisions; i++) {
-    // RAU position: uniform steps from 0 to 4
-    const rauPosition = (i / divisions) * 4;
-    
-    // Compute sin/cos once and store
-    const sin = radicalSine(rauPosition);
-    const cos = radicalCosine(rauPosition);
-    
-    table.push({ sin, cos, rauPosition });
-  }
-  
-  return table;
-}
+// ============================================================================
+// UNIT CONVERSIONS
+// ============================================================================
 
-function getInterpolatedFromTable(table, secondsFrac) {
-  const totalSeconds = secondsFrac % 60; // Wrap at 60 seconds
-  const indexFloat = (totalSeconds / 60) * table.length;
-  
-  const index = Math.floor(indexFloat);
-  const nextIndex = (index + 1) % table.length;
-  const fraction = indexFloat - index;
-  
-  const current = table[index];
-  const next = table[nextIndex];
-  
-  // Linear interpolation
-  const sin = current.sin + (next.sin - current.sin) * fraction;
-  const cos = current.cos + (next.cos - current.cos) * fraction;
-  
-  return { sin, cos };
-}
-
-// === Unit conversions ===
 const degToRad = deg => deg * Math.PI / 180;
-const radToDeg = rad => rad / (Math.PI / 180);
+const radToDeg = rad => rad * 180 / Math.PI;
 
+/**
+ * Convert degrees to RAU
+ * @param {number} deg - Angle in degrees
+ * @returns {number} RAU parameter
+ */
 function degToRau(deg) {
-	const q = deg % 360;
-	const f = q / 90;
-	return f;
+  const normalized = ((deg % 360) + 360) % 360;
+  return normalized / 90;
 }
 
+/**
+ * Convert radians to RAU
+ * @param {number} radian - Angle in radians
+ * @returns {number} RAU parameter
+ */
 function radToRau(radian) {
-	const q = radian % (2*Math.PI);
-	const f = q / (Math.PI/2);
-	return f;
+  const normalized = ((radian % (2 * Math.PI)) + (2 * Math.PI)) % (2 * Math.PI);
+  return normalized / (Math.PI / 2);
 }
 
+/**
+ * Convert RAU to radians
+ * @param {number} p - RAU parameter
+ * @returns {number} Angle in radians
+ */
 function rauToRad(p) {
-    const q = Math.floor(p);       // 0..3
-    const u = p - q;               // 0..1
-    const local = Math.atan2(u, 1-u);   // 0..π/2
-	if (q === 4) return Math.PI*2;
-    switch(q) {
-        case 0: return local;                // 0°–90°
-        case 1: return Math.PI/2 + local;    // 90°–180°
-        case 2: return Math.PI + local;      // 180°–270°
-        case 3: return 3*Math.PI/2 + local;  // 270°–360°
-    }
+  if (p >= 4) return Math.PI * 2;
+  
+  const q = Math.floor(p);
+  const u = p - q;
+  const local = Math.atan2(u, 1 - u); // Local angle in [0, π/2]
+  
+  const offsets = [0, Math.PI / 2, Math.PI, 3 * Math.PI / 2];
+  return offsets[q] + local;
 }
 
-const rauToDeg = rau => rauToRad(rau)*(180/Math.PI);
+/**
+ * Convert RAU to degrees
+ * @param {number} rau - RAU parameter
+ * @returns {number} Angle in degrees
+ */
+const rauToDeg = rau => rauToRad(rau) * 180 / Math.PI;
 
-// Component-wis rotation function
-function getRAUComponents(t) {
-  const tt    = Math.max(0, Math.min(0.999999, t));
-  const denom = 1 / Math.sqrt(1 - 2 * tt + 2 * tt * tt);
-  return { cos: (1 - tt) * denom, sin: tt * denom };
-}
-
+/**
+ * Get sine and cosine components for RAU parameter
+ * @param {number} phase - RAU parameter
+ * @returns {{cos: number, sin: number, quadrant: number}}
+ */
 function getRotationComponents(phase) {
-  let p = phase;
-  if (!isFinite(p) || p < 0) p = 0;
-  const q    = Math.floor(p) % 4;
-  let cos_val = radicalCosine(phase);
-  let sin_val = radicalSine(phase);
-  return { cos: Math.sign(phase)*cos_val, sin: sin_val, quadrant: q };
+  if (!isFinite(phase) || phase < 0) phase = 0;
+  
+  const q = Math.floor(phase) % 4;
+  const cosVal = radicalCosine(phase);
+  const sinVal = radicalSine(phase);
+  
+  return {
+    cos: Math.sign(phase) * cosVal,
+    sin: sinVal,
+    quadrant: q
+  };
 }
