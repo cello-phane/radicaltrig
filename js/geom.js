@@ -1,5 +1,5 @@
 /**
- * Geometry Utilities for Radical Angle Unit System
+ * Geometry Utilities
  * Provides vector operations, angle calculations, and polygon intersection tests
  */
 
@@ -589,4 +589,81 @@ function getRotationComponents(phase) {
     sin: sinVal,
     quadrant: q
   };
+}
+
+// Complete roundtrip: Vector → RAU → Trig → Back to RAU
+class RAUConverter {
+    // Vector to RAU (your atanVec)
+    static vectorToRAU(u, v) {
+        const cross = u.x * v.y - u.y * v.x;
+        const dot = u.x * v.x + u.y * v.y;
+        const a = Math.abs(cross) / (Math.abs(dot) + Math.abs(cross));
+        
+        const q1 = a, q2 = 2.0 - a, q3 = 2.0 + a, q4 = 4.0 - a;
+        const upper = cross >= 0.0 ? q1 : q4;
+        const lower = cross >= 0.0 ? q2 : q3;
+        
+        return dot >= 0.0 ? upper : lower;
+    }
+    
+    // RAU to sine/cosine
+    static rauToTrig(rau) {
+        const quadrant = Math.floor(rau);
+        const t = rau - quadrant;
+        
+        const s = this.rsin_base(t);
+        const c = this.rcos_base(t);
+        
+        return this.applyQuadrant(s, c, quadrant);
+    }
+    
+    // Sine/cosine back to RAU (using inverses!)
+    static trigToRAU(sinVal, cosVal) {
+        // Determine which quadrant based on signs
+        const quadrant = this.getQuadrant(sinVal, cosVal);
+        
+        // Get the base value (always positive in our parameterization)
+        let baseVal;
+        if (quadrant === 0 || quadrant === 2) {
+            baseVal = Math.abs(sinVal);
+        } else {
+            baseVal = Math.abs(cosVal);
+        }
+        
+        // Use inverse to get fractional parameter
+        const t = radicalAsin(baseVal);
+        
+        return quadrant + t;
+    }
+    
+    // Helper: Base trig functions (t ∈ [0, 1])
+    static rsin_base(t) {
+        const a = 1.0 - 2.0 * t + 2.0 * t * t;
+        return t / Math.sqrt(a);
+    }
+    
+    static rcos_base(t) {
+        const a = 1.0 - 2.0 * t + 2.0 * t * t;
+        return (1.0 - t) / Math.sqrt(a);
+    }
+    
+    // Helper: Apply quadrant transformation
+    static applyQuadrant(s, c, q) {
+        const transforms = [
+            { sin: s, cos: c },      // Q0: (c, s)
+            { sin: c, cos: -s },     // Q1: (-s, c)
+            { sin: -s, cos: -c },    // Q2: (-c, -s)
+            { sin: -c, cos: s }      // Q3: (s, -c)
+        ];
+        return transforms[q];
+    }
+    
+    // Helper: Determine quadrant from trig values
+    static getQuadrant(sinVal, cosVal) {
+        if (cosVal >= 0 && sinVal >= 0) return 0;
+        if (cosVal < 0 && sinVal >= 0) return 1;
+        if (cosVal < 0 && sinVal < 0) return 2;
+        return 3;
+    }
+
 }
