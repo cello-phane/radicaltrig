@@ -667,3 +667,4 @@ class RAUConverter {
     }
 
 }
+module.exports = { degToRad, radToRau, radToDeg };
