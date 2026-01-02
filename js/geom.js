@@ -657,7 +657,13 @@ class RAUConverter {
         ];
         return transforms[q];
     }
-    
+
+	static rauToAngle(rau) {
+		const sin = this.rsin_base(rau);  // Normalized
+		const cos = this.rcos_base(rau);  // Normalized  
+		return Math.atan2(sin, cos); // Combines both
+	}
+	
     // Helper: Determine quadrant from trig values
     static getQuadrant(sinVal, cosVal) {
         if (cosVal >= 0 && sinVal >= 0) return 0;
@@ -667,4 +673,3 @@ class RAUConverter {
     }
 
 }
-module.exports = { degToRad, radToRau, radToDeg };
