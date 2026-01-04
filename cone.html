@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Torus</title>
+    <title>Sphere or Cone</title>
     <style>
         :root[data-theme="dark"] {
             --bg: #1a1a2e;
@@ -155,7 +155,7 @@
     </style>
 </head>
 <body>
-    <h1>Torus (transform)</h1>
+    <h1>Sphere or Cone(transformed sphere)</h1>
     
     <div class="container">
         <div>
@@ -489,7 +489,7 @@
 		  let shapeMode = 'sphere';
 		  
 		  shapeToggle.addEventListener('change', () => {
-		      shapeMode = shapeToggle.checked ? 'sphere' : 'torus';
+		      shapeMode = shapeToggle.checked ? 'sphere' : 'cone';
 		      requestSphereUpdate();
 		  });
 		  
