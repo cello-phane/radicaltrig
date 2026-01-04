@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Torus</title>
+    <style>
+        :root[data-theme="dark"] {
+            --bg: #1a1a2e;
+            --text: #eee;
+            --control-bg: #16213e;
+            --border: #0f3460;
+            --accent: #00ff88;
+        }
+        
+        :root[data-theme="light"] {
+            --bg: #f5f5f5;
+            --text: #333;
+            --control-bg: #fff;
+            --border: #ddd;
+            --accent: #0066cc;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            transition: background 0.3s, color 0.3s;
+        }
+        
+        h1 {
+            margin-bottom: 20px;
+            color: var(--accent);
+        }
+        
+        .container {
+            display: flex;
+            gap: 20px;
+            max-width: 1400px;
+        }
+        
+        canvas {
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            background: var(--bg);
+            cursor: grab;
+        }
+        
+        canvas:active {
+            cursor: grabbing;
+        }
+        
+        .controls {
+            background: var(--control-bg);
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            width: 300px;
+            max-height: 720px;
+            overflow-y: auto;
+        }
+        
+        .control-group {
+            margin-bottom: 20px;
+        }
+        
+        .control-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        .control-group input[type="range"] {
+            width: 100%;
+            margin-bottom: 5px;
+        }
+        
+        .value {
+            display: inline-block;
+            padding: 4px 8px;
+            background: var(--accent);
+            color: var(--bg);
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 12px;
+        }
+        
+        button {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            background: var(--accent);
+            color: var(--bg);
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: opacity 0.3s;
+        }
+        
+        button:hover {
+            opacity: 0.8;
+        }
+        
+        button.active {
+            animation: pulse 1s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+        
+        .stats {
+            background: var(--control-bg);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            margin-top: 20px;
+            font-family: monospace;
+            font-size: 13px;
+        }
+        
+        .stats div {
+            margin-bottom: 8px;
+        }
+        
+        .stats .metric {
+            color: var(--accent);
+            font-weight: bold;
+        }
+        
+        .optimization-indicator {
+            padding: 10px;
+            background: var(--accent);
+            color: var(--bg);
+            border-radius: 6px;
+            margin-bottom: 15px;
+            font-size: 13px;
+            font-weight: 600;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <h1>Torus (transform)</h1>
+    
+    <div class="container">
+        <div>
+            <canvas id="canvas" width="960" height="720"></canvas>
+            <div class="stats">
+                <div>FPS: <span class="metric" id="fps">0</span></div>
+                <div>Points: <span class="metric" id="pointCount">0</span></div>
+                <div>Worker Status: <span class="metric" id="workerStatus">Initializing...</span></div>
+                <div>Cache Hits: <span class="metric" id="cacheHits">0</span></div>
+                <div>Render Time: <span class="metric" id="renderTime">0</span>ms</div>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <button id="themeToggle">Light Mode</button>
+            <button id="toggleAnim">Start Animation</button>
+            
+            <div class="control-group">
+                <label>Rotation X: <span class="value" id="rotXVal">0°</span></label>
+                <input id="rotX" type="range" min="0" max="360" value="0">
+            </div>
+            
+            <div class="control-group">
+                <label>Rotation Y: <span class="value" id="rotYVal">90°</span></label>
+                <input id="rotY" type="range" min="0" max="360" value="90">
+            </div>
+            
+            <div class="control-group">
+                <label>Rotation Z: <span class="value" id="rotZVal">0°</span></label>
+                <input id="rotZ" type="range" min="0" max="360" value="0">
+            </div>
+            
+            <div class="control-group">
+                <label>Meridians: <span class="value" id="meridiansVal">27</span></label>
+                <input id="meridians" type="range" min="8" max="64" value="27">
+            </div>
+            
+            <div class="control-group">
+                <label>Parallels: <span class="value" id="parallelsVal">28</span></label>
+                <input id="parallels" type="range" min="8" max="64" value="28">
+            </div>
+            
+            <div class="control-group">
+                <label>Perspective: <span class="value" id="perspectiveVal">1000</span></label>
+                <input id="perspective" type="range" min="100" max="1000" value="1000">
+            </div>
+            
+            <div class="control-group">
+                <label>Radius: <span class="value" id="radiusVal">20</span></label>
+                <input id="radius" type="range" min="10" max="300" value="200">
+            </div>
+            
+            <div class="control-group">
+                <label>Rotation Speed: <span class="value" id="rotationSpeedVal">50</span></label>
+                <input id="rotationSpeed" type="range" min="0" max="200" value="50">
+            </div>
+
+				<div class="control-group">
+				    <label>
+				        <input type="checkbox" id="shapeToggle" checked>
+				        Sphere Mode
+				    </label>
+				</div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================================================
+        // RAU ROTATION CACHE - OPTIMIZATION #1
+        // ============================================================================
+        class RotationCache {
+            constructor() {
+                this.cache = new Map();
+                this.hits = 0;
+                this.misses = 0;
+            }
+            
+            // Create cache key from angle (rounded to nearest 0.1°)
+            getKey(angleDeg) {
+                return Math.round(angleDeg * 10) / 10;
+            }
+            
+            // Get or compute rotation components
+            get(angleDeg) {
+                const key = this.getKey(angleDeg);
+                
+                if (this.cache.has(key)) {
+                    this.hits++;
+                    return this.cache.get(key);
+                }
+                
+                this.misses++;
+                const components = this.compute(angleDeg);
+                this.cache.set(key, components);
+                return components;
+            }
+            
+            compute(angleDeg) {
+                const phase = (angleDeg / 90.0);
+                return getRotationComponents(phase);
+            }
+            
+            clear() {
+                this.cache.clear();
+                this.hits = 0;
+                this.misses = 0;
+            }
+            
+            getHitRate() {
+                const total = this.hits + this.misses;
+                return total > 0 ? (this.hits / total * 100).toFixed(1) : 0;
+            }
+        }
+        
+        const rotationCache = new RotationCache();
+        
+        // ============================================================================
+        // WEB WORKER FOR SPHERE GENERATION - OPTIMIZATION #2
+        // ============================================================================
+        
+        // Create worker inline (no separate file needed)
+        const workerCode = `
+            // RAU Math functions in worker
+            function rsin(x) {
+                const a = 1.0 - 2.0 * x + 2.0 * x * x;
+                return x / Math.sqrt(a);
+            }
+            
+            function rcos(x) {
+                const a = 1.0 - 2.0 * x + 2.0 * x * x;
+                return (1.0 - x) / Math.sqrt(a);
+            }
+            
+            function getRotationComponents(phase) {
+                const phase_base = ((phase % 4.0) + 4.0) % 4.0;
+                const quadrant = Math.floor(phase_base);
+                const t = phase_base - quadrant;
+                const s = rsin(t);
+                const c = rcos(t);
+                
+                const q0 = Number(quadrant === 0);
+                const q1 = Number(quadrant === 1);
+                const q2 = Number(quadrant === 2);
+                const q3 = Number(quadrant === 3);
+                
+                const cos_result = c*q0 - s*q1 - c*q2 + s*q3;
+                const sin_result = (s*q0 + c*q1 - s*q2 - c*q3) * Math.sign(phase);
+                
+                return { sin: sin_result, cos: cos_result };
+            }
+            
+            // Generate sphere points
+            function generateSphere(radius, meridianCount, parallelCount) {
+                const meridians = [];
+                const parallels = [];
+                
+                // Generate meridians
+                for (let m = 0; m < meridianCount; m++) {
+                    const phiPhase = (m / meridianCount) * 4.0;
+                    const meridianPoints = [];
+                    
+                    for (let p = 0; p <= parallelCount; p++) {
+                        const thetaPhase = (p / parallelCount) * 2.0;
+                        
+                        const thetaTrig = getRotationComponents(thetaPhase);
+                        const phiTrig = getRotationComponents(phiPhase);
+                        
+                        const x = radius * thetaTrig.sin * phiTrig.cos;
+                        const y = radius * thetaTrig.cos;
+                        const z = radius * thetaTrig.sin * phiTrig.sin;
+                        
+                        meridianPoints.push({ x, y, z });
+                    }
+                    meridians.push(meridianPoints);
+                }
+                
+                // Generate parallels
+                for (let p = 0; p < parallelCount; p++) {
+                    const thetaPhase = (p / parallelCount) * 2.0;
+                    const parallelPoints = [];
+                    
+                    for (let m = 0; m <= meridianCount; m++) {
+                        const phiPhase = (m / meridianCount) * 4.0;
+                        
+                        const thetaTrig = getRotationComponents(thetaPhase);
+                        const phiTrig = getRotationComponents(phiPhase);
+                        
+                        const x = radius * thetaTrig.sin * phiTrig.cos;
+                        const y = radius * thetaTrig.cos;
+                        const z = radius * thetaTrig.sin * phiTrig.sin;
+                        
+                        parallelPoints.push({ x, y, z });
+                    }
+                    parallels.push(parallelPoints);
+                }
+                
+                return { meridians, parallels };
+            }
+            
+            // Apply rotation transform
+            function transformS(sphereData, rotX, rotY, rotZ, sphereOrCone) {
+                const rxComp = getRotationComponents(rotX / 90.0);
+                const ryComp = getRotationComponents(rotY / 90.0);
+                const rzComp = getRotationComponents(rotZ / 90.0);
+                
+                function transformPointSphere(point) {
+                    // X rotation
+                    let y1 = point.y * rxComp.cos - point.z * rxComp.sin;
+                    let z1 = point.y * rxComp.sin + point.z * rxComp.cos;
+                    let x1 = point.x;
+                    
+                    // Y rotation
+                    let x2 = x1 * ryComp.cos - y1 * ryComp.sin;
+                    let y2 = x1 * ryComp.sin + y1 * ryComp.cos;
+                    
+                    // Z rotation
+                    let x3 = x2 * rzComp.cos + z1 * rzComp.sin;
+                    let z3 = -x2 * rzComp.sin + z1 * rzComp.cos;
+                    return { x: x3, y: y2, z: z3 }
+                }
+
+                function transformPointCone(point) {
+                    // X rotation
+                    let y1 = point.y * rxComp.cos - point.z * rxComp.sin;
+                    let z1 = point.y * rxComp.sin + point.z * rxComp.cos;
+                    let x1 = point.x;
+                    
+                    // Y rotation
+                    let x2 = x1 * ryComp.cos - y1 * ryComp.sin;
+                    let y2 = x1 * ryComp.sin + y1 * ryComp.cos;
+                    
+                    // Z rotation
+                    let x3 = x2 * rzComp.cos + z1 * rzComp.sin;
+                    let z3 = -x2 * rzComp.sin + z1 * rzComp.cos;
+                    let x0 = point.x * rxComp.cos + point.y * rxComp.sin * ryComp.sin 
+                    					+ point.z * -rxComp.sin * ryComp.cos;
+                    let y0 = point.y * ryComp.cos + point.z * ryComp.sin;
+                    let z0 = point.x * rxComp.sin + point.y * -rxComp.cos * ryComp.sin 
+                    					+ point.z * rxComp.cos * ryComp.cos;  
+                    return { x: x3*x0, y: y1*y0, z: z3*z0 };
+                }
+                
+                const transformedMeridians = sphereData.meridians.map(meridian =>
+                    meridian.map(sphereOrCone ? transformPointSphere : transformPointCone)
+                );
+                
+                const transformedParallels = sphereData.parallels.map(parallel =>
+                    parallel.map(sphereOrCone ? transformPointSphere : transformPointCone)
+                );
+                
+                return {
+                    meridians: transformedMeridians,
+                    parallels: transformedParallels
+                };
+            }
+            
+            // Worker message handler
+            self.onmessage = function(e) {
+                const { type, data } = e.data;
+
+                if (type === 'generate') {
+                    let { shape, radius, meridianCount, parallelCount, rotX, rotY, rotZ } = data;
+                    
+                    // Generate sphere
+                    const sphereData = generateSphere(shape == "sphere" ? radius : radius/10, meridianCount, parallelCount);
+                    
+                    // Transform with rotations
+                    const transformed = shape == "sphere" ? 
+                    				transformS(sphereData, rotX, rotY, rotZ, true) : 
+                    				transformS(sphereData, rotX, rotY, rotZ, false);
+                    
+                    // Send back to main thread
+                    self.postMessage({
+                        type: 'sphereData',
+                        data: transformed
+                    });
+                }
+            };
+        `;
+        
+        // Create worker from blob
+        const blob = new Blob([workerCode], { type: 'application/javascript' });
+        const workerUrl = URL.createObjectURL(blob);
+        const sphereWorker = new Worker(workerUrl);
+        
+        // ============================================================================
+        // MAIN APPLICATION
+        // ============================================================================
+        
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height / 2;
+        
+        // Controls
+        const controls = {
+            rotX: document.getElementById('rotX'),
+            rotY: document.getElementById('rotY'),
+            rotZ: document.getElementById('rotZ'),
+            meridians: document.getElementById('meridians'),
+            parallels: document.getElementById('parallels'),
+            perspective: document.getElementById('perspective'),
+            radius: document.getElementById('radius'),
+            rotationSpeed: document.getElementById('rotationSpeed'),
+        };
+        
+        const values = {
+            rotXVal: document.getElementById('rotXVal'),
+            rotYVal: document.getElementById('rotYVal'),
+            rotZVal: document.getElementById('rotZVal'),
+            meridiansVal: document.getElementById('meridiansVal'),
+            parallelsVal: document.getElementById('parallelsVal'),
+            perspectiveVal: document.getElementById('perspectiveVal'),
+            radiusVal: document.getElementById('radiusVal'),
+            rotationSpeedVal: document.getElementById('rotationSpeedVal'),
+        };
+        
+        // State
+        let rotXAngle = 0;
+        let rotYAngle = 90;
+        let rotZAngle = 0;
+        let currentSphereData = null;
+        let animating = false;
+        let workerReady = true;
+        let frameCount = 0;
+        let lastTime = performance.now();
+        let fps = 0;
+        let lastRenderTime = 0;
+
+		  const shapeToggle = document.getElementById('shapeToggle');
+		  let shapeMode = 'sphere';
+		  
+		  shapeToggle.addEventListener('change', () => {
+		      shapeMode = shapeToggle.checked ? 'sphere' : 'torus';
+		      requestSphereUpdate();
+		  });
+		  
+        // RAU trig functions
+        function rsin(x) {
+            const a = 1.0 - 2.0 * x + 2.0 * x * x;
+            return x / Math.sqrt(a);
+        }
+        
+        function rcos(x) {
+            const a = 1.0 - 2.0 * x + 2.0 * x * x;
+            return (1.0 - x) / Math.sqrt(a);
+        }
+        
+        function getRotationComponents(phase) {
+            const phase_base = ((phase % 4.0) + 4.0) % 4.0;
+            const quadrant = Math.floor(phase_base);
+            const t = phase_base - quadrant;
+            const s = rsin(t);
+            const c = rcos(t);
+            
+            const q0 = Number(quadrant === 0);
+            const q1 = Number(quadrant === 1);
+            const q2 = Number(quadrant === 2);
+            const q3 = Number(quadrant === 3);
+            
+            const cos_result = c*q0 - s*q1 - c*q2 + s*q3;
+            const sin_result = (s*q0 + c*q1 - s*q2 - c*q3) * Math.sign(phase);
+            
+            return { sin: sin_result, cos: cos_result };
+        }
+        
+        // Perspective projection
+        function project3D(point3d, perspective) {
+            const scale = perspective / (perspective + point3d.z);
+            return {
+                x: centerX + point3d.x * scale,
+                y: centerY + point3d.y * scale,
+                scale: scale,
+                z: point3d.z
+            };
+        }
+        
+        // Drawing
+        function drawLine(from, to, color = '#00ff88', width = 1) {
+            ctx.strokeStyle = color;
+            ctx.lineWidth = width;
+            ctx.beginPath();
+            ctx.moveTo(from.x, from.y);
+            ctx.lineTo(to.x, to.y);
+            ctx.stroke();
+        }
+        
+        function getThemeColors() {
+            const theme = document.documentElement.getAttribute('data-theme');
+            if (theme === 'light') {
+                return {
+                    meridian: [92, 74, 61],
+                    parallel: [201, 181, 160]
+                };
+            } else {
+                return {
+                    meridian: [0, 255, 136],
+                    parallel: [136, 136, 255]
+                };
+            }
+        }
+        
+        // Render scene
+        function render() {
+            const renderStart = performance.now();
+            
+            if (!currentSphereData) return;
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            const perspective = parseFloat(controls.perspective.value);
+            const colors = getThemeColors();
+            
+            // Draw meridians
+            currentSphereData.meridians.forEach(meridian => {
+                const projectedPoints = meridian.map(p => project3D(p, perspective));
+                
+                for (let i = 0; i < projectedPoints.length - 1; i++) {
+                    const brightness = Math.max(0.3, projectedPoints[i].scale * 0.7);
+                    const rgb = colors.meridian;
+                    const color = `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, ${brightness})`;
+                    drawLine(projectedPoints[i], projectedPoints[i + 1], color, brightness);
+                }
+            });
+            
+            // Draw parallels
+            currentSphereData.parallels.forEach(parallel => {
+                const projectedPoints = parallel.map(p => project3D(p, perspective));
+                
+                for (let i = 0; i < projectedPoints.length - 1; i++) {
+                    const brightness = Math.max(0.3, projectedPoints[i].scale * 0.7);
+                    const rgb = colors.parallel;
+                    const color = `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, ${brightness})`;
+                    drawLine(projectedPoints[i], projectedPoints[i + 1], color, brightness);
+                }
+            });
+            lastRenderTime = performance.now() - renderStart;
+            updateStats();
+        }
+
+        // Request sphere generation from worker
+        function requestSphereUpdate() {
+            if (!workerReady) return;
+            
+            workerReady = false;
+            document.getElementById('workerStatus').textContent = 'Computing...';
+   
+            sphereWorker.postMessage({
+                type: 'generate',
+                data: {
+                	  shape: shapeMode,
+                    radius: parseInt(controls.radius.value),
+                    meridianCount: parseInt(controls.meridians.value),
+                    parallelCount: parseInt(controls.parallels.value),
+                    rotX: rotXAngle,
+                    rotY: rotYAngle,
+                    rotZ: rotZAngle,
+                }
+            });
+        }
+
+        sphereWorker.onmessage = function(e) {
+            if (e.data.type === 'sphereData') {
+                currentSphereData = e.data.data;
+                workerReady = true;
+                document.getElementById('workerStatus').textContent = 'Ready';
+                render();
+            }
+        };
+        
+        // Update stats display
+        function updateStats() {
+            // FPS
+            frameCount++;
+            const currentTime = performance.now();
+            const elapsed = currentTime - lastTime;
+            
+            if (elapsed >= 1000) {
+                fps = Math.round((frameCount * 1000) / elapsed);
+                frameCount = 0;
+                lastTime = currentTime;
+                document.getElementById('fps').textContent = fps;
+            }
+ 
+            // Point count
+            if (currentSphereData) {
+                const meridianPoints = currentSphereData.meridians.reduce((sum, m) => sum + m.length, 0);
+                const parallelPoints = currentSphereData.parallels.reduce((sum, p) => sum + p.length, 0);
+                document.getElementById('pointCount').textContent = meridianPoints + parallelPoints;
+            }
+            
+            // Cache stats
+            document.getElementById('cacheHits').textContent = 
+                `${rotationCache.hits} (${rotationCache.getHitRate()}%)`;
+            
+            // Render time
+            document.getElementById('renderTime').textContent = lastRenderTime.toFixed(2);
+        }
+        
+        // Animation
+        function animate(timestamp) {
+            if (!animating) return;
+            
+            const speed = parseFloat(controls.rotationSpeed.value) / 100;
+            rotZAngle = (rotZAngle + speed * 2) % 360;
+            
+            controls.rotZ.value = rotZAngle;
+            values.rotZVal.textContent = rotZAngle.toFixed(0) + '°';
+            
+            requestSphereUpdate();
+            requestAnimationFrame(animate);
+        }
+        
+        // Event listeners
+        Object.keys(controls).forEach(key => {
+            controls[key].addEventListener('input', (e) => {
+                const value = parseFloat(e.target.value);
+                
+                if (key === 'rotX') rotXAngle = value;
+                if (key === 'rotY') rotYAngle = value;
+                if (key === 'rotZ') rotZAngle = value;
+                
+                if (key === 'rotX' || key === 'rotY' || key === 'rotZ') {
+                    values[key + 'Val'].textContent = value + '°';
+                } else {
+                    values[key + 'Val'].textContent = value;
+                }
+                 
+                if (!animating) {
+                    requestSphereUpdate();
+                }
+            });
+        });
+        
+        // Animation toggle
+        document.getElementById('toggleAnim').addEventListener('click', function() {
+            animating = !animating;
+            this.textContent = animating ? 'Stop Animation' : 'Start Animation';
+            this.classList.toggle('active', animating);
+            
+            if (animating) {
+                requestAnimationFrame(animate);
+            }
+        });
+        
+        // Theme toggle
+        document.getElementById('themeToggle').addEventListener('click', function() {
+            const current = document.documentElement.getAttribute('data-theme');
+            const newTheme = current === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            this.textContent = newTheme === 'dark' ? '☀️ Switch to Light Mode' : '🌙 Switch to Dark Mode';
+            render();
+        });
+        
+        // Mouse drag rotation
+        let dragging = false;
+        let lastMouseX = 0;
+        let lastMouseY = 0;
+        
+        canvas.addEventListener('mousedown', (e) => {
+            dragging = true;
+            lastMouseX = e.clientX;
+            lastMouseY = e.clientY;
+        });
+        
+        canvas.addEventListener('mousemove', (e) => {
+            if (!dragging) return;
+            
+            const deltaX = e.clientX - lastMouseX;
+            const deltaY = e.clientY - lastMouseY;
+            //rotYAngle = (rotYAngle + (deltaX * 0.5)) % (360*2);
+			   //rotXAngle = (rotXAngle + (deltaX * 0.5)) % (360*2);
+				rotZAngle = (rotZAngle + (deltaX * 0.5)) % (360*2);
+            controls.rotY.value = rotYAngle;
+            controls.rotX.value = rotXAngle;
+            controls.rotZ.value = rotZAngle;
+
+
+				values.rotXVal.textContent = rotXAngle.toFixed(0) + '°';
+            values.rotYVal.textContent = rotYAngle.toFixed(0) + '°';
+            values.rotZVal.textContent = rotZAngle.toFixed(0) + '°';
+
+
+            lastMouseX = e.clientX;
+            lastMouseY = e.clientY;
+            
+            if (!animating) {
+                requestSphereUpdate();
+            }
+        });
+        
+        document.addEventListener('mouseup', () => {
+            dragging = false;
+        });
+        
+        // Initial generation
+        requestSphereUpdate();
+    </script>
+</body>
+</html>
+
