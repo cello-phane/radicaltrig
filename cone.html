@@ -173,6 +173,19 @@
             <button id="themeToggle">Light Mode</button>
             <button id="toggleAnim">Start Animation</button>
             
+  				<div class="control-group">
+  				    <label>
+  				        <input type="checkbox" id="shapeToggle" checked>
+  				        Sphere Mode
+  				    </label>
+  				</div>
+  				<div class="control-group">
+  					 Animate X,Y or Z
+  				    <label><input type="checkbox" id="Xrot" >X</label>
+  				    <label><input type="checkbox" id="Yrot" >Y</label>
+  				    <label><input type="checkbox" id="Zrot" checked>Z</label>
+  				</div>
+  				
             <div class="control-group">
                 <label>Rotation X: <span class="value" id="rotXVal">0°</span></label>
                 <input id="rotX" type="range" min="0" max="360" value="0">
@@ -212,13 +225,6 @@
                 <label>Rotation Speed: <span class="value" id="rotationSpeedVal">50</span></label>
                 <input id="rotationSpeed" type="range" min="0" max="200" value="50">
             </div>
-
-				<div class="control-group">
-				    <label>
-				        <input type="checkbox" id="shapeToggle" checked>
-				        Sphere Mode
-				    </label>
-				</div>
         </div>
     </div>
 
@@ -492,7 +498,25 @@
 		      shapeMode = shapeToggle.checked ? 'sphere' : 'cone';
 		      requestSphereUpdate();
 		  });
+		  const axisCheckboxes = Array.from(
+		      document.querySelectorAll('input[type="checkbox"]:not(#shapeToggle)')
+		  );
+		  let activeAxes = [];
+		  let selectedAxis;
+		  function updateActiveAxes() {
+		      activeAxes = axisCheckboxes
+		          .filter(cb => cb.checked)
+		          .map(cb => cb.id);   // ['x', 'y', 'z']
+		  }
+		  axisCheckboxes.forEach(cb => {
+		      cb.addEventListener('change', () => {
+		          updateActiveAxes();
+		          selectedAxis = (activeAxes[0]);
+		      });
+		  });
+		  updateActiveAxes(); // Initialize once
 		  
+
         // RAU trig functions
         function rsin(x) {
             const a = 1.0 - 2.0 * x + 2.0 * x * x;
@@ -658,12 +682,23 @@
         // Animation
         function animate(timestamp) {
             if (!animating) return;
-            
+            if (selectedAxis == null) selectedAxis = "Zrot";
             const speed = parseFloat(controls.rotationSpeed.value) / 100;
-            rotZAngle = (rotZAngle + speed * 2) % 360;
-            
-            controls.rotZ.value = rotZAngle;
-            values.rotZVal.textContent = rotZAngle.toFixed(0) + '°';
+				if (selectedAxis == "Xrot") {
+	            rotXAngle = (rotXAngle + speed * 2) % 360;
+	            controls.rotX.value = rotXAngle;
+	            values.rotXVal.textContent = rotXAngle.toFixed(0) + '°';
+            }
+            else if (selectedAxis == "Yrot") {
+	            rotYAngle = (rotYAngle + speed * 2) % 360;
+	            controls.rotY.value = rotYAngle;
+	            values.rotYVal.textContent = rotYAngle.toFixed(0) + '°';
+            }
+            else if (selectedAxis == "Zrot") {
+	            rotZAngle = (rotZAngle + speed * 2) % 360;
+	            controls.rotZ.value = rotZAngle;
+	            values.rotZVal.textContent = rotZAngle.toFixed(0) + '°';
+            }
             
             requestSphereUpdate();
             requestAnimationFrame(animate);
