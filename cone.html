@@ -763,8 +763,8 @@
         canvas.addEventListener('mousemove', (e) => {
             if (!dragging) return;
             
-            const deltaX = Math.abs(e.clientX - lastMouseX);
-            const deltaY = Math.abs(e.clientY - lastMouseY);
+            const deltaX = e.clientX - lastMouseX;
+            const deltaY = e.clientY - lastMouseY;
             if (selectedAxis == null) selectedAxis = defaultAxis; //default
 				if (selectedAxis == "Xrot") {
 					rotXAngle = (rotXAngle + (deltaX * 0.5)) % (360);
