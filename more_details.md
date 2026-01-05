@@ -1,5 +1,5 @@
 # RAU (Radical Angle Unit) System Reference
-
+[convert from radical angle to radian and degree measure using Hippias' Kinematic curve] (https://youtu.be/bNd1gqoyvdc)
 ## Core Formulas
 For parameter `0.0 ≤ t < 1.0`:
 
@@ -136,7 +136,8 @@ cos⁻¹(t) = (t² - 1 + √(t²(1 - t²))) / (2t² - 1) [domain: t ∈ [–1, 1
 tan⁻¹(t) = t / (1 + t)                          [domain: t ∈ ℝ, t ≠ –1]
 ```
 All return RAU parameter in range [0, 1] for one quadrant.
-
-arcsin(t) 	(t²-√(t²-t⁴))/(2t²-1) 	Solve sin(x)=t 	Algebraic
+```
+arcsin(t) 	(t²-√(t²-t⁴))/(2t²-1) 	   Solve sin(x)=t 	Algebraic
 arccos(t) 	(t²-1+√(t²-t⁴))/(2t²-1) 	Solve cos(x)=t 	Algebraic
 arctan(t) 	t/(1+t) 	Solve tan(x)=t 	Rational
+```
