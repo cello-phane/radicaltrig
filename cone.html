@@ -175,15 +175,15 @@
             
   				<div class="control-group">
   				    <label>
-  				        <input type="checkbox" id="shapeToggle" checked>
+  				        <input type="checkbox" id="shapeToggle">
   				        Sphere Mode
   				    </label>
   				</div>
   				<div class="control-group">
   					 Animate X,Y or Z
-  				    <label><input type="checkbox" id="Xrot" >X</label>
+  				    <label><input type="checkbox" id="Xrot" checked>X</label>
   				    <label><input type="checkbox" id="Yrot" >Y</label>
-  				    <label><input type="checkbox" id="Zrot" checked>Z</label>
+  				    <label><input type="checkbox" id="Zrot" >Z</label>
   				</div>
   				
             <div class="control-group">
@@ -222,8 +222,8 @@
             </div>
             
             <div class="control-group">
-                <label>Rotation Speed: <span class="value" id="rotationSpeedVal">50</span></label>
-                <input id="rotationSpeed" type="range" min="0" max="200" value="50">
+                <label>Rotation Speed: <span class="value" id="rotationSpeedVal">20</span></label>
+                <input id="rotationSpeed" type="range" min="0" max="200" value="20">
             </div>
         </div>
     </div>
@@ -490,9 +490,10 @@
         let lastTime = performance.now();
         let fps = 0;
         let lastRenderTime = 0;
+        let defaultAxis = "Xrot"
 
 		  const shapeToggle = document.getElementById('shapeToggle');
-		  let shapeMode = 'sphere';
+		  let shapeMode = 'cone';
 		  
 		  shapeToggle.addEventListener('change', () => {
 		      shapeMode = shapeToggle.checked ? 'sphere' : 'cone';
@@ -566,7 +567,16 @@
             ctx.lineTo(to.x, to.y);
             ctx.stroke();
         }
-        
+
+        function atanVec(u, v) {
+            const cross = u.x * v.y - u.y * v.x;
+            const dot   = u.x * v.x + u.y * v.y;
+            const a = Math.abs(cross) / (Math.abs(dot) + Math.abs(cross));
+            return (dot >= 0)
+                ? (cross >= 0 ? a : 4 - a)
+                : (cross >= 0 ? 2 - a : 2 + a);
+        }
+
         function getThemeColors() {
             const theme = document.documentElement.getAttribute('data-theme');
             if (theme === 'light') {
@@ -682,7 +692,7 @@
         // Animation
         function animate(timestamp) {
             if (!animating) return;
-            if (selectedAxis == null) selectedAxis = "Zrot";
+            if (selectedAxis == null) selectedAxis = defaultAxis; //default
             const speed = parseFloat(controls.rotationSpeed.value) / 100;
 				if (selectedAxis == "Xrot") {
 	            rotXAngle = (rotXAngle + speed * 2) % 360;
@@ -747,33 +757,49 @@
         
         // Mouse drag rotation
         let dragging = false;
-        let lastMouseX = 0;
-        let lastMouseY = 0;
-        
+
         canvas.addEventListener('mousedown', (e) => {
             dragging = true;
             lastMouseX = e.clientX;
             lastMouseY = e.clientY;
         });
+			const mouse = {
+				x: 0, y: 0,                        // coordinates
+				lastX: 0, lastY: 0,                // last frames mouse position 
+			}
+        function getMouseVecRAU(e) {
+            const rect = canvas.getBoundingClientRect();
+        
+            const x = (e.clientX - rect.left - centerX) / centerX;
+            const y = (centerY - (e.clientY - rect.top)) / centerY;
+        
+  				// first normalize the mouse coordinates from 0 to 1 (0,0) top left
+  				// off canvas and (1,1) bottom right by dividing by the bounds width and height
+  				lastMouseX /= bounds.width; 
+  				lastMouseY /= bounds.height; 
+  				
+  				// then scale to canvas coordinates by multiplying the normalized coords with the canvas resolution
+  				
+  				lastMouseX *= canvas.width;
+  				lastMouseY *= canvas.height;
+  				
+            return { x, y };
+        }
         
         canvas.addEventListener('mousemove', (e) => {
             if (!dragging) return;
             
             const deltaX = e.clientX - lastMouseX;
             const deltaY = e.clientY - lastMouseY;
-            //rotYAngle = (rotYAngle + (deltaX * 0.5)) % (360*2);
-			   //rotXAngle = (rotXAngle + (deltaX * 0.5)) % (360*2);
-				rotZAngle = (rotZAngle + (deltaX * 0.5)) % (360*2);
-            controls.rotY.value = rotYAngle;
+				
+				rotXAngle = (rotXAngle + (deltaX * 0.5)) % (360);
             controls.rotX.value = rotXAngle;
-            controls.rotZ.value = rotZAngle;
+            values.rotXVal.textContent = rotXAngle.toFixed(0) + '°';
 
-
-				values.rotXVal.textContent = rotXAngle.toFixed(0) + '°';
+            rotYAngle = (rotYAngle + (deltaY * 0.5)) % (360);
+            controls.rotY.value = rotYAngle;
             values.rotYVal.textContent = rotYAngle.toFixed(0) + '°';
-            values.rotZVal.textContent = rotZAngle.toFixed(0) + '°';
-
-
+            
             lastMouseX = e.clientX;
             lastMouseY = e.clientY;
             
@@ -785,6 +811,7 @@
         document.addEventListener('mouseup', () => {
             dragging = false;
         });
+        
         
         // Initial generation
         requestSphereUpdate();
