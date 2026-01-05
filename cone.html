@@ -565,15 +565,6 @@
             ctx.stroke();
         }
 
-        function atanVec(u, v) {
-            const cross = u.x * v.y - u.y * v.x;
-            const dot   = u.x * v.x + u.y * v.y;
-            const a = Math.abs(cross) / (Math.abs(dot) + Math.abs(cross));
-            return (dot >= 0)
-                ? (cross >= 0 ? a : 4 - a)
-                : (cross >= 0 ? 2 - a : 2 + a);
-        }
-
         function getThemeColors() {
             const theme = document.documentElement.getAttribute('data-theme');
             if (theme === 'light') {
