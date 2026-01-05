@@ -391,11 +391,14 @@
                     // Z rotation
                     let x3 = x2 * rzComp.cos + z1 * rzComp.sin;
                     let z3 = -x2 * rzComp.sin + z1 * rzComp.cos;
+
+                    // Combined transform-rotate
                     let x0 = point.x * rxComp.cos + point.y * rxComp.sin * ryComp.sin 
                     					+ point.z * -rxComp.sin * ryComp.cos;
                     let y0 = point.y * ryComp.cos + point.z * ryComp.sin;
                     let z0 = point.x * rxComp.sin + point.y * -rxComp.cos * ryComp.sin 
                     					+ point.z * rxComp.cos * ryComp.cos;  
+                    					
                     return { x: x3*x0, y: y1*y0, z: z3*z0 };
                 }
                 
