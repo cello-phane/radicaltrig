@@ -212,8 +212,8 @@
             </div>
             
             <div class="control-group">
-                <label>Perspective: <span class="value" id="perspectiveVal">1000</span></label>
-                <input id="perspective" type="range" min="100" max="1000" value="1000">
+                <label>Perspective: <span class="value" id="perspectiveVal">4000</span></label>
+                <input id="perspective" type="range" min="100" max="4000" value="4000">
             </div>
             
             <div class="control-group">
@@ -791,21 +791,23 @@
             
             const deltaX = e.clientX - lastMouseX;
             const deltaY = e.clientY - lastMouseY;
-				
-				rotXAngle = (rotXAngle + (deltaX * 0.5)) % (360);
-            controls.rotX.value = rotXAngle;
-            values.rotXVal.textContent = rotXAngle.toFixed(0) + '°';
+            if (selectedAxis == null) selectedAxis = defaultAxis; //default
+				if (selectedAxis == "Xrot") {
+					rotXAngle = (rotXAngle + (deltaX * 0.5)) % (360);
+				        	controls.rotX.value = rotXAngle;
+				        	values.rotXVal.textContent = rotXAngle.toFixed(0) + '°';
+				}
+				if (selectedAxis == "Yrot") {
+					rotYAngle = (rotYAngle + (deltaY * 0.5)) % (360);
+					controls.rotY.value = rotYAngle;
+					values.rotYVal.textContent = rotYAngle.toFixed(0) + '°';
+				}
+				lastMouseX = e.clientX;
+				lastMouseY = e.clientY;
 
-            rotYAngle = (rotYAngle + (deltaY * 0.5)) % (360);
-            controls.rotY.value = rotYAngle;
-            values.rotYVal.textContent = rotYAngle.toFixed(0) + '°';
-            
-            lastMouseX = e.clientX;
-            lastMouseY = e.clientY;
-            
-            if (!animating) {
-                requestSphereUpdate();
-            }
+				if (!animating) {
+				    requestSphereUpdate();
+				}
         });
         
         document.addEventListener('mouseup', () => {
