@@ -802,6 +802,11 @@
 					controls.rotY.value = rotYAngle;
 					values.rotYVal.textContent = rotYAngle.toFixed(0) + '°';
 				}
+				if (selectedAxis == "Zrot") {
+					rotZAngle = (rotZAngle + (deltaX * 0.5)) % (360);
+					controls.rotZ.value = rotZAngle;
+					values.rotZVal.textContent = rotZAngle.toFixed(0) + '°';
+				}
 				lastMouseX = e.clientX;
 				lastMouseY = e.clientY;
 
