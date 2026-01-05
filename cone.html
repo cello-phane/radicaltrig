@@ -763,34 +763,12 @@
             lastMouseX = e.clientX;
             lastMouseY = e.clientY;
         });
-			const mouse = {
-				x: 0, y: 0,                        // coordinates
-				lastX: 0, lastY: 0,                // last frames mouse position 
-			}
-        function getMouseVecRAU(e) {
-            const rect = canvas.getBoundingClientRect();
-        
-            const x = (e.clientX - rect.left - centerX) / centerX;
-            const y = (centerY - (e.clientY - rect.top)) / centerY;
-        
-  				// first normalize the mouse coordinates from 0 to 1 (0,0) top left
-  				// off canvas and (1,1) bottom right by dividing by the bounds width and height
-  				lastMouseX /= bounds.width; 
-  				lastMouseY /= bounds.height; 
-  				
-  				// then scale to canvas coordinates by multiplying the normalized coords with the canvas resolution
-  				
-  				lastMouseX *= canvas.width;
-  				lastMouseY *= canvas.height;
-  				
-            return { x, y };
-        }
         
         canvas.addEventListener('mousemove', (e) => {
             if (!dragging) return;
             
-            const deltaX = e.clientX - lastMouseX;
-            const deltaY = e.clientY - lastMouseY;
+            const deltaX = Math.abs(e.clientX - lastMouseX);
+            const deltaY = Math.abs(e.clientY - lastMouseY);
             if (selectedAxis == null) selectedAxis = defaultAxis; //default
 				if (selectedAxis == "Xrot") {
 					rotXAngle = (rotXAngle + (deltaX * 0.5)) % (360);
