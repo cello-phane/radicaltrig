@@ -203,12 +203,12 @@
             
             <div class="control-group">
                 <label>Meridians: <span class="value" id="meridiansVal">36</span></label>
-                <input id="meridians" type="range" min="0" max="64" value="36">
+                <input id="meridians" type="range" min="0" max="256" value="36">
             </div>
             
             <div class="control-group">
                 <label>Parallels: <span class="value" id="parallelsVal">32</span></label>
-                <input id="parallels" type="range" min="0" max="64" value="32">
+                <input id="parallels" type="range" min="0" max="256" value="32">
             </div>
             
             <div class="control-group">
@@ -280,22 +280,21 @@
         // Create worker inline (no separate file needed)
         const workerCode = `
             // RAU Math functions in worker
-            function rsin(x) {
-                const a = 1.0 - 2.0 * x + 2.0 * x * x;
-                return x / Math.sqrt(a);
+            function rsin(t, denom) {
+                return t / Math.sqrt(denom);
             }
             
-            function rcos(x) {
-                const a = 1.0 - 2.0 * x + 2.0 * x * x;
-                return (1.0 - x) / Math.sqrt(a);
+            function rcos(t, denom) {
+                return (1.0 - t) / Math.sqrt(denom);
             }
             
             function getRotationComponents(phase) {
                 const phase_base = ((phase % 4.0) + 4.0) % 4.0;
                 const quadrant = Math.floor(phase_base);
                 const t = phase_base - quadrant;
-                const s = rsin(t);
-                const c = rcos(t);
+                const tdenom = 1.0 - 2.0 * t + 2.0 * t * t;
+                const s = rsin(t, tdenom);
+                const c = rcos(t, tdenom);
                 
                 const q0 = Number(quadrant === 0);
                 const q1 = Number(quadrant === 1);

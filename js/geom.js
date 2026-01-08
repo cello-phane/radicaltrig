@@ -585,8 +585,8 @@ function getRotationComponents(phase) {
   const sinVal = radicalSine(phase);
   
   return {
-    cos: Math.sign(phase) * cosVal,
-    sin: sinVal,
+    cos: cosVal,
+    sin: Math.sign(phase) * sinVal,
     quadrant: q
   };
 }
