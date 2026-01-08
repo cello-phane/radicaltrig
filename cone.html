@@ -680,22 +680,23 @@
             if (!animating) return;
             if (selectedAxis == null) selectedAxis = defaultAxis; //default
             const speed = parseFloat(controls.rotationSpeed.value) / 100;
-				if (selectedAxis == "Xrot") {
-	            rotXAngle = (rotXAngle + speed * 2) % 360;
-	            controls.rotX.value = rotXAngle;
-	            values.rotXVal.textContent = rotXAngle.toFixed(0) + '°';
-            }
-            else if (selectedAxis == "Yrot") {
-	            rotYAngle = (rotYAngle + speed * 2) % 360;
-	            controls.rotY.value = rotYAngle;
-	            values.rotYVal.textContent = rotYAngle.toFixed(0) + '°';
-            }
-            else if (selectedAxis == "Zrot") {
-	            rotZAngle = (rotZAngle + speed * 2) % 360;
-	            controls.rotZ.value = rotZAngle;
-	            values.rotZVal.textContent = rotZAngle.toFixed(0) + '°';
-            }
-            
+            activeAxes.forEach(function(selectedAxis, index) {
+					if (selectedAxis == "Xrot") {
+		            rotXAngle = (rotXAngle + speed * 2) % 360;
+		            controls.rotX.value = rotXAngle;
+		            values.rotXVal.textContent = rotXAngle.toFixed(0) + '°';
+	            }
+	            if (selectedAxis == "Yrot") {
+		            rotYAngle = (rotYAngle + speed * 2) % 360;
+		            controls.rotY.value = rotYAngle;
+		            values.rotYVal.textContent = rotYAngle.toFixed(0) + '°';
+	            }
+	            if (selectedAxis == "Zrot") {
+		            rotZAngle = (rotZAngle + speed * 2) % 360;
+		            controls.rotZ.value = rotZAngle;
+		            values.rotZVal.textContent = rotZAngle.toFixed(0) + '°';
+	            }
+            });
             requestSphereUpdate();
             requestAnimationFrame(animate);
         }
@@ -756,21 +757,25 @@
             const deltaX = e.clientX - lastMouseX;
             const deltaY = e.clientY - lastMouseY;
             if (selectedAxis == null) selectedAxis = defaultAxis; //default
-				if (selectedAxis == "Xrot") {
-					rotXAngle = (rotXAngle + (deltaX * 0.5)) % (360);
-				        	controls.rotX.value = rotXAngle;
-				        	values.rotXVal.textContent = rotXAngle.toFixed(0) + '°';
-				}
-				if (selectedAxis == "Yrot") {
-					rotYAngle = (rotYAngle + (deltaY * 0.5)) % (360);
-					controls.rotY.value = rotYAngle;
-					values.rotYVal.textContent = rotYAngle.toFixed(0) + '°';
-				}
-				if (selectedAxis == "Zrot") {
-					rotZAngle = (rotZAngle + (deltaX * 0.5)) % (360);
-					controls.rotZ.value = rotZAngle;
-					values.rotZVal.textContent = rotZAngle.toFixed(0) + '°';
-				}
+
+            activeAxes.forEach(function(selectedAxis, index) {
+					if (selectedAxis == "Xrot") {
+						rotXAngle = (rotXAngle + (deltaX * 0.5)) % (360);
+					        	controls.rotX.value = rotXAngle;
+					        	values.rotXVal.textContent = rotXAngle.toFixed(0) + '°';
+					}
+					if (selectedAxis == "Yrot") {
+						rotYAngle = (rotYAngle + (deltaY * 0.5)) % (360);
+						controls.rotY.value = rotYAngle;
+						values.rotYVal.textContent = rotYAngle.toFixed(0) + '°';
+					}
+					if (selectedAxis == "Zrot") {
+						rotZAngle = (rotZAngle + (deltaX * 0.5)) % (360);
+						controls.rotZ.value = rotZAngle;
+						values.rotZVal.textContent = rotZAngle.toFixed(0) + '°';
+					}
+            });
+
 				lastMouseX = e.clientX;
 				lastMouseY = e.clientY;
 
