@@ -197,8 +197,8 @@
             </div>
             
             <div class="control-group">
-                <label>Rotation Z: <span class="value" id="rotZVal">0°</span></label>
-                <input id="rotZ" type="range" min="0" max="360" value="0">
+                <label>Rotation Z: <span class="value" id="rotZVal">90°</span></label>
+                <input id="rotZ" type="range" min="0" max="360" value="90">
             </div>
             
             <div class="control-group">
@@ -476,8 +476,8 @@
         
         // State
         let rotXAngle = 0;
-        let rotYAngle = 90;
-        let rotZAngle = 0;
+        let rotYAngle = 90; // default
+        let rotZAngle = 90; // default
         let currentSphereData = null;
         let animating = false;
         let workerReady = true;
