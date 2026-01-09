@@ -455,21 +455,23 @@
         
         return fps;
       }
-
+      const radius 			   = parseInt(controls.radius.value);
+      const meridianCount 	   = parseInt(controls.meridians.value);
+      const parallelCount 	   = parseInt(controls.parallels.value);
+      const sphereData 		   = generateSpherePoints(radius, meridianCount, parallelCount, semicircle);
+          
 		// Main render function using RAU radical angle system
       function render() {
      		ctx.clearRect(0, 0, canvas.width, canvas.height);
      		const colors = getThemeColors();
          const semicircle    	   = parseFloat(controls.semicircle.value) / 100; // 0.01..1.0
-         const meridianCount 	   = parseInt(controls.meridians.value);
-         const parallelCount 	   = parseInt(controls.parallels.value);
+			
          const perspective 		= parseFloat(controls.perspective.value);
-         const radius 			   = parseInt(controls.radius.value);
+         
          const avgLinecount      = 0.5*(meridianCount+parallelCount);
 			const cullingfPercent 	= parseFloat(controls.cullingf.value);
 			const cullingbPercent 	= parseFloat(controls.cullingb.value);			
-         const sphereData 		   = generateSpherePoints(radius, meridianCount, parallelCount, semicircle);
-          
+
          const cullF             = (1/(cullingfPercent))*avgLinecount*radius; //front face
          const cullB             = -(1/(cullingbPercent))*avgLinecount*radius;//back face
          const sparkEffect		   = parseInt(controls.spark.value);
@@ -495,74 +497,74 @@
 				drawBlurredLine(projectedPoints[0], projectedPoints[1], color, i/2*radius*sparkEffect*0.01, radius*0.25);
 			}
 	    }
-	});
+		});
 						
-            // Transform and project meridians
-            sphereData.meridians.forEach((meridian, mIndex) => {
-                const projectedPoints = [];
-                const transformedPoints = [];
-                let projected = [];
-                meridian.forEach(point => {
-                    let transformed = rotateXandZ(point, rotXAngle, rotZAngle);
-    				transformed = rotateY(transformed, rotYAngle);
- 					transformedPoints.push(transformed);   					
-                    projected = project3D(transformed, perspective);
-                    projectedPoints.push(projected);
-                });
-                
-                // Draw meridian lines
-                for (let i = 0; i < projectedPoints.length - 1; i++) {
-   				    if (cullingfPercent > 0 || cullingbPercent > 0) {
-               	      if (transformedPoints[i].z + transformedPoints[i + 1].z > cullF) continue;
-               	      if (transformedPoints[i].z + transformedPoints[i + 1].z < cullB) continue;
-               	    }
-                    const brightness = Math.max(0.5, projectedPoints[i].scale * 0.7);
-                    const rgb = colors.meridianRGB;
-                    const color = `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, ${brightness})`;
-                	drawLine(projectedPoints[i], projectedPoints[i + 1], color, brightness);
-	               	// Highlight special meridians affected by integration
-	                if (mIndex === Math.floor(meridianCount * semicircle)) {
-	                    if (radius < 100) {
-	                    	semicirclePtSize = 1+(canvas.width/canvas.height)/1.25;
-	                    }
-	                    else {
-	                    	semicirclePtSize = 1+(canvas.width/canvas.height);
-	                    }
-	                    projectedPoints.forEach(point => {
-	                        drawPoint(point, colors.semicircle, semicirclePtSize);
-	                    });
-	                }
-                }
-                
+      // Transform and project meridians
+      sphereData.meridians.forEach((meridian, mIndex) => {
+          const projectedPoints = [];
+          const transformedPoints = [];
+          let projected = [];
+          meridian.forEach(point => {
+           let transformed = rotateXandZ(point, rotXAngle, rotZAngle);
+			transformed = rotateY(transformed, rotYAngle);
+	 	   transformedPoints.push(transformed);   					
+             projected = project3D(transformed, perspective);
+             projectedPoints.push(projected);
+          });
+          
+          // Draw meridian lines
+          for (let i = 0; i < projectedPoints.length - 1; i++) {
+	    if (cullingfPercent > 0 || cullingbPercent > 0) {
+         	      if (transformedPoints[i].z + transformedPoints[i + 1].z > cullF) continue;
+         	      if (transformedPoints[i].z + transformedPoints[i + 1].z < cullB) continue;
+         	    }
+              const brightness = Math.max(0.5, projectedPoints[i].scale * 0.7);
+              const rgb = colors.meridianRGB;
+              const color = `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, ${brightness})`;
+          	drawLine(projectedPoints[i], projectedPoints[i + 1], color, brightness);
+          	// Highlight special meridians affected by integration
+           if (mIndex === Math.floor(meridianCount * semicircle)) {
+               if (radius < 100) {
+               	semicirclePtSize = 1+(canvas.width/canvas.height)/1.25;
+               }
+               else {
+               	semicirclePtSize = 1+(canvas.width/canvas.height);
+               }
+               projectedPoints.forEach(point => {
+                   drawPoint(point, colors.semicircle, semicirclePtSize);
+               });
+           }
+          }
+          
+        });
+        
+        // Transform and project parallels
+        sphereData.parallels.forEach(parallel => {
+            const projectedPoints = [];
+            const transformedPoints = [];
+            let projected = [];                
+            parallel.forEach(point => {
+	            let transformed = rotateXandZ(point, rotXAngle, rotZAngle);
+					transformed = rotateY(transformed, rotYAngle);
+	 			   transformedPoints.push(transformed);
+	            projected = project3D(transformed, perspective);
+	            projectedPoints.push(projected);
             });
             
-            // Transform and project parallels
-            sphereData.parallels.forEach(parallel => {
-                const projectedPoints = [];
-                const transformedPoints = [];
-                let projected = [];                
-                parallel.forEach(point => {
-                    let transformed = rotateXandZ(point, rotXAngle, rotZAngle);
-    				transformed = rotateY(transformed, rotYAngle);
-	    			transformedPoints.push(transformed);
-	                projected = project3D(transformed, perspective);
-	                projectedPoints.push(projected);
-                });
-                
-                // Draw parallel lines
-                for (let i = 0; i < projectedPoints.length - 1; i++) {
-   				    if (cullingfPercent > 0 || cullingbPercent > 0) {
-               	      if (transformedPoints[i].z + transformedPoints[i + 1].z > cullF) continue;
-               	      if (transformedPoints[i].z + transformedPoints[i + 1].z < cullB) continue;
-               	    }
-               	    const brightness = Math.max(0.5, projectedPoints[i].scale * 0.7);
-                    const rgb = colors.parallelRGB;
-                    const color = `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, ${brightness})`;
-                    drawLine(projectedPoints[i], projectedPoints[i + 1], color, brightness);
-                    drawLine(projectedPoints[i], projectedPoints[i + 1], color, brightness);
-                }
-            });
-		  
+            // Draw parallel lines
+            for (let i = 0; i < projectedPoints.length - 1; i++) {
+			    if (cullingfPercent > 0 || cullingbPercent > 0) {
+           	      if (transformedPoints[i].z + transformedPoints[i + 1].z > cullF) continue;
+           	      if (transformedPoints[i].z + transformedPoints[i + 1].z < cullB) continue;
+           	    }
+           	    const brightness = Math.max(0.5, projectedPoints[i].scale * 0.7);
+                const rgb = colors.parallelRGB;
+                const color = `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, ${brightness})`;
+                drawLine(projectedPoints[i], projectedPoints[i + 1], color, brightness);
+                drawLine(projectedPoints[i], projectedPoints[i + 1], color, brightness);
+            }
+        });
+
 		  const currentFps = updateFPS();
 		  // Display FPS on canvas
 		  ctx.fillStyle = colors.fpsRGB;
@@ -570,14 +572,14 @@
 		  ctx.fillText(`FPS: ${currentFps}`, 10, 20);
 		}
         
-        function hideControls() {
-	        var contentElement = document.getElementById("controlsContainer");
-	        if (contentElement.style.display === "none") {
-	            contentElement.style.display = "block"; // Show the element
-	        } else {
-	            contentElement.style.display = "none"; // Hide the element
-	        }
-   		 }
+      function hideControls() {
+	      var contentElement = document.getElementById("controlsContainer");
+	      if (contentElement.style.display === "none") {
+	          contentElement.style.display = "block"; // Show the element
+	      } else {
+	          contentElement.style.display = "none"; // Hide the element
+	      }
+ 		}
         
 		// =======================================
 		// Smooth rotation animation controls
@@ -586,12 +588,12 @@
 		function smoothstep(t) {
 		  return t * t * (3 - 2 * t);
 		}
-        function stepOnce() {
-            // Single step animation
-            controls.rotZ.value = (parseFloat(controls.rotZ.value) + 1) % 360;
-            values.rotZVal.textContent = controls.rotZ.value + '°';
-            render();
-        }
+      function stepOnce() {
+          // Single step animation
+          controls.rotZ.value = (parseFloat(controls.rotZ.value) + 1) % 360;
+          values.rotZVal.textContent = controls.rotZ.value + '°';
+          render();
+      }
 		function startRotationAnimation(newRotX, newRotY, newRotZ) {
 		  startRot = { x: rotXAngle, y: rotYAngle, z: rotZAngle };
 		  targetRot = { x: newRotX, y: newRotY, z: newRotZ };
@@ -650,21 +652,21 @@
 		  }
 		}
    		
-        function startFieldLineAnimation() {
-        	if (!drawingFieldLines) {
-        		drawingFieldLines = true;
-        	}
-        	toggleFieldLinesBtn.classList.add('active');
-        	toggleFieldLinesBtn.textContent = 'Spark';
-        }
+      function startFieldLineAnimation() {
+      	if (!drawingFieldLines) {
+      		drawingFieldLines = true;
+      	}
+      	toggleFieldLinesBtn.classList.add('active');
+      	toggleFieldLinesBtn.textContent = 'Spark';
+      }
 
-        function stopFieldLineAnimation() {
-        	if (drawingFieldLines) {
-        		drawingFieldLines = false;
-        	}
-        	toggleFieldLinesBtn.classList.remove('active');	
-        	toggleFieldLinesBtn.textContent = 'No Spark';
-        }
+      function stopFieldLineAnimation() {
+      	if (drawingFieldLines) {
+      		drawingFieldLines = false;
+      	}
+      	toggleFieldLinesBtn.classList.remove('active');	
+      	toggleFieldLinesBtn.textContent = 'No Spark';
+      }
 
 		function toggleFieldLinesAnimation() {
 			if (drawingFieldLines) {
@@ -701,7 +703,8 @@
 		let cx = canvas.width / 2;
 		let cy = canvas.height / 2;
 		let dragging = false;
-
+		let lastMouseX;
+		let lastMouseY;
 		// ------------------------
 		// CLICK HANDLER
 		// ------------------------
@@ -719,17 +722,81 @@
 	  // ------------------------
 	  canvas.addEventListener('mousedown', e => {
 	    dragging = true;
+	    lastMouseX = e.clientX;
+       lastMouseY = e.clientY;
 	  });
 		
-	  canvas.addEventListener('mousemove', e => {
-	    if (!dragging) return;
-	    const rect = canvas.getBoundingClientRect();
-	    const mx = e.clientX - rect.left;
-	    const my = e.clientY - rect.top;
-	    // Map mouse delta to rotation
-	    rotZAngle = 360-(((rotXAngle * rotYAngle) + mx + my * 0.001) % 360);
-	    render();
-	  });
+     canvas.addEventListener('mousemove', (e) => {
+        if (!dragging) return;
+       
+        const deltaX = e.clientX - lastMouseX;
+        const deltaY = e.clientY - lastMouseY;
+
+	 	  rotXAngle = (rotXAngle + (deltaX * 0.5)) % (360);
+	     controls.rotX.value = rotXAngle;
+	     values.rotXVal.textContent = rotXAngle.toFixed(0) + '°';
+
+		  rotYAngle = (rotYAngle + (deltaY * 0.5)) % (360);
+		  controls.rotY.value = rotYAngle;
+		  values.rotYVal.textContent = rotYAngle.toFixed(0) + '°';
+
+		  rotZAngle = (rotZAngle + (deltaX * 0.5)) % (360);
+		  controls.rotZ.value = rotZAngle;
+		  values.rotZVal.textContent = rotZAngle.toFixed(0) + '°';
+		  
+	     // Compute rotation axis perpendicular to drag direction
+	     const dragMagnitude = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+	     if (dragMagnitude < 0.1) return; // Too small
+	     
+	     // Axis is perpendicular to drag in screen space
+	     const axis = {
+	         x: -deltaY / dragMagnitude,  // Drag up = rotate around X
+	         y: deltaX / dragMagnitude,   // Drag right = rotate around Y
+	         z: 0                         // No screen-space Z component
+	     };
+	     
+	     // Rotation angle proportional to drag distance
+	     const angleRAU = (dragMagnitude * 0.01) % 4.0;  // RAU angle [0,4]
+	     
+	     // Apply Rodrigues rotation to each point
+	     sphereData.meridians = sphereData.meridians.map(meridian =>
+	         meridian.map(point => rodriguesRAU(point, axis, angleRAU))
+	     );
+	     
+	     sphereData.parallels = sphereData.parallels.map(parallel =>
+	         parallel.map(point => rodriguesRAU(point, axis, angleRAU))
+	     );
+	     
+	     lastMouseX = e.clientX;
+	     lastMouseY = e.clientY;
+	     render();
+     });
+      
+     function rodriguesRAU(v, k, angleRAU) {
+         // Map RAU [0,4] to phase [0,1] for one quadrant
+         const phase = (angleRAU % 4.0) / 4.0;
+         const trig = getRotationComponents(phase);
+         
+         const c = trig.cos;
+         const s = trig.sin;
+         
+         // k × v (cross product)
+         const cross = {
+             x: k.y * v.z - k.z * v.y,
+             y: k.z * v.x - k.x * v.z,
+             z: k.x * v.y - k.y * v.x
+         };
+         
+         // k · v (dot product)
+         const dot = k.x * v.x + k.y * v.y + k.z * v.z;
+         
+         // Rodrigues formula: v_rot = v*cos(θ) + (k×v)*sin(θ) + k*(k·v)*(1-cos(θ))
+         return {
+             x: v.x * c + cross.x * s + k.x * dot * (1 - c),
+             y: v.y * c + cross.y * s + k.y * dot * (1 - c),
+             z: v.z * c + cross.z * s + k.z * dot * (1 - c)
+         };
+     }
 
 	  document.addEventListener('mouseup', () => {
 	    dragging = false;
