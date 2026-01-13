@@ -427,7 +427,14 @@ function initVectorCanvas() {
     const arcRadius = 0.5 * Math.max(uLen, vLen);
     const uiState = getUIState();
     
-    if (uiState.biasMode) {
+    if (uiState.angleWrapMode) {
+      // Draw long way around
+      drawArcGradient(
+        (ccw ? -uA : -vA) + 2 * Math.PI,
+        (ccw ? -uA : -vA) + 2 * Math.PI + degToRad(360 - unsignedAngle),
+        arcRadius
+      );
+    } else if (uiState.biasMode) {
       const bias = ccw ? Math.PI * 2 : degToRad(unsignedAngle);
       const startAngle = Math.min(uA, bias);
       const endAngle = startAngle - degToRad(Math.abs(360 - (ccw ? signedAngle : unsignedAngle)));
@@ -442,15 +449,6 @@ function initVectorCanvas() {
         ? 360 + radToDeg(endAngle - startAngle) 
         : radToDeg(startAngle - endAngle);
       setSection2AngleData(newAngle, ccw);
-      
-    } else if (uiState.angleWrapMode) {
-      // Draw long way around
-      drawArcGradient(
-        (ccw ? -uA : -vA) + 2 * Math.PI,
-        (ccw ? -uA : -vA) + 2 * Math.PI + degToRad(360 - unsignedAngle),
-        arcRadius
-      );
-      
     } else if (uiState.defaultMode) {
       // Draw between vectors (short way)
       drawArcGradient(

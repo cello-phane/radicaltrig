@@ -361,20 +361,6 @@
                 const ryComp = getRotationComponents(rotY / 90.0);
                 const rzComp = getRotationComponents(rotZ / 90.0);
                             
-	         	// "Magnetic Field Mode"
-	        	   function transformMagneticField(point) {
-	        	       const theta = Math.atan2(Math.sqrt(point.x*point.x + point.z*point.z), point.y);
-	        	       const r = Math.sqrt(point.x*point.x + point.y*point.y + point.z*point.z);
-	        	       
-	        	       // Dipole field scaling
-	        	       const scale = (2*Math.cos(theta)*Math.cos(theta) + Math.sin(theta)*Math.sin(theta)) / (r*r);
-	        	       
-	        	       return {
-	        	           x: point.x * scale,
-	        	           y: point.y * scale * 2,  // Stronger at poles
-	        	           z: point.z * scale
-	        	       };
-	        	   }
                 function transformPointSphere(point) {
                     // X rotation
                     let y1 = point.y * rxComp.cos - point.z * rxComp.sin;
