@@ -268,8 +268,8 @@ function displaySection1Results(resultsElement) {
   const tanDisplay = Math.abs(rt) > 1e6 ? 'undefined' : formatValue(rt);
   
   resultsElement.textContent = 
-`RAU Phase = ${formatValue(phase, 6)}
-Radian = ${formatValue(radian)} (${degrees.toFixed(3)}°)
+`RAU Phase = ${formatValue(phase)}
+Radian = ${formatValue(radian)} (${degrees.toFixed(5)}°)
 _______________________________
 tan(θ) = ${tanDisplay}
 sin(θ) = ${formatValue(rs)}
