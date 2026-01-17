@@ -322,7 +322,7 @@ Dot product = ${fmt(dot)}
 Cross product = ${fmt(cross)}
 _______________________________
 Signed angle (u→v) = ${formatValue(angleData.signedDeg, 1)}° ${angleData.ccw ? '(CCW)' : '(CW)'}
-Angle between = ${formatValue(angleData.unsignedDeg, 1)}°
+Angle between = ${formatValue(Math.abs(angleData.signedDeg) > Math.abs(angleData.unsignedDeg) ? 360-angleData.unsignedDeg : angleData.unsignedDeg, 1)}°
 _______________________________
 RAU Phase = ${formatValue(angleData.rau)}
 Radian = ${formatValue(rad)}
