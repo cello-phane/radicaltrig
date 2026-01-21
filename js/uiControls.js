@@ -198,18 +198,7 @@ function calculateAngleMode(u, v) {
       ccw: false
     };
   }
-  
-  // Default mode: standard angle measurement
-  if (uiState.defaultMode) {
-    p = ccwDirection ? 4 - p : p;
-    return {
-      rau: p,
-      signedDeg: angleBetweenDeg * (ccwDirection ? 1 : -1),
-      unsignedDeg: Math.abs(angleBetweenDeg),
-      ccw: ccwDirection
-    };
-  }
-  
+
   // Wrap mode: complement angle
   if (uiState.angleWrapMode) {
     p = ccwDirection ? p : 4 - p;
@@ -222,6 +211,17 @@ function calculateAngleMode(u, v) {
     };
   }
   
+  // Default mode: standard angle measurement
+  if (uiState.defaultMode) {
+    p = ccwDirection ? 4 - p : p;
+    return {
+      rau: p,
+      signedDeg: angleBetweenDeg * (ccwDirection ? 1 : -1),
+      unsignedDeg: Math.abs(angleBetweenDeg),
+      ccw: ccwDirection
+    };
+  }
+    
   // Fallback
   return {
     rau: p,

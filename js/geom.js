@@ -494,7 +494,7 @@ function radicalAtan(value) {
  */
 function atanVec(u, v) {
   const crossUV = Geom.vec.cross(u, v); // Signed cross product
-  const dotUV = Geom.vec.dot(u, v);      // Dot product
+  const dotUV = Geom.vec.dot(u, v);     // Dot product
   
   // Compute normalized parameter in [0, 1] for current quadrant
   const a = Math.abs(crossUV) / (Math.abs(dotUV) + Math.abs(crossUV));

@@ -52,36 +52,22 @@ function initRAUCanvas() {
    * Draw grid background
    */
   function drawGrid() {
-    const w = canvas.width;
-    const h = canvas.height;
-    
-    ctx.strokeStyle = '#555';
+    ctx.strokeStyle = CANVAS_CONFIG.GRID_COLOR;
     ctx.lineWidth = 1;
-    
-    // Vertical and horizontal grid lines
+    let spacing = CANVAS_CONFIG.GRID_SPACING-5;
     for (let i = -10; i <= 10; i++) {
       // Vertical
       ctx.beginPath();
-      ctx.moveTo(cx + i * 68, 0);
-      ctx.lineTo(cx + i * 68, h);
+      ctx.moveTo(cx + i * spacing, 0);
+      ctx.lineTo(cx + i * spacing, canvas.height);
       ctx.stroke();
       
       // Horizontal
       ctx.beginPath();
-      ctx.moveTo(0, cy + i * 34);
-      ctx.lineTo(w, cy + i * 34);
+      ctx.moveTo(0, cy + i * spacing);
+      ctx.lineTo(canvas.width, cy + i * spacing);
       ctx.stroke();
     }
-    
-    // Axes
-    ctx.strokeStyle = '#444';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(cx, 0);
-    ctx.lineTo(cx, h);
-    ctx.moveTo(0, cy);
-    ctx.lineTo(w, cy);
-    ctx.stroke();
   }
   
   /**
