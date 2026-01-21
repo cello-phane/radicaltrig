@@ -126,7 +126,7 @@ function initRAUCanvas() {
   function updatePosition(mx, my) {
     const dx = mx - cx;
     const dy = my - cy;
-    const angle = atanVec({ x: dx, y: dy }, { x: 1, y: 0 });
+    const angle = RAUConverter.vectorToRAU({ x: dx, y: dy }, { x: 1, y: 0 });
     
     // Update state
     setSection1Phase(angle);
@@ -483,7 +483,7 @@ function initVectorCanvas() {
     const my = e.clientY - rect.top - cy;
     
     const len = Math.hypot(mx, my);
-    const angleDeg = rauToDeg(atanVec({ x: mx, y: my }, { x: 1, y: 0 }));
+    const angleDeg = rauToDeg(RAUConverter.vectorToRAU({ x: mx, y: my }, { x: 1, y: 0 }));
     
     if (dragging === 'u') {
       controls.uLength.value = len;

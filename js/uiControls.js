@@ -185,7 +185,7 @@ function calculateAngleMode(u, v) {
   const uiState = getUIState();
   const section2 = AppState.section2;
   
-  let p = atanVec(u, v);
+  let p = RAUConverter.vectorToRAU(u, v);
   const ccwDirection = section2.ccw;
   const angleBetweenDeg = section2.angleBetweenDeg;
   
@@ -347,8 +347,8 @@ function displayIndividualMode(resultsElement) {
   
   const refVec = { x: 1, y: 0 };
   
-  const uPhase = atanVec(u, refVec);
-  const vPhase = atanVec(v, refVec);
+  const uPhase = RAUConverter.vectorToRAU(u, refVec);
+  const vPhase = RAUConverter.vectorToRAU(v, refVec);
   
   const uSin = radicalSine(uPhase);
   const uCos = radicalCosine(uPhase);

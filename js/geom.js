@@ -166,7 +166,7 @@ const Geom = (function() {
         const edge = sub(b, a);
         
         // Compute angles of all polyB vertices relative to edge
-        const angles = polyB.map(p => atanVec(edge, sub(p, a)));
+        const angles = polyB.map(p => RAUConverter.vectorToRAU(edge, sub(p, a)));
         const span = circularSpan(angles);
         
         // If all points in same half-plane, we found a separating axis
@@ -195,7 +195,7 @@ const Geom = (function() {
     const ref = { x: 1, y: 0 }; // Reference vector
     
     // Compute RAU angles from reference to each vertex as seen from point
-    const angles = poly.map(v => atanVec(ref, sub(v, point)));
+    const angles = poly.map(v => RAUConverter.vectorToRAU(ref, sub(v, point)));
     
     // Sum signed deltas between consecutive vertices
     let total = 0.0;
@@ -303,7 +303,7 @@ const Geom = (function() {
         const b = poly1[(i + 1) % poly1.length];
         const edge = sub(b, a);
         
-        const angles = poly2.map(p => atanVec(edge, sub(p, a)));
+        const angles = poly2.map(p => RAUConverter.vectorToRAU(edge, sub(p, a)));
         const span = circularSpan(angles);
         
         if (span.span < CONFIG.RAU_HALF_CIRCLE - eps) {
@@ -487,28 +487,13 @@ function radicalAtan(value) {
 }
 
 /**
- * Compute RAU angle between two vectors (like atan2 but returns RAU)
+ * Compute angle(in radians) between two vectors
  * @param {{x: number, y: number}} u - Reference vector
  * @param {{x: number, y: number}} v - Target vector
- * @returns {number} RAU parameter [0, 4) representing angle from u to v
+ * @returns {number} Radian (0 to 2pi angle) from u to v
  */
 function atanVec(u, v) {
-  const crossUV = Geom.vec.cross(u, v); // Signed cross product
-  const dotUV = Geom.vec.dot(u, v);     // Dot product
-  
-  // Compute normalized parameter in [0, 1] for current quadrant
-  const a = Math.abs(crossUV) / (Math.abs(dotUV) + Math.abs(crossUV));
-  
-  // Branchless quadrant selection
-  const q1 = a;           // Q0: dot≥0, cross≥0 → [0, 1]
-  const q2 = 2.0 - a;     // Q1: dot<0, cross≥0 → [1, 2]
-  const q3 = 2.0 + a;     // Q2: dot<0, cross<0 → [2, 3]
-  const q4 = 4.0 - a;     // Q3: dot≥0, cross<0 → [3, 4]
-  
-  const upper = crossUV >= 0.0 ? q1 : q4;
-  const lower = crossUV >= 0.0 ? q2 : q3;
-  
-  return dotUV >= 0.0 ? upper : lower;
+  return rauToRad(RAUConverter.vectorToRAU(u, v));
 }
 
 /**
@@ -555,14 +540,7 @@ function radToRau(radian) {
  * @returns {number} Angle in radians
  */
 function rauToRad(p) {
-  if (p >= 4) return Math.PI * 2;
-  
-  const q = Math.floor(p);
-  const u = p - q;
-  const local = Math.atan2(u, 1 - u); // Local angle in [0, π/2]
-  
-  const offsets = [0, Math.PI / 2, Math.PI, 3 * Math.PI / 2];
-  return offsets[q] + local;
+  return Math.acos(radicalCosine(p));
 }
 
 /**
@@ -593,7 +571,7 @@ function getRotationComponents(phase) {
 
 // Complete roundtrip: Vector → RAU → Trig → Back to RAU
 class RAUConverter {
-    // Vector to RAU (your atanVec)
+    // Vector to RAU
     static vectorToRAU(u, v) {
         const cross = u.x * v.y - u.y * v.x;
         const dot = u.x * v.x + u.y * v.y;
@@ -617,7 +595,7 @@ class RAUConverter {
         return this.applyQuadrant(s, c, quadrant);
     }
     
-    // Sine/cosine back to RAU (using inverses!)
+    // Sine/cosine back to RAU (using inverses)
     static trigToRAU(sinVal, cosVal) {
         // Determine which quadrant based on signs
         const quadrant = this.getQuadrant(sinVal, cosVal);
@@ -673,3 +651,12 @@ class RAUConverter {
     }
 
 }
+/*
+Vector u = (   66.94,   -20.47)
+  |u| =    70.00
+Vector v = (  -48.56,   -25.82)
+  |v| =    55.00*/
+  
+let u = {x: 66.94, y: -20.47};
+let v = {x: -48.56, y: -25.82};
+console.log(atanVec(u, v));
