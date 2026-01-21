@@ -62,10 +62,10 @@ positive x-axis and the ray from the origin (0, 0) to the point (x, y)
 It is the standard way to calculate the angle that accounts for all four quadrants, 
 ensuring the correct sign and range for the angle (-π to π) which is (-180 to 180 degrees)
 
-## atanVec function which returns RAU parameter
+## vectorToRau function which returns RAU parameter
 Convert angle between two vectors directly to RAU parameter:
 ```javascript
-function atanVec(u, v) {
+function vectorToRau(u, v) {
     const cross_uv_mag = u.x * v.y - u.y * v.x; // signed
     const dot_uv   = u.x * v.x + u.y * v.y;
     // 0..1 inside quadrant
@@ -86,7 +86,7 @@ function atanVec(u, v) {
 }
 
 // If-less version of above
-function atanVec(u, v) {
+function vectorToRau(u, v) {
     const cross_uv = u.x * v.y - u.y * v.x;  // signed
     const dot_uv = u.x * v.x + u.y * v.y;
     const a = Math.abs(cross_uv) / (Math.abs(dot_uv) + Math.abs(cross_uv));
@@ -102,7 +102,7 @@ function atanVec(u, v) {
 }
 
 //-----------Similar to Atan2 in codebases------------//
-function atanVecFromXAxis(p) {
+function vectorToRauFromXAxis(p) {
   const apx = Math.abs(p.x);
   const apy = Math.abs(p.y);
 
