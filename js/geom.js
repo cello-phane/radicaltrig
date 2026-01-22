@@ -540,7 +540,14 @@ function radToRau(radian) {
  * @returns {number} Angle in radians
  */
 function rauToRad(p) {
-  return Math.acos(radicalCosine(p));
+  if (p >= 4) return Math.PI * 2;
+  
+  const q = Math.floor(p);
+  const u = p - q;
+  const local = Math.atan2(u, 1 - u); // Local angle in [0, π/2]
+  
+  const offsets = [0, Math.PI / 2, Math.PI, 3 * Math.PI / 2];
+  return offsets[q] + local;
 }
 
 /**
@@ -568,6 +575,7 @@ function getRotationComponents(phase) {
     quadrant: q
   };
 }
+
 
 // Complete roundtrip: Vector → RAU → Trig → Back to RAU
 class RAUConverter {
@@ -651,12 +659,3 @@ class RAUConverter {
     }
 
 }
-/*
-Vector u = (   66.94,   -20.47)
-  |u| =    70.00
-Vector v = (  -48.56,   -25.82)
-  |v| =    55.00*/
-  
-let u = {x: 66.94, y: -20.47};
-let v = {x: -48.56, y: -25.82};
-console.log(atanVec(u, v));
