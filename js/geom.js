@@ -1,3 +1,279 @@
+// ============================================================================
+// RADICAL ANGLE UNIT TRIGONOMETRIC FUNCTIONS
+// ============================================================================
+
+/**
+ * Compute radical sine for RAU parameter
+ * @param {number} t - RAU parameter (0-4 maps to 0-360°)
+ * @returns {number} Sine value
+ */
+function radicalSine(t) {
+  t = t % 4;
+  const q = Math.floor(t);
+  const lt = t - q;
+  const denomSq = 1 - 2 * lt + 2 * lt * lt;
+  const denom = Math.sqrt(denomSq);
+  
+  switch (q) {
+    case 0: return lt / denom;
+    case 1: return (1 - lt) / denom;
+    case 2: return -lt / denom;
+    case 3: return -(1 - lt) / denom;
+    default: return 0;
+  }
+}
+
+/**
+ * Compute radical cosine for RAU parameter
+ * @param {number} t - RAU parameter (0-4 maps to 0-360°)
+ * @returns {number} Cosine value
+ */
+function radicalCosine(t) {
+  t = t % 4;
+  const q = Math.floor(t);
+  const lt = t - q;
+  const denomSq = 1 - 2 * lt + 2 * lt * lt;
+  const denom = Math.sqrt(denomSq);
+  
+  switch (q) {
+    case 0: return (1 - lt) / denom;
+    case 1: return -lt / denom;
+    case 2: return -(1 - lt) / denom;
+    case 3: return lt / denom;
+    default: return 1;
+  }
+}
+
+/**
+ * Compute radical tangent for RAU parameter
+ * @param {number} t - RAU parameter (0-4 maps to 0-360°)
+ * @returns {number} Tangent value
+ */
+function radicalTan(t) {
+  t = ((t % 4) + 4) % 4;
+  const q = Math.floor(t);
+  const f = t - q;
+  
+  if (f >= 0.999999) return 0; // Avoid division by zero at transitions
+  
+  const base = f / (1 - f);
+  return (q === 1 || q === 3) ? -1 / base : base;
+}
+
+/**
+ * Compute inverse radical sine (arcsine)
+ * @param {number} value - Sine value [-1, 1]
+ * @returns {number} RAU parameter in [0, 1] or NaN if invalid
+ */
+function radicalAsin(value) {
+  const t = value;
+  const denom = 2 * t * t - 1;
+  const inner = t * t - t ** 4;
+  
+  if (inner < 0 || denom === 0) return NaN;
+  
+  return (t ** 2 - Math.sqrt(inner)) / denom;
+}
+
+/**
+ * Compute inverse radical cosine (arccosine)
+ * @param {number} value - Cosine value [-1, 1]
+ * @returns {number} RAU parameter in [0, 1] or NaN if invalid
+ */
+function radicalAcos(value) {
+  const t = value;
+  const denom = 2 * t * t - 1;
+  const inner = t * t - t ** 4;
+  
+  if (inner < 0 || denom === 0) return NaN;
+  
+  return (t ** 2 - 1 + Math.sqrt(inner)) / denom;
+}
+
+/**
+ * Compute inverse radical tangent (arctangent)
+ * @param {number} value - Tangent value
+ * @returns {number} RAU parameter in [0, 1]
+ */
+function radicalAtan(value) {
+  return value / (1 + value);
+}
+
+/**
+ * Compute angle(in radians) between two vectors
+ * @param {{x: number, y: number}} u - Reference vector
+ * @param {{x: number, y: number}} v - Target vector
+ * @returns {number} Radian (0 to 2π) from u to v
+ */
+function atanVec(u, v) {
+  return rauToRad(RAUConverter.vectorToRAU(u, v));
+}
+
+/**
+ * Apply uniform velocity mapping to RAU parameter
+ * Converts linear time parameter to constant angular velocity
+ * @param {number} t - Time parameter [0, 1]
+ * @returns {number} Adjusted RAU parameter
+ */
+function uniformRAU(t) {
+  const mapped = Math.tan(t * Math.PI / 2);
+  return mapped / (1 + mapped);
+}
+
+// ============================================================================
+// UNIT CONVERSIONS
+// ============================================================================
+
+const degToRad = deg => deg * Math.PI / 180;
+const radToDeg = rad => rad * 180 / Math.PI;
+
+/**
+ * Convert degrees to RAU
+ * @param {number} deg - Angle in degrees
+ * @returns {number} RAU parameter
+ */
+function degToRau(deg) {
+  const normalized = ((deg % 360) + 360) % 360;
+  return normalized / 90;
+}
+
+/**
+ * Convert radians to RAU
+ * @param {number} radian - Angle in radians
+ * @returns {number} RAU parameter
+ */
+function radToRau(radian) {
+  const normalized = ((radian % (2 * Math.PI)) + (2 * Math.PI)) % (2 * Math.PI);
+  return normalized / (Math.PI / 2);
+}
+
+/**
+ * Convert RAU to radians
+ * @param {number} p - RAU parameter
+ * @returns {number} Angle in radians
+ */
+function rauToRad(p) {
+  if (p >= 4) return Math.PI * 2;
+  
+  const q = Math.floor(p); // indexable integer
+  const u = p - q; // fractional unit
+  const local = Math.atan2(u, 1 - u); // Local angle in [0, π/2]
+  // 0, 90(or π/2), 180(or π), or 270(or 3π/2) to be matched with integer index q
+  const offsets = [0, Math.PI / 2, Math.PI, 3 * Math.PI / 2];
+  
+  // return offset q added to the fractional unit
+  return offsets[q] + local;
+}
+
+/**
+ * Convert RAU to degrees
+ * @param {number} rau - RAU parameter
+ * @returns {number} Angle in degrees
+ */
+const rauToDeg = rau => rauToRad(rau) * 180 / Math.PI;
+
+/**
+ * Get sine and cosine components for RAU parameter
+ * @param {number} phase - RAU parameter
+ * @returns {{cos: number, sin: number, quadrant: number}}
+ */
+function getRotationComponents(phase) {
+  if (!isFinite(phase) || phase < 0) phase = 0;
+  
+  const q = Math.floor(phase) % 4;
+  const cosVal = radicalCosine(phase);
+  const sinVal = radicalSine(phase);
+  
+  return {
+    cos: cosVal,
+    sin: Math.sign(phase) * sinVal,
+    quadrant: q
+  };
+}
+
+// Complete roundtrip: Vector → RAU → Trig → Back to RAU
+class RAUConverter {
+    // Vector to RAU
+    static vectorToRAU(u, v) {
+        const cross = u.x * v.y - u.y * v.x;
+        const dot = u.x * v.x + u.y * v.y;
+        const a = Math.abs(cross) / (Math.abs(dot) + Math.abs(cross));
+        
+        const q1 = a, q2 = 2.0 - a, q3 = 2.0 + a, q4 = 4.0 - a;
+        const upper = cross >= 0.0 ? q1 : q4;
+        const lower = cross >= 0.0 ? q2 : q3;
+        
+        return dot >= 0.0 ? upper : lower;
+    }
+    
+    // RAU to sine/cosine
+    static rauToTrig(rau) {
+        const quadrant = Math.floor(rau);
+        const t = rau - quadrant;
+        
+        const s = this.rsin_base(t);
+        const c = this.rcos_base(t);
+        
+        return this.applyQuadrant(s, c, quadrant);
+    }
+    
+    // Sine/cosine back to RAU (using inverses)
+    static trigToRAU(sinVal, cosVal) {
+        // Determine which quadrant based on signs
+        const quadrant = this.getQuadrant(sinVal, cosVal);
+        
+        // Get the base value (always positive in our parameterization)
+        let baseVal;
+        if (quadrant === 0 || quadrant === 2) {
+            baseVal = Math.abs(sinVal);
+        } else {
+            baseVal = Math.abs(cosVal);
+        }
+        
+        // Use inverse to get fractional parameter
+        const t = radicalAsin(baseVal);
+        
+        return quadrant + t;
+    }
+    
+    // Helper: Base trig functions (t ∈ [0, 1])
+    static rsin_base(t) {
+        const a = 1.0 - 2.0 * t + 2.0 * t * t;
+        return t / Math.sqrt(a);
+    }
+    
+    static rcos_base(t) {
+        const a = 1.0 - 2.0 * t + 2.0 * t * t;
+        return (1.0 - t) / Math.sqrt(a);
+    }
+    
+    // Helper: Apply quadrant transformation
+    static applyQuadrant(s, c, q) {
+        const transforms = [
+            { sin: s, cos: c },      // Q0: (c, s)
+            { sin: c, cos: -s },     // Q1: (-s, c)
+            { sin: -s, cos: -c },    // Q2: (-c, -s)
+            { sin: -c, cos: s }      // Q3: (s, -c)
+        ];
+        return transforms[q];
+    }
+
+	static rauToAngle(rau) {
+		const sin = this.rsin_base(rau);  // Normalized
+		const cos = this.rcos_base(rau);  // Normalized  
+		return Math.atan2(sin, cos); // Combines both
+	}
+	
+    // Helper: Determine quadrant from trig values
+    static getQuadrant(sinVal, cosVal) {
+        if (cosVal >= 0 && sinVal >= 0) return 0;
+        if (cosVal < 0 && sinVal >= 0) return 1;
+        if (cosVal < 0 && sinVal < 0) return 2;
+        return 3;
+    }
+
+}
+
 /**
  * Geometry Utilities
  * Provides vector operations, angle calculations, and polygon intersection tests
@@ -384,278 +660,3 @@ const Geom = (function() {
     }
   };
 })();
-
-// ============================================================================
-// RADICAL ANGLE UNIT TRIGONOMETRIC FUNCTIONS
-// ============================================================================
-
-/**
- * Compute radical sine for RAU parameter
- * @param {number} t - RAU parameter (0-4 maps to 0-360°)
- * @returns {number} Sine value
- */
-function radicalSine(t) {
-  t = t % 4;
-  const q = Math.floor(t);
-  const lt = t - q;
-  const denomSq = 1 - 2 * lt + 2 * lt * lt;
-  const denom = Math.sqrt(denomSq);
-  
-  switch (q) {
-    case 0: return lt / denom;
-    case 1: return (1 - lt) / denom;
-    case 2: return -lt / denom;
-    case 3: return -(1 - lt) / denom;
-    default: return 0;
-  }
-}
-
-/**
- * Compute radical cosine for RAU parameter
- * @param {number} t - RAU parameter (0-4 maps to 0-360°)
- * @returns {number} Cosine value
- */
-function radicalCosine(t) {
-  t = t % 4;
-  const q = Math.floor(t);
-  const lt = t - q;
-  const denomSq = 1 - 2 * lt + 2 * lt * lt;
-  const denom = Math.sqrt(denomSq);
-  
-  switch (q) {
-    case 0: return (1 - lt) / denom;
-    case 1: return -lt / denom;
-    case 2: return -(1 - lt) / denom;
-    case 3: return lt / denom;
-    default: return 1;
-  }
-}
-
-/**
- * Compute radical tangent for RAU parameter
- * @param {number} t - RAU parameter (0-4 maps to 0-360°)
- * @returns {number} Tangent value
- */
-function radicalTan(t) {
-  t = ((t % 4) + 4) % 4;
-  const q = Math.floor(t);
-  const f = t - q;
-  
-  if (f >= 0.999999) return 0; // Avoid division by zero at transitions
-  
-  const base = f / (1 - f);
-  return (q === 1 || q === 3) ? -1 / base : base;
-}
-
-/**
- * Compute inverse radical sine (arcsine)
- * @param {number} value - Sine value [-1, 1]
- * @returns {number} RAU parameter in [0, 1] or NaN if invalid
- */
-function radicalAsin(value) {
-  const t = value;
-  const denom = 2 * t * t - 1;
-  const inner = t * t - t ** 4;
-  
-  if (inner < 0 || denom === 0) return NaN;
-  
-  return (t ** 2 - Math.sqrt(inner)) / denom;
-}
-
-/**
- * Compute inverse radical cosine (arccosine)
- * @param {number} value - Cosine value [-1, 1]
- * @returns {number} RAU parameter in [0, 1] or NaN if invalid
- */
-function radicalAcos(value) {
-  const t = value;
-  const denom = 2 * t * t - 1;
-  const inner = t * t - t ** 4;
-  
-  if (inner < 0 || denom === 0) return NaN;
-  
-  return (t ** 2 - 1 + Math.sqrt(inner)) / denom;
-}
-
-/**
- * Compute inverse radical tangent (arctangent)
- * @param {number} value - Tangent value
- * @returns {number} RAU parameter in [0, 1]
- */
-function radicalAtan(value) {
-  return value / (1 + value);
-}
-
-/**
- * Compute angle(in radians) between two vectors
- * @param {{x: number, y: number}} u - Reference vector
- * @param {{x: number, y: number}} v - Target vector
- * @returns {number} Radian (0 to 2pi angle) from u to v
- */
-function atanVec(u, v) {
-  return rauToRad(RAUConverter.vectorToRAU(u, v));
-}
-
-/**
- * Apply uniform velocity mapping to RAU parameter
- * Converts linear time parameter to constant angular velocity
- * @param {number} t - Time parameter [0, 1]
- * @returns {number} Adjusted RAU parameter
- */
-function uniformRAU(t) {
-  const mapped = Math.tan(t * Math.PI / 2);
-  return mapped / (1 + mapped);
-}
-
-// ============================================================================
-// UNIT CONVERSIONS
-// ============================================================================
-
-const degToRad = deg => deg * Math.PI / 180;
-const radToDeg = rad => rad * 180 / Math.PI;
-
-/**
- * Convert degrees to RAU
- * @param {number} deg - Angle in degrees
- * @returns {number} RAU parameter
- */
-function degToRau(deg) {
-  const normalized = ((deg % 360) + 360) % 360;
-  return normalized / 90;
-}
-
-/**
- * Convert radians to RAU
- * @param {number} radian - Angle in radians
- * @returns {number} RAU parameter
- */
-function radToRau(radian) {
-  const normalized = ((radian % (2 * Math.PI)) + (2 * Math.PI)) % (2 * Math.PI);
-  return normalized / (Math.PI / 2);
-}
-
-/**
- * Convert RAU to radians
- * @param {number} p - RAU parameter
- * @returns {number} Angle in radians
- */
-function rauToRad(p) {
-  if (p >= 4) return Math.PI * 2;
-  
-  const q = Math.floor(p);
-  const u = p - q;
-  const local = Math.atan2(u, 1 - u); // Local angle in [0, π/2]
-  
-  const offsets = [0, Math.PI / 2, Math.PI, 3 * Math.PI / 2];
-  return offsets[q] + local;
-}
-
-/**
- * Convert RAU to degrees
- * @param {number} rau - RAU parameter
- * @returns {number} Angle in degrees
- */
-const rauToDeg = rau => rauToRad(rau) * 180 / Math.PI;
-
-/**
- * Get sine and cosine components for RAU parameter
- * @param {number} phase - RAU parameter
- * @returns {{cos: number, sin: number, quadrant: number}}
- */
-function getRotationComponents(phase) {
-  if (!isFinite(phase) || phase < 0) phase = 0;
-  
-  const q = Math.floor(phase) % 4;
-  const cosVal = radicalCosine(phase);
-  const sinVal = radicalSine(phase);
-  
-  return {
-    cos: cosVal,
-    sin: Math.sign(phase) * sinVal,
-    quadrant: q
-  };
-}
-
-
-// Complete roundtrip: Vector → RAU → Trig → Back to RAU
-class RAUConverter {
-    // Vector to RAU
-    static vectorToRAU(u, v) {
-        const cross = u.x * v.y - u.y * v.x;
-        const dot = u.x * v.x + u.y * v.y;
-        const a = Math.abs(cross) / (Math.abs(dot) + Math.abs(cross));
-        
-        const q1 = a, q2 = 2.0 - a, q3 = 2.0 + a, q4 = 4.0 - a;
-        const upper = cross >= 0.0 ? q1 : q4;
-        const lower = cross >= 0.0 ? q2 : q3;
-        
-        return dot >= 0.0 ? upper : lower;
-    }
-    
-    // RAU to sine/cosine
-    static rauToTrig(rau) {
-        const quadrant = Math.floor(rau);
-        const t = rau - quadrant;
-        
-        const s = this.rsin_base(t);
-        const c = this.rcos_base(t);
-        
-        return this.applyQuadrant(s, c, quadrant);
-    }
-    
-    // Sine/cosine back to RAU (using inverses)
-    static trigToRAU(sinVal, cosVal) {
-        // Determine which quadrant based on signs
-        const quadrant = this.getQuadrant(sinVal, cosVal);
-        
-        // Get the base value (always positive in our parameterization)
-        let baseVal;
-        if (quadrant === 0 || quadrant === 2) {
-            baseVal = Math.abs(sinVal);
-        } else {
-            baseVal = Math.abs(cosVal);
-        }
-        
-        // Use inverse to get fractional parameter
-        const t = radicalAsin(baseVal);
-        
-        return quadrant + t;
-    }
-    
-    // Helper: Base trig functions (t ∈ [0, 1])
-    static rsin_base(t) {
-        const a = 1.0 - 2.0 * t + 2.0 * t * t;
-        return t / Math.sqrt(a);
-    }
-    
-    static rcos_base(t) {
-        const a = 1.0 - 2.0 * t + 2.0 * t * t;
-        return (1.0 - t) / Math.sqrt(a);
-    }
-    
-    // Helper: Apply quadrant transformation
-    static applyQuadrant(s, c, q) {
-        const transforms = [
-            { sin: s, cos: c },      // Q0: (c, s)
-            { sin: c, cos: -s },     // Q1: (-s, c)
-            { sin: -s, cos: -c },    // Q2: (-c, -s)
-            { sin: -c, cos: s }      // Q3: (s, -c)
-        ];
-        return transforms[q];
-    }
-
-	static rauToAngle(rau) {
-		const sin = this.rsin_base(rau);  // Normalized
-		const cos = this.rcos_base(rau);  // Normalized  
-		return Math.atan2(sin, cos); // Combines both
-	}
-	
-    // Helper: Determine quadrant from trig values
-    static getQuadrant(sinVal, cosVal) {
-        if (cosVal >= 0 && sinVal >= 0) return 0;
-        if (cosVal < 0 && sinVal >= 0) return 1;
-        if (cosVal < 0 && sinVal < 0) return 2;
-        return 3;
-    }
-
-}

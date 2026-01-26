@@ -321,8 +321,8 @@ Vector v = (${fmt(v.x)}, ${fmt(v.y)})
 Dot product = ${fmt(dot)}
 Cross product = ${fmt(cross)}
 _______________________________
-Signed angle (u→v) = ${formatValue(angleData.signedDeg, 1)}° ${angleData.ccw ? '(CCW)' : '(CW)'}
-Angle between = ${formatValue(Math.abs(angleData.signedDeg) > Math.abs(angleData.unsignedDeg) ? 360-angleData.unsignedDeg : angleData.unsignedDeg, 1)}°
+Signed angle (u→v) = ${formatValue(angleData.signedDeg, 3)}° ${angleData.ccw ? '(CCW)' : '(CW)'}
+Angle between = ${formatValue(Math.abs(angleData.signedDeg) > Math.abs(angleData.unsignedDeg) ? 360-angleData.unsignedDeg : angleData.unsignedDeg, 3)}°
 _______________________________
 RAU Phase = ${formatValue(angleData.rau)}
 Radian = ${formatValue(rad)}
@@ -358,7 +358,7 @@ function displayIndividualMode(resultsElement) {
   const uAngle = AppState.section2.uAngle;
   const vAngle = AppState.section2.vAngle;
   
-  const fmt = (n) => n.toFixed(2).padStart(8);
+  const fmt = (n) => n.toFixed(3).padStart(8);
   
   resultsElement.textContent = 
 `Vector u:

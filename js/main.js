@@ -238,7 +238,7 @@ function createPrecisionControl() {
   
   // Update precision on input
   input.addEventListener('input', (e) => {
-    const precision = parseInt(e.target.value) || 0;
+    const precision = parseInt(e.target.value) || 6;
     setPrecision(precision);
     display.textContent = formatValue(Math.PI, precision);
   });

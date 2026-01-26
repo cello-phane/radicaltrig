@@ -350,10 +350,10 @@ function initVectorCanvas() {
       const b2 = Math.round(color1[2] * (1 - t2) + color2[2] * t2);
       
       // Edge points for gradient
-      const x1 = cx + Math.cos(a1) * radius;
-      const y1 = cy + Math.sin(a1) * radius;
-      const x2 = cx + Math.cos(a2) * radius;
-      const y2 = cy + Math.sin(a2) * radius;
+      const x1 = cx + radicalCosine(degToRau(a1)) * radius;
+      const y1 = cy + radicalSine(degToRau(a1)) * radius;
+      const x2 = cx + radicalCosine(degToRau(a2)) * radius;
+      const y2 = cy + radicalSine(degToRau(a2)) * radius;
       
       const gradient = ctx.createLinearGradient(x1, y1, x2, y2);
       gradient.addColorStop(0, `rgb(${r1},${g1},${b1})`);
@@ -385,12 +385,16 @@ function initVectorCanvas() {
     // Calculate vector components
     const u = {
       x: uLen * Math.cos(uA),
+      //x: uLen * radicalCosine(degToRau(uAngleDeg)), // slighty imprecise because degrees(360 steps for now)
       y: -uLen * Math.sin(uA) // Invert Y for canvas
+      //y: -uLen * radicalSine(degToRau(uAngleDeg)) // Invert Y for canvas // slighty imprecise because degrees(360 steps for now)
     };
     
     const v = {
       x: vLen * Math.cos(vA),
+      //x: vLen * radicalCosine(degToRau(vAngleDeg)), // slighty imprecise because degrees(360 steps for now)
       y: -vLen * Math.sin(vA) // Invert Y for canvas
+      //y: -vLen * radicalSine(degToRau(vAngleDeg)) // Invert Y for canvas // slighty imprecise because degrees(360 steps for now)
     };
     
     // Update state
