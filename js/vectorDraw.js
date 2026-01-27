@@ -8,7 +8,7 @@
 // ============================================================================
 
 const CANVAS_CONFIG = {
-  GRID_SPACING: 50,
+  GRID_SPACING: 77,
   GRID_COLOR: '#ddd',
   AXIS_COLOR: '#444',
   VECTOR_U_COLOR: '#ff4444',
@@ -42,7 +42,7 @@ function initRAUCanvas() {
   
   const cx = canvas.width / 2;
   const cy = canvas.height / 2;
-  const radius = Math.min(canvas.width, canvas.height) * 0.34;
+  const radius = Math.min(canvas.width, canvas.height) * 0.36;
   
   // ------------------------
   // DRAWING FUNCTIONS
