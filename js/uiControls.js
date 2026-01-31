@@ -311,7 +311,7 @@ function displayBetweenMode(resultsElement) {
   const rad = rauToRad(angleData.rau);
   
   const tanDisplay = Math.abs(rt) > 1e6 ? 'undefined' : formatValue(rt);
-  const fmt = (n) => n.toFixed(2).padStart(8);
+  const fmt = (n) => n.toFixed(5).padStart(8);
   
   resultsElement.textContent = 
 `Vector u = (${fmt(u.x)}, ${fmt(u.y)})
@@ -321,8 +321,8 @@ Vector v = (${fmt(v.x)}, ${fmt(v.y)})
 Dot product = ${fmt(dot)}
 Cross product = ${fmt(cross)}
 _______________________________
-Signed angle (u→v) = ${formatValue(angleData.signedDeg, 3)}° ${angleData.ccw ? '(CCW)' : '(CW)'}
-Angle between = ${formatValue(Math.abs(angleData.signedDeg) > Math.abs(angleData.unsignedDeg) ? 360-angleData.unsignedDeg : angleData.unsignedDeg, 3)}°
+Signed angle (u→v) = ${formatValue(angleData.signedDeg, 2)}° ${angleData.ccw ? '(CCW)' : '(CW)'}
+Angle between = ${formatValue(Math.abs(angleData.signedDeg) > Math.abs(angleData.unsignedDeg) ? 360-angleData.unsignedDeg : angleData.unsignedDeg, 2)}°
 _______________________________
 RAU Phase = ${formatValue(angleData.rau)}
 Radian = ${formatValue(rad)}
