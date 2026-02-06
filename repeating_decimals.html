@@ -291,13 +291,9 @@ h3 {
 <div class="container">
   <!-- Header -->
   <div class="header">
-    <h1>Repeating Decimal Explorer</h1>
-    <p class="subtitle">
-      Explore digit-shifting patterns using <strong>string-based long division</strong> with unlimited precision
-    </p>
+    <h1>Repeating Decimals</h1>
     <div class="badge">
-      <span>∞</span>
-      <span>No floating-point limits • Exact symbolic computation</span>
+      <span>No floating-point limits</span>
     </div>
   </div>
 
@@ -329,15 +325,6 @@ h3 {
   <!-- Display Section -->
   <div id="displaySection"></div>
 
-  <!-- Footer -->
-  <div class="footer">
-    <p style="margin: 0 0 0.5rem 0">
-      <strong style="color: #667eea">About this tool:</strong> This explorer demonstrates a novel approach to repeating decimals using explicit digit-shifting formulas rather than infinite geometric series. Each repetition value <em>n</em> shows exactly how many complete cycles of the pattern are displayed—no limits, no completed infinities, just finite computational patterns.
-    </p>
-    <p style="margin: 0; font-size: 0.85rem; font-style: italic">
-      <strong>Engine:</strong> Pure string-based long division with remainder-state tracking. No floating-point arithmetic, no precision limits. Exact symbolic computation using string concatenation for arbitrary precision.
-    </p>
-  </div>
 </div>
 
 <script>
@@ -509,33 +496,6 @@ function renderDisplay() {
   }
   
   html += `
-      </div>
-    </div>
-  `;
-
-  // Engine Info
-  html += `
-    <div class="card">
-      <h3>Computation Engine Properties</h3>
-      <div class="engine-grid">
-        <div class="engine-item" style="border-color: #4ECDC4">
-          <strong style="color: #4ECDC4">Pure remainder-state long division</strong>
-        </div>
-        <div class="engine-item" style="border-color: #FF6B6B">
-          <strong style="color: #FF6B6B">Exact cycle detection</strong>
-        </div>
-        <div class="engine-item" style="border-color: #45B7D1">
-          <strong style="color: #45B7D1">Symbolic decimal construction</strong>
-        </div>
-        <div class="engine-item" style="border-color: #FFA07A">
-          <strong style="color: #FFA07A">No floating-point arithmetic</strong>
-        </div>
-        <div class="engine-item" style="border-color: #98D8C8">
-          <strong style="color: #98D8C8">No rounding</strong>
-        </div>
-        <div class="engine-item" style="border-color: #F7DC6F">
-          <strong style="color: #F7DC6F">Formal periodic structure</strong>
-        </div>
       </div>
     </div>
   `;
