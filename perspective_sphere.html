@@ -676,29 +676,26 @@
 			}
 		}
 		
-		Object.keys(controls).forEach(key => {
-		  controls[key].addEventListener('input', (e) => {
-		    //if (animatingRotation) return; // Ignore manual input during animation
-		    const value = parseFloat(e.target.value);
-
-		    if (key === 'rotX') rotXAngle = value;
-		    if (key === 'rotY') rotYAngle = value;
-		    if (key === 'rotZ') rotZAngle = value;
-
-		    if (key === 'semicircleParam') {
-		      values[key + 'Val'].textContent = (value / 100).toFixed(2);
-		    } else if (key === 'rotX' || key === 'rotY' || key === 'rotZ') {
-		      values[key + 'Val'].textContent = value + '°';
-		    } else if (key === 'rotationSpeed') {
-			  values[key + 'Val'].textContent = value;
-		    } else {
-		      values[key + 'Val'].textContent = value;
-		    }
-
-		    render();
-		    
-		  });
-		});
+        // Event listeners
+        Object.keys(controls).forEach(key => {
+            controls[key].addEventListener('input', (e) => {
+                const value = parseFloat(e.target.value);
+                
+                if (key === 'rotX') rotXAngle = value;
+                if (key === 'rotY') rotYAngle = value;
+                if (key === 'rotZ') rotZAngle = value;
+                
+                if (key === 'rotX' || key === 'rotY' || key === 'rotZ') {
+                    values[key + 'Val'].textContent = value + '°';
+                } else {
+                    values[key + 'Val'].textContent = value;
+                }
+                 
+                if (!animating) {
+                    requestSphereUpdate();
+                }
+            });
+        });
 		
 		let cx = canvas.width / 2;
 		let cy = canvas.height / 2;
@@ -720,88 +717,82 @@
 	  // ------------------------
 	  // DRAGGING HANDLERS
 	  // ------------------------
-	  canvas.addEventListener('mousedown', e => {
-	    dragging = true;
-	    lastMouseX = e.clientX;
-       lastMouseY = e.clientY;
-	  });
-		
-     canvas.addEventListener('mousemove', (e) => {
-        if (!dragging) return;
-       
-        const deltaX = e.clientX - lastMouseX;
-        const deltaY = e.clientY - lastMouseY;
 
-	 	  rotXAngle = (rotXAngle + (deltaX * 0.5)) % (360);
-	     controls.rotX.value = rotXAngle;
-	     values.rotXVal.textContent = rotXAngle.toFixed(0) + '°';
 
-		  rotYAngle = (rotYAngle + (deltaY * 0.5)) % (360);
-		  controls.rotY.value = rotYAngle;
-		  values.rotYVal.textContent = rotYAngle.toFixed(0) + '°';
+        canvas.addEventListener('mousedown', (e) => {
+            dragging = true;
+            lastMouseX = e.clientX;
+            lastMouseY = e.clientY;
+        });
 
-		  rotZAngle = (rotZAngle + (deltaX * 0.5)) % (360);
-		  controls.rotZ.value = rotZAngle;
-		  values.rotZVal.textContent = rotZAngle.toFixed(0) + '°';
-		  
-	     // Compute rotation axis perpendicular to drag direction
-	     const dragMagnitude = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-	     if (dragMagnitude < 0.1) return; // Too small
-	     
-	     // Axis is perpendicular to drag in screen space
-	     const axis = {
-	         x: -deltaY / dragMagnitude,  // Drag up = rotate around X
-	         y: deltaX / dragMagnitude,   // Drag right = rotate around Y
-	         z: 0                         // No screen-space Z component
-	     };
-	     
-	     // Rotation angle proportional to drag distance
-	     const angleRAU = (dragMagnitude * 0.01) % 4.0;  // RAU angle [0,4]
-	     
-	     // Apply Rodrigues rotation to each point
-	     sphereData.meridians = sphereData.meridians.map(meridian =>
-	         meridian.map(point => rodriguesRAU(point, axis, angleRAU))
-	     );
-	     
-	     sphereData.parallels = sphereData.parallels.map(parallel =>
-	         parallel.map(point => rodriguesRAU(point, axis, angleRAU))
-	     );
-	     
-	     lastMouseX = e.clientX;
-	     lastMouseY = e.clientY;
-	     render();
-     });
-      
-     function rodriguesRAU(v, k, angleRAU) {
-         // Map RAU [0,4] to phase [0,1] for one quadrant
-         const phase = (angleRAU % 4.0) / 4.0;
-         const trig = getRotationComponents(phase);
-         
-         const c = trig.cos;
-         const s = trig.sin;
-         
-         // k × v (cross product)
-         const cross = {
-             x: k.y * v.z - k.z * v.y,
-             y: k.z * v.x - k.x * v.z,
-             z: k.x * v.y - k.y * v.x
-         };
-         
-         // k · v (dot product)
-         const dot = k.x * v.x + k.y * v.y + k.z * v.z;
-         
-         // Rodrigues formula: v_rot = v*cos(θ) + (k×v)*sin(θ) + k*(k·v)*(1-cos(θ))
-         return {
-             x: v.x * c + cross.x * s + k.x * dot * (1 - c),
-             y: v.y * c + cross.y * s + k.y * dot * (1 - c),
-             z: v.z * c + cross.z * s + k.z * dot * (1 - c)
-         };
-     }
+        canvas.addEventListener('mousemove', (e) => {
+            if (!dragging) return;
+            
+            const deltaX = e.clientX - lastMouseX;
+            const deltaY = e.clientY - lastMouseY;
+ 
+						rotZAngle = (rotZAngle + (deltaX * 0.5)) % (360);
+						controls.rotZ.value = rotZAngle;
+						values.rotZVal.textContent = rotZAngle.toFixed(0) + '°';
 
-	  document.addEventListener('mouseup', () => {
-	    dragging = false;
-	  });
-	  
+
+            // Compute rotation axis perpendicular to drag direction
+            const dragMagnitude = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+            if (dragMagnitude < 0.1) return; // Too small
+            
+            // Axis is perpendicular to drag in screen space
+            const axis = {
+                x: -deltaY / dragMagnitude,  // Drag up = rotate around X
+                y: deltaX / dragMagnitude,   // Drag right = rotate around Y
+                z: 0                         // No screen-space Z component
+            };
+            
+            // Rotation angle proportional to drag distance
+            const angleRAU = (dragMagnitude * 0.01) % 4.0;  // RAU angle [0,4]
+            
+            // Apply Rodrigues rotation to each point
+            sphereData.meridians = sphereData.meridians.map(meridian =>
+                meridian.map(point => rodriguesRAU(point, axis, angleRAU))
+            );
+            
+            sphereData.parallels = sphereData.parallels.map(parallel =>
+                parallel.map(point => rodriguesRAU(point, axis, angleRAU))
+            );
+            
+            lastMouseX = e.clientX;
+            lastMouseY = e.clientY;
+            render();
+        });
+        
+        function rodriguesRAU(v, k, angleRAU) {
+            // Map RAU [0,4] to phase [0,1] for one quadrant
+            const phase = (angleRAU % 4.0) / 4.0;
+            const trig = getRotationComponents(phase);
+            
+            const c = trig.cos;
+            const s = trig.sin;
+            
+            // k × v (cross product)
+            const cross = {
+                x: k.y * v.z - k.z * v.y,
+                y: k.z * v.x - k.x * v.z,
+                z: k.x * v.y - k.y * v.x
+            };
+            
+            // k · v (dot product)
+            const dot = k.x * v.x + k.y * v.y + k.z * v.z;
+            
+            // Rodrigues formula: v_rot = v*cos(θ) + (k×v)*sin(θ) + k*(k·v)*(1-cos(θ))
+            return {
+                x: v.x * c + cross.x * s + k.x * dot * (1 - c),
+                y: v.y * c + cross.y * s + k.y * dot * (1 - c),
+                z: v.z * c + cross.z * s + k.z * dot * (1 - c)
+            };
+        }
+
+        document.addEventListener('mouseup', () => {
+            dragging = false;
+        });
      // Animation control event listeners
      toggleAnimBtn.addEventListener('click', toggleAnimation);
      toggleFieldLinesBtn.addEventListener('click', toggleFieldLinesAnimation);

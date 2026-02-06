@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Repeating Decimal Explorer — Unlimited Precision</title>
+<style>
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  background: linear-gradient(135deg, #0f0f1e 0%, #1a1a2e 50%, #16213e 100%);
+  color: #e8e8e8;
+  min-height: 100vh;
+  padding: 3rem 1.5rem;
+}
+
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+/* Header */
+.header {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+h1 {
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  font-weight: 800;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 1rem;
+  letter-spacing: -0.02em;
+}
+
+.subtitle {
+  font-size: 1.1rem;
+  color: #a0a0a0;
+  max-width: 700px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  padding: 0.5rem 1rem;
+  background: rgba(102, 126, 234, 0.2);
+  border-radius: 20px;
+  font-size: 0.9rem;
+}
+
+/* Card */
+.card {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+}
+
+.card-dark {
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(102, 126, 234, 0.3);
+}
+
+/* Controls */
+.controls-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.control-group {
+  display: flex;
+  flex-direction: column;
+}
+
+label {
+  display: block;
+  margin-bottom: 0.75rem;
+  font-size: 0.9rem;
+  color: #a0a0a0;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+input[type="number"] {
+  width: 100%;
+  padding: 1rem;
+  font-size: 1.5rem;
+  font-weight: 700;
+  background: rgba(0, 0, 0, 0.3);
+  border: 2px solid rgba(102, 126, 234, 0.3);
+  border-radius: 8px;
+  color: #fff;
+  font-family: inherit;
+}
+
+input[type="range"] {
+  width: 100%;
+  margin-bottom: 0.5rem;
+  accent-color: #667eea;
+}
+
+.range-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #667eea;
+  text-align: center;
+}
+
+/* Buttons */
+.button-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+button {
+  padding: 0.5rem 1rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  color: #fff;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+button:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+button.active {
+  background: rgba(102, 126, 234, 0.5);
+  border: 2px solid #667eea;
+}
+
+/* Warning boxes */
+.warning {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: rgba(255, 107, 107, 0.2);
+  border: 1px solid rgba(255, 107, 107, 0.4);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.info-box {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: rgba(255, 165, 0, 0.2);
+  border: 1px solid rgba(255, 165, 0, 0.4);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+/* Display */
+.decimal-display {
+  font-size: clamp(1.2rem, 3vw, 2rem);
+  font-weight: 600;
+  word-break: break-all;
+  line-height: 1.8;
+  font-family: 'Courier New', monospace;
+}
+
+.decimal-prefix {
+  color: #a0a0a0;
+}
+
+.decimal-suffix {
+  color: #667eea;
+  opacity: 0.5;
+}
+
+/* Engine properties */
+.engine-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+  font-size: 0.9rem;
+}
+
+.engine-item {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 1rem;
+  border-radius: 8px;
+  border-left: 3px solid;
+}
+
+/* Pattern analysis */
+.analysis-grid {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.75rem 1.5rem;
+  font-size: 0.95rem;
+  color: #c0c0c0;
+}
+
+.analysis-label {
+  color: #667eea;
+  font-weight: bold;
+}
+
+.formula-box {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 1.5rem;
+  border-radius: 8px;
+  font-family: 'Courier New', monospace;
+  font-size: 1.1rem;
+  margin-bottom: 1rem;
+}
+
+/* Step items */
+.step-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.step-item {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 1.25rem;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 1.5rem;
+  transition: all 0.3s;
+  cursor: pointer;
+}
+
+.step-item:hover {
+  background: rgba(0, 0, 0, 0.5);
+  transform: scale(1.02);
+}
+
+.step-number {
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.step-content {
+  font-family: 'Courier New', monospace;
+  font-size: 1rem;
+  overflow: auto;
+  word-break: break-all;
+}
+
+/* Footer */
+.footer {
+  margin-top: 3rem;
+  padding: 1.5rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+  font-size: 0.9rem;
+  color: #808080;
+  line-height: 1.7;
+}
+
+h3 {
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  font-size: 1.2rem;
+  color: #667eea;
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+  <!-- Header -->
+  <div class="header">
+    <h1>Repeating Decimal Explorer</h1>
+    <p class="subtitle">
+      Explore digit-shifting patterns using <strong>string-based long division</strong> with unlimited precision
+    </p>
+    <div class="badge">
+      <span>∞</span>
+      <span>No floating-point limits • Exact symbolic computation</span>
+    </div>
+  </div>
+
+  <!-- Main Controls -->
+  <div class="card">
+    <div class="controls-grid">
+      <div class="control-group">
+        <label for="denominator">Denominator (d)</label>
+        <input type="number" id="denominator" value="7" min="1" max="1000">
+      </div>
+
+      <div class="control-group">
+        <label for="repetitions">Repetitions (n)</label>
+        <input type="range" id="repetitions" min="1" max="10" value="3">
+        <div class="range-value" id="repetitionsValue">3</div>
+      </div>
+
+      <div class="control-group">
+        <label for="maxDigits">Max Digits Limit</label>
+        <input type="number" id="maxDigits" value="500" min="10" max="10000">
+      </div>
+    </div>
+
+    <div class="control-group">
+      <label>Quick Select</label>
+      <div class="button-group" id="quickSelect"></div>
+    </div>
+  </div>
+
+  <!-- Warnings -->
+  <div id="warnings"></div>
+
+  <!-- Display Section -->
+  <div id="displaySection"></div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <p style="margin: 0 0 0.5rem 0">
+      <strong style="color: #667eea">About this tool:</strong> This explorer demonstrates a novel approach to repeating decimals using explicit digit-shifting formulas rather than infinite geometric series. Each repetition value <em>n</em> shows exactly how many complete cycles of the pattern are displayed—no limits, no completed infinities, just finite computational patterns.
+    </p>
+    <p style="margin: 0; font-size: 0.85rem; font-style: italic">
+      <strong>Engine:</strong> Pure string-based long division with remainder-state tracking. No floating-point arithmetic, no precision limits. Exact symbolic computation using string concatenation for arbitrary precision.
+    </p>
+  </div>
+</div>
+
+<script>
+/* ---------- String Long Division Engine ---------- */
+
+function longDivide(numerator, denominator, maxDigits = 500) {
+  let intPart = Math.floor(numerator / denominator);
+  let remainder = numerator % denominator;
+
+  let digits = '';
+  let seen = new Map(); // remainder -> index
+  let repeatStart = -1;
+
+  for (let i = 0; i < maxDigits; i++) {
+    if (remainder === 0) break;
+
+    if (seen.has(remainder)) {
+      repeatStart = seen.get(remainder);
+      break;
+    }
+
+    seen.set(remainder, digits.length);
+
+    remainder *= 10;
+    let digit = Math.floor(remainder / denominator);
+    digits += digit.toString();
+    remainder = remainder % denominator;
+  }
+
+  let nonRepeating = digits;
+  let repeating = '';
+
+  if (repeatStart !== -1) {
+    nonRepeating = digits.slice(0, repeatStart);
+    repeating = digits.slice(repeatStart);
+  }
+
+  return {
+    intPart: intPart.toString(),
+    nonRepeating,
+    repeating,
+    terminated: repeating.length === 0,
+    period: repeating.length
+  };
+}
+
+// Build string with n repetitions
+function buildDecimalWithRepetitions(intPart, nonRep, rep, n) {
+  if (rep.length === 0) {
+    if (nonRep.length === 0) return intPart;
+    return intPart + '.' + nonRep;
+  }
+  return intPart + '.' + nonRep + rep.repeat(n);
+}
+
+/* ---------- UI State ---------- */
+
+const state = {
+  denominator: 7,
+  repetitions: 3,
+  maxDigits: 500,
+  result: null
+};
+
+const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8', '#F7DC6F', '#BB8FCE', '#85C1E2'];
+const interestingNumbers = [3, 6, 7, 9, 11, 13, 17, 19, 21, 23, 27, 29, 31, 37, 41, 43, 47];
+
+/* ---------- DOM Elements ---------- */
+
+const denominatorInput = document.getElementById('denominator');
+const repetitionsInput = document.getElementById('repetitions');
+const repetitionsValue = document.getElementById('repetitionsValue');
+const maxDigitsInput = document.getElementById('maxDigits');
+const quickSelectDiv = document.getElementById('quickSelect');
+const warningsDiv = document.getElementById('warnings');
+const displaySection = document.getElementById('displaySection');
+
+/* ---------- Rendering Functions ---------- */
+
+function renderQuickSelect() {
+  quickSelectDiv.innerHTML = interestingNumbers.map(n => {
+    const active = n === state.denominator ? 'active' : '';
+    return `<button class="${active}" onclick="setDenominator(${n})">1/${n}</button>`;
+  }).join('');
+}
+
+function renderWarnings() {
+  const isDivisibleBy10 = state.denominator % 2 === 0 || state.denominator % 5 === 0;
+  
+  if (isDivisibleBy10) {
+    warningsDiv.innerHTML = `
+      <div class="warning">
+        <span style="font-size: 1.5rem">⚠️</span>
+        <p>
+          <strong>Note:</strong> ${state.denominator} is divisible by 2 or 5. 
+          The decimal 1/${state.denominator} terminates and doesn't repeat.
+        </p>
+      </div>
+    `;
+  } else {
+    warningsDiv.innerHTML = '';
+  }
+}
+
+function colorizeRepeatingDigits(repeating, n) {
+  let result = '';
+  const fullPattern = repeating.repeat(n);
+  
+  for (let i = 0; i < fullPattern.length; i++) {
+    const blockIndex = Math.floor(i / repeating.length);
+    const color = colors[blockIndex % colors.length];
+    result += `<span style="color: ${color}; font-weight: 600">${fullPattern[i]}</span>`;
+  }
+  
+  return result;
+}
+
+function renderDisplay() {
+  const r = state.result;
+  const isDivisibleBy10 = state.denominator % 2 === 0 || state.denominator % 5 === 0;
+  
+  if (isDivisibleBy10 || !r) {
+    displaySection.innerHTML = '';
+    return;
+  }
+
+  let html = '';
+
+  // Decimal Display
+  html += `
+    <div class="card card-dark">
+      <div class="decimal-display">
+        <span class="decimal-prefix">0.</span>`;
+  
+  if (r.nonRepeating) {
+    html += `<span class="decimal-prefix">${r.nonRepeating}</span>`;
+  }
+  
+  if (r.repeating) {
+    html += colorizeRepeatingDigits(r.repeating, state.repetitions);
+    html += `<span class="decimal-suffix">...</span>`;
+  } else {
+    html += r.nonRepeating;
+  }
+  
+  html += `
+      </div>
+    </div>
+  `;
+
+  // Engine Info
+  html += `
+    <div class="card">
+      <h3>Computation Engine Properties</h3>
+      <div class="engine-grid">
+        <div class="engine-item" style="border-color: #4ECDC4">
+          <strong style="color: #4ECDC4">Pure remainder-state long division</strong>
+        </div>
+        <div class="engine-item" style="border-color: #FF6B6B">
+          <strong style="color: #FF6B6B">Exact cycle detection</strong>
+        </div>
+        <div class="engine-item" style="border-color: #45B7D1">
+          <strong style="color: #45B7D1">Symbolic decimal construction</strong>
+        </div>
+        <div class="engine-item" style="border-color: #FFA07A">
+          <strong style="color: #FFA07A">No floating-point arithmetic</strong>
+        </div>
+        <div class="engine-item" style="border-color: #98D8C8">
+          <strong style="color: #98D8C8">No rounding</strong>
+        </div>
+        <div class="engine-item" style="border-color: #F7DC6F">
+          <strong style="color: #F7DC6F">Formal periodic structure</strong>
+        </div>
+      </div>
+    </div>
+  `;
+
+  // Pattern Analysis
+  if (!r.terminated) {
+    html += `
+      <div class="card">
+        <h3>Pattern Analysis</h3>
+        <div class="formula-box">
+          x<sub>${state.repetitions}</sub> = (1/${state.denominator}) × (1 - 10<sup>-${r.period}×${state.repetitions}</sup>)
+        </div>
+        <div class="analysis-grid">
+          <span class="analysis-label">d =</span>
+          <span>${state.denominator} (denominator)</span>
+          
+          <span class="analysis-label">p =</span>
+          <span>${r.period} (period length - digits in repeating block)</span>
+          
+          <span class="analysis-label">n =</span>
+          <span>${state.repetitions} (number of complete repetitions)</span>
+          
+          <span class="analysis-label">Non-repeating:</span>
+          <span>${r.nonRepeating || '(none)'}</span>
+          
+          <span class="analysis-label">Repeating block:</span>
+          <span style="font-family: 'Courier New', monospace; color: #4ECDC4">${r.repeating}</span>
+          
+          <span class="analysis-label">Total digits shown:</span>
+          <span>${(r.nonRepeating?.length || 0) + (r.period * state.repetitions)}</span>
+        </div>
+      </div>
+    `;
+
+    // Step-by-step
+    html += `
+      <div class="card">
+        <h3>Step-by-Step Pattern</h3>
+        <div class="step-list">
+    `;
+
+    for (let i = 0; i < Math.min(state.repetitions, 5); i++) {
+      const n = i + 1;
+      const color = colors[i];
+      
+      html += `
+        <div class="step-item">
+          <div class="step-number" style="color: ${color}">n = ${n}</div>
+          <div class="step-content">
+            <span class="decimal-prefix">${r.intPart}.</span>
+      `;
+      
+      if (r.nonRepeating) {
+        html += `<span class="decimal-prefix">${r.nonRepeating}</span>`;
+      }
+      
+      html += colorizeRepeatingDigits(r.repeating, n);
+      html += `
+          </div>
+        </div>
+      `;
+    }
+
+    html += `
+        </div>
+      </div>
+    `;
+  }
+
+  // Terminated decimal
+  if (r.terminated) {
+    html += `
+      <div class="card" style="border-color: rgba(76, 175, 80, 0.3)">
+        <h3 style="color: #4CAF50">Terminating Decimal</h3>
+        <div style="font-size: clamp(1.2rem, 3vw, 2rem); font-weight: 600; font-family: 'Courier New', monospace; color: #4CAF50">
+          ${r.intPart}.${r.nonRepeating}
+        </div>
+        <p style="color: #a0a0a0; margin-top: 1rem; font-size: 0.95rem">
+          No remainder cycle detected — finite decimal representation
+        </p>
+      </div>
+    `;
+  }
+
+  displaySection.innerHTML = html;
+}
+
+/* ---------- Event Handlers ---------- */
+
+function setDenominator(n) {
+  state.denominator = n;
+  denominatorInput.value = n;
+  update();
+}
+
+function update() {
+  state.denominator = parseInt(denominatorInput.value) || 1;
+  state.denominator = Math.max(1, Math.min(1000, state.denominator));
+  
+  state.repetitions = parseInt(repetitionsInput.value) || 1;
+  state.maxDigits = parseInt(maxDigitsInput.value) || 100;
+  state.maxDigits = Math.max(10, Math.min(10000, state.maxDigits));
+  
+  repetitionsValue.textContent = state.repetitions;
+  
+  // Compute
+  state.result = longDivide(1, state.denominator, state.maxDigits);
+  
+  // Render
+  renderQuickSelect();
+  renderWarnings();
+  renderDisplay();
+}
+
+/* ---------- Event Listeners ---------- */
+
+denominatorInput.addEventListener('input', update);
+repetitionsInput.addEventListener('input', update);
+maxDigitsInput.addEventListener('input', update);
+
+/* ---------- Initialize ---------- */
+
+update();
+</script>
+</body>
+</html>
