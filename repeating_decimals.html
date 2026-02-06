@@ -462,11 +462,12 @@ function colorizeRepeatingDigits(repeating, n) {
 function renderDisplay() {
   const r = state.result;
   const isDivisibleBy10 = state.denominator % 2 === 0 || state.denominator % 5 === 0;
-  
+
+  /* // Skip displaying if divisible by 10
   if (isDivisibleBy10 || !r) {
     displaySection.innerHTML = '';
     return;
-  }
+  }*/
 
   let html = '';
 
@@ -475,11 +476,6 @@ function renderDisplay() {
     <div class="card card-dark">
       <div class="decimal-display">
         <span class="decimal-prefix">0.</span>`;
-  
-  if (r.nonRepeating) {
-    html += `<span class="decimal-prefix">${r.nonRepeating}</span>`;
-  }
-  
   if (r.repeating) {
     html += colorizeRepeatingDigits(r.repeating, state.repetitions);
     html += `<span class="decimal-suffix">...</span>`;
@@ -625,7 +621,7 @@ function update() {
   
   // Render
   renderQuickSelect();
-  renderWarnings();
+  //renderWarnings();
   renderDisplay();
 }
 
