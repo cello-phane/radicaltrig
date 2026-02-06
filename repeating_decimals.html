@@ -315,10 +315,6 @@ h3 {
         <div class="range-value" id="repetitionsValue">3</div>
       </div>
 
-      <div class="control-group">
-        <label for="maxDigits">Max Digits Limit</label>
-        <input type="number" id="maxDigits" value="500" min="10" max="10000">
-      </div>
     </div>
 
     <div class="control-group">
@@ -347,7 +343,7 @@ h3 {
 <script>
 /* ---------- String Long Division Engine ---------- */
 
-function longDivide(numerator, denominator, maxDigits = 500) {
+function longDivide(numerator, denominator, maxDigits = 1000) {
   let intPart = Math.floor(numerator / denominator);
   let remainder = numerator % denominator;
 
@@ -402,7 +398,7 @@ function buildDecimalWithRepetitions(intPart, nonRep, rep, n) {
 const state = {
   denominator: 7,
   repetitions: 3,
-  maxDigits: 500,
+  maxDigits: 1000,
   result: null
 };
 
@@ -414,7 +410,6 @@ const interestingNumbers = [3, 6, 7, 9, 11, 13, 17, 19, 21, 23, 27, 29, 31, 37, 
 const denominatorInput = document.getElementById('denominator');
 const repetitionsInput = document.getElementById('repetitions');
 const repetitionsValue = document.getElementById('repetitionsValue');
-const maxDigitsInput = document.getElementById('maxDigits');
 const quickSelectDiv = document.getElementById('quickSelect');
 const warningsDiv = document.getElementById('warnings');
 const displaySection = document.getElementById('displaySection');
@@ -599,7 +594,6 @@ function renderDisplay() {
 }
 
 /* ---------- Event Handlers ---------- */
-
 function setDenominator(n) {
   state.denominator = n;
   denominatorInput.value = n;
@@ -611,9 +605,8 @@ function update() {
   state.denominator = Math.max(1, Math.min(1000, state.denominator));
   
   state.repetitions = parseInt(repetitionsInput.value) || 1;
-  state.maxDigits = parseInt(maxDigitsInput.value) || 100;
-  state.maxDigits = Math.max(10, Math.min(10000, state.maxDigits));
-  
+  state.maxDigits = 1000;
+
   repetitionsValue.textContent = state.repetitions;
   
   // Compute
@@ -626,13 +619,10 @@ function update() {
 }
 
 /* ---------- Event Listeners ---------- */
-
 denominatorInput.addEventListener('input', update);
 repetitionsInput.addEventListener('input', update);
-maxDigitsInput.addEventListener('input', update);
 
 /* ---------- Initialize ---------- */
-
 update();
 </script>
 </body>
