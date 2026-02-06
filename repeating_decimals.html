@@ -466,6 +466,36 @@ function renderDisplay() {
 
   let html = '';
 
+  // Pattern Analysis
+  if (!r.terminated) {
+    html += `
+      <div class="card">
+        <h3>Formula</h3>
+        <div class="formula-box">
+          x<sub>${state.repetitions}</sub> = (1/${state.denominator}) × (1 - 10<sup>-${r.period}×${state.repetitions}</sup>)
+        </div>
+        <div class="analysis-grid">
+          <span class="analysis-label">d =</span>
+          <span>${state.denominator} (denominator)</span>
+          
+          <span class="analysis-label">p =</span>
+          <span>${r.period} (period length - digits in repeating block)</span>
+          
+          <span class="analysis-label">n =</span>
+          <span>${state.repetitions} (number of complete repetitions)</span>
+          
+          <span class="analysis-label">Non-repeating:</span>
+          <span>${r.nonRepeating || '(none)'}</span>
+          
+          <span class="analysis-label">Repeating block:</span>
+          <span style="font-family: 'Courier New', monospace; color: #4ECDC4">${r.repeating}</span>
+          
+          <span class="analysis-label">Total digits shown:</span>
+          <span>${(r.nonRepeating?.length || 0) + (r.period * state.repetitions)}</span>
+        </div>
+      </div>
+    `;
+
   // Decimal Display
   html += `
     <div class="card card-dark">
@@ -509,36 +539,6 @@ function renderDisplay() {
       </div>
     </div>
   `;
-
-  // Pattern Analysis
-  if (!r.terminated) {
-    html += `
-      <div class="card">
-        <h3>Pattern Analysis</h3>
-        <div class="formula-box">
-          x<sub>${state.repetitions}</sub> = (1/${state.denominator}) × (1 - 10<sup>-${r.period}×${state.repetitions}</sup>)
-        </div>
-        <div class="analysis-grid">
-          <span class="analysis-label">d =</span>
-          <span>${state.denominator} (denominator)</span>
-          
-          <span class="analysis-label">p =</span>
-          <span>${r.period} (period length - digits in repeating block)</span>
-          
-          <span class="analysis-label">n =</span>
-          <span>${state.repetitions} (number of complete repetitions)</span>
-          
-          <span class="analysis-label">Non-repeating:</span>
-          <span>${r.nonRepeating || '(none)'}</span>
-          
-          <span class="analysis-label">Repeating block:</span>
-          <span style="font-family: 'Courier New', monospace; color: #4ECDC4">${r.repeating}</span>
-          
-          <span class="analysis-label">Total digits shown:</span>
-          <span>${(r.nonRepeating?.length || 0) + (r.period * state.repetitions)}</span>
-        </div>
-      </div>
-    `;
 
     // Step-by-step
     html += `
