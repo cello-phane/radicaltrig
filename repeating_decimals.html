@@ -494,13 +494,16 @@ function renderDisplay() {
   html += `
     <div class="card card-dark">
       <div class="decimal-display">
-        <span class="decimal-prefix">`;
-  html += Math.floor(state.numerator / state.denominator);
-  html += `.</span>`;
+        <span class="decimal-prefix">${r.intPart}.</span>`;
+  
+  if (r.nonRepeating) {
+    html += `<span class="decimal-prefix">${r.nonRepeating}</span>`;
+  }
+  
   if (r.repeating) {
     html += colorizeRepeatingDigits(r.repeating, state.repetitions);
     html += `<span class="decimal-suffix">...</span>`;
-  } else {
+  } else if (r.nonRepeating) {
     html += r.nonRepeating;
   }
   
