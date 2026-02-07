@@ -301,6 +301,11 @@ h3 {
   <div class="card">
     <div class="controls-grid">
       <div class="control-group">
+        <label for="numerator">Denominator (d)</label>
+        <input type="number" id="numerator" value="7" min="1" max="1000">
+      </div>
+      
+      <div class="control-group">
         <label for="denominator">Denominator (d)</label>
         <input type="number" id="denominator" value="7" min="1" max="1000">
       </div>
@@ -383,6 +388,7 @@ function buildDecimalWithRepetitions(intPart, nonRep, rep, n) {
 /* ---------- UI State ---------- */
 
 const state = {
+  numerator: 1,
   denominator: 7,
   repetitions: 3,
   maxDigits: 1000,
@@ -394,6 +400,7 @@ const interestingNumbers = [3, 6, 7, 9, 11, 13, 17, 19, 21, 23, 27, 29, 31, 37, 
 
 /* ---------- DOM Elements ---------- */
 
+const numeratorInput = document.getElementById('numerator');
 const denominatorInput = document.getElementById('denominator');
 const repetitionsInput = document.getElementById('repetitions');
 const repetitionsValue = document.getElementById('repetitionsValue');
@@ -406,7 +413,7 @@ const displaySection = document.getElementById('displaySection');
 function renderQuickSelect() {
   quickSelectDiv.innerHTML = interestingNumbers.map(n => {
     const active = n === state.denominator ? 'active' : '';
-    return `<button class="${active}" onclick="setDenominator(${n})">1/${n}</button>`;
+    return `<button class="${active}" onclick="setDenominator(${n})">${state.numerator}/${n}</button>`;
   }).join('');
 }
 
@@ -419,7 +426,7 @@ function renderWarnings() {
         <span style="font-size: 1.5rem">⚠️</span>
         <p>
           <strong>Note:</strong> ${state.denominator} is divisible by 2 or 5. 
-          The decimal 1/${state.denominator} terminates and doesn't repeat.
+          The decimal ${state.numerator}/${state.denominator} terminates and doesn't repeat.
         </p>
       </div>
     `;
@@ -459,7 +466,7 @@ function renderDisplay() {
       <div class="card">
         <h3>Formula</h3>
         <div class="formula-box">
-          x<sub>${state.repetitions}</sub> = (1/${state.denominator}) × (1 - 10<sup>-${r.period}×${state.repetitions}</sup>)
+          x<sub>${state.repetitions}</sub> = (${state.numerator}/${state.denominator}) × (1 - 10<sup>-${r.period}×${state.repetitions}</sup>)
         </div>
         <div class="analysis-grid">
           <span class="analysis-label">d =</span>
@@ -487,7 +494,9 @@ function renderDisplay() {
   html += `
     <div class="card card-dark">
       <div class="decimal-display">
-        <span class="decimal-prefix">0.</span>`;
+        <span class="decimal-prefix">`;
+  html += Math.floor(state.numerator / state.denominator);
+  html += `.</span>`;
   if (r.repeating) {
     html += colorizeRepeatingDigits(r.repeating, state.repetitions);
     html += `<span class="decimal-suffix">...</span>`;
@@ -563,14 +572,15 @@ function setDenominator(n) {
 function update() {
   state.denominator = parseInt(denominatorInput.value) || 1;
   state.denominator = Math.max(1, Math.min(1000, state.denominator));
-  
+  state.numerator = parseInt(numerator.value) || 1;
+  state.numerator = Math.max(1, Math.min(1000, state.numerator));
   state.repetitions = parseInt(repetitionsInput.value) || 1;
   state.maxDigits = 1000;
 
   repetitionsValue.textContent = state.repetitions;
   
   // Compute
-  state.result = longDivide(1, state.denominator, state.maxDigits);
+  state.result = longDivide(state.numerator, state.denominator, state.maxDigits);
   
   // Render
   renderQuickSelect();
@@ -579,6 +589,7 @@ function update() {
 }
 
 /* ---------- Event Listeners ---------- */
+numeratorInput.addEventListener('input', update);
 denominatorInput.addEventListener('input', update);
 repetitionsInput.addEventListener('input', update);
 
