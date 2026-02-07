@@ -413,7 +413,7 @@ const displaySection = document.getElementById('displaySection');
 function renderQuickSelect() {
   quickSelectDiv.innerHTML = interestingNumbers.map(n => {
     const active = n === state.denominator ? 'active' : '';
-    return `<button class="${active}" onclick="setDenominator(${n})">${state.numerator}/${n}</button>`;
+    return `<button class="${active}" onclick="setND(${state.numerator},${n})">${state.numerator}/${n}</button>`;
   }).join('');
 }
 
@@ -563,16 +563,18 @@ function renderDisplay() {
 }
 
 /* ---------- Event Handlers ---------- */
-function setDenominator(n) {
-  state.denominator = n;
-  denominatorInput.value = n;
+function setND(n, d) {
+  state.numerator = n;
+  numeratorInput.value = n;
+  state.denominator = d;
+  denominatorInput.value = d;
   update();
 }
 
 function update() {
   state.denominator = parseInt(denominatorInput.value) || 1;
   state.denominator = Math.max(1, Math.min(1000, state.denominator));
-  state.numerator = parseInt(numerator.value) || 1;
+  state.numerator = parseInt(numerator.value) || 0;
   state.numerator = Math.max(1, Math.min(1000, state.numerator));
   state.repetitions = parseInt(repetitionsInput.value) || 1;
   state.maxDigits = 1000;
