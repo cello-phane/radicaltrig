@@ -302,12 +302,12 @@ h3 {
     <div class="controls-grid">
       <div class="control-group">
         <label for="numerator">Numerator (d)</label>
-        <input type="number" id="numerator" value="7" min="1" max="1000000">
+        <input type="number" id="numerator" value="7" min="1" max="1000">
       </div>
       
       <div class="control-group">
         <label for="denominator">Denominator (d)</label>
-        <input type="number" id="denominator" value="7" min="1" max="1000000">
+        <input type="number" id="denominator" value="7" min="1" max="1000">
       </div>
 
       <div class="control-group">
@@ -496,19 +496,21 @@ function renderDisplay() {
       <div class="decimal-display">
         <span class="decimal-prefix">${r.intPart}.</span>`;
   
+  // ALWAYS show non-repeating part if it exists
   if (r.nonRepeating) {
     html += `<span class="decimal-prefix">${r.nonRepeating}</span>`;
   }
   
+  // THEN show repeating part if it exists
   if (r.repeating) {
     html += colorizeRepeatingDigits(r.repeating, state.repetitions);
     html += `<span class="decimal-suffix">...</span>`;
-  } else if (r.nonRepeating) {
-    html += r.nonRepeating;
+  } else if (!r.nonRepeating) {
+    // Only if there's nothing else, show zero
+    html += '0';
   }
   
   html += `
-      </div>
     </div>
   `;
 
