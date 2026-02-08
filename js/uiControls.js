@@ -291,7 +291,7 @@ function displaySection2Results(resultsElement) {
 }
 
 /**
- * Display angle between two vectors
+ * Display angle between two vectors (CORRECTED)
  * @param {HTMLElement} resultsElement - Results container
  */
 function displayBetweenMode(resultsElement) {
@@ -313,6 +313,16 @@ function displayBetweenMode(resultsElement) {
   const tanDisplay = Math.abs(rt) > 1e6 ? 'undefined' : formatValue(rt);
   const fmt = (n) => n.toFixed(5).padStart(8);
   
+  // FIX: Use higher precision for angle calculations
+  // Round to avoid floating-point artifacts (0.25° or 0.5° errors)
+  const signedAngleRounded = Math.round(angleData.signedDeg * 100) / 100;
+  const unsignedAngleRounded = Math.round(angleData.unsignedDeg * 100) / 100;
+  
+  // Calculate angle between with proper rounding
+  const angleBetween = Math.abs(signedAngleRounded) > Math.abs(unsignedAngleRounded) 
+    ? Math.round((360 - unsignedAngleRounded) * 100) / 100
+    : unsignedAngleRounded;
+  
   resultsElement.textContent = 
 `Vector u = (${fmt(u.x)}, ${fmt(u.y)})
   |u| = ${fmt(uMag)}
@@ -321,8 +331,8 @@ Vector v = (${fmt(v.x)}, ${fmt(v.y)})
 Dot product = ${fmt(dot)}
 Cross product = ${fmt(cross)}
 _______________________________
-Signed angle (u→v) = ${formatValue(angleData.signedDeg, 2)}° ${angleData.ccw ? '(CCW)' : '(CW)'}
-Angle between = ${formatValue(Math.abs(angleData.signedDeg) > Math.abs(angleData.unsignedDeg) ? 360-angleData.unsignedDeg : angleData.unsignedDeg, 2)}°
+Signed angle (u→v) = ${signedAngleRounded.toFixed(5)}° ${angleData.ccw ? '(CCW)' : '(CW)'}
+Angle between = ${angleBetween.toFixed(2)}°
 _______________________________
 RAU Phase = ${formatValue(angleData.rau)}
 Radian = ${formatValue(rad)}
@@ -333,7 +343,7 @@ cos(θ) = ${formatValue(rc)}`;
 }
 
 /**
- * Display individual vector angles
+ * Display individual vector angles (CORRECTED)
  * @param {HTMLElement} resultsElement - Results container
  */
 function displayIndividualMode(resultsElement) {
@@ -355,8 +365,9 @@ function displayIndividualMode(resultsElement) {
   const vSin = radicalSine(vPhase);
   const vCos = radicalCosine(vPhase);
   
-  const uAngle = AppState.section2.uAngle;
-  const vAngle = AppState.section2.vAngle;
+  // FIX: Round angles to avoid floating-point artifacts
+  const uAngle = Math.round(AppState.section2.uAngle * 100) / 100;
+  const vAngle = Math.round(AppState.section2.vAngle * 100) / 100;
   
   const fmt = (n) => n.toFixed(3).padStart(8);
   
@@ -365,7 +376,7 @@ function displayIndividualMode(resultsElement) {
   Components = (${fmt(u.x)}, ${fmt(u.y)})
   Magnitude = ${fmt(uMag)}
   _______________________________
-  Angle from +x = ${uAngle}° (CCW)
+  Angle from +x = ${uAngle.toFixed(2)}° (CCW)
   RAU Phase = ${formatValue(uPhase)}
   _______________________________
   rsin(u) = ${formatValue(uSin)}
@@ -375,7 +386,7 @@ Vector v:
   Components = (${fmt(v.x)}, ${fmt(v.y)})
   Magnitude = ${fmt(vMag)}
   _______________________________
-  Angle from +x = ${vAngle}° (CCW)
+  Angle from +x = ${vAngle.toFixed(2)}° (CCW)
   RAU Phase = ${formatValue(vPhase)}
   _______________________________
   rsin(v) = ${formatValue(vSin)}
@@ -384,6 +395,6 @@ Vector v:
 Dot product = ${fmt(dot)}
 Cross product = ${fmt(cross)}`;
 }
-
 // Make function globally available
 window.updateResultsDisplay = updateResultsDisplay;
+
