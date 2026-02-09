@@ -82,33 +82,34 @@
         const r = BigInt(document.getElementById('r').value);
         
         if (d === 0n) { document.getElementById('output').innerText = "ERR: DIV_BY_ZERO"; return; }
-
+    
         const isNegative = (q < 0n) !== (d < 0n);
         const absQ = q < 0n ? -q : q;
         const absD = d < 0n ? -d : d;
-
+    
+        // Handle terminating decimals or exact integers
         if (getRepeatingBase(absD) <= 1n || absQ % absD === 0n) {
             document.getElementById('output').innerText = (Number(q) / Number(d)).toString();
             return;
         }
-
+    
         const precisionLen = 100n;
         const multiplier = 10n ** precisionLen;
         const rawBig = (absQ * multiplier) / absD;
-
+    
+        // FIX: Pad the fractional part with leading zeros based on precisionLen
+        let fracStr = rawBig.toString().padStart(Number(precisionLen), '0');
+    
         // Decimal Anchor Fix: (d-2)*r
-        const exponent = (absD - 2n) * r;
-        const shift = precisionLen - exponent;
+        const exponent = Number((absD - 2n) * r);
         
-        let finalBig = rawBig;
-        if (shift > 0n) {
-            const mask = 10n ** shift;
-            finalBig = (rawBig / mask) * mask;
+        // Apply the Blade: Truncate the string at the exponent and pad with zeros
+        if (exponent < fracStr.length) {
+            fracStr = fracStr.substring(0, exponent).padEnd(Number(precisionLen), '0');
         }
-
-        const whole = finalBig / multiplier;
-        const frac = (finalBig % multiplier).toString();
-        document.getElementById('output').innerText = (isNegative ? "-" : "") + whole + "." + frac;
+    
+        const whole = (absQ / absD).toString();
+        document.getElementById('output').innerText = (isNegative ? "-" : "") + whole + "." + fracStr;
     }
 
     // --- INVERSE ENGINE ---
