@@ -2,21 +2,116 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>The Eulerism Engine & Period Analyst</title>
+    <title>Eulerism Engine: Radical Lab Theme</title>
     <style>
-        :root { --neon: #00ff41; --bg: #0a0a0a; --panel: #111; }
-        body { background: var(--bg); color: var(--neon); font-family: 'Courier New', monospace; display: flex; flex-direction: column; align-items: center; padding: 40px 20px; }
-        .container { border: 2px solid var(--neon); padding: 25px; background: #000; box-shadow: 0 0 20px rgba(0, 255, 65, 0.2); width: 100%; max-width: 900px; }
-        .panel { background: var(--panel); border: 1px solid #222; padding: 20px; margin-bottom: 25px; position: relative; }
-        .display { background: #051a05; border: 1px solid var(--neon); padding: 15px; margin: 15px 0; min-height: 60px; word-break: break-all; font-size: 1rem; line-height: 1.5; color: var(--neon); box-shadow: inset 0 0 10px #000; }
-        .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; align-items: end; }
-        input { background: #000; border: 1px solid var(--neon); color: var(--neon); padding: 10px; outline: none; width: 100%; box-sizing: border-box; font-family: inherit; }
-        label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 8px; display: block; color: #888; }
-        button { background: var(--neon); color: #000; border: none; padding: 12px; cursor: pointer; font-weight: bold; text-transform: uppercase; transition: 0.3s; }
-        button:hover { background: #fff; box-shadow: 0 0 15px #fff; }
-        .status { font-size: 0.65rem; color: #555; margin-bottom: 10px; border-left: 2px solid var(--neon); padding-left: 10px; }
-        .copy-btn { position: absolute; top: 20px; right: 20px; font-size: 0.6rem; padding: 5px 10px; height: auto; }
-        h3 { margin-top: 0; letter-spacing: 4px; border-bottom: 1px solid #222; padding-bottom: 10px; }
+        :root { 
+            --bg: #f4f1ea;        /* Desaturated Cream */
+            --border: #b8b1a3;    /* Muted Tan */
+            --accent: #92c5de;    /* Pale Blue Accent */
+            --text-main: #33312e; /* Deep Charcoal */
+            --text-muted: #7a766e;
+            --display-bg: #fffdf9;
+            --header-red: #a52a2a; /* Deep Red for Labels */
+        }
+        
+        body { 
+            background: var(--bg); 
+            color: var(--text-main); 
+            font-family: 'Courier New', monospace; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            padding: 40px 20px; 
+        }
+
+        .container { 
+            border: 1px solid var(--border); 
+            padding: 30px; 
+            background: #fff; 
+            box-shadow: 4px 4px 0px rgba(0,0,0,0.05); 
+            width: 100%; 
+            max-width: 900px; 
+        }
+
+        .panel { 
+            border: 1px solid var(--border); 
+            padding: 25px; 
+            margin-bottom: 30px; 
+            position: relative; 
+            background: var(--bg);
+        }
+
+        h3 { 
+            margin-top: 0; 
+            color: var(--header-red); 
+            letter-spacing: 3px; 
+            font-size: 1.2rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 10px;
+        }
+
+        .display { 
+            background: var(--display-bg); 
+            border: 1px solid var(--border); 
+            padding: 15px; 
+            margin: 15px 0; 
+            min-height: 80px; 
+            word-break: break-all; 
+            font-size: 0.95rem; 
+            line-height: 1.6; 
+            color: #222; 
+            box-shadow: inset 1px 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .controls { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); 
+            gap: 15px; 
+        }
+
+        input { 
+            background: var(--accent); 
+            border: 1px solid var(--border); 
+            color: #000; 
+            padding: 10px; 
+            font-weight: bold;
+            outline: none;
+        }
+
+        label { 
+            font-size: 0.75rem; 
+            text-transform: uppercase; 
+            color: var(--text-main); 
+            margin-bottom: 5px; 
+            display: block; 
+        }
+
+        button { 
+            background: var(--accent); 
+            color: #000; 
+            border: 1px solid var(--border); 
+            padding: 10px 20px; 
+            cursor: pointer; 
+            font-weight: bold; 
+            text-transform: uppercase;
+        }
+
+        button:hover { background: #fff; }
+
+        .status { 
+            font-size: 0.7rem; 
+            color: var(--text-muted); 
+            margin-bottom: 15px;
+            font-style: italic;
+        }
+
+        .copy-btn { 
+            position: absolute; 
+            top: 25px; 
+            right: 25px; 
+            font-size: 0.7rem; 
+            padding: 5px 12px; 
+        }
     </style>
 </head>
 <body>
@@ -24,29 +119,43 @@
 <div class="container">
     <div class="panel">
         <h3>[ FORWARD_ENGINE ]</h3>
-        <div class="status">BigInt Truncation | DNA: Factor Stripping Active</div>
-        <button class="copy-btn" onclick="copyToClipboard('output')">COPY_RESULT</button>
+        <div class="status">| BigInt Truncation | DNA: Factor Stripping Active</div>
+        <button class="copy-btn" onclick="safeCopy('output')">COPY_RESULT</button>
         <div class="controls">
-            <div><label>Numerator (q)</label><input type="number" id="q" value="3"></div>
-            <div><label>Denominator (d)</label><input type="number" id="d" value="28"></div>
-            <div><label>Repetitions (r)</label><input type="number" id="r" value="1" min="1"></div>
-            <button onclick="calculateForward()">PROCESS</button>
+            <div><label>Numerator (q)</label><input type="number" id="q" value="3421423411"></div>
+            <div><label>Denominator (d)</label><input type="number" id="d" value="76923498"></div>
+            <div><label>Repetitions (r)</label><input type="number" id="r" value="1"></div>
+            <button onclick="calculateForward()" style="background: var(--accent); color: #000;">PROCESS</button>
         </div>
-        <div id="output" class="display">Awaiting input...</div>
+        <div id="output" class="display">Ready for Modular Tracking...</div>
     </div>
 
     <div class="panel">
         <h3>[ INVERSE_ANALYST ]</h3>
-        <div class="status">Continued Fraction Recovery | Modulo Cycle Detection</div>
+        <div class="status">| Continued Fraction Recovery | Modulo Cycle Detection</div>
         <div class="controls" style="grid-template-columns: 1fr auto;">
-            <div><label>Decimal String</label><input type="text" id="decimalInput" placeholder="Paste string here..."></div>
+            <div><label>Decimal String</label><input type="text" id="decimalInput" style="background: #fff;"></div>
             <button onclick="calculateInverse()">ANALYZE</button>
         </div>
-        <div id="inverseOutput" class="display">Awaiting sequence...</div>
+        <div id="inverseOutput" class="display">Waiting for fractional evidence...</div>
     </div>
 </div>
 
 <script>
+    // --- SAFE COPY LOGIC ---
+    function safeCopy(id) {
+        const text = document.getElementById(id).innerText;
+        const parts = text.split('.');
+        
+        // If string has more than 50 decimal places, slice to prevent Inverse Analyst halt
+        if (parts.length > 1 && parts[1].length > 50) {
+            const safeText = parts[0] + "." + parts[1].substring(0, 50);
+            navigator.clipboard.writeText(safeText);
+            // Slicing to 50-digit
+        } else {
+            navigator.clipboard.writeText(text);
+        }
+    }
     // --- UTILS ---
     function getRepeatingBase(d) {
         let temp = d < 0n ? -d : d;
@@ -150,30 +259,41 @@
     function calculateInverse() {
         let input = document.getElementById('decimalInput').value.trim();
         if (!input) return;
-
-        let cleaned = input.replace(/0+$/, "");
-        let x = parseFloat(cleaned);
-        if (isNaN(x)) { document.getElementById('inverseOutput').innerText = "ERR: INVALID_INPUT"; return; }
-
+    
+        // Split into Integer and Fractional parts to avoid float overflow
+        let parts = input.split('.');
+        let intPart = BigInt(parts[0] || "0");
+        let fracPartStr = parts[1] || "";
+    
+        // 1. If the string is too long, we truncate it to 50 digits 
+        // to match the 'Safe Spot' of the Continued Fraction algorithm.
+        let truncatedFrac = fracPartStr.substring(0, 50);
+        let x = parseFloat("0." + truncatedFrac);
+    
         let h1 = 1n, h2 = 0n;
         let k1 = 0n, k2 = 1n;
         let b = x;
-        const tolerance = 1.0e-15;
-
+        const tolerance = 1.0e-51;
+    
+        // 2. The Loop: Recovering the ratio
         for (let i = 0; i < 24; i++) {
             let a = BigInt(Math.floor(b));
             let tempH = h1; h1 = a * h1 + h2; h2 = tempH;
             let tempK = k1; k1 = a * k1 + k2; k2 = tempK;
-
+    
             if (Math.abs(x - Number(h1) / Number(k1)) < tolerance) break;
             let remainder = b - Math.floor(b);
             if (remainder < 1.0e-12) break;
             b = 1 / remainder;
         }
-
-        const period = analyzePeriod(k1);
-        const periodMsg = period > 0 ? ` | PERIOD_LEN: ${period}` : " | TERMINATING";
-        document.getElementById('inverseOutput').innerText = `RATIONAL_ORIGIN: ${h1} / ${k1}${periodMsg}`;
+    
+        // 3. Add back the integer part: (intPart * k1 + h1) / k1
+        let finalNumerator = (intPart * k1) + h1;
+        let finalDenominator = k1;
+    
+        const period = analyzePeriod(finalDenominator);
+        document.getElementById('inverseOutput').innerText = 
+            `RATIONAL_ORIGIN: ${finalNumerator} / ${finalDenominator} | PERIOD: ${period}`;
     }
 </script>
 </body>
