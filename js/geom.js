@@ -132,50 +132,35 @@ const radToDeg = rad => rad * 180 / Math.PI;
  * Bypasses degree scaling for direct transcendental-to-radical mapping.
  */
 function radToRau(rad) {
-  // 1. Normalize to [0, 2π)
-  const TWO_PI = Math.PI * 2;
-  const HALF_PI = Math.PI / 2;
-  let nR = rad % TWO_PI;
-  if (nR < 0) nR += TWO_PI;
-
-  // 2. Identify Quadrant and local radian offset
-  const q = Math.floor(nR / HALF_PI);
-  const localRad = nR % HALF_PI;
-
-  // 3. Apply the Radical Identity: t = tan / (1 + tan)
-  let a;
-  if (nearlyZero(localRad - HALF_PI)) {
-    a = 1.0; 
-  } else if (nearlyZero(localRad)) {
-    a = 0.0;
-  } else {
-    const tVal = Math.tan(localRad);
-    a = tVal / (1 + tVal);
-  }
-
-  // 4. Map and wrap
+  // Normalize to [0, 2PI)
+  let nR = ((rad % (2 * Math.PI)) + (2 * Math.PI)) % (2 * Math.PI);
+  const q = Math.floor(nR / (Math.PI / 2));
+  const localRad = nR % (Math.PI / 2);
+  
+  const tVal = Math.tan(localRad);
+  const a = tVal / (1 + tVal);
+  
   return (q + a) % 4;
 }
 
 /**
- * Convert degrees to RAU
- * @param {number} deg - Angle in degrees
- * @returns {number} RAU parameter
- */
-/**
- * Convert degrees to RAU with 4.0 -> 0.0 wrap-around
- * and support for negative degrees.
+ * Convert degrees to RAU with full wrap-around support.
+ * @param {number} deg - Angle in degrees (any range)
+ * @returns {number} RAU parameter in [0, 4)
  */
 function degToRau(deg) {
-  // normalize any input to the [0, 360) range
-  let nD = deg % 360;
-  if (nD < 0) nD += 360; 
+  // 1. Normalize to [0, 360) range immediately
+  // This handles -360, -45, 720, etc. perfectly.
+  let nD = ((deg % 360) + 360) % 360;
+
+  // 2. Identify Quadrant and local degree offset
   const q = Math.floor(nD / 90);
   const localDeg = nD % 90;
+
+  // 3. Compute local ratio 'a'
+  // By using localDeg (0-89.9), we never hit the tan(-1) death zone.
   let a;
   if (localDeg === 0) {
-    // If nD is 0, 90, 180, or 270, a is 0.
-    // The integer q will handle the 0.0, 1.0, 2.0, 3.0 points.
     a = 0;
   } else {
     const rad = localDeg * (Math.PI / 180);
@@ -183,8 +168,9 @@ function degToRau(deg) {
     a = tVal / (1 + tVal);
   }
 
-  let retRau = q + a;
-  return retRau % 4;
+  // 4. Return the wrapped RAU [0, 4)
+  // q + a gives 0.0, 1.0, 2.0, 3.0 at cardinal points
+  return (q + a) % 4;
 }
 
 /**
