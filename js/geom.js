@@ -132,9 +132,29 @@ const radToDeg = rad => rad * 180 / Math.PI;
  * @param {number} deg - Angle in degrees
  * @returns {number} RAU parameter
  */
+/**
+ * Convert degrees to RAU with 4.0 -> 0.0 wrap-around
+ * and support for negative degrees.
+ */
 function degToRau(deg) {
-  const normalized = ((deg % 360) + 360) % 360;
-  return normalized / 90;
+  // normalize any input to the [0, 360) range
+  let nD = deg % 360;
+  if (nD < 0) nD += 360; 
+  const q = Math.floor(nD / 90);
+  const localDeg = nD % 90;
+  let a;
+  if (localDeg === 0) {
+    // If nD is 0, 90, 180, or 270, a is 0.
+    // The integer q will handle the 0.0, 1.0, 2.0, 3.0 points.
+    a = 0;
+  } else {
+    const rad = localDeg * (Math.PI / 180);
+    const tVal = Math.tan(rad);
+    a = tVal / (1 + tVal);
+  }
+
+  let retRau = q + a;
+  return retRau % 4;
 }
 
 /**
