@@ -128,6 +128,36 @@ const degToRad = deg => deg * Math.PI / 180;
 const radToDeg = rad => rad * 180 / Math.PI;
 
 /**
+ * Convert Radians to RAU
+ * Bypasses degree scaling for direct transcendental-to-radical mapping.
+ */
+function radToRau(rad) {
+  // 1. Normalize to [0, 2π)
+  const TWO_PI = Math.PI * 2;
+  const HALF_PI = Math.PI / 2;
+  let nR = rad % TWO_PI;
+  if (nR < 0) nR += TWO_PI;
+
+  // 2. Identify Quadrant and local radian offset
+  const q = Math.floor(nR / HALF_PI);
+  const localRad = nR % HALF_PI;
+
+  // 3. Apply the Radical Identity: t = tan / (1 + tan)
+  let a;
+  if (nearlyZero(localRad - HALF_PI)) {
+    a = 1.0; 
+  } else if (nearlyZero(localRad)) {
+    a = 0.0;
+  } else {
+    const tVal = Math.tan(localRad);
+    a = tVal / (1 + tVal);
+  }
+
+  // 4. Map and wrap
+  return (q + a) % 4;
+}
+
+/**
  * Convert degrees to RAU
  * @param {number} deg - Angle in degrees
  * @returns {number} RAU parameter
@@ -155,16 +185,6 @@ function degToRau(deg) {
 
   let retRau = q + a;
   return retRau % 4;
-}
-
-/**
- * Convert radians to RAU
- * @param {number} radian - Angle in radians
- * @returns {number} RAU parameter
- */
-function radToRau(radian) {
-  const normalized = ((radian % (2 * Math.PI)) + (2 * Math.PI)) % (2 * Math.PI);
-  return normalized / (Math.PI / 2);
 }
 
 /**
