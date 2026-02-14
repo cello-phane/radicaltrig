@@ -35,11 +35,23 @@
             <div class="title">Sidebar</div>
             <div class="chev" id="formulaChevron">◀</div>
         </div>
+        <button onclick="toggleMathBlock()">Formulae</button>
+		  
         <button onclick="changeFontSize(1,'resultsContent')">+</button>
         <button onclick="changeFontSize(-1,'resultsContent')">-</button>
-		  <button id="toggleHeaderControls" style="float:right">◀</button>
-
+		<button id="toggleHeaderControls" style="float:right">◀</button>
+		<div id="mathBlock" class="collapsed">
+   	        <p style="margin:0 0 5px 0;">\(0.0 < t < 1.0\)</p>
+   	        <div>\[\mathrm{rsin}(t)=\frac{t}{\sqrt{1-2t+2t^2}}\]</div>
+   	        <div>\[\mathrm{rcos}(t)=\frac{1-t}{\sqrt{1-2t+2t^2}}\]</div>
+   	        <div>\[\mathrm{rtan}(t)=\frac{t}{1-t}\]</div>
+   	        <div>\[\mathrm{Inverse\ Functions (-1 < t <1)}\]</div>
+   	        <div>\[\mathrm{rsin^{-1}}(t)=\frac{t^2-\sqrt{t^2-t^4}}{2t^2-1}\]</div>
+   	        <div>\[\mathrm{rcos^{-1}}(t)=\frac{t^2-1+\sqrt{t^2-t^4}}{2t^2-1}\]</div>
+   	        <div>\[\mathrm{rtan^{-1}}(t)=\frac{t}{1+t}\]</div>
+   	      </div>
         <div id="formulaBody">
+       	   
             <!-- Vector canvas only control -->
             <div id="angleModeSidebar" style="display:none; margin: 12px 0; padding: 8px; border: 1px solid #ddd; border-radius: 6px;">
                 <label for="angleMode" style="display: block; font-weight: 600; margin-bottom: 8px;">Display Mode:</label> 
@@ -56,7 +68,8 @@
       <section id="section1" class="active">
           <div class="card" style="position: relative; width: 100%; max-width: 600px; margin: 0 auto;background:transparent;">
               <h2>Introduction to RAU</h2>
-              <div class="desc"><strong>Quadrant-aware modular arithmetic</strong> - RAU maps a linear parameter (0–4) to a circle using integer and fractional parts.</div>
+              <div class="desc"><strong>Quadrant-aware modular arithmetic</strong> - RAU maps a linear parameter (0–4) to a circle using integer and fractional parts.
+              </div>
               <link rel="stylesheet" href="css/intro.css"> 
               <div style="position: relative; width: 100%; max-width: 600px; margin: 0 auto;">
                   <!-- Canvas (interactive) -->
@@ -125,7 +138,7 @@
 
 	                <div class="displayProperties">
 	                    <table>
-									<tr>
+								<tr>
 	                            <td><label for="wrappedAngle">Wrap Angle Arc</label></td>
 	                            <td><input type="checkbox" id="wrappedAngle" name="wrappedAngle"></td>
 	                        </tr>

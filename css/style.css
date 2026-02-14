@@ -218,11 +218,14 @@ pre#resultsContent {
 }
 
 #mathBlock {
-  max-height: 500px;
+  max-height: 10%;
   overflow: hidden;
-  transition: max-height 0.4s;
+  transition: max-height 0.1s;
 }
 
 #mathBlock.collapsed {
   max-height: 0;
+}
+#mathBlock svg {
+  height: 34px;
 }

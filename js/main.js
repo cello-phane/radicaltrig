@@ -67,6 +67,17 @@ document.addEventListener('DOMContentLoaded', () => {
   updateResultsDisplay();
 });
 
+function toggleMathBlock() {
+    const mb = document.getElementById('mathBlock');
+    if (mb.classList.contains('collapsed')) {
+        mb.classList.remove('collapsed');
+        mb.style.maxHeight = mb.scrollHeight + 'px';
+    } else {
+        mb.style.maxHeight = '0';
+        mb.classList.add('collapsed');
+    }
+}
+
 /**
  * Initialize section visibility
  */
