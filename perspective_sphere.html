@@ -730,66 +730,31 @@
             
             const deltaX = e.clientX - lastMouseX;
             const deltaY = e.clientY - lastMouseY;
- 
-						rotZAngle = (rotZAngle + (deltaX * 0.5)) % (360);
-						controls.rotZ.value = rotZAngle;
-						values.rotZVal.textContent = rotZAngle.toFixed(0) + '°';
 
+            // 1. Map horizontal drag (deltaX) to rotation around the Y-axis (or Z-axis for a rolling effect).
+            rotZAngle = (rotZAngle + (deltaX * 0.5));
+            // Keep the angle bounded in [0, 360] for clean display
+            rotZAngle = ((rotZAngle % 360) + 360) % 360; 
 
-            // Compute rotation axis perpendicular to drag direction
-            const dragMagnitude = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-            if (dragMagnitude < 0.1) return; // Too small
+            // 2. Map vertical drag (deltaY) to rotation around the X-axis.
+            // A positive deltaY (moving down) should rotate around the negative X-axis.
+            rotXAngle = (rotXAngle + (deltaY * 0.5));
+            rotXAngle = ((rotXAngle % 360) + 360) % 360; 
+
+            // Update controls/display to reflect the new angles
+            controls.rotZ.value = rotZAngle;
+            values.rotZVal.textContent = rotZAngle.toFixed(0) + '°';
             
-            // Axis is perpendicular to drag in screen space
-            const axis = {
-                x: -deltaY / dragMagnitude,  // Drag up = rotate around X
-                y: deltaX / dragMagnitude,   // Drag right = rotate around Y
-                z: 0                         // No screen-space Z component
-            };
-            
-            // Rotation angle proportional to drag distance
-            const angleRAU = (dragMagnitude * 0.01) % 4.0;  // RAU angle [0,4]
-            
-            // Apply Rodrigues rotation to each point
-            sphereData.meridians = sphereData.meridians.map(meridian =>
-                meridian.map(point => rodriguesRAU(point, axis, angleRAU))
-            );
-            
-            sphereData.parallels = sphereData.parallels.map(parallel =>
-                parallel.map(point => rodriguesRAU(point, axis, angleRAU))
-            );
+            controls.rotX.value = rotXAngle;
+            values.rotXVal.textContent = rotXAngle.toFixed(0) + '°';
             
             lastMouseX = e.clientX;
             lastMouseY = e.clientY;
+            
+            // Re-render the sphere with the new rotation angles
             render();
         });
         
-        function rodriguesRAU(v, k, angleRAU) {
-            // Map RAU [0,4] to phase [0,1] for one quadrant
-            const phase = (angleRAU % 4.0) / 4.0;
-            const trig = getRotationComponents(phase);
-            
-            const c = trig.cos;
-            const s = trig.sin;
-            
-            // k × v (cross product)
-            const cross = {
-                x: k.y * v.z - k.z * v.y,
-                y: k.z * v.x - k.x * v.z,
-                z: k.x * v.y - k.y * v.x
-            };
-            
-            // k · v (dot product)
-            const dot = k.x * v.x + k.y * v.y + k.z * v.z;
-            
-            // Rodrigues formula: v_rot = v*cos(θ) + (k×v)*sin(θ) + k*(k·v)*(1-cos(θ))
-            return {
-                x: v.x * c + cross.x * s + k.x * dot * (1 - c),
-                y: v.y * c + cross.y * s + k.y * dot * (1 - c),
-                z: v.z * c + cross.z * s + k.z * dot * (1 - c)
-            };
-        }
-
         document.addEventListener('mouseup', () => {
             dragging = false;
         });
