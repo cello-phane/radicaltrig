@@ -1,6 +1,5 @@
 // ===== DERIVATION CANVAS  =====
 const canvas = document.getElementById('derivCanvas');
-if (!canvas) return;
 
 const ctx = canvas.getContext('2d');
 const scale = 250;
