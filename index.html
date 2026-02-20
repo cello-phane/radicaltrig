@@ -1,342 +1,86 @@
 <!DOCTYPE html>
-<html lang="en">
+
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>RAU - Complete Visualization Suite</title>
-    <style>
-        :root {
-            --bg: #0a0e1a;
-            --panel: #0f1420;
-            --text: #e8f0ff;
-            --accent: #00d4aa;
-            --accent2: #ff6b9d;
-            --border: rgba(255,255,255,0.08);
-            --muted: #7e8ba3;
-        }
-        
-        body.light-mode {
-            --bg: #f5f5f5;
-            --panel: #ffffff;
-            --text: #1a1a2e;
-            --accent: #0066cc;
-            --accent2: #cc0066;
-            --border: #ddd;
-            --muted: #666;
-        }
-        
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            background: var(--bg);
-            color: var(--text);
-            font-family: 'SF Mono', 'Segoe UI', monospace;
-            transition: all 0.3s;
-        }
-        
-        header {
-            background: linear-gradient(135deg, var(--bg) 0%, var(--panel) 100%);
-            padding: 20px;
-            border-bottom: 1px solid var(--border);
-            text-align: center;
-        }
-        
-        h1 {
-            color: var(--accent);
-            font-size: 24px;
-            font-weight: 700;
-            margin-bottom: 8px;
-        }
-        
-        .subtitle {
-            color: var(--muted);
-            font-size: 13px;
-        }
-        
-        .nav-buttons {
-            display: flex;
-            gap: 12px;
-            justify-content: center;
-            margin-top: 16px;
-        }
-        
-        button {
-            background: var(--panel);
-            color: var(--text);
-            border: 1px solid var(--border);
-            padding: 10px 20px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-family: inherit;
-            font-size: 13px;
-            transition: all 0.2s;
-        }
-        
-        button:hover {
-            background: var(--accent);
-            color: var(--bg);
-            border-color: var(--accent);
-        }
-        
-        button.active {
-            background: var(--accent);
-            color: var(--bg);
-        }
-        
-        .content {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        
-        .section {
-            display: none;
-        }
-        
-        .section.active {
-            display: block;
-        }
-        
-        .card {
-            background: var(--panel);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 24px;
-            margin-bottom: 20px;
-        }
-        
-        h2 {
-            color: var(--accent);
-            font-size: 18px;
-            margin-bottom: 16px;
-        }
-        
-        canvas {
-            border: 2px solid var(--border);
-            border-radius: 8px;
-            background: linear-gradient(135deg, #050810 0%, #0a0e1a 100%);
-            display: block;
-            margin: 0 auto;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
-        }
-        
-        .controls {
-            margin-top: 20px;
-        }
-        
-        .control-group {
-            margin-bottom: 16px;
-        }
-        
-        label {
-            display: block;
-            color: var(--text);
-            font-size: 12px;
-            font-weight: 600;
-            margin-bottom: 6px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        
-        input[type="range"] {
-            width: 100%;
-            height: 4px;
-            background: rgba(255,255,255,0.1);
-            border-radius: 2px;
-            outline: none;
-            appearance: none;
-        }
-        
-        input[type="range"]::-webkit-slider-thumb {
-            appearance: none;
-            width: 14px;
-            height: 14px;
-            border-radius: 7px;
-            background: var(--accent);
-            cursor: pointer;
-            border: 2px solid var(--bg);
-        }
-        
-        input[type="text"], select {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            background: var(--bg);
-            color: var(--text);
-            font-family: inherit;
-            font-size: 13px;
-        }
-        
-        .value-display {
-            display: inline-block;
-            padding: 4px 10px;
-            background: rgba(0,212,170,0.15);
-            color: var(--accent);
-            border-radius: 4px;
-            font-weight: 600;
-            font-size: 11px;
-            border: 1px solid rgba(0,212,170,0.3);
-            margin-left: 8px;
-        }
-        
-        .formula-box {
-            background: var(--bg);
-            padding: 12px;
-            border-radius: 6px;
-            margin: 12px 0;
-            font-size: 13px;
-            line-height: 1.6;
-            border: 1px solid var(--border);
-            font-family: 'Courier New', monospace;
-        }
-        
-        .formula-box strong {
-            color: var(--accent2);
-        }
-        
-        code {
-            background: var(--panel);
-            padding: 2px 6px;
-            border-radius: 3px;
-            font-size: 11px;
-            color: var(--accent);
-        }
-        
-        .grid-2 {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
-        
-        @media (max-width: 1200px) {
-            .grid-2 {
-                grid-template-columns: 1fr;
+    <!-- <meta http-equiv="Content-Security-Policy" content="script-src 'unsafe-inline' https://cdn.jsdelivr.net https://cello-phane.github.io; script-src-elem 'unsafe-inline' https://cdn.jsdelivr.net https://cello-phane.github.io"> -->
+
+    <title>Radical Angle Unit - Vector Visualization</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [
+                    ['$', '$'],
+                    ['\\(', '\\)']
+                ]
+            },
+            svg: {
+                fontCache: 'global'
             }
-        }
-    </style>
+        };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
 </head>
+
 <body>
     <header>
-        <h1>Radical Angle Unit</h1>
-        <div class="nav-buttons">
-            <button class="nav-btn active" data-section="derivation">Diagonal Derivation</button>
-            <button class="nav-btn" data-section="protractor">RAU Protractor</button>
-            <button class="nav-btn" data-section="vectors">Vector Angles</button>
-            <button id="themeToggle">🌙 Light Mode</button>
-        </div>
+        <h1>Radical Angle Unit - Vector Visualization</h1>
+        <button id="toggleButton" class="toggle-btn">Switch to Vector Diagram</button>
+        <button id="themeToggle" class="toggle-btn">🌙 Dark Mode</button>
     </header>
 
-    <div class="content">
-        <!-- SECTION 1: Derivation -->
-        <div id="derivation" class=\"section active\">
-            <div class="card">
-                <h2>Diagonal Parameterization - Visual Derivation</h2>
-                <canvas id="derivCanvas" width="750" height="650"></canvas>
-                
-                <div class="controls">
-                    <div class="control-group">
-                        <label>
-                            Parameter t (distance along diagonal):
-                            <span class="value-display" id="tValue">0.500</span>
-                        </label>
-                        <input type="range" id="tSlider" min="0" max="1" value="0.5" step="0.001">
-                    </div>
-                    
-                    <div class="grid-2">
-                        <div class="control-group">
-                            <label><input type="checkbox" id="showGrid" checked> Show Grid</label>
-                            <label><input type="checkbox" id="showLabels" checked> Show Labels</label>
-                            <label><input type="checkbox" id="showConstruction" checked> Show Construction Lines</label>
-                        </div>
-                        
-                        <div>
-                            <button onclick="setT(0)">t = 0</button>
-                            <button onclick="setT(0.25)">t = 0.25</button>
-                            <button onclick="setT(0.5)">t = 0.5</button>
-                            <button onclick="setT(0.75)">t = 0.75</button>
-                            <button onclick="setT(1)">t = 1</button>
-                        </div>
-                    </div>
-                    
-                    <div class="formula-box">
-                        <strong>Point on Diagonal:</strong><br>
-                        (x, y) = (1-t, t) = (<span id="diagX">0.500</span>, <span id="diagY">0.500</span>)<br><br>
-                        
-                        <strong>Distance from Origin:</strong><br>
-                        r = √(1 - 2t + 2t²) = <span id="rValue">0.7071</span><br><br>
-                        
-                        <strong>Unit Circle Projection:</strong><br>
-                        cos(θ) = (1-t)/r = <span id="cosValue">0.7071</span><br>
-                        sin(θ) = t/r = <span id="sinValue">0.7071</span><br><br>
-                        
-                        <strong>Angle:</strong> <span id="angleValue">45.0</span>
-                    </div>
-                    
-                    <div class="formula-box">
-                        <strong>RAU Formulae:</strong><br><br>
-                        <code>rcos(t) = (1-t) / √(1 - 2t + 2t²)</code><br>
-                        <code>rsin(t) = t / √(1 - 2t + 2t²)</code><br><br>
-                    </div>
-                </div>
-            </div>
+    <div id="formulaPanel">
+        <div id="formulaHeader">
+            <div class="title">Sidebar</div>
+            <div class="chev" id="formulaChevron">◀</div>
         </div>
+        <button onclick="toggleMathBlock()">Formulae</button>
+		  
+        <button onclick="changeFontSize(1,'resultsContent')">+</button>
+        <button onclick="changeFontSize(-1,'resultsContent')">-</button>
+		<button id="toggleHeaderControls" style="float:right">◀</button>
+		<div id="mathBlock" class="collapsed">
+   	        <p style="margin:0 0 5px 0;">\(0.0 < t < 1.0\)</p>
+   	        <div>\[\mathrm{rsin}(t)=\frac{t}{\sqrt{1-2t+2t^2}}\]</div>
+   	        <div>\[\mathrm{rcos}(t)=\frac{1-t}{\sqrt{1-2t+2t^2}}\]</div>
+   	        <div>\[\mathrm{rtan}(t)=\frac{t}{1-t}\]</div>
+   	        <div>\[\mathrm{Inverse\ Functions (-1 < t <1)}\]</div>
+   	        <div>\[\mathrm{rsin^{-1}}(t)=\frac{t^2-\sqrt{t^2-t^4}}{2t^2-1}\]</div>
+   	        <div>\[\mathrm{rcos^{-1}}(t)=\frac{t^2-1+\sqrt{t^2-t^4}}{2t^2-1}\]</div>
+   	        <div>\[\mathrm{rtan^{-1}}(t)=\frac{t}{1+t}\]</div>
+   	      </div>
+        <div id="formulaBody">
+       	   
+            <!-- Vector canvas only control -->
+            <div id="angleModeSidebar" style="display:none; margin: 12px 0; padding: 8px; border: 1px solid #ddd; border-radius: 6px;">
+                <label for="angleMode" style="display: block; font-weight: 600; margin-bottom: 8px;">Display Mode:</label> 
+                <select id="angleMode">
+                    <option value="between">Angle Between Vectors</option>
+                    <option value="individual">Individual Vector Angles</option>
+                </select>
+            </div>
 
-        <!-- SECTION 2: Protractor -->
-        <div id="protractor" class="section">
-            <div class="card">
-                <h2>RAU Protractor - Quadrant-Aware Angles</h2>
-                <div style="position: relative; max-width: 600px; margin: 0 auto;">
-                    <canvas id="rauCanvas" width="600" height="400"></canvas>
-                    <svg id="prosvg" viewBox="-260 -5 517 11" preserveAspectRatio="xMidYMid meet" 
-                         style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
-                                pointer-events: none; display: block;">
-                    </svg>
-                </div>
-                
-                <div class="controls">
-                    <div class="control-group">
-                        <label>RAU Angle (0-4 maps to 0-360°):</label>
-                        <input type="range" id="rauSlider" min="0" max="4" step="0.01" value="0">
-                        <span class="value-display" id="rauValue">0.00</span>
-                    </div>
-                    
-                    <div class="grid-2">
-                        <div class="control-group">
-                            <label>Tick Count:</label>
-                            <input type="range" id="tickCount" min="4" max="120" step="4" value="72">
-                            <span class="value-display" id="tickVal">72</span>
-                        </div>
-                        
-                        <div class="control-group">
-                            <label>Label Mode:</label>
-                            <select id="labelMode">
-                                <option value="t">t (RAU param)</option>
-                                <option value="deg">degrees</option>
-                                <option value="rad">radians</option>
-                                <option value="none">none</option>
-                            </select>
-                        </div>
-                    </div>
-                    
-                    <div class="formula-box">
-                        <strong>RAU System (0-4 parameter):</strong><br><br>
-                        Quadrant 0 (0-1): t in [0,1] → 0-90°<br>
-                        Quadrant 1 (1-2): t in [0,1] → 90-180°<br>
-                        Quadrant 2 (2-3): t in [0,1] → 180-270°<br>
-                        Quadrant 3 (3-4): t in [0,1] → 270-360°<br><br>
-                        
-                        <code>quadrant = floor(phase)</code><br>
-                        <code>local_t = phase - quadrant</code><br>
-                        Apply quadrant reflections to rsin/rcos.
-                    </div>
-                </div>
-            </div>
+            <pre id="resultsContent"></pre>
         </div>
+    </div>
+    <div class="content">
+      <section id="section1" class="active">
+          <div class="card" style="position: relative; width: 100%; max-width: 600px; margin: 0 auto;background:transparent;">
+              <h2>Introduction to RAU</h2>
+              <div class="desc"><strong>Quadrant-aware modular arithmetic</strong> - RAU maps a linear parameter (0–4) to a circle using integer and fractional parts.
+              </div>
+              <link rel="stylesheet" href="css/intro.css"> 
+              <div style="position: relative; width: 100%; max-width: 600px; margin: 0 auto;">
+                  <!-- Canvas (interactive) -->
+                  <canvas id="simpleCanvas" width="600" height="400" style="display: block; z-index: 1; position: relative;">
+                  </canvas>
+
+                  <!-- SVG overlay (non-interactive, visual only) -->
+                  <svg id="prosvg" viewBox="-260 -5 517 11" preserveAspectRatio="xMidYMid meet" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+		             z-index: 2; pointer-events: none; display: block;">
+                  </svg>
+              </div>
 
               <div class="controls">
                   <div style="displaY: flex;" class="controls">
@@ -362,11 +106,215 @@
               </div>
 
           </div>
+          <!-- Derivation Canvas - Added seamlessly below RAU Protractor -->
+          <div class="card" style="margin-top: 20px;">
+              <h2>Diagonal Derivation</h2>
+              <div class="desc">Visual proof: How RAU formulas emerge from diagonal parameterization</div>
+              <canvas id="derivCanvas" width="750" height="650" style="display: block; margin: 0 auto; background: transparent;"></canvas>
+              
+              <div class="controls" style="margin-top: 20px;">
+                  <div class="control-group">
+                      <label>Parameter t (along diagonal): <span class="value" id="derivTValue">0.500</span></label>
+                      <input type="range" id="derivTSlider" min="0" max="1" value="0.5" step="0.001" style="width: 100%;">
+                  </div>
+                  
+                  <div class="row">
+                      <label><input type="checkbox" id="derivShowGrid" checked> Grid</label>
+                      <label><input type="checkbox" id="derivShowLabels" checked> Labels</label>
+                      <label><input type="checkbox" id="derivShowConstruction" checked> Construction</label>
+                  </div>
+                  
+                  <div style="display: flex; gap: 8px; margin-top: 12px;">
+                      <button onclick="setDerivT(0)">t=0</button>
+                      <button onclick="setDerivT(0.25)">t=0.25</button>
+                      <button onclick="setDerivT(0.5)">t=0.5</button>
+                      <button onclick="setDerivT(0.75)">t=0.75</button>
+                      <button onclick="setDerivT(1)">t=1</button>
+                  </div>
+                  
+                  <div style="margin-top: 16px; padding: 12px; background: var(--control-bg); border-radius: 6px; font-size: 12px; line-height: 1.6;">
+                      <strong style="color: var(--accent);">Point on Diagonal:</strong><br>
+                      (1-t, t) = (<span id="derivDiagX">0.500</span>, <span id="derivDiagY">0.500</span>)<br><br>
+                      
+                      <strong style="color: var(--accent);">Distance r:</strong> 
+                      √(1 - 2t + 2t²) = <span id="derivR">0.707</span><br><br>
+                      
+                      <strong style="color: var(--accent);">On Unit Circle:</strong><br>
+                      rcos = (1-t)/r = <span id="derivCos">0.707</span><br>
+                      rsin = t/r = <span id="derivSin">0.707</span><br>
+                      Angle: <span id="derivAngle">45.0°</span>
+                  </div>
+              </div>
+          </div>
+          
+          <script>
+          // ===== DERIVATION CANVAS - Added to existing app =====
+          (function() {
+              const canvas = document.getElementById('derivCanvas');
+              if (!canvas) return;
+              
+              const ctx = canvas.getContext('2d');
+              const scale = 250;
+              const centerX = canvas.width / 2;
+              const centerY = canvas.height / 2;
+              
+              function toCanvas(x, y) {
+                  return { x: centerX + x * scale, y: centerY - y * scale };
+              }
+              
+              function getColors() {
+                  const isDark = document.body.classList.contains('dark-mode');
+                  return {
+                      grid: isDark ? '#1a1a2e' : '#e0e0e0',
+                      axis: isDark ? '#555' : '#999',
+                      circle: isDark ? '#00ff88' : '#0066cc',
+                      diagonal: isDark ? '#ffa500' : '#ff8800',
+                      construction: isDark ? '#00d4ff' : '#0088cc',
+                      line: isDark ? '#ff6b9d' : '#cc0066',
+                      angle: isDark ? '#ffd93d' : '#ffaa00',
+                      text: isDark ? '#eee' : '#333'
+                  };
+              }
+              
+              function drawDerivation() {
+                  const colors = getColors();
+                  const t = parseFloat(document.getElementById('derivTSlider').value);
+                  const showGrid = document.getElementById('derivShowGrid').checked;
+                  const showLabels = document.getElementById('derivShowLabels').checked;
+                  const showConstruction = document.getElementById('derivShowConstruction').checked;
+                  
+                  ctx.clearRect(0, 0, canvas.width, canvas.height);
+                  
+                  // Grid
+                  if (showGrid) {
+                      ctx.strokeStyle = colors.grid;
+                      ctx.lineWidth = 1;
+                      for (let i = -2; i <= 2; i += 0.2) {
+                          const p1 = toCanvas(i, -2), p2 = toCanvas(i, 2);
+                          ctx.beginPath();
+                          ctx.moveTo(p1.x, p1.y);
+                          ctx.lineTo(p2.x, p2.y);
+                          ctx.stroke();
+                          
+                          const p3 = toCanvas(-2, i), p4 = toCanvas(2, i);
+                          ctx.beginPath();
+                          ctx.moveTo(p3.x, p3.y);
+                          ctx.lineTo(p4.x, p4.y);
+                          ctx.stroke();
+                      }
+                  }
+                  
+                  // Axes
+                  ctx.strokeStyle = colors.axis;
+                  ctx.lineWidth = 2;
+                  const xStart = toCanvas(-1.3, 0), xEnd = toCanvas(1.3, 0);
+                  ctx.beginPath();
+                  ctx.moveTo(xStart.x, xStart.y);
+                  ctx.lineTo(xEnd.x, xEnd.y);
+                  ctx.stroke();
+                  
+                  const yStart = toCanvas(0, -1.3), yEnd = toCanvas(0, 1.3);
+                  ctx.beginPath();
+                  ctx.moveTo(yStart.x, yStart.y);
+                  ctx.lineTo(yEnd.x, yEnd.y);
+                  ctx.stroke();
+                  
+                  // Unit circle
+                  const center = toCanvas(0, 0);
+                  ctx.strokeStyle = colors.circle;
+                  ctx.lineWidth = 2;
+                  ctx.beginPath();
+                  ctx.arc(center.x, center.y, scale, 0, 2 * Math.PI);
+                  ctx.stroke();
+                  
+                  // Diagonal line
+                  const p1 = toCanvas(1, 0), p2 = toCanvas(0, 1);
+                  ctx.strokeStyle = colors.diagonal;
+                  ctx.lineWidth = 4;
+                  ctx.beginPath();
+                  ctx.moveTo(p1.x, p1.y);
+                  ctx.lineTo(p2.x, p2.y);
+                  ctx.stroke();
+                  
+                  // Calculations
+                  const diagX = 1 - t, diagY = t;
+                  const r = Math.sqrt(1 - 2*t + 2*t*t);
+                  const circleX = diagX / r, circleY = diagY / r;
+                  
+                  const pDiag = toCanvas(diagX, diagY);
+                  const pCircle = toCanvas(circleX, circleY);
+                  const origin = toCanvas(0, 0);
+                  
+                  // Construction lines
+                  if (showConstruction) {
+                      ctx.strokeStyle = colors.construction;
+                      ctx.lineWidth = 3;
+                      ctx.setLineDash([5, 5]);
+                      ctx.beginPath();
+                      ctx.moveTo(origin.x, origin.y);
+                      ctx.lineTo(pDiag.x, pDiag.y);
+                      ctx.stroke();
+                      ctx.setLineDash([]);
+                  }
+                  
+                  // Line to circle
+                  ctx.strokeStyle = colors.line;
+                  ctx.lineWidth = 3;
+                  ctx.beginPath();
+                  ctx.moveTo(origin.x, origin.y);
+                  ctx.lineTo(pCircle.x, pCircle.y);
+                  ctx.stroke();
+                  
+                  // Points
+                  ctx.fillStyle = colors.diagonal;
+                  ctx.beginPath();
+                  ctx.arc(pDiag.x, pDiag.y, 6, 0, 2 * Math.PI);
+                  ctx.fill();
+                  
+                  ctx.fillStyle = colors.line;
+                  ctx.beginPath();
+                  ctx.arc(pCircle.x, pCircle.y, 7, 0, 2 * Math.PI);
+                  ctx.fill();
+                  
+                  // Angle arc
+                  const angleRad = Math.atan2(circleY, circleX);
+                  ctx.strokeStyle = colors.angle;
+                  ctx.lineWidth = 2;
+                  ctx.beginPath();
+                  ctx.arc(origin.x, origin.y, scale * 0.2, 0, -angleRad, true);
+                  ctx.stroke();
+                  
+                  // Update displays
+                  document.getElementById('derivTValue').textContent = t.toFixed(3);
+                  document.getElementById('derivDiagX').textContent = diagX.toFixed(3);
+                  document.getElementById('derivDiagY').textContent = diagY.toFixed(3);
+                  document.getElementById('derivR').textContent = r.toFixed(3);
+                  document.getElementById('derivCos').textContent = circleX.toFixed(3);
+                  document.getElementById('derivSin').textContent = circleY.toFixed(3);
+                  document.getElementById('derivAngle').textContent = (angleRad * 180 / Math.PI).toFixed(1) + '°';
+              }
+              
+              window.setDerivT = function(value) {
+                  document.getElementById('derivTSlider').value = value;
+                  drawDerivation();
+              };
+              
+              // Event listeners
+              document.getElementById('derivTSlider').addEventListener('input', drawDerivation);
+              document.getElementById('derivShowGrid').addEventListener('change', drawDerivation);
+              document.getElementById('derivShowLabels').addEventListener('change', drawDerivation);
+              document.getElementById('derivShowConstruction').addEventListener('change', drawDerivation);
+              document.getElementById('themeToggle').addEventListener('click', () => setTimeout(drawDerivation, 50));
+              
+              // Initial draw
+              drawDerivation();
+          })();
+          </script>
       </section>
 
 	    <section id="section2" class"inactive">
 	        <div class="card">
-	            <h2>Radical Angle Unit as: |cross| / (|cross| + |dot|) + quadrant index(0 to 3)</h2>
+	            <h2>Radical Angle Unit as: |cross| / (|cross| + |dot|)</h2>
 	            <canvas id="vectorCanvas" width="600" height="400"></canvas>
 	            <div class="panel">
 	                <div>
@@ -411,414 +359,12 @@
 	            </div>
 				</div>
 	    </section>
-=======
-        <!-- SECTION 3: Vectors -->
-        <div id="vectors" class="section">
-            <div class="card">
-                <h2>Vector Angles - RAU Between Two Vectors</h2>
-                <canvas id="vectorCanvas" width="600" height="400"></canvas>
-                
-                <div class="controls">
-                    <div class="grid-2">
-                        <div>
-                            <h3 style="color: var(--accent2); margin-bottom: 12px;">Vector U (Red)</h3>
-                            <div class="control-group">
-                                <label>Length:</label>
-                                <input type="range" id="uLength" min="10" max="200" value="120">
-                                <span class=\"value-display\" id=\"uLengthVal\">120</span>
-                            </div>
-                            <div class="control-group">
-                                <label>Angle (degrees):</label>
-                                <input type="range" id="uAngle" min="0" max="360" value="30">
-                                <span class="value-display" id="uAngleVal">30°</span>
-                            </div>
-                        </div>
-                        
-                        <div>
-                            <h3 style="color: var(--accent); margin-bottom: 12px;">Vector V (Green)</h3>
-                            <div class="control-group">
-                                <label>Length:</label>
-                                <input type="range" id="vLength" min="10" max="200" value="100">
-                                <span class="value-display" id="vLengthVal">100</span>
-                            </div>
-                            <div class="control-group">
-                                <label>Angle (degrees):</label>
-                                <input type="range" id="vAngle" min="0" max="360" value="90">
-                                <span class="value-display" id="vAngleVal">90°</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="formula-box">
-                        <strong>Angle Between Vectors (RAU):</strong> <span class="value-display" id="angleRau">—</span><br>
-                        <strong>Angle (degrees):</strong> <span class="value-display" id="angleDeg">—</span><br><br>
-                        
-                        <code>angle = |cross(u,v)| / (|dot(u,v)| + |cross(u,v)|)</code><br><br>
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
-
-    <script>
-        // ===== RAU MATH CORE =====
-        function rsin(t) {
-            const a = 1.0 - 2.0 * t + 2.0 * t * t;
-            return t / Math.sqrt(a);
-        }
-        
-        function rcos(t) {
-            const a = 1.0 - 2.0 * t + 2.0 * t * t;
-            return (1.0 - t) / Math.sqrt(a);
-        }
-        
-        function radicalSine(phase) {
-            phase = ((phase % 4) + 4) % 4;
-            const q = Math.floor(phase);
-            const t = phase - q;
-            const s = rsin(t);
-            switch(q) {
-                case 0: return s;
-                case 1: return rcos(t);
-                case 2: return -s;
-                case 3: return -rcos(t);
-            }
-        }
-        
-        function radicalCosine(phase) {
-            phase = ((phase % 4) + 4) % 4;
-            const q = Math.floor(phase);
-            const t = phase - q;
-            const c = rcos(t);
-            switch(q) {
-                case 0: return c;
-                case 1: return -rsin(t);
-                case 2: return -c;
-                case 3: return rsin(t);
-            }
-        }
-        
-        function atanVec(ux, uy, vx, vy) {
-            const cross = ux * vy - uy * vx;
-            const dot = ux * vx + uy * vy;
-            const a = Math.abs(cross) / (Math.abs(dot) + Math.abs(cross));
-            
-            const q1 = a;
-            const q2 = 2.0 - a;
-            const q3 = 2.0 + a;
-            const q4 = 4.0 - a;
-            
-            const upper = cross >= 0 ? q1 : q4;
-            const lower = cross >= 0 ? q2 : q3;
-            
-            return dot >= 0 ? upper : lower;
-        }
-        
-        // ===== DERIVATION CANVAS =====
-        const derivCanvas = document.getElementById('derivCanvas');
-        const derivCtx = derivCanvas.getContext('2d');
-        const scale = 250;
-        const centerX = derivCanvas.width / 2;
-        const centerY = derivCanvas.height / 2;
-        
-        function toCanvas(x, y) {
-            return {
-                x: centerX + x * scale,
-                y: centerY - y * scale
-            };
-        }
-        
-        function drawDerivation() {
-            derivCtx.clearRect(0, 0, derivCanvas.width, derivCanvas.height);
-            
-            const t = parseFloat(document.getElementById('tSlider').value);
-            const showGrid = document.getElementById('showGrid').checked;
-            const showLabels = document.getElementById('showLabels').checked;
-            const showConstruction = document.getElementById('showConstruction').checked;
-            
-            // Grid
-            if (showGrid) {
-                derivCtx.strokeStyle = '#1a1a2e';
-                derivCtx.lineWidth = 1;
-                for (let i = -2; i <= 2; i += 0.2) {
-                    const p1 = toCanvas(i, -2);
-                    const p2 = toCanvas(i, 2);
-                    derivCtx.beginPath();
-                    derivCtx.moveTo(p1.x, p1.y);
-                    derivCtx.lineTo(p2.x, p2.y);
-                    derivCtx.stroke();
-                    
-                    const p3 = toCanvas(-2, i);
-                    const p4 = toCanvas(2, i);
-                    derivCtx.beginPath();
-                    derivCtx.moveTo(p3.x, p3.y);
-                    derivCtx.lineTo(p4.x, p4.y);
-                    derivCtx.stroke();
-                }
-            }
-            
-            // Axes
-            derivCtx.strokeStyle = '#555';
-            derivCtx.lineWidth = 2;
-            const xStart = toCanvas(-1.3, 0);
-            const xEnd = toCanvas(1.3, 0);
-            derivCtx.beginPath();
-            derivCtx.moveTo(xStart.x, xStart.y);
-            derivCtx.lineTo(xEnd.x, xEnd.y);
-            derivCtx.stroke();
-            
-            const yStart = toCanvas(0, -1.3);
-            const yEnd = toCanvas(0, 1.3);
-            derivCtx.beginPath();
-            derivCtx.moveTo(yStart.x, yStart.y);
-            derivCtx.lineTo(yEnd.x, yEnd.y);
-            derivCtx.stroke();
-            
-            // Unit circle
-            const center = toCanvas(0, 0);
-            derivCtx.strokeStyle = '#00d4aa';
-            derivCtx.lineWidth = 2;
-            derivCtx.beginPath();
-            derivCtx.arc(center.x, center.y, scale, 0, 2 * Math.PI);
-            derivCtx.stroke();
-            
-            // Diagonal line
-            const p1 = toCanvas(1, 0);
-            const p2 = toCanvas(0, 1);
-            derivCtx.strokeStyle = '#ffa500';
-            derivCtx.lineWidth = 4;
-            derivCtx.beginPath();
-            derivCtx.moveTo(p1.x, p1.y);
-            derivCtx.lineTo(p2.x, p2.y);
-            derivCtx.stroke();
-            
-            // Point on diagonal
-            const diagX = 1 - t;
-            const diagY = t;
-            const r = Math.sqrt(1 - 2*t + 2*t*t);
-            const circleX = diagX / r;
-            const circleY = diagY / r;
-            
-            const pDiag = toCanvas(diagX, diagY);
-            const pCircle = toCanvas(circleX, circleY);
-            const origin = toCanvas(0, 0);
-            
-            // Construction lines
-            if (showConstruction) {
-                derivCtx.strokeStyle = '#00d4ff';
-                derivCtx.lineWidth = 3;
-                derivCtx.setLineDash([5, 5]);
-                derivCtx.beginPath();
-                derivCtx.moveTo(origin.x, origin.y);
-                derivCtx.lineTo(pDiag.x, pDiag.y);
-                derivCtx.stroke();
-                derivCtx.setLineDash([]);
-            }
-            
-            // Line to circle
-            derivCtx.strokeStyle = '#ff6b9d';
-            derivCtx.lineWidth = 3;
-            derivCtx.beginPath();
-            derivCtx.moveTo(origin.x, origin.y);
-            derivCtx.lineTo(pCircle.x, pCircle.y);
-            derivCtx.stroke();
-            
-            // Points
-            derivCtx.fillStyle = '#ffa500';
-            derivCtx.beginPath();
-            derivCtx.arc(pDiag.x, pDiag.y, 6, 0, 2 * Math.PI);
-            derivCtx.fill();
-            
-            derivCtx.fillStyle = '#ff6b9d';
-            derivCtx.beginPath();
-            derivCtx.arc(pCircle.x, pCircle.y, 7, 0, 2 * Math.PI);
-            derivCtx.fill();
-            
-            // Angle arc
-            const angleRad = Math.atan2(circleY, circleX);
-            derivCtx.strokeStyle = '#ffd93d';
-            derivCtx.lineWidth = 2;
-            derivCtx.beginPath();
-            derivCtx.arc(origin.x, origin.y, scale * 0.2, 0, -angleRad, true);
-            derivCtx.stroke();
-            
-            // Update display
-            document.getElementById('tValue').textContent = t.toFixed(3);
-            document.getElementById('diagX').textContent = diagX.toFixed(4);
-            document.getElementById('diagY').textContent = diagY.toFixed(4);
-            document.getElementById('rValue').textContent = r.toFixed(4);
-            document.getElementById('cosValue').textContent = circleX.toFixed(4);
-            document.getElementById('sinValue').textContent = circleY.toFixed(4);
-            document.getElementById('angleValue').textContent = (angleRad * 180 / Math.PI).toFixed(1) + '°';
-        }
-        
-        function setT(value) {
-            document.getElementById('tSlider').value = value;
-            drawDerivation();
-        }
-        
-        // ===== RAU PROTRACTOR =====
-        function drawRAUProtractor() {
-            const canvas = document.getElementById('rauCanvas');
-            const ctx = canvas.getContext('2d');
-            const phase = parseFloat(document.getElementById('rauSlider').value);
-            
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            const cx = canvas.width / 2;
-            const cy = canvas.height / 2;
-            const radius = 150;
-            
-            // Circle
-            ctx.strokeStyle = '#00d4aa';
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            ctx.arc(cx, cy, radius, 0, 2 * Math.PI);
-            ctx.stroke();
-            
-            // Hand
-            const cos = radicalCosine(phase);
-            const sin = radicalSine(phase);
-            const ex = cx + cos * radius;
-            const ey = cy - sin * radius;
-            
-            ctx.strokeStyle = '#ff6b9d';
-            ctx.lineWidth = 3;
-            ctx.beginPath();
-            ctx.moveTo(cx, cy);
-            ctx.lineTo(ex, ey);
-            ctx.stroke();
-            
-            ctx.fillStyle = '#ff6b9d';
-            ctx.beginPath();
-            ctx.arc(ex, ey, 8, 0, 2 * Math.PI);
-            ctx.fill();
-            
-            document.getElementById('rauValue').textContent = phase.toFixed(2);
-        }
-        
-        // ===== VECTOR CANVAS =====
-        function drawVectors() {
-            const canvas = document.getElementById('vectorCanvas');
-            const ctx = canvas.getContext('2d');
-            
-            const uLen = parseFloat(document.getElementById('uLength').value);
-            const vLen = parseFloat(document.getElementById('vLength').value);
-            const uAng = parseFloat(document.getElementById('uAngle').value) * Math.PI / 180;
-            const vAng = parseFloat(document.getElementById('vAngle').value) * Math.PI / 180;
-            
-            const ux = uLen * Math.cos(uAng);
-            const uy = uLen * Math.sin(uAng);
-            const vx = vLen * Math.cos(vAng);
-            const vy = vLen * Math.sin(vAng);
-            
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            const cx = canvas.width / 2;
-            const cy = canvas.height / 2;
-            
-            // Grid
-            ctx.strokeStyle = '#1a1a2e';
-            ctx.lineWidth = 1;
-            for (let i = 0; i < canvas.width; i += 40) {
-                ctx.beginPath();
-                ctx.moveTo(i, 0);
-                ctx.lineTo(i, canvas.height);
-                ctx.stroke();
-            }
-            for (let i = 0; i < canvas.height; i += 40) {
-                ctx.beginPath();
-                ctx.moveTo(0, i);
-                ctx.lineTo(canvas.width, i);
-                ctx.stroke();
-            }
-            
-            // Axes
-            ctx.strokeStyle = '#555';
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            ctx.moveTo(0, cy);
-            ctx.lineTo(canvas.width, cy);
-            ctx.stroke();
-            ctx.beginPath();
-            ctx.moveTo(cx, 0);
-            ctx.lineTo(cx, canvas.height);
-            ctx.stroke();
-            
-            // Vector U
-            ctx.strokeStyle = '#ff6b9d';
-            ctx.lineWidth = 3;
-            ctx.beginPath();
-            ctx.moveTo(cx, cy);
-            ctx.lineTo(cx + ux, cy - uy);
-            ctx.stroke();
-            
-            // Vector V
-            ctx.strokeStyle = '#00d4aa';
-            ctx.lineWidth = 3;
-            ctx.beginPath();
-            ctx.moveTo(cx, cy);
-            ctx.lineTo(cx + vx, cy - vy);
-            ctx.stroke();
-            
-            // Calculate angle
-            const rauAngle = atanVec(ux, uy, vx, vy);
-            const degAngle = rauAngle * 90;
-            
-            document.getElementById('uLengthVal').textContent = uLen.toFixed(0);
-            document.getElementById('vLengthVal').textContent = vLen.toFixed(0);
-            document.getElementById('uAngleVal').textContent = (uAng * 180 / Math.PI).toFixed(0) + '°';
-            document.getElementById('vAngleVal').textContent = (vAng * 180 / Math.PI).toFixed(0) + '°';
-            document.getElementById('angleRau').textContent = rauAngle.toFixed(3);
-            document.getElementById('angleDeg').textContent = degAngle.toFixed(1) + '°';
-        }
-        
-        // ===== NAVIGATION =====
-        document.querySelectorAll('.nav-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const section = btn.dataset.section;
-                document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-                document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-                document.getElementById(section).classList.add('active');
-                btn.classList.add('active');
-                
-                // Redraw active section
-                if (section === 'derivation') drawDerivation();
-                if (section === 'protractor') drawRAUProtractor();
-                if (section === 'vectors') drawVectors();
-            });
-        });
-        
-        // ===== THEME TOGGLE =====
-        document.getElementById('themeToggle').addEventListener('click', function() {
-            document.body.classList.toggle('light-mode');
-            this.textContent = document.body.classList.contains('light-mode') ? '🌙 Dark Mode' : '☀️ Light Mode';
-            
-            // Redraw active section
-            const active = document.querySelector('.section.active').id;
-            if (active === 'derivation') drawDerivation();
-            if (active === 'protractor') drawRAUProtractor();
-            if (active === 'vectors') drawVectors();
-        });
-        
-        // ===== EVENT LISTENERS =====
-        document.getElementById('tSlider').addEventListener('input', drawDerivation);
-        document.getElementById('showGrid').addEventListener('change', drawDerivation);
-        document.getElementById('showLabels').addEventListener('change', drawDerivation);
-        document.getElementById('showConstruction').addEventListener('change', drawDerivation);
-        
-        document.getElementById('rauSlider').addEventListener('input', drawRAUProtractor);
-        document.getElementById('tickCount').addEventListener('input', function() {
-            document.getElementById('tickVal').textContent = this.value;
-        });
-        
-        document.getElementById('uLength').addEventListener('input', drawVectors);
-        document.getElementById('vLength').addEventListener('input', drawVectors);
-        document.getElementById('uAngle').addEventListener('input', drawVectors);
-        document.getElementById('vAngle').addEventListener('input', drawVectors);
-        
-        // ===== INITIALIZE =====
-        drawDerivation();
-    </script>
+    <script src="js/main.js"></script>
+    <script src="js/geom.js"></script>
+    <script src="js/vectorDraw.js"></script>
+    <script src="js/uiControls.js"></script>
+    <script src="js/protractor.js"></script>
 </body>
+
 </html>
