@@ -224,6 +224,17 @@ function drawDerivation() {
     document.getElementById('derivSin').textContent = circleY.toFixed(3);
     document.getElementById('derivAngle').textContent = (angleRad * 180 / Math.PI).toFixed(1) + '°';
 }
+window.setDerivT = function(value) {
+    document.getElementById('derivTSlider').value = value;
+    drawDerivation();
+};
 
+// Event listeners
+document.getElementById('derivTSlider').addEventListener('input', drawDerivation);
+document.getElementById('derivShowGrid').addEventListener('change', drawDerivation);
+document.getElementById('derivShowLabels').addEventListener('change', drawDerivation);
+document.getElementById('derivShowConstruction').addEventListener('change', drawDerivation);
+document.getElementById('themeToggle').addEventListener('click', () => setTimeout(drawDerivation, 50));
+    
 // Initial draw
 drawDerivation();
