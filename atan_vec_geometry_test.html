@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>atanVec Geometry</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+        }
+        canvas {
+            display: block;
+            margin: 20px auto;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            background: white;
+        }
+        .controls {
+            text-align: center;
+            margin: 20px 0;
+        }
+        .explanation {
+            background: #e8f4f8;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 20px 0;
+            border-left: 4px solid #3498db;
+        }
+        .formula {
+            background: #fff;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            margin: 10px 0;
+            text-align: center;
+            font-size: 18px;
+        }
+        .highlight {
+            background: #ffeb3b;
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
+        input[type="range"] {
+            width: 300px;
+        }
+        .values {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin: 20px 0;
+        }
+        .value-box {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            border: 1px solid #dee2e6;
+        }
+        .value-label {
+            font-weight: bold;
+            color: #495057;
+        }
+        .value-number {
+            font-size: 20px;
+            color: #2c3e50;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Geometric Meaning of atanVec Parameter</h1>
+        
+        <div class="explanation">
+            <h3>What is 'a' measuring?</h3>
+            <p><strong>The parameter 'a' represents the ratio:</strong></p>
+            <div class="formula">
+                a = <span class="highlight">|cross|</span> / (<span style="color: #e74c3c">|dot|</span> + <span class="highlight">|cross|</span>)
+            </div>
+            <p>This is the ratio of the <span class="highlight" style="background: #ffeb3b">perpendicular component</span> 
+            to the <span style="color: #e74c3c">total magnitude</span> (parallel + perpendicular).</p>
+            <p><strong>Geometrically:</strong> It measures how "perpendicular" the vectors are, 
+            scaled from 0 (parallel) to 1 (perpendicular).</p>
+        </div>
+
+        <canvas id="canvas" width="800" height="600"></canvas>
+
+        <div class="controls">
+            <label>Angle between vectors: <span id="angleDisplay">45°</span></label><br>
+            <input type="range" id="angleSlider" min="0" max="360" value="45" step="1">
+        </div>
+
+        <div class="values">
+            <div class="value-box">
+                <div class="value-label">|cross| (Perpendicular):</div>
+                <div class="value-number" id="crossValue">0</div>
+            </div>
+            <div class="value-box">
+                <div class="value-label">|dot| (Parallel):</div>
+                <div class="value-number" id="dotValue">0</div>
+            </div>
+            <div class="value-box">
+                <div class="value-label">Parameter 'a':</div>
+                <div class="value-number" id="aValue">0</div>
+            </div>
+            <div class="value-box">
+                <div class="value-label">RAU angle (0-4):</div>
+                <div class="value-number" id="rauValue">0</div>
+            </div>
+        </div>
+
+        <div class="explanation">
+            <h3>Key Insights:</h3>
+            <ul>
+                <li><strong>When a = 0:</strong> Vectors are parallel (0° or 180°)</li>
+                <li><strong>When a = 0.5:</strong> Equal parallel and perpendicular components (45°, 135°, etc.)</li>
+                <li><strong>When a = 1:</strong> Vectors are perpendicular (90° or 270°)</li>
+                <li><strong>The denominator (|dot| + |cross|):</strong> Is the total "distance" in perpendicular + parallel space</li>
+                <li><strong>This creates a non-linear but monotonic mapping</strong> from angle to parameter</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const slider = document.getElementById('angleSlider');
+        
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height / 2;
+        const scale = 150;
+
+        function drawArrow(x1, y1, x2, y2, color, label, width = 2) {
+            const headlen = 15;
+            const angle = Math.atan2(y2 - y1, x2 - x1);
+
+            ctx.strokeStyle = color;
+            ctx.fillStyle = color;
+            ctx.lineWidth = width;
+            
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.moveTo(x2, y2);
+            ctx.lineTo(x2 - headlen * Math.cos(angle - Math.PI / 6), y2 - headlen * Math.sin(angle - Math.PI / 6));
+            ctx.lineTo(x2 - headlen * Math.cos(angle + Math.PI / 6), y2 - headlen * Math.sin(angle + Math.PI / 6));
+            ctx.closePath();
+            ctx.fill();
+
+            if (label) {
+                ctx.font = 'bold 16px Arial';
+                ctx.fillText(label, x2 + 10, y2 - 10);
+            }
+        }
+
+        function drawDashedLine(x1, y1, x2, y2, color) {
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 1;
+            ctx.setLineDash([5, 5]);
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+            ctx.stroke();
+            ctx.setLineDash([]);
+        }
+
+        function draw() {
+            const angleDeg = parseInt(slider.value);
+            const angleRad = angleDeg * Math.PI / 180;
+            
+            document.getElementById('angleDisplay').textContent = angleDeg + '°';
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw grid
+            ctx.strokeStyle = '#e0e0e0';
+            ctx.lineWidth = 1;
+            for (let i = -3; i <= 3; i++) {
+                ctx.beginPath();
+                ctx.moveTo(centerX + i * 100, 0);
+                ctx.lineTo(centerX + i * 100, canvas.height);
+                ctx.stroke();
+                
+                ctx.beginPath();
+                ctx.moveTo(0, centerY + i * 100);
+                ctx.lineTo(canvas.width, centerY + i * 100);
+                ctx.stroke();
+            }
+
+            // Draw axes
+            ctx.strokeStyle = '#999';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(0, centerY);
+            ctx.lineTo(canvas.width, centerY);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(centerX, 0);
+            ctx.lineTo(centerX, canvas.height);
+            ctx.stroke();
+
+            // Fixed vector u
+            const ux = scale;
+            const uy = 0;
+            
+            // Rotating vector v
+            const vx = scale * Math.cos(angleRad);
+            const vy = -scale * Math.sin(angleRad); // Negative because canvas Y is down
+
+            // Calculate dot and cross products
+            const dot = ux * vx + uy * vy;
+            const cross = ux * vy - uy * vx;
+            
+            const absDot = Math.abs(dot);
+            const absCross = Math.abs(cross);
+            const a = absCross / (absDot + absCross);
+            
+            // Draw vector u (fixed horizontal)
+            drawArrow(centerX, centerY, centerX + ux, centerY + uy, '#e74c3c', 'u', 3);
+            
+            // Draw vector v (rotating)
+            drawArrow(centerX, centerY, centerX + vx, centerY + vy, '#3498db', 'v', 3);
+
+            // Draw projection of v onto u (dot product visualization)
+            const projLength = dot / scale;
+            const projX = projLength;
+            drawArrow(centerX, centerY, centerX + projX, centerY, '#27ae60', '', 2);
+            ctx.fillStyle = '#27ae60';
+            ctx.font = 'bold 14px Arial';
+            ctx.fillText('projection (dot)', centerX + projX/2, centerY - 20);
+
+            // Draw perpendicular component (cross product visualization)
+            drawDashedLine(centerX + projX, centerY, centerX + vx, centerY + vy, '#9b59b6');
+            
+            // Draw perpendicular magnitude
+            const perpX = centerX + projX;
+            const perpY = centerY;
+            drawArrow(perpX, perpY, centerX + vx, centerY + vy, '#9b59b6', '', 2);
+            ctx.fillStyle = '#9b59b6';
+            ctx.font = 'bold 14px Arial';
+            const midPerpX = perpX + (vx - projX) / 2;
+            const midPerpY = perpY + vy / 2;
+            ctx.fillText('perpendicular (cross)', midPerpX + 10, midPerpY);
+
+            // Draw the sum visualization
+            const totalDist = absDot + absCross;
+            const barY = canvas.height - 100;
+            const barWidth = 300;
+            const barX = (canvas.width - barWidth) / 2;
+            
+            // Draw total bar
+            ctx.fillStyle = '#ecf0f1';
+            ctx.fillRect(barX, barY, barWidth, 30);
+            
+            // Draw dot portion
+            const dotWidth = (absDot / totalDist) * barWidth;
+            ctx.fillStyle = '#27ae60';
+            ctx.fillRect(barX, barY, dotWidth, 30);
+            
+            // Draw cross portion
+            const crossWidth = (absCross / totalDist) * barWidth;
+            ctx.fillStyle = '#9b59b6';
+            ctx.fillRect(barX + dotWidth, barY, crossWidth, 30);
+            
+            // Labels
+            ctx.fillStyle = '#2c3e50';
+            ctx.font = 'bold 14px Arial';
+            ctx.fillText('|dot|', barX + dotWidth/2 - 15, barY + 20);
+            ctx.fillText('|cross|', barX + dotWidth + crossWidth/2 - 20, barY + 20);
+            ctx.fillText(`a = ${a.toFixed(3)}`, barX + barWidth/2 - 40, barY + 50);
+
+            // Update values
+            document.getElementById('crossValue').textContent = absCross.toFixed(2);
+            document.getElementById('dotValue').textContent = absDot.toFixed(2);
+            document.getElementById('aValue').textContent = a.toFixed(4);
+            
+            // Calculate full RAU value with quadrant
+            let rauAngle;
+            if (dot >= 0 && cross >= 0) {
+                rauAngle = a;
+            } else if (dot < 0 && cross >= 0) {
+                rauAngle = 2.0 - a;
+            } else if (dot < 0 && cross < 0) {
+                rauAngle = 2.0 + a;
+            } else {
+                rauAngle = 4.0 - a;
+            }
+            document.getElementById('rauValue').textContent = rauAngle.toFixed(4);
+        }
+
+        slider.addEventListener('input', draw);
+        draw();
+    </script>
+</body>
+</html>
