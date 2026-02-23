@@ -18,19 +18,66 @@
 <html>
 <head>
     <title>Trigonometry Basis Test</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <style>
-        body { font-family: sans-serif; background: #1a1a1a; color: #ccc; display: flex; flex-direction: column; align-items: center; padding: 20px; }
-        .ui { background: #222; padding: 15px; border-radius: 8px; margin-bottom: 20px; display: flex; gap: 15px; align-items: center; border: 1px solid #444; }
-        canvas { max-width: 90vw; max-height: 70vh; border: 1px solid #555; background: #000; }
-        button { padding: 8px 16px; cursor: pointer; background: #444; color: #fff; border: 1px solid #666; border-radius: 4px; }
+        body { 
+            font-family: sans-serif; 
+            background: #1a1a1a; 
+            color: #ccc; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            padding: 20px; 
+            margin: 0;
+            touch-action: none;
+        }
+        .ui { 
+            background: #222; 
+            padding: 15px; 
+            border-radius: 8px; 
+            margin-bottom: 20px; 
+            display: flex; 
+            gap: 15px; 
+            align-items: center; 
+            border: 1px solid #444; 
+            flex-wrap: wrap;
+        }
+        canvas { 
+            max-width: 90vw; 
+            max-height: 70vh; 
+            border: 1px solid #555; 
+            background: #000; 
+        }
+        button { 
+            padding: 8px 16px; 
+            cursor: pointer; 
+            background: #444; 
+            color: #fff; 
+            border: 1px solid #666; 
+            border-radius: 4px; 
+        }
         button:hover { background: #555; }
+        .error {
+            color: #ff6b6b;
+            padding: 10px;
+            background: rgba(255,107,107,0.1);
+            border: 1px solid #ff6b6b;
+            border-radius: 6px;
+            margin: 10px 0;
+        }
+        .status {
+            color: #00ff88;
+            font-size: 12px;
+        }
     </style>
 </head>
 <body>
-	<p>Hold Spacebar to see original
-	</p>
+    <p>Hold Spacebar (desktop) or tap (mobile) to see original</p>
+    <div id="errorMsg" class="error" style="display:none;"></div>
+    <div class="status" id="status">Ready</div>
+    
     <div class="ui">
-        <input type="file" id="u">
+        <input type="file" id="u" accept="image/*">
         <label><input type="radio" name="p" value="0"> L</label>
         <label><input type="radio" name="p" value="1" checked> M</label>
         <label><input type="radio" name="p" value="2"> H</label>
@@ -39,7 +86,7 @@
     <canvas id="c"></canvas>
 
 <script type="x-shader/x-fragment" id="f">
-    precision highp float;
+    precision mediump float;  // Changed from highp for mobile compatibility
     uniform sampler2D t;
     uniform vec2 r;
     uniform vec2 ir;
@@ -51,6 +98,7 @@
         uv.y = 1.0 - uv.y;
         vec3 c = texture2D(t, uv).rgb;
         if (s) { gl_FragColor = vec4(c, 1.0); return; }
+        
         vec2 ts = 1.0 / ir.xy;
         float ctr = dot(c, vec3(0.299, 0.587, 0.114));
         float rgt = dot(texture2D(t, uv + vec2(ts.x, 0.0)).rgb, vec3(0.299, 0.587, 0.114));
@@ -58,8 +106,10 @@
         float e = sqrt(pow(rgt-ctr, 2.0) + pow(tp-ctr, 2.0));
         float eg = (p == 0) ? 0.28 : (p == 1) ? 0.40 : 0.70;
         eg *= (ir.x / 1920.0);
+        
         vec3 res;
         float l = floor(ctr * 128.0) / 128.0;
+        
         if (e < eg) {
             float sl = 0.03 * (1.0 - l);
             if (p == 2) res = mix(c, vec3(l), 0.25) + sl;
@@ -73,26 +123,87 @@
             float w = cos(qp) + sin(qp);
             res = c + (w * pow(1.0-l, 4.0) * c * i);
         }
+        
         gl_FragColor = vec4(clamp(res, 0.0, 1.0), 1.0);
     }
 </script>
 
 <script>
     const cvs = document.getElementById('c');
-    const gl = cvs.getContext('webgl', { preserveDrawingBuffer: true });
+    const statusEl = document.getElementById('status');
+    const errorEl = document.getElementById('errorMsg');
+    
+    // Check WebGL support
+    let gl;
+    try {
+        gl = cvs.getContext('webgl', { 
+            preserveDrawingBuffer: true,
+            alpha: false,
+            antialias: false,
+            powerPreference: 'high-performance'
+        });
+        
+        if (!gl) {
+            gl = cvs.getContext('experimental-webgl', { 
+                preserveDrawingBuffer: true,
+                alpha: false,
+                antialias: false
+            });
+        }
+        
+        if (!gl) throw new Error('WebGL not supported');
+        
+        // Check for required extensions
+        const extFloat = gl.getExtension('OES_texture_float');
+        statusEl.textContent = 'WebGL ready';
+        
+    } catch(e) {
+        errorEl.textContent = 'WebGL Error: ' + e.message + '. Try desktop browser.';
+        errorEl.style.display = 'block';
+        console.error(e);
+    }
+    
     let img = null;
     let space = false;
+    let touching = false;
 
     function createS(gl, t, src) {
         const s = gl.createShader(t);
         gl.shaderSource(s, src);
         gl.compileShader(s);
+        
+        if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) {
+            console.error('Shader error:', gl.getShaderInfoLog(s));
+            errorEl.textContent = 'Shader compilation failed: ' + gl.getShaderInfoLog(s);
+            errorEl.style.display = 'block';
+            return null;
+        }
         return s;
     }
-    const vs = createS(gl, gl.VERTEX_SHADER, `attribute vec2 p; void main(){gl_Position=vec4(p,0,1);}`);
+    
+    const vs = createS(gl, gl.VERTEX_SHADER, `
+        attribute vec2 p; 
+        void main(){
+            gl_Position=vec4(p,0,1);
+        }
+    `);
     const fs = createS(gl, gl.FRAGMENT_SHADER, document.getElementById('f').textContent);
+    
+    if (!vs || !fs) {
+        errorEl.textContent = 'Shader compilation failed. Mobile GPU may not support this.';
+        errorEl.style.display = 'block';
+    }
+    
     const prg = gl.createProgram();
-    gl.attachShader(prg, vs); gl.attachShader(prg, fs); gl.linkProgram(prg);
+    gl.attachShader(prg, vs); 
+    gl.attachShader(prg, fs); 
+    gl.linkProgram(prg);
+    
+    if (!gl.getProgramParameter(prg, gl.LINK_STATUS)) {
+        errorEl.textContent = 'Program link error: ' + gl.getProgramInfoLog(prg);
+        errorEl.style.display = 'block';
+    }
+    
     gl.useProgram(prg);
 
     const b = gl.createBuffer();
@@ -104,53 +215,163 @@
 
     function draw() {
         if (!img) return;
-        gl.uniform1i(gl.getUniformLocation(prg, "s"), space);
-        const sel = document.querySelector('input[name="p"]:checked').value;
-        gl.uniform1i(gl.getUniformLocation(prg, "p"), parseInt(sel));
-        gl.uniform2f(gl.getUniformLocation(prg, "r"), cvs.width, cvs.height);
-        gl.uniform2f(gl.getUniformLocation(prg, "ir"), img.width, img.height);
-        gl.drawArrays(gl.TRIANGLES, 0, 6);
+        
+        try {
+            gl.uniform1i(gl.getUniformLocation(prg, "s"), space || touching);
+            const sel = document.querySelector('input[name="p"]:checked').value;
+            gl.uniform1i(gl.getUniformLocation(prg, "p"), parseInt(sel));
+            gl.uniform2f(gl.getUniformLocation(prg, "r"), cvs.width, cvs.height);
+            gl.uniform2f(gl.getUniformLocation(prg, "ir"), img.width, img.height);
+            gl.drawArrays(gl.TRIANGLES, 0, 6);
+            
+            // Force flush for mobile
+            gl.flush();
+            
+        } catch(e) {
+            errorEl.textContent = 'Render error: ' + e.message;
+            errorEl.style.display = 'block';
+            console.error(e);
+        }
     }
 
     u.onchange = (e) => {
+        statusEl.textContent = 'Loading image...';
         const f = new FileReader();
         f.onload = (v) => {
             img = new Image();
+            img.crossOrigin = 'anonymous'; // Important for mobile
             img.onload = () => {
-                cvs.width = img.width; cvs.height = img.height;
-                gl.viewport(0, 0, cvs.width, cvs.height);
-                const t = gl.createTexture();
-                gl.bindTexture(gl.TEXTURE_2D, t);
-                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-                gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, img);
-                draw();
+                try {
+                    // Limit size for mobile
+                    let width = img.width;
+                    let height = img.height;
+                    const maxDim = 2048; // Mobile GPU limit
+                    
+                    if (width > maxDim || height > maxDim) {
+                        const scale = maxDim / Math.max(width, height);
+                        width = Math.floor(width * scale);
+                        height = Math.floor(height * scale);
+                        
+                        statusEl.textContent = `Resizing to ${width}x${height} for mobile...`;
+                        
+                        // Resize using canvas
+                        const tempCanvas = document.createElement('canvas');
+                        tempCanvas.width = width;
+                        tempCanvas.height = height;
+                        const tempCtx = tempCanvas.getContext('2d');
+                        tempCtx.drawImage(img, 0, 0, width, height);
+                        
+                        // Create new image from resized canvas
+                        const resizedImg = new Image();
+                        resizedImg.onload = () => {
+                            img = resizedImg;
+                            setupTexture();
+                        };
+                        resizedImg.src = tempCanvas.toDataURL();
+                    } else {
+                        setupTexture();
+                    }
+                    
+                } catch(e) {
+                    errorEl.textContent = 'Image load error: ' + e.message;
+                    errorEl.style.display = 'block';
+                    console.error(e);
+                }
             };
+            
+            img.onerror = () => {
+                errorEl.textContent = 'Failed to load image';
+                errorEl.style.display = 'block';
+            };
+            
             img.src = v.target.result;
         };
         f.readAsDataURL(e.target.files[0]);
     };
+    
+    function setupTexture() {
+        cvs.width = img.width; 
+        cvs.height = img.height;
+        gl.viewport(0, 0, cvs.width, cvs.height);
+        
+        const t = gl.createTexture();
+        gl.bindTexture(gl.TEXTURE_2D, t);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+        
+        // Try uploading texture
+        try {
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, img);
+            statusEl.textContent = 'Image loaded successfully';
+            draw();
+        } catch(e) {
+            errorEl.textContent = 'Texture upload failed: ' + e.message;
+            errorEl.style.display = 'block';
+            console.error(e);
+        }
+    }
 
-    window.onkeydown = (e) => { if(e.code === 'Space') { space = true; draw(); e.preventDefault(); } };
-    window.onkeyup = (e) => { if(e.code === 'Space') { space = false; draw(); } };
+    // Desktop keyboard controls
+    window.onkeydown = (e) => { 
+        if(e.code === 'Space') { 
+            space = true; 
+            draw(); 
+            e.preventDefault(); 
+        } 
+    };
+    
+    window.onkeyup = (e) => { 
+        if(e.code === 'Space') { 
+            space = false; 
+            draw(); 
+        } 
+    };
+    
+    // Mobile touch controls
+    cvs.addEventListener('touchstart', (e) => {
+        touching = true;
+        draw();
+        e.preventDefault();
+    }, { passive: false });
+    
+    cvs.addEventListener('touchend', (e) => {
+        touching = false;
+        draw();
+        e.preventDefault();
+    }, { passive: false });
+    
     document.querySelectorAll('input[name="p"]').forEach(r => r.onchange = draw);
 
     d.onclick = () => {
-        const lnk = document.createElement('a');
-        const px = cvs.width * cvs.height;
+        if (!img) {
+            alert('Please load an image first');
+            return;
+        }
         
-        // We drop the base quality to let the shader's sharpening do the heavy lifting
-        let q = 0.82; 
-        if (px > 2000000) q = 0.72; 
-        if (px > 5000000) q = 0.65; // High-res "Rice Field" target
+        try {
+            const lnk = document.createElement('a');
+            const px = cvs.width * cvs.height;
+            
+            let q = 0.82; 
+            if (px > 2000000) q = 0.72; 
+            if (px > 5000000) q = 0.65;
+            
+            const sel = document.querySelector('input[name="p"]:checked').value;
+            if (sel === "2") q -= 0.1;
         
-        const sel = document.querySelector('input[name="p"]:checked').value;
-        if (sel === "2") q -= 0.1; // H mode gets a deeper compression cut
-    
-        lnk.download = 'image_out.jpg';
-        lnk.href = cvs.toDataURL('image/jpeg', q);
-        lnk.click();
+            lnk.download = 'image_out.jpg';
+            lnk.href = cvs.toDataURL('image/jpeg', q);
+            lnk.click();
+            
+            statusEl.textContent = 'Exported!';
+            
+        } catch(e) {
+            errorEl.textContent = 'Export failed: ' + e.message;
+            errorEl.style.display = 'block';
+            console.error(e);
+        }
     };
 </script>
 </body>
