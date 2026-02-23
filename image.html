@@ -125,7 +125,7 @@
         float l = floor(ctr * 128.0) / 128.0;
         
         if (e < eg) {
-            float shadowLift = (preset == 0) ? 0.001 : (preset == 1) ? 0.005 : 0.008;
+            float shadowLift = (preset == 0) ? 0.0001 : (preset == 1) ? 0.0003 : 0.0005;
             float sl = shadowLift * (1.0 - l);
             if (preset == 2) res = mix(c, vec3(l), 0.25) + sl;
             else if (preset == 1) res = mix(c, vec3(l), 0.1) + sl;
@@ -377,7 +377,7 @@
             const lnk = document.createElement('a');
             const px = cvs.width * cvs.height;
             
-            let q = 0.8; // jpeg quality
+            let q = 0.77; // jpeg quality
             if (px > 2000000) q = 0.72; 
             if (px > 5000000) q = 0.65;
             
