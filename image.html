@@ -92,39 +92,61 @@
     uniform vec2 ir;
     uniform int preset;
     uniform bool s;
-
+    
     void main() {
         vec2 uv = gl_FragCoord.xy / r.xy;
         uv.y = 1.0 - uv.y;
         vec3 c = texture2D(t, uv).rgb;
-        if (s) { gl_FragColor = vec4(c, 1.0); return; }
+        
+        // Gamma correction (work in linear space)
+        c = pow(c, vec3(2.2));
+        
+        if (s) { gl_FragColor = vec4(pow(c, vec3(1.0/2.2)), 1.0); return; }
         
         vec2 ts = 1.0 / ir.xy;
-        float ctr = dot(c, vec3(0.299, 0.587, 0.114));
-        float rgt = dot(texture2D(t, uv + vec2(ts.x, 0.0)).rgb, vec3(0.299, 0.587, 0.114));
-        float tp = dot(texture2D(t, uv + vec2(0.0, ts.y)).rgb, vec3(0.299, 0.587, 0.114));
-        float e = sqrt(pow(rgt-ctr, 2.0) + pow(tp-ctr, 2.0));
+        
+        // Perceptual luminance (Rec. 709)
+        vec3 lum_p = vec3(0.2126, 0.7152, 0.0722);
+        //vec3 lum_p = vec3(0.299, 0.587, 0.114);
+        float ctr = dot(c, lum_p);
+        float rgt = dot(pow(texture2D(t, uv + vec2(ts.x, 0.0)).rgb, vec3(2.2)), lum_p);
+        float tp = dot(pow(texture2D(t, uv + vec2(0.0, ts.y)).rgb, vec3(2.2)), lum_p);
+        
+        // Diagonal gradients for better 8-direction detection
+        float diag1 = dot(pow(texture2D(t, uv + vec2(ts.x, ts.y)).rgb, vec3(2.2)), lum_p);
+        float diag2 = dot(pow(texture2D(t, uv + vec2(-ts.x, ts.y)).rgb, vec3(2.2)), lum_p);
+        
+        float e = sqrt(pow(rgt-ctr, 2.0) + pow(tp-ctr, 2.0) + pow(diag1-ctr, 2.0)*0.5 + pow(diag2-ctr, 2.0)*0.5);
+        
         float eg = (preset == 0) ? 0.28 : (preset == 1) ? 0.40 : 0.70;
         eg *= (ir.x / 1920.0);
-        
+        //eg *= (1.0 + e * 0.5); // Higher threshold in high-frequency areas
         vec3 res;
         float l = floor(ctr * 128.0) / 128.0;
         
         if (e < eg) {
-            float sl = 0.03 * (1.0 - l);
+            float sl = 0.003 * (1.0 - l);
             if (preset == 2) res = mix(c, vec3(l), 0.25) + sl;
             else if (preset == 1) res = mix(c, vec3(l), 0.1) + sl;
             else res = mix(c, vec3(l), 0.05) + sl;
         } else {
             float g = clamp(1000.0 / ir.x, 0.2, 0.7);
+            float contrast = abs(rgt - ctr) + abs(tp - ctr);
             float i = (preset == 0 ? 0.03 : preset == 1 ? 0.08 : 0.15) * g;
+            i *= 1.0 + contrast * 2.0; // Contrast-adaptive
+            
             float ph = atan(tp-ctr, rgt-ctr);
             float qp = floor(ph * 1.2732 + 0.5) / 1.2732;
             float w = cos(qp) + sin(qp);
             res = c + (w * pow(1.0-l, 4.0) * c * i);
         }
         
-        gl_FragColor = vec4(clamp(res, 0.0, 1.0), 1.0);
+        // Chroma boost
+        float lum = dot(res, lum_p);
+        res = mix(vec3(lum), res, 1.12);
+        
+        // Gamma correction back to sRGB
+        gl_FragColor = vec4(pow(clamp(res, 0.0, 1.0), vec3(1.0/2.2)), 1.0);
     }
 </script>
 
