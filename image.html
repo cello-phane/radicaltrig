@@ -78,21 +78,20 @@
         if (energy < energyGate) {
             float softLift = 0.05 * (1.0 - luma);
             if (uPreset == 2) {
-                // HIGH: Grayscale heavy with Vibrancy Protection
+   
                 float sat = length(rawRGB - luma);
                 float protect = smoothstep(0.05, 0.15, sat);
                 finalResult = mix(mix(rawRGB, vec3(luma), 0.9), rawRGB, protect * 0.5) + (softLift * 0.4);
             } else if (uPreset == 1) {
-                // MEDIUM: Cinematic Hue Nudge
+   
                 vec3 hueNudge = rawRGB * vec3(0.92, 1.0, 1.08); 
-                //finalResult = mix(hueNudge, vec3(luma), 0.2) + softLift;
+   
                 finalResult = mix(hueNudge, vec3(luma), 0.35) + softLift;
             } else {
-                // LOW: Vibrant & Clean
+   
                 finalResult = mix(rawRGB, vec3(luma), 0.1) + softLift;
             }
         } else {
-            // ZONE B: RECONSTRUCTION
             float intensity = (uPreset == 0) ? 0.05 : (uPreset == 1) ? 0.12 : 0.22;
             float phase = atan(top-center, right-center);
             float qPhase = floor(phase * (8.0/6.283) + 0.5) / (8.0/6.283);
