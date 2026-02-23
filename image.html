@@ -119,17 +119,19 @@
         float e = sqrt(pow(rgt-ctr, 2.0) + pow(tp-ctr, 2.0) + pow(diag1-ctr, 2.0)*0.5 + pow(diag2-ctr, 2.0)*0.5);
         
         float eg = (preset == 0) ? 0.28 : (preset == 1) ? 0.40 : 0.70;
-        eg *= (ir.x / 1920.0);
+        eg *= (ir.x / 1920.0); // Adaptive threshold
         //eg *= (1.0 + e * 0.5); // Higher threshold in high-frequency areas
         vec3 res;
-        float l = floor(ctr * 128.0) / 128.0;
+        // Adaptive quantization (more aggressive = smaller files)
+        float levels = (preset == 0) ? 256.0 : (preset == 1) ? 96.0 : 48.0;
+        float l = floor(ctr * levels) / levels;
         
         if (e < eg) {
             float shadowLift = (preset == 0) ? 0.0001 : (preset == 1) ? 0.0003 : 0.0005;
             float sl = shadowLift * (1.0 - l);
-            if (preset == 2) res = mix(c, vec3(l), 0.25) + sl;
-            else if (preset == 1) res = mix(c, vec3(l), 0.1) + sl;
-            else res = mix(c, vec3(l), 0.05) + sl;
+            if (preset == 2) res = mix(c, vec3(l), 0.30) + sl; // Increased from 0.25
+            else if (preset == 1) res = mix(c, vec3(l), 0.12) + sl; // Increased from 0.1
+            else res = mix(c, vec3(l), 0.06) + sl; // Increased from 0.05
         } else {
             float g = clamp(1000.0 / ir.x, 0.2, 0.7);
             float contrast = abs(rgt - ctr) + abs(tp - ctr);
