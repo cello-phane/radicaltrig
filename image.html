@@ -60,9 +60,9 @@
         float l = floor(ctr * 128.0) / 128.0;
         if (e < eg) {
             float sl = 0.03 * (1.0 - l);
-            if (p == 2) res = mix(c, vec3(l), 0.4) + sl;
-            else if (p == 1) res = mix(c, vec3(l), 0.2) + sl;
-            else res = mix(c, vec3(l), 0.09) + sl;
+            if (p == 2) res = mix(c, vec3(l), 0.25) + sl;
+            else if (p == 1) res = mix(c, vec3(l), 0.1) + sl;
+            else res = mix(c, vec3(l), 0.05) + sl;
         } else {
             float g = clamp(1000.0 / ir.x, 0.2, 0.7);
             float i = (p == 0 ? 0.03 : p == 1 ? 0.08 : 0.15) * g;
@@ -135,20 +135,21 @@
     document.querySelectorAll('input[name="p"]').forEach(r => r.onchange = draw);
 
     d.onclick = () => {
-       const lnk = document.createElement('a');
-       const px = cvs.width * cvs.height;
-       let q = 0.85; // Lowering the ceiling slightly
-       if (px > 2000000) q = 0.75; 
-       if (px > 5000000) q = 0.68; // The "Rice Field" Sweet Spot
-       
-       const sel = document.querySelector('input[name="p"]:checked').value;
-       if (sel === "1") q -= 0.05; // M gets a tiny bit more compression
-       if (sel === "2") q -= 0.12; // H gets more aggressive compression
-       
-       lnk.download = 'image_out.jpg';
-       lnk.href = cvs.toDataURL('image/jpeg', q);
-       lnk.click();
-   };
+        const lnk = document.createElement('a');
+        const px = cvs.width * cvs.height;
+        
+        // We drop the base quality to let the shader's sharpening do the heavy lifting
+        let q = 0.82; 
+        if (px > 2000000) q = 0.72; 
+        if (px > 5000000) q = 0.65; // High-res "Rice Field" target
+        
+        const sel = document.querySelector('input[name="p"]:checked').value;
+        if (sel === "2") q -= 0.1; // H mode gets a deeper compression cut
+    
+        lnk.download = 'image_out.jpg';
+        lnk.href = cvs.toDataURL('image/jpeg', q);
+        lnk.click();
+    };
 </script>
 </body>
 </html>
