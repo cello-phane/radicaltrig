@@ -78,9 +78,9 @@
     
     <div class="ui">
         <input type="file" id="u" accept="image/*">
-        <label><input type="radio" name="p" value="0"> L</label>
-        <label><input type="radio" name="p" value="1" checked> M</label>
-        <label><input type="radio" name="p" value="2"> H</label>
+        <label><input type="radio" name="preset" value="0"> L</label>
+        <label><input type="radio" name="preset" value="1" checked> M</label>
+        <label><input type="radio" name="preset" value="2"> H</label>
         <button id="d">Export</button>
     </div>
     <canvas id="c"></canvas>
@@ -241,7 +241,7 @@
         
         try {
             gl.uniform1i(gl.getUniformLocation(prg, "s"), space || touching);
-            const sel = document.querySelector('input[name="p"]:checked').value;
+            const sel = document.querySelector('input[name="preset"]:checked').value;
             gl.uniform1i(gl.getUniformLocation(prg, "preset"), parseInt(sel));
             gl.uniform2f(gl.getUniformLocation(prg, "r"), cvs.width, cvs.height);
             gl.uniform2f(gl.getUniformLocation(prg, "ir"), img.width, img.height);
@@ -365,36 +365,25 @@
         e.preventDefault();
     }, { passive: false });
     
-    document.querySelectorAll('input[name="p"]').forEach(r => r.onchange = draw);
+    document.querySelectorAll('input[name="preset"]').forEach(r => r.onchange = draw);
 
     d.onclick = () => {
-        if (!img) {
-            alert('Please load an image first');
-            return;
-        }
+        const lnk = document.createElement('a');
+        const px = cvs.width * cvs.height;
         
-        try {
-            const lnk = document.createElement('a');
-            const px = cvs.width * cvs.height;
-            
-            let q = 0.77; // jpeg quality
-            if (px > 2000000) q = 0.72; 
-            if (px > 5000000) q = 0.65;
-            
-            const sel = document.querySelector('input[name="p"]:checked').value;
-            if (sel === "2") q -= 0.1;
+        let q;
+        if (px < 500000) q = 0.88;        // Small images: high quality
+        else if (px < 1000000) q = 0.82;  // Medium: good quality
+        else if (px < 2000000) q = 0.75;  // Large: balanced
+        else if (px < 4000000) q = 0.68;  // Very large: aggressive
+        else q = 0.60;                     // Huge: maximum compression
         
-            lnk.download = 'image_out.jpg';
-            lnk.href = cvs.toDataURL('image/jpeg', q);
-            lnk.click();
-            
-            statusEl.textContent = 'Exported!';
-            
-        } catch(e) {
-            errorEl.textContent = 'Export failed: ' + e.message;
-            errorEl.style.display = 'block';
-            console.error(e);
-        }
+        const sel = document.querySelector('input[name="preset"]:checked').value;
+        if (sel === "2") q -= 0.08;  // High mode: even more aggressive
+        
+        lnk.download = 'image_out.jpg';
+        lnk.href = cvs.toDataURL('image/jpeg', q);
+        lnk.click();
     };
 </script>
 </body>
