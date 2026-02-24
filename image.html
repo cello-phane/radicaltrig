@@ -93,6 +93,7 @@
     uniform int preset;
     uniform bool s;
 
+    // Rational Trig Functions: Derived from s(a) = sqrt(2 - 2cos a)
     float rsin(float x) {
         float a = 1.0 - 2.0 * x + 2.0 * x * x;
         return x / sqrt(a);
@@ -103,79 +104,80 @@
         return (1.0 - x) / sqrt(a);
     }
     
-    // all floats, no bitwise
     float atanVecFromXAxis(vec2 p) {
         vec2 ap = abs(p);
         float t = ap.y / (ap.x + ap.y);
-        
         float qx = float(p.x < 0.0);
         float qy = float(p.y < 0.0);
-        
         float q = qx + qx * qy + 3.0 * qy * (1.0 - qx);
         float qMod2 = mod(q, 2.0);
         t = t + (1.0 - 2.0 * t) * qMod2;
-        
         return q + t;
     }
 
-    void getRAUComponents(float phase, out float c, out float s) {
+    void getRAUComponents(float phase, out float c, out float s_out) {
         phase = mod(phase, 4.0);
         float q = floor(phase);
         float t = phase - q;
-        
         float rc = rcos(t);
         float rs = rsin(t);
-
-        if (q == 0.0) { c = rc; s = rs; }
-        else if (q == 1.0) { c = -rs; s = rc; }
-        else if (q == 2.0) { c = -rc; s = -rs; }
-        else { c = rs; s = -rc; }
+        if (q == 0.0) { c = rc; s_out = rs; }
+        else if (q == 1.0) { c = -rs; s_out = rc; }
+        else if (q == 2.0) { c = -rc; s_out = -rs; }
+        else { c = rs; s_out = -rc; }
     }
-
+    
     void main() {
         vec2 uv = gl_FragCoord.xy / r.xy;
         uv.y = 1.0 - uv.y;
-        vec3 c = texture2D(t, uv).rgb;
-        if (s) { gl_FragColor = vec4(c, 1.0); return; }
+        vec3 col = texture2D(t, uv).rgb;
+        if (s) { gl_FragColor = vec4(col, 1.0); return; }
         
         vec2 ts = 1.0 / ir.xy;
-        float lm = dot(c, vec3(0.299, 0.587, 0.114));
-        vec3 chr = c - lm;
-        float ctr = dot(c, vec3(0.299, 0.587, 0.114));
+        // Luma-Chroma Split for independent processing
+        float lm = dot(col, vec3(0.299, 0.587, 0.114));
+        vec3 chr = col - lm;
+        
+        // Edge Energy Detection
         float rgt = dot(texture2D(t, uv + vec2(ts.x, 0.0)).rgb, vec3(0.299, 0.587, 0.114));
         float tp = dot(texture2D(t, uv + vec2(0.0, ts.y)).rgb, vec3(0.299, 0.587, 0.114));
-        float dx = rgt - ctr;
-        float dy = tp - ctr;
+        float dx = rgt - lm;
+        float dy = tp - lm;
         float e = sqrt(dx*dx + dy*dy);
-        vec2 bps = mod(gl_FragCoord.xy, 8.0);
-        float dtob = min(min(bps.x, bps.y), 
-                                   min(8.0 - bps.x, 8.0 - bps.y));
-        float bf = smoothstep(0.0, 2.0, dtob);
+        
         float eg = (preset == 0) ? 0.28 : (preset == 1) ? 0.40 : 0.70;
         eg *= (ir.x / 1920.0);
-        float l = floor(ctr * 128.0) / 128.0;
+        float l_target = floor(lm * 128.0) / 128.0;
 
-        // Sharpening
+        vec3 res;
         if (e < eg) {
-            // Flat area - quantize aggressively
-            float shl = 0.0005 * (1.0 - l);
-            lm = mix(lm, l, 0.12) + shl;
-            // Quantize chroma more (JPEG does 4:2:0)
-            chr = floor(chr * 16.0 + 0.5) / 16.0;
+            // Shadow-Lift & Chroma Preservation
+            // Uses a smooth depth instead of hard quantization to fix color loss
+            float chroma_depth = mix(32.0, 128.0, lm); 
+            chr = floor(chr * chroma_depth + 0.5) / chroma_depth;
+            
+            float sl = (preset == 0 ? 0.0001 : preset == 1 ? 0.0003 : 0.0005) * pow(1.0 - l_target, 2.0);
+            res = mix(col, vec3(l_target), (preset == 2 ? 0.30 : 0.12)) + sl;
         } else {
+            // Radical Sharpener with Cubic Weighting
             float g = clamp(1000.0 / ir.x, 0.2, 0.7);
-            float cst = abs(rgt - ctr) + abs(tp - ctr);
-            float i = (preset == 0 ? 0.03 : preset == 1 ? 0.08 : 0.15) * g;
-            i *= 1.0 + cst * 2.0;
-            float ph = atanVecFromXAxis(vec2(dx, dy)); // 8-direc qtization
-            float qp = floor(ph * 1.2732 + 0.5) / 1.2732;
-
+            float i = (preset == 0 ? 0.03 : preset == 1 ? 0.08 : 0.15) * g * (1.0 + e * 2.0);
+            
+            float ph = atanVecFromXAxis(vec2(dx, dy));
+            float qp = floor(ph * 2.0 + 0.5) / 2.0; 
+            
             float c_q, s_q;
             getRAUComponents(qp, c_q, s_q);
-            float w = clamp(c_q + s_q, -0.25, 0.25); //limit max freq
-            chr += w * pow(1.0 - l, 4.0) * chr * i * 0.5;
+            
+            // Cubic Hermite Shaper for smooth edges
+            float raw_w = c_q + s_q;
+            float w = (raw_w * raw_w * (3.0 - 2.0 * abs(raw_w))) * 0.25; 
+            
+            // Attenuate chroma in high-freq to save bits for JPEG
+            chr *= clamp(1.0 - (i * 1.5), 0.75, 1.0);
+            res = (lm + chr) + (w * pow(1.0 - l_target, 4.0) * (lm + chr) * i);
         }
-        vec3 res = lm + chr;
+        
         gl_FragColor = vec4(clamp(res, 0.0, 1.0), 1.0);
     }
 </script>
