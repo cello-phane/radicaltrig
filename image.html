@@ -92,8 +92,7 @@
     uniform vec2 ir;
     uniform int preset;
     uniform bool s;
-    
-    // RAU functions
+
     float rsin(float x) {
         float a = 1.0 - 2.0 * x + 2.0 * x * x;
         return x / sqrt(a);
@@ -104,7 +103,7 @@
         return (1.0 - x) / sqrt(a);
     }
     
-    // Fixed atanVec - all floats, no bitwise
+    // all floats, no bitwise
     float atanVecFromXAxis(vec2 p) {
         vec2 ap = abs(p);
         float t = ap.y / (ap.x + ap.y);
@@ -118,8 +117,7 @@
         
         return q + t;
     }
-    
-    // Add this function at the top with other RAU functions
+
     void getRAUComponents(float phase, out float c, out float s) {
         phase = mod(phase, 4.0);
         float q = floor(phase);
@@ -127,8 +125,7 @@
         
         float rc = rcos(t);
         float rs = rsin(t);
-        
-        // Quadrant handling
+
         if (q == 0.0) { c = rc; s = rs; }
         else if (q == 1.0) { c = -rs; s = rc; }
         else if (q == 2.0) { c = -rc; s = -rs; }
@@ -163,19 +160,17 @@
             float contrast = abs(rgt - ctr) + abs(tp - ctr);
             float i = (preset == 0 ? 0.03 : preset == 1 ? 0.08 : 0.15) * g;
             i *= 1.0 + contrast * 2.0;
-            
-            // Use RAU instead of atan/sin/cos
+
             float dx = rgt - ctr;
             float dy = tp - ctr;
             float ph = atanVecFromXAxis(vec2(dx, dy));
             float qp = floor(ph * 2.0 + 0.5) / 2.0;  // Quantize to 8 directions
             
-            // Simple directional weight (can be replaced with RAU sin/cos later)
+            // Directional weight
             float c_q, s_q;
             getRAUComponents(qp, c_q, s_q);
-            float w = c_q + s_q;  // Pure RAU, no transcendental functions!
+            float w = c_q + s_q;
             res = c + (w * pow(1.0-l, 4.0) * c * i);
-            
         }
         
         gl_FragColor = vec4(clamp(res, 0.0, 1.0), 1.0);
@@ -407,7 +402,7 @@
         else if (px < 1000000) q = 0.82;  // Medium: good quality
         else if (px < 2000000) q = 0.75;  // Large: balanced
         else if (px < 4000000) q = 0.68;  // Very large: aggressive
-        else q = 0.60;                     // Huge: maximum compression
+        else q = 0.60;                    // Huge: maximum compression
         
         const sel = document.querySelector('input[name="preset"]:checked').value;
         if (sel === "2") q -= 0.08;  // High mode: even more aggressive
