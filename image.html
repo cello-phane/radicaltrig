@@ -297,8 +297,10 @@
             gl.uniform2f(gl.getUniformLocation(prg, "r"), cvs.width, cvs.height);
             gl.uniform2f(gl.getUniformLocation(prg, "ir"), img.width, img.height);
             gl.uniform1f(gl.getUniformLocation(prg, "zoom"), zoomLevel);
+            const qMode = document.getElementById('qMode').value;
+            gl.uniform1f(gl.getUniformLocation(prg, "qualityMode"), parseFloat(qMode));
+            gl.uniform2f(gl.getUniformLocation(prg, "offset"), offset.x, offset.y);
             gl.drawArrays(gl.TRIANGLES, 0, 6);
-            
             // Force flush for mobile
             gl.flush();
             
@@ -405,6 +407,7 @@
     };
     
     // Zoom in/out
+    let zoom = 1.0;
     let zoomLevel = 1.0;
     const zoomSlider = document.getElementById('z');
     
@@ -413,38 +416,50 @@
         draw();
     };
     
-    // Mobile touch controls
-    cvs.addEventListener('touchstart', (e) => {
-        touching = true;
-        draw();
-        e.preventDefault();
-    }, { passive: false });
+    let offset = { x: 0, y: 0 };
+    let isDragging = false;
+    let lastMouse = { x: 0, y: 0 };
     
-    cvs.addEventListener('touchend', (e) => {
-        touching = false;
-        draw();
-        e.preventDefault();
-    }, { passive: false });
+    cvs.onmousedown = (e) => { isDragging = true; lastMouse = { x: e.clientX, y: e.clientY }; };
+    window.onmouseup = () => { isDragging = false; };
+    window.onmousemove = (e) => {
+        if (isDragging) {
+            // Adjust offset relative to zoom level
+            offset.x -= (e.clientX - lastMouse.x) / (cvs.width * zoom);
+            offset.y += (e.clientY - lastMouse.y) / (cvs.height * zoom);
+            lastMouse = { x: e.clientX, y: e.clientY };
+            draw();
+        }
+    };
     
+    // Touch support for mobile navigation
+    cvs.ontouchmove = (e) => {
+        const touch = e.touches[0];
+        offset.x -= (touch.clientX - lastMouse.x) / (cvs.width * zoom);
+        offset.y += (touch.clientY - lastMouse.y) / (cvs.height * zoom);
+        lastMouse = { x: touch.clientX, y: touch.clientY };
+        draw();
+    };
+
     document.querySelectorAll('input[name="preset"]').forEach(r => r.onchange = draw);
 
     d.onclick = () => {
         const lnk = document.createElement('a');
         const px = cvs.width * cvs.height;
-        
-        let q;
-        if (px < 500000) q = 0.88;        // Small images: high quality
-        else if (px < 1000000) q = 0.82;  // Medium: good quality
-        else if (px < 2000000) q = 0.75;  // Large: balanced
-        else if (px < 4000000) q = 0.68;  // Very large: aggressive
-        else q = 0.60;                    // Huge: maximum compression
-        
         const sel = document.querySelector('input[name="preset"]:checked').value;
         if (sel === "2") q -= 0.08;  // High mode: even more aggressive
+
+        const qMode = document.getElementById('qMode').value;
         
-        lnk.download = 'image_out.jpg';
+        // Logic to hit 128KB (Efficient) or 3.2MB (High Fidelity)
+        // 0.82 is a sweet spot for the 128KB discovery we made
+        // 0.99 triggers near-lossless tables for the 3.2MB target
+        const q = (qMode === "0") ? 0.82 : 0.99;
+        
+        lnk.download = (qMode === "0") ? 'efficient_synthesis.jpg' : 'high_fidelity_synthesis.jpg';
         lnk.href = cvs.toDataURL('image/jpeg', q);
         lnk.click();
+
     };
 </script>
 </body>
