@@ -129,15 +129,9 @@ t' = tan(t · π/2) / (1 + tan(t · π/2))
 Then use `t'` as the RAU parameter input. Without this, angular velocity varies.
 
 ## Inverse Functions
-Recover RAU parameter from trig values:
+arcsin, arccos, and arctan
 ```
-sin⁻¹(t) = (t² - √(t²(1 - t²))) / (2t² - 1)    [domain: t ∈ [–1, 1]]
-cos⁻¹(t) = (t² - 1 + √(t²(1 - t²))) / (2t² - 1) [domain: t ∈ [–1, 1]]
-tan⁻¹(t) = t / (1 + t)                          [domain: t ∈ ℝ, t ≠ –1]
-```
-All return RAU parameter in range [0, 1] for one quadrant.
-```
-arcsin(t) 	(t²-√(t²-t⁴))/(2t²-1) 	   Solve sin(x)=t 	Algebraic
-arccos(t) 	(t²-1+√(t²-t⁴))/(2t²-1) 	Solve cos(x)=t 	Algebraic
-arctan(t) 	t/(1+t) 	Solve tan(x)=t 	Rational
+sin⁻¹(t) = (t² - √(t²(1 - t²))) / (2t² - 1)     [–1,  1]
+cos⁻¹(t) = (t² - 1 + √(t²(1 - t²))) / (2t² - 1) [–1,  1]
+tan⁻¹(t) = t / (1 + t)                          [t ≠ –1]
 ```
