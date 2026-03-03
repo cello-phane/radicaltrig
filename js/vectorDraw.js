@@ -300,34 +300,8 @@ function initVectorCanvas() {
       ctx.fill();
       return;
     }
-    
-    // Try conic gradient (best performance)
-    if (ctx.createConicGradient) {
-      const gradient = ctx.createConicGradient(startAngle, cx, cy);
-      const fraction = absAngleDiff / (Math.PI * 2);
-      
-      gradient.addColorStop(0, `rgb(${color1[0]},${color1[1]},${color1[2]})`);
-      gradient.addColorStop(fraction, `rgb(${color2[0]},${color2[1]},${color2[2]})`);
-      
-      // Add intermediate stop for large arcs
-      if (fraction > 0.5) {
-        const midR = Math.round((color1[0] + color2[0]) / 2);
-        const midG = Math.round((color1[1] + color2[1]) / 2);
-        const midB = Math.round((color1[2] + color2[2]) / 2);
-        gradient.addColorStop(0.5, `rgb(${midR},${midG},${midB})`);
-      }
-      
-      ctx.fillStyle = gradient;
-      ctx.beginPath();
-      ctx.moveTo(cx, cy);
-      ctx.arc(cx, cy, radius, startAngle, endAngle);
-      ctx.closePath();
-      ctx.fill();
-      return;
-    }
-    
-    // Fallback: segment-based gradient
-    const arcLength = absAngleDiff * radius; // FIXED: moved before usage
+
+    const arcLength = absAngleDiff * radius;
     const segments = Math.max(
       CANVAS_CONFIG.ARC_QUALITY_MIN,
       Math.min(CANVAS_CONFIG.ARC_QUALITY_MAX, Math.ceil(arcLength / 15))
