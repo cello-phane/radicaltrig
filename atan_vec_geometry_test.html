@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>atanVec Geometry</title>
+    <title>atan - radical angle version</title>
     <style>
         body {
             margin: 0;
@@ -130,7 +130,6 @@
                 <li><strong>When a = 0.5:</strong> Equal parallel and perpendicular components (45°, 135°, etc.)</li>
                 <li><strong>When a = 1:</strong> Vectors are perpendicular (90° or 270°)</li>
                 <li><strong>The denominator (|dot| + |cross|):</strong> Is the total "distance" in perpendicular + parallel space</li>
-                <li><strong>This creates a non-linear but monotonic mapping</strong> from angle to parameter</li>
             </ul>
         </div>
     </div>
@@ -292,15 +291,20 @@
             document.getElementById('aValue').textContent = a.toFixed(4);
             
             // Calculate full RAU value with quadrant
-            let rauAngle;
+            let rauAngle = 0.0;
             if (dot >= 0 && cross >= 0) {
-                rauAngle = a;
+            	if (a == 0.0) {
+            		rauAngle = a;
+           		}
+           		else {
+           			rauAngle = 4.0 - a;
+           		}
             } else if (dot < 0 && cross >= 0) {
-                rauAngle = 2.0 - a;
-            } else if (dot < 0 && cross < 0) {
                 rauAngle = 2.0 + a;
+            } else if (dot < 0 && cross < 0) {
+                rauAngle = 2.0 - a;
             } else {
-                rauAngle = 4.0 - a;
+                rauAngle = a;
             }
             document.getElementById('rauValue').textContent = rauAngle.toFixed(4);
         }
