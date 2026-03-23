@@ -1,3 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>RAU SLAM-lite</title>
+<style>
+body { background:#111; color:#ccc; font-family:sans-serif; text-align:center; }
+canvas { border:1px solid #555; }
+</style>
+</head>
+<body>
+
+<h3>RAU SLAM-lite (Camera Motion + Mapping)</h3>
+<video id="vid" autoplay playsinline style="display:none;"></video>
+<canvas id="gl"></canvas>
+<canvas id="overlay"></canvas>
 <script>
 const video = document.getElementById('vid');
 const canvas = document.getElementById('gl');
@@ -90,3 +106,5 @@ function loop(){
 
 loop();
 </script>
+</body>
+</html>
