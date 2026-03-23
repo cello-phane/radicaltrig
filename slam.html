@@ -33,7 +33,19 @@ const overlay = document.getElementById('overlay');
 const ctx = overlay.getContext('2d');
 
 const gl = canvas.getContext('webgl');
+const quad = gl.createBuffer();
+gl.bindBuffer(gl.ARRAY_BUFFER, quad);
+gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
+    -1,-1,  1,-1, -1,1,
+    -1,1,   1,-1,  1,1
+]), gl.STATIC_DRAW);
 
+function bindQuad(prog){
+    const loc = gl.getAttribLocation(prog, "p");
+    gl.bindBuffer(gl.ARRAY_BUFFER, quad);
+    gl.enableVertexAttribArray(loc);
+    gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+}
 let W = 640, H = 480;
 canvas.width = overlay.width = W;
 canvas.height = overlay.height = H;
@@ -175,7 +187,7 @@ function pass(prog, outTex, inputs){
     gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, outTex, 0);
 
     gl.useProgram(prog);
-
+    bindQuad(prog);
     let i=0;
     for(let k in inputs){
         let loc = gl.getUniformLocation(prog, k);
@@ -193,6 +205,8 @@ function pass(prog, outTex, inputs){
 // =============================
 function estimateMotion(){
     let pixels = new Uint8Array(W*H*4);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texFlow, 0);
     gl.readPixels(0,0,W,H,gl.RGBA,gl.UNSIGNED_BYTE,pixels);
 
     let Tx=0, Ty=0, count=0;
@@ -216,7 +230,33 @@ function estimateMotion(){
 
     return {x:Tx, y:Ty};
 }
+    
+const fsDisplay = `
+precision mediump float;
+uniform sampler2D tex;
+varying vec2 uv;
 
+void main(){
+    gl_FragColor = texture2D(tex, uv);
+}`;
+
+const progDisplay = program(vs, fsDisplay);
+    
+function display(tex){
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    gl.viewport(0,0,W,H);
+
+    gl.useProgram(progDisplay);
+    bindQuad(progDisplay);
+
+    let loc = gl.getUniformLocation(progDisplay, "tex");
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, tex);
+    gl.uniform1i(loc, 0);
+
+    gl.drawArrays(gl.TRIANGLES,0,6);
+}
+    
 // =============================
 // LOOP
 // =============================
@@ -260,7 +300,9 @@ function loop(){
     let tmp = texPrev;
     texPrev = texCurr;
     texCurr = tmp;
-
+    display(texCurr);   // camera feed
+    display(texFlow);   // optical flow
+    display(texTrack);  // tracked features
     requestAnimationFrame(loop);
 }
 
