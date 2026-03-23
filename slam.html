@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>SLAM-lite</title>
+<style>
+body { background:#111; color:#ccc; font-family:sans-serif; text-align:center; }
+canvas { border:1px solid #555; }
+</style>
+</head>
+<body>
+
+<h3>SLAM-lite (Camera Motion + Mapping)</h3>
+<video id="vid" autoplay playsinline style="display:none;"></video>
+<canvas id="gl"></canvas>
+<canvas id="overlay"></canvas>
+
+<script>
+// =============================
+// CAMERA SETUP
+// =============================
+const video = document.getElementById('vid');
+
+navigator.mediaDevices.getUserMedia({ video: true }).then(stream => {
+    video.srcObject = stream;
+});
+
+// =============================
+// CANVAS + GL
+// =============================
+const canvas = document.getElementById('gl');
+const overlay = document.getElementById('overlay');
+const ctx = overlay.getContext('2d');
+
+const gl = canvas.getContext('webgl');
+
+let W = 640, H = 480;
+canvas.width = overlay.width = W;
+canvas.height = overlay.height = H;
+
+// =============================
+// SHADER HELPERS
+// =============================
+function compile(type, src){
+    let s = gl.createShader(type);
+    gl.shaderSource(s, src);
+    gl.compileShader(s);
+    return s;
+}
+
+function program(vs, fs){
+    let p = gl.createProgram();
+    gl.attachShader(p, compile(gl.VERTEX_SHADER, vs));
+    gl.attachShader(p, compile(gl.FRAGMENT_SHADER, fs));
+    gl.linkProgram(p);
+    return p;
+}
+
+const vs = `
+attribute vec2 p;
+varying vec2 uv;
+void main(){
+    uv = (p+1.0)*0.5;
+    gl_Position = vec4(p,0,1);
+}`;
+
+// =============================
+// PASS 1: FLOW
+// =============================
+const fsFlow = `
+precision mediump float;
+uniform sampler2D prev;
+uniform sampler2D curr;
+varying vec2 uv;
+
+float luma(vec3 c){ return dot(c, vec3(0.299,0.587,0.114)); }
+
+void main(){
+    vec2 t = vec2(1.0/640.0, 1.0/480.0);
+
+    float c = luma(texture2D(curr, uv).rgb);
+    float r = luma(texture2D(curr, uv + vec2(t.x,0)).rgb);
+    float u = luma(texture2D(curr, uv + vec2(0,t.y)).rgb);
+
+    float dx = r - c;
+    float dy = u - c;
+
+    float mag = length(vec2(dx,dy));
+
+    vec2 dir = normalize(vec2(dx,dy)+1e-5);
+
+    gl_FragColor = vec4(dir*0.5+0.5, mag, 1.0);
+}`;
+
+// =============================
+// PASS 2: FEATURE DETECT
+// =============================
+const fsFeature = `
+precision mediump float;
+uniform sampler2D flow;
+varying vec2 uv;
+
+void main(){
+    float mag = texture2D(flow, uv).b;
+    float f = smoothstep(0.02,0.1,mag);
+    gl_FragColor = vec4(f,f,f,1);
+}`;
+
+// =============================
+// PASS 3: TRACKING
+// =============================
+const fsTrack = `
+precision mediump float;
+uniform sampler2D prevTrack;
+uniform sampler2D flow;
+varying vec2 uv;
+
+void main(){
+    vec3 f = texture2D(flow, uv).rgb;
+
+    vec2 dir = (f.rg - 0.5)*2.0;
+    float mag = f.b;
+
+    vec2 prevUV = uv - dir * mag * 0.5;
+
+    float adv = texture2D(prevTrack, prevUV).r;
+    float cur = texture2D(prevTrack, uv).r;
+
+    float outv = max(cur, adv*0.95);
+
+    gl_FragColor = vec4(outv,outv,outv,1);
+}`;
+
+// =============================
+// PROGRAMS
+// =============================
+const progFlow = program(vs, fsFlow);
+const progFeat = program(vs, fsFeature);
+const progTrack = program(vs, fsTrack);
+
+// =============================
+// TEXTURES
+// =============================
+function tex(){
+    let t = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, t);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,W,H,0,gl.RGBA,gl.UNSIGNED_BYTE,null);
+    return t;
+}
+
+let texPrev = tex();
+let texCurr = tex();
+let texFlow = tex();
+let texFeat = tex();
+let texTrack = tex();
+
+// =============================
+// FRAMEBUFFER
+// =============================
+const fb = gl.createFramebuffer();
+
+// =============================
+// POSE + MAP
+// =============================
+let pose = {x:0,y:0,theta:0};
+let landmarks = [];
+
+// =============================
+// RENDER PASS
+// =============================
+function pass(prog, outTex, inputs){
+    gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, outTex, 0);
+
+    gl.useProgram(prog);
+
+    let i=0;
+    for(let k in inputs){
+        let loc = gl.getUniformLocation(prog, k);
+        gl.activeTexture(gl.TEXTURE0+i);
+        gl.bindTexture(gl.TEXTURE_2D, inputs[k]);
+        gl.uniform1i(loc,i);
+        i++;
+    }
+
+    gl.drawArrays(gl.TRIANGLES,0,6);
+}
+
+// =============================
+// MOTION ESTIMATION (CPU)
+// =============================
+function estimateMotion(){
+    let pixels = new Uint8Array(W*H*4);
+    gl.readPixels(0,0,W,H,gl.RGBA,gl.UNSIGNED_BYTE,pixels);
+
+    let Tx=0, Ty=0, count=0;
+
+    for(let i=0;i<pixels.length;i+=4){
+        let dx = (pixels[i]/255-0.5)*2;
+        let dy = (pixels[i+1]/255-0.5)*2;
+        let mag = pixels[i+2]/255;
+
+        if(mag>0.05){
+            Tx += dx*mag;
+            Ty += dy*mag;
+            count++;
+        }
+    }
+
+    if(count>0){
+        Tx/=count;
+        Ty/=count;
+    }
+
+    return {x:Tx, y:Ty};
+}
+
+// =============================
+// LOOP
+// =============================
+function loop(){
+
+    // upload frame
+    gl.bindTexture(gl.TEXTURE_2D, texCurr);
+    gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,video);
+
+    // FLOW
+    pass(progFlow, texFlow, {
+        prev: texPrev,
+        curr: texCurr
+    });
+
+    // FEATURE
+    pass(progFeat, texFeat, {
+        flow: texFlow
+    });
+
+    // TRACK
+    pass(progTrack, texTrack, {
+        prevTrack: texTrack,
+        flow: texFlow
+    });
+
+    // ESTIMATE MOTION
+    let T = estimateMotion();
+
+    // INTEGRATE
+    pose.x += T.x;
+    pose.y += T.y;
+
+    // VISUALIZE
+    ctx.clearRect(0,0,W,H);
+
+    ctx.fillStyle="lime";
+    ctx.fillRect(pose.x*200+W/2, pose.y*200+H/2, 5,5);
+
+    // swap
+    let tmp = texPrev;
+    texPrev = texCurr;
+    texCurr = tmp;
+
+    requestAnimationFrame(loop);
+}
+
+loop();
+
+</script>
+</body>
+</html>
