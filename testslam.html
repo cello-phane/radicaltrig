@@ -1,0 +1,92 @@
+<script>
+const video = document.getElementById('vid');
+const canvas = document.getElementById('gl');
+const gl = canvas.getContext('webgl');
+
+canvas.width = 640;
+canvas.height = 480;
+
+navigator.mediaDevices.getUserMedia({ video: true }).then(stream => {
+    video.srcObject = stream;
+});
+
+const vs = `
+attribute vec2 p;
+varying vec2 uv;
+void main(){
+    uv = (p+1.0)*0.5;
+    gl_Position = vec4(p,0,1);
+}`;
+
+const fs = `
+precision mediump float;
+uniform sampler2D tex;
+varying vec2 uv;
+void main(){
+    gl_FragColor = texture2D(tex, uv);
+}`;
+
+function compile(type, src){
+    let s = gl.createShader(type);
+    gl.shaderSource(s, src);
+    gl.compileShader(s);
+    return s;
+}
+
+function program(vs, fs){
+    let p = gl.createProgram();
+    gl.attachShader(p, compile(gl.VERTEX_SHADER, vs));
+    gl.attachShader(p, compile(gl.FRAGMENT_SHADER, fs));
+    gl.linkProgram(p);
+    return p;
+}
+
+const prog = program(vs, fs);
+gl.useProgram(prog);
+
+// FULLSCREEN QUAD
+const quad = gl.createBuffer();
+gl.bindBuffer(gl.ARRAY_BUFFER, quad);
+gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
+    -1,-1, 1,-1, -1,1,
+    -1,1, 1,-1, 1,1
+]), gl.STATIC_DRAW);
+
+const loc = gl.getAttribLocation(prog, "p");
+gl.enableVertexAttribArray(loc);
+gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+
+// TEXTURE
+const tex = gl.createTexture();
+gl.bindTexture(gl.TEXTURE_2D, tex);
+
+gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+
+function loop(){
+    if (video.readyState >= 2) {
+
+        gl.bindTexture(gl.TEXTURE_2D, tex);
+
+        try {
+            gl.texImage2D(
+                gl.TEXTURE_2D,
+                0,
+                gl.RGBA,
+                gl.RGBA,
+                gl.UNSIGNED_BYTE,
+                video
+            );
+        } catch(e) {
+            console.log("texImage2D error", e);
+        }
+
+        gl.drawArrays(gl.TRIANGLES, 0, 6);
+    }
+
+    requestAnimationFrame(loop);
+}
+
+loop();
+</script>
