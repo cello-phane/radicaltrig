@@ -391,10 +391,10 @@
 	
 	    let finalNumerator = (intPart * k1) + h1;
 	    let finalDenominator = k1;
-	
-	    const period = analyzePeriod(finalDenominator);
+		const [numer, denom] = simplify(finalNumerator, finalDenominator);
+	    const period = analyzePeriod(denom);
 	    document.getElementById('inverseOutput').innerText =
-	        `RATIONAL_ORIGIN: ${finalNumerator} / ${finalDenominator} | PERIOD: ${period}`;
+	        `RATIONAL_ORIGIN: ${numer} / ${denom} | PERIOD: ${period}`;
     }
 </script>
 </body>
