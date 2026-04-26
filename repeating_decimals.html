@@ -254,46 +254,121 @@
         document.getElementById('output').innerText = 
             result.sign + result.intPart + '.' + fractional;
     }
+	
+	function gcd(a,b){ return b==0n ? a : gcd(b, a%b); }
 
+	function simplify(n,d){
+	    let g = gcd(n,d);
+	    return { n: n/g, d: d/g };
+	}
+	
+	function parseRepeatingDecimal(str) {
+	    str = str.trim();
+	
+	    // Handle sign
+	    let sign = 1n;
+	    if (str.startsWith('-')) {
+	        sign = -1n;
+	        str = str.slice(1);
+	    }
+	
+	    // Must contain parentheses
+	    if (!str.includes("(") || !str.includes(")")) return null;
+	
+	    // Require decimal point: supports 0.(3), 1.2(34), etc.
+	    let match = str.match(/^(\d+)?\.(\d*)\((\d+)\)$/);
+	    if (!match) return null;
+	
+	    let intPartStr    = match[1] || "0";
+	    let nonRepeatStr  = match[2] || "";
+	    let repeatStr     = match[3];
+	
+	    let I = BigInt(intPartStr);
+	    let A = nonRepeatStr;
+	    let B = repeatStr;
+	
+	    let n = BigInt(A.length);
+	    let m = BigInt(B.length);
+	
+	    let pow10n = 10n ** n;
+	    let pow10m = 10n ** m;
+	
+	    let intAB = BigInt((A + B) || "0");
+	    let intA  = BigInt(A || "0");
+	
+	    // (AB − A) / (10^n (10^m − 1))
+	    let numerator   = intAB - intA;
+	    let denominator = pow10n * (pow10m - 1n);
+	
+	    // Add integer part
+	    numerator += I * denominator;
+	
+	    return { numerator: sign * numerator, denominator };
+	}
+	
     // --- INVERSE ENGINE ---
     function calculateInverse() {
-        let input = document.getElementById('decimalInput').value.trim();
-        if (!input) return;
-    
-        // Split into Integer and Fractional parts to avoid float overflow
-        let parts = input.split('.');
-        let intPart = BigInt(parts[0] || "0");
-        let fracPartStr = parts[1] || "";
-    
-        // 1. If the string is too long, we truncate it to 50 digits 
-        // to match the 'Safe Spot' of the Continued Fraction algorithm.
-        let truncatedFrac = fracPartStr.substring(0, 50);
-        let x = parseFloat("0." + truncatedFrac);
-    
-        let h1 = 1n, h2 = 0n;
-        let k1 = 0n, k2 = 1n;
-        let b = x;
-        const tolerance = 1.0e-51;
-    
-        // 2. The Loop: Recovering the ratio
-        for (let i = 0; i < 24; i++) {
-            let a = BigInt(Math.floor(b));
-            let tempH = h1; h1 = a * h1 + h2; h2 = tempH;
-            let tempK = k1; k1 = a * k1 + k2; k2 = tempK;
-    
-            if (Math.abs(x - Number(h1) / Number(k1)) < tolerance) break;
-            let remainder = b - Math.floor(b);
-            if (remainder < 1.0e-12) break;
-            b = 1 / remainder;
-        }
-    
-        // 3. Add back the integer part: (intPart * k1 + h1) / k1
-        let finalNumerator = (intPart * k1) + h1;
-        let finalDenominator = k1;
-    
-        const period = analyzePeriod(finalDenominator);
-        document.getElementById('inverseOutput').innerText = 
-            `RATIONAL_ORIGIN: ${finalNumerator} / ${finalDenominator} | PERIOD: ${period}`;
+	    let input = document.getElementById('decimalInput').value.trim();
+		if (input.startsWith(".")) input = "0" + input;
+		if (input.startsWith("-.")) input = "-0" + input.slice(1);
+		// Pure integer shortcut
+		if (/^-?\d+$/.test(input)) {
+		    document.getElementById('inverseOutput').innerText =
+		        `RATIONAL_ORIGIN: ${input} / 1 | PERIOD: 0`;
+		    return;
+		}
+	    if (!input) return;
+	
+	    // STEP 1 — terminating decimal
+	    let term = parseTerminatingDecimal(input);
+	    if (term) {
+	        let simp = simplify(term.numerator, term.denominator);
+	        const period = analyzePeriod(simp.d);
+	        document.getElementById('inverseOutput').innerText =
+	            `RATIONAL_ORIGIN: ${simp.n} / ${simp.d} | PERIOD: ${period}`;
+	        return;
+	    }
+	
+	    // STEP 2 — repeating decimal
+	    let repeat = parseRepeatingDecimal(input);
+	    if (repeat) {
+	        let simp = simplify(repeat.numerator, repeat.denominator);
+	        const period = analyzePeriod(simp.d);
+	        document.getElementById('inverseOutput').innerText =
+	            `RATIONAL_ORIGIN: ${simp.n} / ${simp.d} | PERIOD: ${period}`;
+	        return;
+	    }
+		
+		// STEP 3 — fallback to continued fractions
+	    let parts = input.split('.');
+	    let intPart = BigInt(parts[0] || "0");
+	    let fracPartStr = parts[1] || "";
+	
+	    let truncatedFrac = fracPartStr.substring(0, 50);
+	    let x = parseFloat("0." + truncatedFrac);
+	
+	    let h1 = 1n, h2 = 0n;
+	    let k1 = 0n, k2 = 1n;
+	    let b = x;
+	    const tolerance = 1.0e-51;
+	
+	    for (let i = 0; i < 24; i++) {
+	        let a = BigInt(Math.floor(b));
+	        let tempH = h1; h1 = a * h1 + h2; h2 = tempH;
+	        let tempK = k1; k1 = a * k1 + k2; k2 = tempK;
+	
+	        if (Math.abs(x - Number(h1) / Number(k1)) < tolerance) break;
+	        let remainder = b - Math.floor(b);
+	        if (remainder < 1.0e-12) break;
+	        b = 1 / remainder;
+	    }
+	
+	    let finalNumerator = (intPart * k1) + h1;
+	    let finalDenominator = k1;
+	
+	    const period = analyzePeriod(finalDenominator);
+	    document.getElementById('inverseOutput').innerText =
+	        `RATIONAL_ORIGIN: ${finalNumerator} / ${finalDenominator} | PERIOD: ${period}`;
     }
 </script>
 </body>
