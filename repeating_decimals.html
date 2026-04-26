@@ -262,6 +262,32 @@
 	    return { n: n/g, d: d/g };
 	}
 	
+	function parseTerminatingDecimal(decimalStr) { 
+		let sign = 1n;
+		if (decimalStr.startsWith('-')) {
+		    sign = -1n;
+		    decimalStr = decimalStr.slice(1);
+		}
+		let parts = decimalStr.split(".");
+		if (parts.length !== 2) return null; 
+		let intPart = parts[0]; 
+		let fracPart = parts[1]; // Reject empty fractional part 
+		if (fracPart.length === 0) return null; 
+		// If the fractional part contains parentheses, it's repeating → skip 
+		if (fracPart.includes("(") || fracPart.includes(")")) return null;
+		// If it contains non-digits → skip 
+		if (!/^\d+$/.test(fracPart)) return null; 
+		// TERMINATING DECIMAL DETECTED
+		let numerator = BigInt(fracPart); 
+		let denominator = 10n ** BigInt(fracPart.length); 
+		// include integer part if user types something like 2.75 
+		if (intPart && intPart !== "0") { 
+			numerator += BigInt(intPart) * denominator; 
+			
+		}
+		return { numerator: sign * numerator, denominator };
+	}
+	
 	function parseRepeatingDecimal(str) {
 	    str = str.trim();
 	
