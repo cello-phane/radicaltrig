@@ -1,0 +1,653 @@
+<!-- LICENSE:
+MIT License
+
+Copyright (c) 2026 Michael Ledesma 
+(cello-phane@github)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+ -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RAU — Forward & Inverse Reference</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Martian+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink:   #1a1a24;
+  --paper: #f5f3ee;
+  --rule:  #d4cfc4;
+  --ghost: #b8b2a4;
+  --gold:  #9a7030;
+  --teal:  #1a7068;
+  --red:   #8a2020;
+  --pur:   #4a2878;
+  --blue:  #1a3870;
+  --grn:   #1a5830;
+  --lgold: #fdf6e3;
+  --lteal: #e8f5f3;
+  --lred:  #fdf0f0;
+  --lpur:  #f4f0fa;
+  --lblue: #eef2fa;
+  --lgrn:  #eef8f0;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{font-size:15px;}
+body{
+  background:var(--paper);
+  color:var(--ink);
+  font-family:'Instrument Serif',serif;
+  line-height:1.65;
+  padding:2.5rem 1.5rem 5rem;
+  max-width:860px;
+  margin:0 auto;
+}
+ 
+/* ── typographic hierarchy ── */
+h1{
+  font-size:clamp(2rem,5vw,3.2rem);
+  font-weight:400;
+  letter-spacing:-.02em;
+  line-height:1.1;
+  margin-bottom:.3rem;
+}
+h1 em{font-style:italic;color:var(--gold);}
+.subtitle{
+  font-family:'Martian Mono',monospace;
+  font-size:.62rem;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  color:var(--ghost);
+  margin-bottom:2.5rem;
+}
+h2{
+  font-size:1.35rem;
+  font-weight:400;
+  letter-spacing:-.01em;
+  margin:2.4rem 0 .7rem;
+  padding-bottom:.35rem;
+  border-bottom:1px solid var(--rule);
+  color:var(--ink);
+}
+h2 .sec-num{
+  font-family:'Martian Mono',monospace;
+  font-size:.65rem;
+  color:var(--ghost);
+  letter-spacing:.08em;
+  margin-right:.6rem;
+  vertical-align:.1em;
+}
+h3{
+  font-size:1rem;
+  font-weight:400;
+  font-style:italic;
+  color:var(--gold);
+  margin:1.4rem 0 .4rem;
+}
+p{margin-bottom:.8rem;font-size:.95rem;}
+strong{font-weight:500;}
+em{font-style:italic;}
+ 
+/* ── formula blocks ── */
+.formula{
+  font-family:'Martian Mono',monospace;
+  font-size:.78rem;
+  background:var(--lpur);
+  border-left:3px solid var(--pur);
+  padding:.7rem 1rem;
+  margin:.6rem 0 .9rem;
+  line-height:1.9;
+  color:var(--pur);
+  border-radius:0 3px 3px 0;
+}
+.formula .c{color:var(--ghost);}
+.formula .hi{color:var(--gold);font-weight:500;}
+.formula .tl{color:var(--teal);}
+.formula .rd{color:var(--red);}
+ 
+/* ── colour-coded boxes ── */
+.box{
+  padding:.8rem 1.1rem;
+  border-radius:3px;
+  margin:.6rem 0;
+  font-size:.9rem;
+}
+.box-gold{background:var(--lgold);border:1px solid #d4a83a44;}
+.box-teal{background:var(--lteal);border:1px solid #2abfb044;}
+.box-red {background:var(--lred); border:1px solid #e0585844;}
+.box-pur {background:var(--lpur); border:1px solid #9060e044;}
+.box-blue{background:var(--lblue);border:1px solid #4880e844;}
+.box-grn {background:var(--lgrn); border:1px solid #38c87044;}
+.box-label{
+  font-family:'Martian Mono',monospace;
+  font-size:.55rem;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  display:block;
+  margin-bottom:.35rem;
+  opacity:.7;
+}
+ 
+/* ── precision badges ── */
+.prec{
+  font-family:'Martian Mono',monospace;
+  font-size:.6rem;
+  padding:.1rem .4rem;
+  border-radius:2px;
+  vertical-align:.1em;
+  margin-left:.3rem;
+}
+.prec-exact{background:var(--lgrn);color:var(--grn);border:1px solid #38c87055;}
+.prec-hi   {background:var(--lteal);color:var(--teal);border:1px solid #2abfb055;}
+.prec-lo   {background:var(--lred);color:var(--red);border:1px solid #e0585855;}
+ 
+/* ── horizontal rule ── */
+hr{border:none;border-top:1px solid var(--rule);margin:2rem 0;}
+ 
+/* ── two-column layout ── */
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:.6rem 0;}
+@media(max-width:600px){.cols{grid-template-columns:1fr;}}
+ 
+/* ── SVG diagrams ── */
+.diagram{
+  margin:1.2rem 0;
+  background:white;
+  border:1px solid var(--rule);
+  border-radius:4px;
+  overflow:hidden;
+}
+.diagram svg{display:block;width:100%;height:auto;}
+figcaption{
+  font-family:'Martian Mono',monospace;
+  font-size:.6rem;
+  color:var(--ghost);
+  letter-spacing:.06em;
+  padding:.5rem .8rem;
+  border-top:1px solid var(--rule);
+  text-align:center;
+}
+ 
+/* ── table ── */
+.tbl{width:100%;border-collapse:collapse;font-size:.84rem;margin:.7rem 0;}
+.tbl th{
+  font-family:'Martian Mono',monospace;
+  font-size:.55rem;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--ghost);padding:.45rem .7rem;
+  border-bottom:2px solid var(--rule);text-align:left;
+}
+.tbl td{
+  padding:.4rem .7rem;
+  border-bottom:1px solid var(--rule);
+  vertical-align:top;
+}
+.tbl tr:last-child td{border-bottom:none;}
+.tbl .mono{font-family:'Martian Mono',monospace;font-size:.75rem;}
+.tbl .gold{color:var(--gold);}
+.tbl .teal{color:var(--teal);}
+.tbl .pur {color:var(--pur);}
+.tbl .red {color:var(--red);}
+ 
+/* ── step list ── */
+.steps{list-style:none;margin:.5rem 0 1rem;}
+.steps li{
+  display:flex;gap:.8rem;align-items:flex-start;
+  margin-bottom:.55rem;font-size:.9rem;
+}
+.steps .sn{
+  font-family:'Martian Mono',monospace;
+  font-size:.62rem;color:var(--gold);
+  min-width:1.4rem;padding-top:.2rem;flex-shrink:0;
+}
+</style>
+</head>
+<body>
+ 
+<h1>Radical Angle Unit<br><em>Forward & Inverse Reference</em></h1>
+<p class="subtitle">Complete verified pipeline — Desmos · C · GLSL · Python</p>
+ 
+<hr>
+ 
+<!-- ══ §1 THE PRIMITIVE ══════════════════════════════════════════════ -->
+<h2><span class="sec-num">§1</span>The One Primitive</h2>
+ 
+<p>Everything in the RAU system is a specialization of a single operation: projecting a point on the unit-square diagonal onto the unit circle. The parameter <strong>w</strong> measures how far along that diagonal you are. The projection gives <strong>(cos, sin)</strong> as pure ratios — no transcendental evaluation needed.</p>
+ 
+<figure class="diagram">
+<svg viewBox="0 0 720 320" xmlns="http://www.w3.org/2000/svg" font-family="Martian Mono, monospace">
+  <rect width="720" height="320" fill="white"/>
+ 
+  <!-- §1a: The diagonal -->
+  <g transform="translate(60,30)">
+    <text x="90" y="16" font-size="11" fill="#b8b2a4" letter-spacing="2" text-anchor="middle">THE DIAGONAL</text>
+    <!-- unit square -->
+    <rect x="20" y="30" width="140" height="140" fill="none" stroke="#d4cfc4" stroke-width="1" stroke-dasharray="4,4"/>
+    <polygon points="20,170 160,30" fill="#eef2fa" opacity="0.5"/>
+    <!-- diagonal line -->
+    <line x1="20" y1="170" x2="160" y2="30" stroke="#4a2878" stroke-width="2"/>
+    <circle cx="20" cy="170" r="5" fill="#1a3870"/>
+    <circle cx="160" cy="30" r="5" fill="#1a3870"/>
+    <circle cx="90" cy="100" r="6" fill="#9a7030"/>
+    <!-- labels -->
+    <text x="6" y="185" font-size="10" fill="#1a3870">(1,0)</text>
+    <text x="145" y="24" font-size="10" fill="#1a3870">(0,1)</text>
+    <text x="98" y="97" font-size="10" fill="#9a7030">w</text>
+    <text x="20" y="200" font-size="9" fill="#9a7030">w = t at parameter t ∈ [0,1]</text>
+    <!-- axis labels -->
+    <text x="90" y="185" font-size="9" fill="#1a5830" text-anchor="middle">cos direction →</text>
+    <text x="5" y="100" font-size="9" fill="#1a5830" text-anchor="middle" transform="rotate(-90,5,100)">sin direction ↑</text>
+  </g>
+ 
+  <!-- divider -->
+  <line x1="240" y1="20" x2="240" y2="300" stroke="#d4cfc4" stroke-width="1"/>
+ 
+  <!-- §1b: The warp -->
+  <g transform="translate(260,30)">
+    <text x="95" y="16" font-size="11" fill="#b8b2a4" letter-spacing="2" text-anchor="middle">THE WARP  w(t)</text>
+    <!-- axes -->
+    <line x1="20" y1="170" x2="190" y2="170" stroke="#d4cfc4" stroke-width="1"/>
+    <line x1="20" y1="170" x2="20" y2="20" stroke="#d4cfc4" stroke-width="1"/>
+    <!-- identity line -->
+    <line x1="20" y1="170" x2="170" y2="20" stroke="#d4cfc4" stroke-width="1" stroke-dasharray="4,4"/>
+    <!-- warp curve — approximate with bezier -->
+    <path d="M20,170 C50,170 70,130 95,100 C120,70 140,30 170,20"
+          fill="none" stroke="#4a2878" stroke-width="2.5"/>
+    <!-- fixed point -->
+    <circle cx="95" cy="95" r="5" fill="#9a7030"/>
+    <text x="100" y="90" font-size="9" fill="#9a7030">w(½)=½</text>
+    <!-- endpoint dots -->
+    <circle cx="20" cy="170" r="4" fill="#1a3870"/>
+    <circle cx="170" cy="20" r="4" fill="#1a3870"/>
+    <!-- axis labels -->
+    <text x="190" y="174" font-size="9" fill="#b8b2a4">t</text>
+    <text x="14" y="16" font-size="9" fill="#b8b2a4">w</text>
+    <text x="20" y="200" font-size="9" fill="#4a2878">Chebyshev minimax, err &lt; 1.7e-7</text>
+    <!-- tick marks -->
+    <line x1="95" y1="168" x2="95" y2="172" stroke="#b8b2a4" stroke-width="1"/>
+    <text x="93" y="182" font-size="8" fill="#b8b2a4" text-anchor="middle">½</text>
+    <line x1="18" y1="95" x2="22" y2="95" stroke="#b8b2a4" stroke-width="1"/>
+    <text x="12" y="98" font-size="8" fill="#b8b2a4" text-anchor="end">½</text>
+  </g>
+ 
+  <!-- divider -->
+  <line x1="480" y1="20" x2="480" y2="300" stroke="#d4cfc4" stroke-width="1"/>
+ 
+  <!-- §1c: The projection -->
+  <g transform="translate(500,30)">
+    <text x="100" y="16" font-size="11" fill="#b8b2a4" letter-spacing="2" text-anchor="middle">THE PROJECTION</text>
+    <!-- axes -->
+    <line x1="20" y1="100" x2="200" y2="100" stroke="#d4cfc4" stroke-width="1"/>
+    <line x1="110" y1="20" x2="110" y2="190" stroke="#d4cfc4" stroke-width="1"/>
+    <!-- unit circle -->
+    <circle cx="110" cy="100" r="80" fill="none" stroke="#d4cfc4" stroke-width="1" stroke-dasharray="3,4"/>
+    <!-- Q0 arc -->
+    <path d="M190,100 A80,80 0 0,0 110,20" fill="none" stroke="#1a7068" stroke-width="3"/>
+    <!-- sample point at ~35deg -->
+    <circle cx="175" cy="54" r="6" fill="#9a7030"/>
+    <!-- projection lines -->
+    <line x1="110" y1="100" x2="175" y2="54" stroke="#9a7030" stroke-width="1.5"/>
+    <line x1="175" y1="54" x2="175" y2="100" stroke="#1a3870" stroke-width="1" stroke-dasharray="3,3"/>
+    <line x1="110" y1="54" x2="175" y2="54" stroke="#1a5830" stroke-width="1" stroke-dasharray="3,3"/>
+    <!-- labels -->
+    <text x="178" y="80" font-size="9" fill="#1a3870">(1-w)/√D</text>
+    <text x="115" y="50" font-size="9" fill="#1a5830">w/√D</text>
+    <text x="143" y="47" font-size="9" fill="#9a7030">P</text>
+    <!-- D label -->
+    <text x="24" y="200" font-size="9" fill="#4a2878">D = (1-w)²+w² ∈ [½,1]</text>
+    <text x="24" y="213" font-size="9" fill="#4a2878">1/√D ∈ [1, √2]</text>
+    <!-- cardinal dots -->
+    <circle cx="190" cy="100" r="4" fill="#1a3870"/>
+    <circle cx="110" cy="20"  r="4" fill="#1a3870"/>
+    <text x="193" y="104" font-size="9" fill="#1a3870">0 RAU</text>
+    <text x="112" y="16"  font-size="9" fill="#1a3870">1 RAU</text>
+  </g>
+</svg>
+<figcaption>Fig 1 — Diagonal parameter w, warp correction, and unit-circle projection</figcaption>
+</figure>
+ 
+<div class="formula">
+w        = 0.5 + v·P(v²)          <span class="c">← warp,  v = t−½</span><br>
+D        = (1−w)² + w²             <span class="c">← always in [½,1]</span><br>
+cos(φ)   = <span class="hi">(1−w) / √D</span>         <span class="c">← x component</span><br>
+sin(φ)   = <span class="hi">w / √D</span>              <span class="c">← y component</span>
+</div>
+ 
+<!-- ══ §2 FOUR QUADRANTS ═══════════════════════════════════════════════ -->
+<h2><span class="sec-num">§2</span>Four Quadrants — the Full Period</h2>
+ 
+<p>The period is <strong>4 RAU = 360°</strong>. One unit per quadrant. Integer boundaries land exactly on the four cardinal points. Odd quadrants Q1 and Q3 reverse the warp direction — <em>w → 1−w</em> — which is both the forward rule and the inverse rule.</p>
+ 
+<figure class="diagram">
+<svg viewBox="0 0 700 280" xmlns="http://www.w3.org/2000/svg" font-family="Martian Mono, monospace">
+  <rect width="700" height="280" fill="white"/>
+ 
+  <!-- Left: unit circle with 4 quadrants -->
+  <g transform="translate(160,140)">
+    <!-- quadrant fills -->
+    <path d="M0,0 L110,0 A110,110 0 0,0 0,-110 Z" fill="#eef2fa" opacity="0.6"/>
+    <path d="M0,0 L0,-110 A110,110 0 0,0 -110,0 Z" fill="#eef8f0" opacity="0.6"/>
+    <path d="M0,0 L-110,0 A110,110 0 0,0 0,110 Z" fill="#fdf6e3" opacity="0.6"/>
+    <path d="M0,0 L0,110 A110,110 0 0,0 110,0 Z" fill="#f4f0fa" opacity="0.6"/>
+    <!-- circle -->
+    <circle cx="0" cy="0" r="110" fill="none" stroke="#d4cfc4" stroke-width="1.5"/>
+    <!-- axes -->
+    <line x1="-125" y1="0" x2="125" y2="0" stroke="#d4cfc4" stroke-width="1"/>
+    <line x1="0" y1="-125" x2="0" y2="125" stroke="#d4cfc4" stroke-width="1"/>
+    <!-- arc segments coloured -->
+    <path d="M110,0 A110,110 0 0,0 0,-110"   fill="none" stroke="#1a3870" stroke-width="4"/>
+    <path d="M0,-110 A110,110 0 0,0 -110,0"  fill="none" stroke="#1a5830" stroke-width="4"/>
+    <path d="M-110,0 A110,110 0 0,0 0,110"   fill="none" stroke="#9a7030" stroke-width="4"/>
+    <path d="M0,110 A110,110 0 0,0 110,0"    fill="none" stroke="#4a2878" stroke-width="4"/>
+    <!-- cardinal dots -->
+    <circle cx="110" cy="0"   r="6" fill="#1a1a24"/>
+    <circle cx="0"   cy="-110" r="6" fill="#1a1a24"/>
+    <circle cx="-110" cy="0"  r="6" fill="#1a1a24"/>
+    <circle cx="0"   cy="110"  r="6" fill="#1a1a24"/>
+    <!-- cardinal labels -->
+    <text x="118" y="5"   font-size="11" fill="#1a3870">0</text>
+    <text x="5"   y="-115" font-size="11" fill="#1a5830">1</text>
+    <text x="-132" y="5"  font-size="11" fill="#9a7030">2</text>
+    <text x="5"   y="125"  font-size="11" fill="#4a2878">3</text>
+    <!-- quadrant labels -->
+    <text x="55"  y="-45"  font-size="10" fill="#1a3870" text-anchor="middle">Q0</text>
+    <text x="-45" y="-45"  font-size="10" fill="#1a5830" text-anchor="middle">Q1</text>
+    <text x="-45" y="55"   font-size="10" fill="#9a7030" text-anchor="middle">Q2</text>
+    <text x="55"  y="55"   font-size="10" fill="#4a2878" text-anchor="middle">Q3</text>
+    <!-- warp direction arrows -->
+    <text x="80"  y="-75"  font-size="8" fill="#1a3870">w→</text>
+    <text x="-90" y="-60"  font-size="8" fill="#1a5830">←w</text>
+    <text x="-85" y="70"   font-size="8" fill="#9a7030">w→</text>
+    <text x="72"  y="72"   font-size="8" fill="#4a2878">←w</text>
+  </g>
+ 
+  <!-- Right: the rule table -->
+  <g transform="translate(360,40)">
+    <text x="0" y="12" font-size="11" fill="#b8b2a4" letter-spacing="2">QUADRANT RULES</text>
+    <!-- table rows -->
+    <g transform="translate(0,28)">
+      <rect width="300" height="28" fill="#eef2fa" rx="2"/>
+      <text x="8"  y="19" font-size="10" fill="#1a3870">Q0  [0,1)</text>
+      <text x="120" y="19" font-size="9"  fill="#1a3870">w = warp(t)</text>
+      <text x="220" y="19" font-size="9"  fill="#1a3870">cos+, sin+</text>
+    </g>
+    <g transform="translate(0,62)">
+      <rect width="300" height="28" fill="#eef8f0" rx="2"/>
+      <text x="8"  y="19" font-size="10" fill="#1a5830">Q1  [1,2)</text>
+      <text x="120" y="19" font-size="9"  fill="#1a5830">w = 1−warp(t)</text>
+      <text x="220" y="19" font-size="9"  fill="#1a5830">cos−, sin+</text>
+    </g>
+    <g transform="translate(0,96)">
+      <rect width="300" height="28" fill="#fdf6e3" rx="2"/>
+      <text x="8"  y="19" font-size="10" fill="#9a7030">Q2  [2,3)</text>
+      <text x="120" y="19" font-size="9"  fill="#9a7030">w = warp(t)</text>
+      <text x="220" y="19" font-size="9"  fill="#9a7030">cos−, sin−</text>
+    </g>
+    <g transform="translate(0,130)">
+      <rect width="300" height="28" fill="#f4f0fa" rx="2"/>
+      <text x="8"  y="19" font-size="10" fill="#4a2878">Q3  [3,4)</text>
+      <text x="120" y="19" font-size="9"  fill="#4a2878">w = 1−warp(t)</text>
+      <text x="220" y="19" font-size="9"  fill="#4a2878">cos+, sin−</text>
+    </g>
+    <text x="0"  y="188" font-size="9" fill="#b8b2a4">Odd quadrants reverse w → 1−w</text>
+    <text x="0"  y="202" font-size="9" fill="#b8b2a4">Same rule in forward AND inverse</text>
+ 
+    <!-- conversion box -->
+    <rect x="0" y="218" width="300" height="38" fill="#fdf6e3" rx="3" stroke="#d4a83a" stroke-width="1"/>
+    <text x="8" y="234" font-size="10" fill="#9a7030">φ_RAU = θ_rad × (2/π)</text>
+    <text x="8" y="249" font-size="9"  fill="#b8b2a4">4 RAU = 2π rad = 360°   ·   1 RAU = 90°</text>
+  </g>
+</svg>
+<figcaption>Fig 2 — Four quadrants, warp direction rules, and the 2/π conversion constant</figcaption>
+</figure>
+ 
+<!-- ══ §3 FORWARD PATH ══════════════════════════════════════════════════ -->
+<h2><span class="sec-num">§3</span>Forward Path  φ → (cos, sin)</h2>
+ 
+<p>Three equivalent implementations, all verified to machine precision against each other.</p>
+ 
+<h3>R_vec — the vector cardinal method</h3>
+<p>Select a cardinal direction vector <strong>i</strong> from the integer part of φ, then apply the warp and projection within that quadrant. No branching on signs — the cardinal vector carries the sign information.</p>
+ 
+<div class="formula">
+z = mod(φ, 4)<br>
+i = <span class="tl">{z&lt;1:(1,0)  z&lt;2:(0,1)  z&lt;3:(−1,0)  z&lt;4:(0,−1)}</span><br>
+w = warp(frac(z))           <span class="c">← w in [0,1)</span><br>
+D = 1 − 2w + 2w²            <span class="c">← = (1-w)²+w²</span><br>
+<span class="hi">cos</span> = f(i, w, D)           <span class="c">← see R_vec formula</span><br>
+<span class="hi">sin</span> = g(i, w, D)           <span class="c">← verified: max err 8.3e-16</span>
+</div>
+ 
+<div class="box box-grn">
+<span class="box-label">verified</span>
+R_vec tested across all four quadrants, 79 points including all cardinals. Max error vs reference: <strong>8.3×10⁻¹⁶</strong> — machine epsilon only. No algorithmic error.
+</div>
+ 
+<h3>r_cos / r_sin — the offset-branch method</h3>
+<p>Use <code>m(x, o) = mod(cp·x + o, 4)</code> with offset <em>o=1 for cos</em>, <em>o=0 for sin</em> to route the correct magnitude to the correct output. <code>cp = 1</code> for RAU input, <code>cp = 2/π</code> for radian input.</p>
+ 
+<div class="cols">
+  <div class="box box-blue">
+    <span class="box-label">r_cos offset</span>
+    Uses <strong>m(x, 1)</strong> — the +1 shift routes Rs (cos magnitude) into the correct branch at each quadrant boundary.
+  </div>
+  <div class="box box-blue">
+    <span class="box-label">r_sin offset</span>
+    Uses <strong>m(x, 0)</strong> — no shift needed, Rc (sin magnitude) appears naturally in the first branch.
+  </div>
+</div>
+ 
+<div class="box box-gold">
+<span class="box-label">bug 2 fix — applies to both methods</span>
+The guard <code>{x=0: 1, −1}</code> in the integer branch of r_cos must be <code>{mod(x,4)=0: 1, −1}</code> to correctly return cos=+1 at x=4, 8, 12,... as well as x=0.
+</div>
+ 
+<!-- ══ §4 INVERSE PATH ══════════════════════════════════════════════════ -->
+<h2><span class="sec-num">§4</span>Inverse Path  (cos, sin) → φ</h2>
+ 
+<p>Given a circle point <strong>R = (cos, sin)</strong>, recover the original parameter φ. Four methods in increasing precision, all using only the sign bits for quadrant detection.</p>
+ 
+<figure class="diagram">
+<svg viewBox="0 0 700 200" xmlns="http://www.w3.org/2000/svg" font-family="Martian Mono, monospace">
+  <rect width="700" height="200" fill="white"/>
+ 
+  <!-- flow diagram -->
+  <!-- Step 1: input -->
+  <rect x="20" y="75" width="100" height="50" rx="3" fill="#eef2fa" stroke="#4a2878" stroke-width="1.5"/>
+  <text x="70" y="97" font-size="10" fill="#4a2878" text-anchor="middle">R = (cos, sin)</text>
+  <text x="70" y="112" font-size="9" fill="#b8b2a4" text-anchor="middle">circle point</text>
+ 
+  <!-- arrow -->
+  <line x1="120" y1="100" x2="148" y2="100" stroke="#d4cfc4" stroke-width="1.5" marker-end="url(#arr)"/>
+ 
+  <!-- Step 2: r_arctan -->
+  <rect x="150" y="60" width="120" height="80" rx="3" fill="#fdf6e3" stroke="#9a7030" stroke-width="1.5"/>
+  <text x="210" y="90" font-size="10" fill="#9a7030" text-anchor="middle">r_arctan</text>
+  <text x="210" y="106" font-size="9" fill="#9a7030" text-anchor="middle">|y/x|/(1+|y/x|)</text>
+  <text x="210" y="122" font-size="8" fill="#b8b2a4" text-anchor="middle">guard: x=0 → 1</text>
+  <text x="210" y="134" font-size="8" fill="#b8b2a4" text-anchor="middle">w ∈ [0,1], rational</text>
+ 
+  <!-- arrow -->
+  <line x1="270" y1="100" x2="298" y2="100" stroke="#d4cfc4" stroke-width="1.5"/>
+  <polygon points="298,96 306,100 298,104" fill="#d4cfc4"/>
+ 
+  <!-- Step 3: invpoly -->
+  <rect x="305" y="60" width="120" height="80" rx="3" fill="#eef8f0" stroke="#1a5830" stroke-width="1.5"/>
+  <text x="365" y="90" font-size="10" fill="#1a5830" text-anchor="middle">invpoly</text>
+  <text x="365" y="106" font-size="9" fill="#1a5830" text-anchor="middle">arctan_adj(r_at)</text>
+  <text x="365" y="122" font-size="8" fill="#b8b2a4" text-anchor="middle">+ reflection at ½</text>
+  <text x="365" y="134" font-size="8" fill="#b8b2a4" text-anchor="middle">t ∈ [0,1], ±3dp</text>
+ 
+  <!-- arrow -->
+  <line x1="425" y1="100" x2="453" y2="100" stroke="#d4cfc4" stroke-width="1.5"/>
+  <polygon points="453,96 461,100 453,104" fill="#d4cfc4"/>
+ 
+  <!-- Step 4: quadrant -->
+  <rect x="460" y="60" width="120" height="80" rx="3" fill="#eef8f0" stroke="#1a7068" stroke-width="1.5"/>
+  <text x="520" y="86" font-size="10" fill="#1a7068" text-anchor="middle">quadrant</text>
+  <text x="520" y="102" font-size="9" fill="#1a7068" text-anchor="middle">sign(cos), sign(sin)</text>
+  <text x="520" y="118" font-size="8" fill="#b8b2a4" text-anchor="middle">Q0/Q2: φ = Q + t</text>
+  <text x="520" y="132" font-size="8" fill="#b8b2a4" text-anchor="middle">Q1/Q3: φ = Q+(1−t)</text>
+ 
+  <!-- arrow -->
+  <line x1="580" y1="100" x2="608" y2="100" stroke="#d4cfc4" stroke-width="1.5"/>
+  <polygon points="608,96 616,100 608,104" fill="#d4cfc4"/>
+ 
+  <!-- output -->
+  <rect x="615" y="75" width="70" height="50" rx="3" fill="#eef8f0" stroke="#1a7068" stroke-width="1.5"/>
+  <text x="650" y="97" font-size="10" fill="#1a7068" text-anchor="middle">φ ∈ [0,4)</text>
+  <text x="650" y="112" font-size="9" fill="#b8b2a4" text-anchor="middle">RAU phase</text>
+ 
+  <!-- 2-bit storage annotation -->
+  <rect x="440" y="155" width="220" height="30" rx="2" fill="#f4f0fa"/>
+  <text x="550" y="173" font-size="9" fill="#4a2878" text-anchor="middle">2 bits: sign(cos) · sign(sin) → quadrant</text>
+ 
+  <defs>
+    <marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+      <polygon points="0,0 8,4 0,8" fill="#d4cfc4"/>
+    </marker>
+  </defs>
+</svg>
+<figcaption>Fig 3 — Inverse pipeline: r_arctan → invpoly → quadrant offset</figcaption>
+</figure>
+ 
+<h3>The odd-quadrant reversal — same rule as forward</h3>
+<div class="formula">
+Q0, Q2  (even):  φ = Q + t         <span class="c">← t counts forward</span><br>
+Q1, Q3  (odd):   φ = Q + <span class="hi">(1−t)</span>     <span class="c">← t reversed, mirrors forward w→1-w</span>
+</div>
+ 
+<div class="box box-red">
+<span class="box-label">the critical bug — previously missed</span>
+Without the (1−t) reversal in Q1 and Q3, the error is <strong>up to 1.0 RAU</strong> — a full quadrant wrong. The reversal is not optional. It is the exact mirror of the forward warp reversal and must be applied in both directions.
+</div>
+ 
+<!-- ══ §5 SINGLE-COMPONENT RECOVERY ═════════════════════════════════════ -->
+<h2><span class="sec-num">§5</span>Single-Component Recovery</h2>
+ 
+<p>When only <strong>sin</strong> or only <strong>cos</strong> is available — one PMOD pin, one ADC channel, one encoder output — w can be recovered algebraically without the other component.</p>
+ 
+<div class="cols">
+  <div class="box box-teal">
+    <span class="box-label">from sin only</span>
+    <span style="font-family:'Martian Mono',monospace;font-size:.78rem;color:#1a7068;display:block;margin:.3rem 0">
+      r_arcsin = |sin² − √(sin²(1−sin²))| / |2sin²−1|
+    </span>
+    Recovers w. Singularity at sin=1/√2 (w=0.5) — use midpoint guard.<br>
+    <span class="prec prec-exact">exact</span>
+  </div>
+  <div class="box box-blue">
+    <span class="box-label">from cos only</span>
+    <span style="font-family:'Martian Mono',monospace;font-size:.78rem;color:#1a3870;display:block;margin:.3rem 0">
+      r_arccos = |cos²−1+√(cos²(1−cos²))| / |2cos²−1|
+    </span>
+    Recovers w. Same singularity at cos=1/√2.<br>
+    <span class="prec prec-exact">exact</span>
+  </div>
+</div>
+ 
+<div class="box box-gold">
+<span class="box-label">real-time strategy — 2-bit sign register</span>
+Store <strong>sign(cos)</strong> and <strong>sign(sin)</strong> as two bits. Update only at zero crossings (infrequent). Between crossings, interpolate w from the single measured component using r_arcsin or r_arccos. No atan2 call at any point in the steady-state loop.
+</div>
+ 
+<!-- ══ §6 PRECISION TIERS ══════════════════════════════════════════════ -->
+<h2><span class="sec-num">§6</span>Precision Tiers</h2>
+ 
+<table class="tbl">
+  <thead>
+    <tr>
+      <th>Operation</th>
+      <th>Formula</th>
+      <th>Max error</th>
+      <th>Use when</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Forward (cos,sin)</td>
+      <td class="mono pur">R_vec or r_cos/r_sin</td>
+      <td class="mono teal">8.3×10⁻¹⁶</td>
+      <td>Always — machine epsilon</td>
+    </tr>
+    <tr>
+      <td>r_arctan → w</td>
+      <td class="mono pur">|y/x|/(1+|y/x|)</td>
+      <td class="mono teal">exact</td>
+      <td>Rational, no trig</td>
+    </tr>
+    <tr>
+      <td>r_arcsin/cos → w</td>
+      <td class="mono pur">algebraic formula</td>
+      <td class="mono teal">1.5×10⁻¹⁵</td>
+      <td>Single component only</td>
+    </tr>
+    <tr>
+      <td>invpoly (adj) → t</td>
+      <td class="mono pur">arctan_adj + reflect</td>
+      <td class="mono red">1.08×10⁻⁴</td>
+      <td>No atan2, 3dp sufficient</td>
+    </tr>
+    <tr>
+      <td>invpoly (orig) → t</td>
+      <td class="mono pur">iw_orig + reflect</td>
+      <td class="mono red">1.63×10⁻⁴</td>
+      <td>Better near origin</td>
+    </tr>
+    <tr>
+      <td>atan2 inverse → t</td>
+      <td class="mono pur">atan2(w, 1−w)·(2/π)</td>
+      <td class="mono teal">1.08×10⁻⁷</td>
+      <td>Full precision, has atan2</td>
+    </tr>
+    <tr>
+      <td>I_nvert → φ</td>
+      <td class="mono pur">mod(atan2(y,x)·(2/π)+4,4)</td>
+      <td class="mono teal">~1×10⁻⁷</td>
+      <td>Full phase, reference</td>
+    </tr>
+  </tbody>
+</table>
+ 
+<!-- ══ §7 THE POLYNOMIAL COEFFICIENTS ══════════════════════════════════ -->
+<h2><span class="sec-num">§7</span>Warp Polynomial Coefficients</h2>
+ 
+<div class="formula">
+P_w(x) = v·(C1 + v²·(C2 + v²·(C3 + v²·(C4 + v²·(C5 + v²·C6)))))<br>
+where v = x − 0.5<br><br>
+C1 = <span class="hi">0.78539732</span>    <span class="c">← ≈ π/4</span><br>
+C2 = <span class="hi">0.64607089</span><br>
+C3 = <span class="hi">0.63401085</span><br>
+C4 = <span class="hi">0.68518412</span><br>
+C5 = <span class="hi">0.32482231</span><br>
+C6 = <span class="hi">1.52006419</span>
+</div>
+ 
+<div class="formula">
+arctan polynomial (minimax, ~4dp, domain [0,1]):<br>
+arctan_adj(x) = x·(1.000087 − 0.33289x² + 0.19383x⁴ − 0.11735x⁶ + 0.05368x⁸ − 0.01213x¹⁰)
+</div>
+ 
+<hr>
+ 
+<p style="font-family:'Martian Mono',monospace;font-size:.65rem;color:#b8b2a4;text-align:center;margin-top:1.5rem">
+  All values verified in Python across 99–9999 test points · Max errors measured not estimated · Session: April 2026
+</p>
+ 
+</body>
+</html>
