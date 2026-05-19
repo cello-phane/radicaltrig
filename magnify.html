@@ -117,6 +117,8 @@
     resize();
 
     // ── controls ──────────────────────────────────────────────────────────────────
+
+    // also update label when switching modes
     function setMode(m) {
         mode = m;
         ["btnL1", "btnSnell", "btnFlat"].forEach((id) =>
@@ -127,6 +129,11 @@
                 m === "l1" ? "btnL1" : m === "snell" ? "btnSnell" : "btnFlat",
             )
             .classList.add("active");
+        // refresh label in case mag > 2.8
+        const snellCapped = m === "snell" && mag > 2.8;
+        document.getElementById("magV").textContent =
+            mag.toFixed(2) + "×" + (snellCapped ? " (max)" : "");
+        lastMx = -1;
     }
 
     document.getElementById("rad").oninput = (e) => {
@@ -134,8 +141,12 @@
         document.getElementById("radV").textContent = radius;
     };
     document.getElementById("mag").oninput = (e) => {
-        mag = e.target.value / 100;
-        document.getElementById("magV").textContent = mag.toFixed(2) + "×";
+        const raw = +e.target.value;
+        mag = raw / 100;
+        const snellCapped = mode === "snell" && mag > 2.8;
+        document.getElementById("magV").textContent =
+            mag.toFixed(2) + "×" + (snellCapped ? " (max)" : "");
+        lastMx = -1;
     };
 
     cv.onmousemove = (e) => {
@@ -264,33 +275,30 @@
                     sx = mx + dx * scale;
                     sy = my + dy * scale;
                 } else if (lensMode === "snell") {
-                    const IOR = 1.5; // fixed glass — matches original shader physics
-                    const mu = 1.0 / IOR; // = 0.667, fixed
+                    const MAG_MAX = 2.8;
+                    const clampedMag = Math.min(magFactor, MAG_MAX);
+
+                    const IOR = 1.5;
+                    const mu = 1.0 / IOR;
                     const z = Math.sqrt(r2 - distsqrd);
-                    // len = RADIUS exactly, but compute explicitly for clarity
-                    const len = Math.sqrt(dx * dx + dy * dy + z * z); // = RADIUS
+                    const len = Math.sqrt(dx * dx + dy * dy + z * z);
                     const nx = -dx / len,
                         ny = -dy / len,
                         nz = z / len;
                     const c = -nz;
                     const disc = 1 - mu * mu * (1 - c * c);
+
                     if (disc < 0) {
                         sx = px;
-                        sy = py; // total internal reflection
+                        sy = py;
                     } else {
                         const sq = Math.sqrt(disc);
-                        let trx = (sq - mu * c) * nx; // incident ray is (0,0,-1)
-                        let try_ = (sq - mu * c) * ny; // so mu*i terms vanish in x,y
+                        const trx = (sq - mu * c) * nx;
+                        const try_ = (sq - mu * c) * ny;
                         const trz = -mu + (sq - mu * c) * nz;
-                        // t in normalised space, scaled back to pixels
-                        const t = (-nz / trz) * len;
-                        const naturalCentreRate = (IOR - 1.0) / IOR; // 0.333
-                        const desiredCentreRate = (magFactor - 1.0) / magFactor;
-                        const snellScale =
-                            desiredCentreRate / naturalCentreRate;
                         const tPix = -z / trz;
-                        // remap mag to (maxMag + 1 - mag) approximately:
-                        const invertedMag = 4.05 - magFactor; // 3→1, 2→2, 1→3
+
+                        const invertedMag = 4.05 - clampedMag;
                         const effectiveScale =
                             (0.0667 * invertedMag) / (invertedMag - 1.0);
 
