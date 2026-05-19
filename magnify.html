@@ -280,7 +280,7 @@
                         sx = px;
                         sy = py; // total internal reflection
                     } else {
-                        const sq = Math.sqrt(disc);
+                        const sq = disc;
                         const trx = (sq - mu * c) * nx; // incident ray is (0,0,-1)
                         const try_ = (sq - mu * c) * ny; // so mu*i terms vanish in x,y
                         const trz = -mu + (sq - mu * c) * nz;
@@ -402,3 +402,4 @@
     }
     animId = requestAnimationFrame(frame);
 </script>
+
