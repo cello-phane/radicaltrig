@@ -134,8 +134,12 @@
         document.getElementById("radV").textContent = radius;
     };
     document.getElementById("mag").oninput = (e) => {
-        mag = e.target.value / 100;
+        // slider goes 101→300, we want 300→101
+        const raw = +e.target.value;
+        const flipped = 401 - raw; // 101→300, 300→101
+        mag = flipped / 100;
         document.getElementById("magV").textContent = mag.toFixed(2) + "×";
+        lastMx = -1;
     };
 
     cv.onmousemove = (e) => {
@@ -264,51 +268,64 @@
                     sx = mx + dx * scale;
                     sy = my + dy * scale;
                 } else if (lensMode === "snell") {
-                    const IOR = magFactor * 1.1;
-                    const mu = 1 / IOR;
+                    const IOR = 1.5; // fixed glass — matches original shader physics
+                    const mu = 1.0 / IOR; // = 0.667, fixed
                     const z = Math.sqrt(r2 - distsqrd);
                     // len = RADIUS exactly, but compute explicitly for clarity
                     const len = Math.sqrt(dx * dx + dy * dy + z * z); // = RADIUS
-
                     const nx = -dx / len,
                         ny = -dy / len,
                         nz = z / len;
                     const c = -nz;
                     const disc = 1 - mu * mu * (1 - c * c);
-
                     if (disc < 0) {
                         sx = px;
                         sy = py; // total internal reflection
                     } else {
                         const sq = Math.sqrt(disc);
-                        const trx = (sq - mu * c) * nx; // incident ray is (0,0,-1)
-                        const try_ = (sq - mu * c) * ny; // so mu*i terms vanish in x,y
+                        let trx = (sq - mu * c) * nx; // incident ray is (0,0,-1)
+                        let try_ = (sq - mu * c) * ny; // so mu*i terms vanish in x,y
                         const trz = -mu + (sq - mu * c) * nz;
-
                         // t in normalised space, scaled back to pixels
-                        const t = (-nz / trz) * len; // or just: -z / (trz * ... )
-                        // cleaner: keep everything in pixel space from the start
-                        const tPix = -z / trz; // trz is dimensionless (unit vector)
-                        sx = px + trx * tPix * 0.1;
-                        sy = py + try_ * tPix * 0.1;
+                        const t = (-nz / trz) * len;
+                        const naturalCentreRate = (IOR - 1.0) / IOR; // 0.333
+                        const desiredCentreRate = (magFactor - 1.0) / magFactor;
+                        const snellScale =
+                            desiredCentreRate / naturalCentreRate;
+                        const tPix = -z / trz;
+                        // remap slider [1,3] → effective scale [0, ~0.1]
+                        // 0.25 / snellScale = 0.25 * naturalCentreRate / desiredCentreRate
+                        //                   = 0.0833 * mag / (mag - 1)
+                        // which is just:
+                        const effectiveScale = 0.1 * (2.5 / (magFactor - 0.5));
+                        // at mag=2.5: 0.1 * 1.0 = 0.1  ← exact match
+                        // at mag=2.0: 0.1 * 1.25        ← more magnification
+                        // at mag=3.0: 0.1 * 0.833       ← less magnification
+
+                        sx = px - trx * tPix * effectiveScale;
+                        sy = py - try_ * tPix * effectiveScale;
                     }
                 } else {
                     // L¹ radial + tangential warp
                     // scale < 1: sample closer to centre → displays content from further out → magnify
-                    const scale = 1.0 / (1.0 + (magFactor - 1.0) * (1.0 - normDist * normDist));
-                
-                    const rx = dx / dist, ry = dy / dist;  // unit radial
-                    const tx_ = -ry, ty_ = rx;              // unit tangential
-                
+                    const scale =
+                        1.0 /
+                        (1.0 + (magFactor - 1.0) * (1.0 - normDist * normDist));
+
+                    const rx = dx / dist,
+                        ry = dy / dist; // unit radial
+                    const tx_ = -ry,
+                        ty_ = rx; // unit tangential
+
                     const radialDist = dist * scale;
-                    const tanMag = dx*tx_ + dy*ty_;
+                    const tanMag = dx * tx_ + dy * ty_;
                     const IOR = magFactor * 1.1;
-                    const mu  = 1.0 / IOR;
-                    const tanWarp = tanMag * (1.0 + (1.0 - mu) * normDist * normDist);
-                
+                    const mu = 1.0 / IOR;
+                    const tanWarp =
+                        tanMag * (1.0 + (1.0 - mu) * normDist * normDist);
+
                     sx = mx + rx * radialDist + tx_ * tanWarp;
                     sy = my + ry * radialDist + ty_ * tanWarp;
-
                 }
 
                 const fx = Math.max(0, Math.min(w - 1.001, sx));
