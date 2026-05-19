@@ -280,14 +280,13 @@
                         sx = px;
                         sy = py; // total internal reflection
                     } else {
-                        const sq = disc;
+                        const sq = Math.sqrt(disc);
                         const trx = (sq - mu * c) * nx; // incident ray is (0,0,-1)
                         const try_ = (sq - mu * c) * ny; // so mu*i terms vanish in x,y
                         const trz = -mu + (sq - mu * c) * nz;
 
                         // t in normalised space, scaled back to pixels
-                        //const t = (-nz / trz) * len; // or just: -z / (trz * ... )
-                        const t = -z;
+                        const t = (-nz / trz) * len; // or just: -z / (trz * ... )
                         // cleaner: keep everything in pixel space from the start
                         const tPix = -z / trz; // trz is dimensionless (unit vector)
                         sx = px + trx * tPix * 0.1;
@@ -402,4 +401,3 @@
     }
     animId = requestAnimationFrame(frame);
 </script>
-
