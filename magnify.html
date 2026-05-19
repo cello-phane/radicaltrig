@@ -293,34 +293,22 @@
                         sy = py + try_ * tPix * 0.1;
                     }
                 } else {
-                    // decompose offset into radial and tangential parts
-                    const dist = Math.sqrt(distsqrd);
-                    const normDist = dist / radius;
+                    // L¹ radial + tangential warp
+                    // scale < 1: sample closer to centre → displays content from further out → magnify
+                    const scale = 1.0 / (1.0 + (magFactor - 1.0) * (1.0 - normDist * normDist));
+                
+                    const rx = dx / dist, ry = dy / dist;  // unit radial
+                    const tx_ = -ry, ty_ = rx;              // unit tangential
+                
+                    const radialDist = dist * scale;
+                    const tanMag = dx*tx_ + dy*ty_;
                     const IOR = magFactor * 1.1;
-                    const mu = (1.1 / magFactor) * IOR;
-                    // unit radial direction
-                    const rx = dx / dist,
-                        ry = dy / dist;
+                    const mu  = 1.0 / IOR;
+                    const tanWarp = tanMag * (1.0 + (1.0 - mu) * normDist * normDist);
+                
+                    sx = mx + rx * radialDist + tx_ * tanWarp;
+                    sy = my + ry * radialDist + ty_ * tanWarp;
 
-                    // unit tangential direction (perpendicular)
-                    const tx_ = -ry,
-                        ty_ = rx;
-
-                    // project offset onto radial and tangential
-                    const radialMag = dx * rx + dy * ry; // = dist
-                    const tanMag = dx * tx_ + dy * ty_; // = 0 for pure radial offset, varies at edge
-
-                    // warp radial and tangential independently
-                    // radial: compress toward centre (magnify)
-                    const radialWarp = Math.pow(normDist, mu) * radius;
-                    // tangential: stretch along circumference — grows toward edge
-                    // this is the missing piece: tangential warp increases with normDist
-                    const tanWarp =
-                        tanMag * (1.0 + (1.0 - mu) * normDist * normDist);
-
-                    // reconstruct
-                    sx = mx + rx * radialWarp + tx_ * tanWarp;
-                    sy = my + ry * radialWarp + ty_ * tanWarp;
                 }
 
                 const fx = Math.max(0, Math.min(w - 1.001, sx));
