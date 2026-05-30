@@ -1,9 +1,4 @@
-<img width="1024" height="558" alt="image" src="https://github.com/user-attachments/assets/26294e87-a0a3-4e35-b942-f0e40c5972ff" />
-
-# radicaltrig
-<img width="424" height="217" alt="image" src="https://github.com/user-attachments/assets/bfd17458-9a9a-40ed-b22f-305bd0e7a4f8" />  
-0.0 to 1.0 ~~ 0.0 to π/2 radians  
-(Non-periodic, closed form solution)   
+<img width="512" height="279" alt="image" src="https://github.com/user-attachments/assets/26294e87-a0a3-4e35-b942-f0e40c5972ff" />
 
 ### Resources on youtube  
 [John Gabriel on the topic of the right angle measure](https://youtu.be/xUdFMTpfGHg)  
