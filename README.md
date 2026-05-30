@@ -1,4 +1,4 @@
-<img width="512" height="279" alt="radical_trigonometry_cover_image" src="https://github.com/user-attachments/assets/604155af-8a6d-4c47-9565-8042760e0a4a" />
+<img width="384" height="209" alt="radical_trigonometry_banner" src="https://github.com/user-attachments/assets/39f16420-7bb1-4f78-8591-4af3b8e88a70" />
 
 ### Resources on youtube  
 [John Gabriel on the topic of the right angle measure](https://youtu.be/xUdFMTpfGHg)  
