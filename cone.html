@@ -381,9 +381,11 @@
 	    const q2 = Number(quadrant === 2);
 	    const q3 = Number(quadrant === 3);
 
-	    // signs_cos = [+1,-1,-1,+1], signs_sin = [+1,+1,-1,-1]
-		const cos_result = [c, -s, -c, s][quadrant];
-		const sin_result = [s,  c, -s, -c][quadrant];
+	    // signs_cos = [+1,-1,-1,+1]
+		// signs_sin = [+1, +1, -1, -1]
+		const sin_signs = [1, 1, -1, -1];
+		let cos_result = [c, -s, -c, s][quadrant];
+		let sin_result = s*q0 + c*q1 - s*q2 - c*q3;
 	    return { sin: sin_result, cos: cos_result };
 	}
 
