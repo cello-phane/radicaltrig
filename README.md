@@ -1,7 +1,4 @@
-# radicaltrig
-<img width="424" height="217" alt="image" src="https://github.com/user-attachments/assets/bfd17458-9a9a-40ed-b22f-305bd0e7a4f8" />  
-0.0 to 1.0 ~~ 0.0 to π/2 radians  
-(Non-periodic, closed form solution)   
+<img width="384" height="209" alt="radical_trigonometry_banner" src="https://github.com/user-attachments/assets/39f16420-7bb1-4f78-8591-4af3b8e88a70" />
 
 ### Resources on youtube  
 [John Gabriel on the topic of the right angle measure](https://youtu.be/xUdFMTpfGHg)  
