@@ -1,0 +1,451 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <title>Lens Modes — RKT</title>
+        <style>
+            body {
+                background: #111;
+                color: #ccc;
+                font: 13px/1.5 sans-serif;
+                margin: 0;
+                padding: 12px;
+            }
+            canvas {
+                display: block;
+                border-radius: 8px;
+            }
+            .row {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                margin: 8px 0 0;
+                flex-wrap: wrap;
+            }
+            .row label {
+                min-width: 110px;
+            }
+            .row input[type="range"] {
+                flex: 1;
+                min-width: 100px;
+            }
+            .row span {
+                min-width: 42px;
+                text-align: right;
+                font-family: monospace;
+                font-size: 12px;
+            }
+            .mode-btn {
+                padding: 4px 12px;
+                border: 1px solid #444;
+                border-radius: 6px;
+                background: #222;
+                color: #ccc;
+                cursor: pointer;
+                font-size: 12px;
+            }
+            .mode-btn.active {
+                background: #eee;
+                color: #111;
+            }
+        </style>
+    </head>
+    <body>
+        <canvas id="cv"></canvas>
+
+        <div class="row">
+            <label>Radius</label>
+            <input type="range" id="rad" min="30" max="220" value="100" />
+            <span id="radV">100</span>
+        </div>
+        <div class="row">
+            <label>Magnification</label>
+            <input type="range" id="mag" min="101" max="300" value="160" />
+            <span id="magV">1.60×</span>
+        </div>
+        <div class="row">
+            <label>Mode</label>
+            <button class="mode-btn active" id="btnL2" onclick="setMode('l2')">
+                L² radial warp
+            </button>
+            <button
+                class="mode-btn"
+                id="btnFisheye"
+                onclick="setMode('fisheye')"
+            >
+                Fisheye (Snell)
+            </button>
+            <button class="mode-btn" id="btnSnell" onclick="setMode('snell')">
+                Snell hemisphere
+            </button>
+            <button class="mode-btn" id="btnFlat" onclick="setMode('flat')">
+                Flat zoom
+            </button>
+            <button class="mode-btn" id="loadBtn">Load Image</button>
+            <button class="mode-btn" id="pathBtn">Where's Waldo</button>
+        </div>
+
+        <script>
+            const cv = document.getElementById("cv");
+            const ctx = cv.getContext("2d");
+
+            let W, H;
+            let mode = "l2";
+            let mouse = { x: 0, y: 0 };
+            let radius = 100,
+                mag = 1.6;
+            let lastImg = null;
+            let lastMode = "",
+                lastRad = 0,
+                lastMag = 0,
+                lastMx = -1,
+                lastMy = -1;
+
+            const offscreen = document.createElement("canvas");
+            const input = document.createElement("input");
+            input.type = "file";
+            input.accept = "image/*";
+
+            // ── resize ─────────────────────────────────────────────────────────────
+            let resizeTimer;
+            function resize() {
+                W = cv.parentElement.offsetWidth || window.innerWidth;
+                H = Math.round(W * 0.56);
+                cv.width = W;
+                cv.height = H;
+                offscreen.width = W;
+                offscreen.height = H;
+                mouse.x = W / 2;
+                mouse.y = H / 2;
+                drawScene(offscreen, lastImg);
+                lastMx = -1;
+            }
+            window.addEventListener("resize", () => {
+                clearTimeout(resizeTimer);
+                resizeTimer = setTimeout(resize, 120);
+            });
+            resize();
+
+            // ── controls ────────────────────────────────────────────────────────────
+            const BTNS = {
+                l2: "btnL2",
+                fisheye: "btnFisheye",
+                snell: "btnSnell",
+                flat: "btnFlat",
+            };
+            function setMode(m) {
+                mode = m;
+                Object.values(BTNS).forEach((id) =>
+                    document.getElementById(id).classList.remove("active"),
+                );
+                document.getElementById(BTNS[m]).classList.add("active");
+            }
+            document.getElementById("rad").oninput = (e) => {
+                radius = +e.target.value;
+                document.getElementById("radV").textContent = radius;
+            };
+            document.getElementById("mag").oninput = (e) => {
+                mag = e.target.value / 100;
+                document.getElementById("magV").textContent =
+                    mag.toFixed(2) + "×";
+            };
+            cv.onmousemove = (e) => {
+                const r = cv.getBoundingClientRect();
+                mouse.x = (e.clientX - r.left) * (W / r.width);
+                mouse.y = (e.clientY - r.top) * (H / r.height);
+            };
+            cv.ontouchmove = (e) => {
+                e.preventDefault();
+                const r = cv.getBoundingClientRect(),
+                    t = e.touches[0];
+                mouse.x = (t.clientX - r.left) * (W / r.width);
+                mouse.y = (t.clientY - r.top) * (H / r.height);
+            };
+
+            // ── scene ───────────────────────────────────────────────────────────────
+            function drawScene(c, img = null) {
+                const w = c.width,
+                    h = c.height;
+                const g = c.getContext("2d");
+                g.fillStyle = "#1a1a2e";
+                g.fillRect(0, 0, w, h);
+                const cols = 12,
+                    rows = 8;
+                for (let r = 0; r < rows; r++)
+                    for (let cc = 0; cc < cols; cc++) {
+                        const hue = ((cc / cols) * 360 + r * 25) % 360;
+                        g.fillStyle = `hsl(${hue},65%,${35 + r * 4}%)`;
+                        g.fillRect(
+                            cc * (w / cols) + 1,
+                            r * (h / rows) + 1,
+                            w / cols - 2,
+                            h / rows - 2,
+                        );
+                    }
+                if (img) {
+                    const scale = Math.min(w / img.width, h / img.height);
+                    g.drawImage(
+                        img,
+                        (w - img.width * scale) / 2,
+                        (h - img.height * scale) / 2,
+                        img.width * scale,
+                        img.height * scale,
+                    );
+                } else {
+                    g.fillStyle = "rgba(255,255,255,0.9)";
+                    g.font = `bold ${Math.round(w / 22)}px sans-serif`;
+                    g.textAlign = "center";
+                    g.fillText("Move mouse · Load an image", w / 2, h / 2);
+                    g.textAlign = "left";
+                }
+            }
+            function loadImg(img) {
+                lastImg = img;
+                drawScene(offscreen, img);
+                lastMx = -1;
+            }
+            input.onchange = (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                input.value = "";
+                const url = URL.createObjectURL(file);
+                const img = new Image();
+                img.onload = () => {
+                    loadImg(img);
+                    URL.revokeObjectURL(url);
+                };
+                img.onerror = () => URL.revokeObjectURL(url);
+                img.src = url;
+            };
+            document.getElementById("loadBtn").onclick = () => input.click();
+            cv.addEventListener("dragover", (e) => e.preventDefault());
+            cv.addEventListener("drop", (e) => {
+                e.preventDefault();
+                const file = e.dataTransfer.files[0];
+                if (!file?.type.startsWith("image/")) return;
+                const url = URL.createObjectURL(file);
+                const img = new Image();
+                img.onload = () => {
+                    loadImg(img);
+                    URL.revokeObjectURL(url);
+                };
+                img.onerror = () => URL.revokeObjectURL(url);
+                img.src = url;
+            });
+            document.getElementById("pathBtn").onclick = () => {
+                const img = new Image();
+                img.crossOrigin = "anonymous";
+                img.onload = () => loadImg(img);
+                img.onerror = () =>
+                    console.warn("Could not load whereswaldo.jpg");
+                img.src = "./whereswaldo.jpg";
+            };
+
+            // ── lens kernel ─────────────────────────────────────────────────────────
+            //
+            // All modes are purely RADIAL — no tangential component exists.
+            // Each mode computes srcDist from dist/normDist/mag/radius, then:
+            //   sx = mx + (dx/dist) * srcDist
+            //   sy = my + (dy/dist) * srcDist
+            //
+            // ── Mode descriptions ────────────────────────────────────────────────────
+            //
+            // flat:     srcDist = dist / mag
+            //   Uniform zoom. Every point scales equally toward centre.
+            //   Equivalent to GLSL: tr = (0, 0, 1/mag), t = z/tr.z trivially.
+            //
+            // l2:       scale = 1 / (1 + (mag-1)*(1 - normDist²))
+            //           srcDist = dist * scale
+            //   Quadratic radial falloff. Maximum magnification (1/mag) at centre,
+            //   no distortion (scale=1) at the edge. Produces a smooth bulge.
+            //   This IS a fisheye — specifically barrel distortion with the
+            //   magnification envelope shaped by 1 - r².
+            //
+            // fisheye:  Snell refraction on a glass hemisphere, IOR = mag.
+            //   Incident ray orthographic (0,0,-1). Normal at hit point is the
+            //   hemisphere surface normal. Trace refracted ray to image plane.
+            //   Equivalent to the GLSL shader with FISHEYE=-1, EFFECT=large.
+            //   c = cos(θ_i) = sqrt(1 - normDist²)
+            //   disc = 1 - mu²*normDist²
+            //   srcDist = dist - (sqrt(disc) - mu*c)*normDist * (-rad*c / tr_z)
+            //   where tr_z = -c*sqrt(disc) - mu*normDist²
+            //
+            // snell:    Same physics as fisheye, IOR = mag*1.1, with a 0.1 scale
+            //   factor on the t_pix offset. This compresses the refraction effect
+            //   to produce the characteristic circumference stretching of a thick
+            //   physical magnifier — more content visible near the rim.
+
+            // ── lens ──────────────────────────────────────────────────────────────────────
+            function applyLens(imgData, mx, my, rad, magFactor, lensMode) {
+                const src = new Uint8ClampedArray(imgData.data);
+                const dst = imgData.data;
+                const w = imgData.width,
+                    h = imgData.height;
+                const r2 = rad * rad;
+                const invMag = 1 / magFactor;
+
+                for (let py = 0; py < h; py++) {
+                    for (let px = 0; px < w; px++) {
+                        const dx = px - mx,
+                            dy = py - my;
+                        const distsqrd = dx * dx + dy * dy;
+                        if (distsqrd >= r2) continue;
+
+                        let sx, sy;
+                        const dist = Math.sqrt(distsqrd);
+                        const normDist = dist / rad; // 0 at centre, 1 at edge
+
+                        if (lensMode === "flat") {
+                            const scale = invMag;
+                            sx = mx + dx * scale;
+                            sy = my + dy * scale;
+                        } else if (lensMode === "snell") {
+                            const MAG_MAX = 2.8;
+                            const clampedMag = Math.min(magFactor, MAG_MAX);
+
+                            const IOR = 4.5;
+                            const mu = 1.0 / IOR;
+                            const z = Math.sqrt(r2 - distsqrd);
+                            const len = Math.sqrt(dx * dx + dy * dy + z * z);
+                            const nx = -dx / len,
+                                ny = -dy / len,
+                                nz = z / len;
+                            const c = -nz;
+                            const disc = 1 - mu * mu * (1 - c * c);
+
+                            if (disc < 0) {
+                                sx = px;
+                                sy = py;
+                            } else {
+                                const sq = Math.sqrt(disc);
+                                const trx = (sq - mu * c) * nx;
+                                const try_ = (sq - mu * c) * ny;
+                                const trz = -mu + (sq - mu * c) * nz;
+                                const tPix = -z / trz;
+
+                                const invertedMag = 4.0 - clampedMag;
+                                const effectiveScale =
+                                    (0.043 * invertedMag) / (invertedMag - 1.0);
+
+                                sx = px - trx * tPix * effectiveScale;
+                                sy = py - try_ * tPix * effectiveScale;
+                            }
+                        } else if (lensMode === "fisheye") {
+                            // Snell refraction on hemisphere — matches GLSL shader
+                            const mu = invMag;
+                            const nd2 = normDist * normDist;
+                            const c = Math.sqrt(Math.max(0.0, 1.0 - nd2));
+                            const disc = 1.0 - mu * mu * nd2;
+                            if (disc < 0.0) {
+                                srcDist = dist; // total internal reflection
+                            } else {
+                                const sq = Math.sqrt(disc);
+                                const tr_z = -c * sq - mu * nd2;
+                                const t_pix = (-rad * c) / tr_z;
+                                srcDist =
+                                    dist - (sq - mu * c) * normDist * t_pix;
+                            }
+                            const rx = dist > 0.0 ? dx / dist : 0.0;
+                            const ry = dist > 0.0 ? dy / dist : 0.0;
+                            sx = mx + rx * srcDist;
+                            sy = my + ry * srcDist;
+                        } else {
+                            // L¹ radial + tangential warp
+                            // scale < 1: sample closer to centre → displays content from further out → magnify
+                            const scale =
+                                1.0 /
+                                (1.0 +
+                                    (magFactor - 1.0) *
+                                        (1.0 - normDist * normDist));
+
+                            const rx = dx / dist,
+                                ry = dy / dist; // unit radial
+                            const tx_ = -ry,
+                                ty_ = rx; // unit tangential
+
+                            const radialDist = dist * scale;
+
+                            sx = mx + rx * radialDist + tx_;
+                            sy = my + ry * radialDist + ty_;
+                        }
+
+                        const fx = Math.max(0, Math.min(w - 1.001, sx));
+                        const fy = Math.max(0, Math.min(h - 1.001, sy));
+                        const x0 = fx | 0,
+                            y0 = fy | 0;
+                        const x1 = Math.min(x0 + 1, w - 1),
+                            y1 = Math.min(y0 + 1, h - 1);
+                        const ftx = fx - x0,
+                            fty = fy - y0;
+                        const i00 = (y0 * w + x0) * 4,
+                            i10 = (y0 * w + x1) * 4;
+                        const i01 = (y1 * w + x0) * 4,
+                            i11 = (y1 * w + x1) * 4;
+                        const idx = (py * w + px) * 4;
+                        for (let ch = 0; ch < 3; ch++) {
+                            dst[idx + ch] = Math.round(
+                                src[i00 + ch] * (1 - ftx) * (1 - fty) +
+                                    src[i10 + ch] * ftx * (1 - fty) +
+                                    src[i01 + ch] * (1 - ftx) * fty +
+                                    src[i11 + ch] * ftx * fty,
+                            );
+                        }
+                        dst[idx + 3] = 255;
+                    }
+                }
+            }
+
+            // ── render loop ─────────────────────────────────────────────────────────
+            const labels = {
+                l2: "L² radial warp",
+                fisheye: "Fisheye (Snell)",
+                snell: "Snell hemisphere",
+                flat: "Flat zoom",
+            };
+
+            function frame() {
+                const mx = Math.round(mouse.x),
+                    my = Math.round(mouse.y);
+                if (
+                    mode === lastMode &&
+                    radius === lastRad &&
+                    mag === lastMag &&
+                    mx === lastMx &&
+                    my === lastMy
+                ) {
+                    requestAnimationFrame(frame);
+                    return;
+                }
+                lastMode = mode;
+                lastRad = radius;
+                lastMag = mag;
+                lastMx = mx;
+                lastMy = my;
+
+                ctx.drawImage(offscreen, 0, 0);
+                const imgData = ctx.getImageData(0, 0, W, H);
+                applyLens(imgData, mx, my, radius, mag, mode);
+                ctx.putImageData(imgData, 0, 0);
+
+                ctx.save();
+                ctx.strokeStyle = "rgba(255,255,255,0.35)";
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.arc(mx, my, radius, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.restore();
+
+                ctx.save();
+                ctx.fillStyle = "rgba(0,0,0,0.55)";
+                ctx.fillRect(8, 8, 200, 22);
+                ctx.fillStyle = "rgba(255,255,255,0.85)";
+                ctx.font = "12px monospace";
+                ctx.fillText(labels[mode] || mode, 14, 23);
+                ctx.restore();
+
+                requestAnimationFrame(frame);
+            }
+            requestAnimationFrame(frame);
+        </script>
+    </body>
+</html>
