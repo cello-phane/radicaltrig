@@ -280,108 +280,104 @@
                 const dst = imgData.data;
                 const w = imgData.width,
                     h = imgData.height;
-                const r2 = rad * rad;
-                const invMag = 1 / magFactor;
 
-                let sx, sy;
-                for (let py = 0; py < h; py++) {
+                const r2 = rad * rad;
+                const invRad = 1.0 / rad;
+                const invMag = 1.0 / magFactor;
+
+                // Precompute constants outside the performance-critical loops
+                const clampedMag = Math.min(magFactor, 2.6);
+                const invertedMag = 4.0 - clampedMag;
+                const effectiveScale =
+                    (0.1 * invertedMag) / (invertedMag - 1.0);
+
+                const IOR = 4.5;
+                const muSnell = 1.0 / IOR;
+                const muSnell2 = muSnell * muSnell;
+
+                // 1. Structural Optimization: Bound the loop to the active lens area
+                const minX = Math.max(0, Math.floor(mx - rad));
+                const maxX = Math.min(w - 1, Math.ceil(mx + rad));
+                const minY = Math.max(0, Math.floor(my - rad));
+                const maxY = Math.min(h - 1, Math.ceil(my + rad));
+
+                for (let py = minY; py <= maxY; py++) {
                     const dy = py - my;
                     const dy2 = dy * dy;
                     const rowOffset = py * w;
-                    for (let px = 0; px < w; px++) {
-                        const dx = px - mx,
-                            dy = py - my;
-                        const distsqrd = dx * dx + dy * dy;
+
+                    for (let px = minX; px <= maxX; px++) {
+                        const dx = px - mx;
+                        const distsqrd = dx * dx + dy2;
+
+                        // Early exit if outside the lens aperture
                         if (distsqrd >= r2) continue;
 
                         const dist = Math.sqrt(distsqrd);
-                        const normDist = dist / rad; // 0 at centre, 1 at edge
+                        const normDist = dist * invRad; // Multiplied by precomputed inverse
 
+                        let sx = px;
+                        let sy = py;
+
+                        // 2. Branching Engine Matrix
                         if (lensMode === "flat") {
-                            const scale = invMag;
-                            sx = mx + dx * scale;
-                            sy = my + dy * scale;
+                            sx = mx + dx * invMag;
+                            sy = my + dy * invMag;
                         } else if (lensMode === "snell") {
-                            const clampedMag = Math.min(magFactor, 2.0);
-                            const invertedMag = 4.0 - clampedMag;
-                            // Adjusted scale factor to prevent extreme edge projections
-                            const effectiveScale =
-                                (0.1 * invertedMag) / (invertedMag - 1.0);
-
-                            const IOR = 4.5;
-                            const mu = 1.0 / IOR;
-                            const mu2 = mu * mu;
-                            const dx = px - mx;
-                            const distsqrd = dx * dx + dy2;
-
-                            if (distsqrd >= r2) continue;
-
-                            // Prevent floating point errors at the absolute edge of the lens
                             const zArg = r2 - distsqrd;
                             const z = zArg > 0 ? Math.sqrt(zArg) : 0.0;
 
-                            const nx = -dx * (1.0 / rad);
-                            const ny = -dy * (1.0 / rad);
-                            const nz = z * (1.0 / rad);
+                            // Optimization: Use invRad instead of recalculating (1.0 / rad)
+                            const nx = -dx * invRad;
+                            const ny = -dy * invRad;
+                            const nz = z * invRad;
                             const c = -nz;
-                            const disc = 1.0 - mu2 * (1.0 - c * c);
+                            const disc = 1.0 - muSnell2 * (1.0 - c * c);
 
-                            // Total Internal Reflection check
-                            if (disc < 0) continue;
+                            if (disc >= 0) {
+                                const sq = Math.sqrt(disc);
+                                const scaleTerm = sq - muSnell * c;
 
-                            const sq = Math.sqrt(disc);
-                            const scaleTerm = sq - mu * c;
+                                const trx = scaleTerm * nx;
+                                const try_ = scaleTerm * ny;
+                                const trz = -muSnell + scaleTerm * nz;
 
-                            const trx = scaleTerm * nx;
-                            const try_ = scaleTerm * ny;
-                            const trz = -mu + scaleTerm * nz;
-
-                            // Avoid division by zero if the transmission ray aligns flat with the plane
-                            if (Math.abs(trz) < 0.0001) continue;
-
-                            const tPix = -z / trz;
-
-                            // Back-project to discover source coordinates
-                            sx = px - trx * tPix * effectiveScale;
-                            sy = py - try_ * tPix * effectiveScale;
-
-                            // Fallback safety: If refraction warps outside the image bounds, drop to default pixel
-                            if (sx < 0 || sx >= w || sy < 0 || sy >= h) {
-                                sx = px;
-                                sy = py;
+                                if (Math.abs(trz) >= 0.0001) {
+                                    const tPix = -z / trz;
+                                    sx = px - trx * tPix * effectiveScale;
+                                    sy = py - try_ * tPix * effectiveScale;
+                                }
                             }
                         } else if (lensMode === "fisheye") {
-                            // Snell refraction on hemisphere — matches GLSL shader
-                            const mu = invMag;
                             const nd2 = normDist * normDist;
                             const c = Math.sqrt(Math.max(0.0, 1.0 - nd2));
-                            const disc = 1.0 - mu * mu * nd2;
-                            if (disc < 0.0) {
-                                srcDist = dist; // total internal reflection
-                            } else {
+                            const disc = 1.0 - invMag * invMag * nd2;
+
+                            let srcDist = dist;
+                            if (disc >= 0.0) {
                                 const sq = Math.sqrt(disc);
-                                const tr_z = -c * sq - mu * nd2;
+                                const tr_z = -c * sq - invMag * nd2;
                                 const t_pix = (-rad * c) / tr_z;
                                 srcDist =
-                                    dist - (sq - mu * c) * normDist * t_pix;
+                                    dist - (sq - invMag * c) * normDist * t_pix;
                             }
-                            const rx = dist > 0.0 ? dx / dist : 0.0;
-                            const ry = dist > 0.0 ? dy / dist : 0.0;
-                            sx = mx + rx * srcDist;
-                            sy = my + ry * srcDist;
+
+                            const rFactor = dist > 0.0 ? srcDist / dist : 0.0;
+                            sx = mx + dx * rFactor;
+                            sy = my + dy * rFactor;
                         } else {
                             // L¹ radial + tangential warp
-                            // scale < 1: sample closer to centre → displays content from further out → magnify
                             const scale =
                                 1.0 /
                                 (1.0 +
                                     (magFactor - 1.0) *
                                         (1.0 - normDist * normDist));
+                            const rFactor = dist > 0.0 ? 1.0 / dist : 0.0;
 
-                            const rx = dx / dist,
-                                ry = dy / dist; // unit radial
+                            const rx = dx * rFactor,
+                                ry = dy * rFactor;
                             const tx_ = -ry,
-                                ty_ = rx; // unit tangential
+                                ty_ = rx;
 
                             const radialDist = dist * scale;
 
@@ -389,27 +385,54 @@
                             sy = my + ry * radialDist + ty_;
                         }
 
+                        // 3. Global Out-of-Bounds Protection Fallback
+                        if (sx < 0 || sx >= w || sy < 0 || sy >= h) {
+                            sx = px;
+                            sy = py;
+                        }
+
+                        // --- High-Speed Bilinear Interpolation Pass ---
                         const fx = Math.max(0, Math.min(w - 1.001, sx));
                         const fy = Math.max(0, Math.min(h - 1.001, sy));
                         const x0 = fx | 0,
                             y0 = fy | 0;
-                        const x1 = Math.min(x0 + 1, w - 1),
-                            y1 = Math.min(y0 + 1, h - 1);
+                        const x1 = x0 + 1 < w ? (x0 + 1) | 0 : (w - 1) | 0;
+                        const y1 = y0 + 1 < h ? (y0 + 1) | 0 : (h - 1) | 0;
+
                         const ftx = fx - x0,
                             fty = fy - y0;
-                        const i00 = (y0 * w + x0) * 4,
-                            i10 = (y0 * w + x1) * 4;
-                        const i01 = (y1 * w + x0) * 4,
-                            i11 = (y1 * w + x1) * 4;
-                        const idx = (py * w + px) * 4;
-                        for (let ch = 0; ch < 3; ch++) {
-                            dst[idx + ch] = Math.round(
-                                src[i00 + ch] * (1 - ftx) * (1 - fty) +
-                                    src[i10 + ch] * ftx * (1 - fty) +
-                                    src[i01 + ch] * (1 - ftx) * fty +
-                                    src[i11 + ch] * ftx * fty,
-                            );
-                        }
+                        const i00 = (y0 * w + x0) << 2;
+                        const i10 = (y0 * w + x1) << 2;
+                        const i01 = (y1 * w + x0) << 2;
+                        const i11 = (y1 * w + x1) << 2;
+                        const idx = (rowOffset + px) << 2;
+
+                        const w00 = (1.0 - ftx) * (1.0 - fty);
+                        const w10 = ftx * (1.0 - fty);
+                        const w01 = (1.0 - ftx) * fty;
+                        const w11 = ftx * fty;
+
+                        dst[idx] =
+                            (src[i00] * w00 +
+                                src[i10] * w10 +
+                                src[i01] * w01 +
+                                src[i11] * w11 +
+                                0.5) |
+                            0;
+                        dst[idx + 1] =
+                            (src[i00 + 1] * w00 +
+                                src[i10 + 1] * w10 +
+                                src[i01 + 1] * w01 +
+                                src[i11 + 1] * w11 +
+                                0.5) |
+                            0;
+                        dst[idx + 2] =
+                            (src[i00 + 2] * w00 +
+                                src[i10 + 2] * w10 +
+                                src[i01 + 2] * w01 +
+                                src[i11 + 2] * w11 +
+                                0.5) |
+                            0;
                         dst[idx + 3] = 255;
                     }
                 }
