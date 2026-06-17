@@ -1,0 +1,979 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>RKT Math Library — Reference</title>
+        <script src="plotly.min.js"></script>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link
+            href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap"
+            rel="stylesheet"
+        />
+        <style>
+            :root {
+                --ink: #0b0e14;
+                --panel: #11151f;
+                --panel-2: #161b27;
+                --rule: #262c3b;
+                --text: #e8e6e0;
+                --mute: #8b8fa0;
+                --teal: #00d0c0;
+                --coral: #ff6b5b;
+                --violet: #9d8df1;
+                --amber: #f0b848;
+                --mono: "IBM Plex Mono", monospace;
+                --sans: "IBM Plex Sans", sans-serif;
+            }
+            * {
+                box-sizing: border-box;
+            }
+            body {
+                margin: 0;
+                background: var(--ink);
+                color: var(--text);
+                font-family: var(--sans);
+                -webkit-font-smoothing: antialiased;
+            }
+            .wrap {
+                max-width: 1180px;
+                margin: 0 auto;
+                padding: 48px 28px 80px;
+            }
+
+            /* ---- Header / thesis ---- */
+            header {
+                margin-bottom: 56px;
+            }
+            .eyebrow {
+                font-family: var(--mono);
+                font-size: 11px;
+                letter-spacing: 0.12em;
+                text-transform: uppercase;
+                color: var(--teal);
+                margin: 0 0 14px;
+            }
+            h1 {
+                font-size: clamp(28px, 4vw, 42px);
+                line-height: 1.15;
+                margin: 0 0 16px;
+                font-weight: 600;
+                letter-spacing: -0.01em;
+            }
+            .lede {
+                color: var(--mute);
+                font-size: 15px;
+                line-height: 1.65;
+                max-width: 640px;
+                margin: 0 0 32px;
+            }
+
+            /* signature: live diagonal coordinate readout */
+            .thesis {
+                display: grid;
+                grid-template-columns: 200px 1fr;
+                gap: 28px;
+                background: var(--panel);
+                border: 1px solid var(--rule);
+                border-radius: 10px;
+                padding: 24px 28px;
+                align-items: center;
+            }
+            .thesis svg {
+                display: block;
+                width: 100%;
+                height: auto;
+            }
+            .thesis-readout {
+                font-family: var(--mono);
+                font-size: 13px;
+                line-height: 1.9;
+                color: var(--mute);
+            }
+            .thesis-readout b {
+                color: var(--text);
+                font-weight: 500;
+            }
+            .thesis-readout .lbl {
+                color: var(--violet);
+            }
+            .thesis-readout .val {
+                color: var(--teal);
+            }
+
+            /* ---- Section cards ---- */
+            .section {
+                background: var(--panel);
+                border: 1px solid var(--rule);
+                border-radius: 10px;
+                padding: 28px;
+                margin-bottom: 32px;
+            }
+            .section-head {
+                display: flex;
+                align-items: baseline;
+                justify-content: space-between;
+                gap: 16px;
+                margin-bottom: 6px;
+                flex-wrap: wrap;
+            }
+            .section-head h2 {
+                font-size: 18px;
+                font-weight: 600;
+                margin: 0;
+                letter-spacing: -0.01em;
+            }
+            .tag {
+                font-family: var(--mono);
+                font-size: 11px;
+                padding: 3px 9px;
+                border-radius: 99px;
+                border: 1px solid currentColor;
+                white-space: nowrap;
+            }
+            .tag.ok {
+                color: var(--teal);
+            }
+            .tag.warn {
+                color: var(--coral);
+            }
+            .section-sub {
+                color: var(--mute);
+                font-size: 13.5px;
+                line-height: 1.6;
+                margin: 8px 0 18px;
+                max-width: 760px;
+            }
+
+            .plot {
+                width: 100%;
+                height: 340px;
+            }
+
+            .coeff-row {
+                display: flex;
+                gap: 10px;
+                flex-wrap: wrap;
+                margin-top: 16px;
+                font-family: var(--mono);
+                font-size: 12px;
+            }
+            .coeff-chip {
+                background: var(--panel-2);
+                border: 1px solid var(--rule);
+                border-radius: 6px;
+                padding: 6px 10px;
+                color: var(--mute);
+            }
+            .coeff-chip b {
+                color: var(--text);
+                font-weight: 500;
+            }
+
+            .err-stat {
+                display: inline-flex;
+                align-items: baseline;
+                gap: 6px;
+                font-family: var(--mono);
+                font-size: 12.5px;
+                color: var(--mute);
+                margin-top: 14px;
+            }
+            .err-stat .num {
+                color: var(--teal);
+                font-weight: 500;
+            }
+            .err-stat .num.bad {
+                color: var(--coral);
+            }
+
+            footer {
+                color: var(--mute);
+                font-family: var(--mono);
+                font-size: 11.5px;
+                text-align: center;
+                margin-top: 48px;
+                letter-spacing: 0.02em;
+            }
+
+            @media (max-width: 680px) {
+                .thesis {
+                    grid-template-columns: 1fr;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="wrap">
+            <header>
+                <p class="eyebrow">RKT Math Library — Reference</p>
+                <h1>
+                    Plots are the function, approx, and error (on the same axes)
+                </h1>
+                <p class="lede">
+                    1 RAU = π/2 radians. Each approximation below follows the
+                    same pattern: reduce the input to a small fixed interval,
+                    fit a Remez minimax polynomial on that interval only, then
+                    reconstruct exactly using integer/bit arithmetic. Solid
+                    lines are reference values, dotted lines are the polynomial,
+                    and the red trace (right axis) is absolute error.
+                </p>
+
+                <div class="thesis" id="thesisBlock">
+                    <svg viewBox="0 0 160 160" id="thesisSvg"></svg>
+                    <div class="thesis-readout" id="thesisReadout"></div>
+                </div>
+            </header>
+
+            <!-- ===================== WARP ===================== -->
+            <section class="section">
+                <div class="section-head">
+                    <h2>§1 — warp(t): the diagonal-to-arc correction</h2>
+                    <span class="tag ok">5.6e-7 · float32</span>
+                </div>
+                <p class="section-sub">
+                    Maps the raw diagonal parameter t ∈ [0,1] to the arc-uniform
+                    coordinate w = sin(t·π/2) / (sin(t·π/2) + cos(t·π/2)). Every
+                    sin/cos call in the library is this polynomial plus one
+                    sqrt.
+                </p>
+                <div id="warp_compare" class="plot"></div>
+                <div class="coeff-row" id="warp_coeffs"></div>
+            </section>
+
+            <!-- ===================== SINCOS ===================== -->
+            <section class="section">
+                <div class="section-head">
+                    <h2>§2 — rau_sincosf vs cs_poly_sincos</h2>
+                    <span class="tag ok">1.68e-7 / 1.77e-7</span>
+                </div>
+                <p class="section-sub">
+                    Two independent pipelines for sin/cos. rau_sincosf warps
+                    then normalises via one sqrt; cs_poly_sincos fits cos/sin
+                    directly with no sqrt at all. Both float32-class.
+                </p>
+                <div id="sincos_compare" class="plot"></div>
+            </section>
+
+            <!-- ===================== ERF ===================== -->
+            <section class="section">
+                <div class="section-head">
+                    <h2>§3 — erf_poly</h2>
+                    <span class="tag ok">3.7e-8 · float32</span>
+                </div>
+                <p class="section-sub">
+                    Degree-10 odd Remez polynomial. EC[0] = 2/√π is recovered
+                    independently by the fit. Valid only on [−1.2, 1.2] —
+                    diverges outside this domain.
+                </p>
+                <div id="erf_compare" class="plot"></div>
+                <div class="coeff-row" id="erf_coeffs"></div>
+            </section>
+
+            <!-- ===================== ERFINV ===================== -->
+            <section class="section">
+                <div class="section-head">
+                    <h2>§4 — erfinv_hybrid</h2>
+                    <span class="tag ok">7.1e-4 · float16</span>
+                </div>
+                <p class="section-sub">
+                    Polynomial for |x| &lt; 0.949 (94.9% of uniform inputs, zero
+                    transcendentals), log+sqrt asymptotic tail beyond. The
+                    switch point is visible as a kink in the error trace.
+                </p>
+                <div id="erfinv_compare" class="plot"></div>
+            </section>
+
+            <!-- ===================== EXP ===================== -->
+            <section class="section">
+                <div class="section-head">
+                    <h2>§5 — exp_poly</h2>
+                    <span class="tag ok">3.9e-7 · float32</span>
+                </div>
+                <p class="section-sub">
+                    e&#x02E3; = 2&#x207F; · P(f), with n = ⌊x/ln2⌋ applied
+                    exactly via the IEEE-754 exponent field, and P a degree-5
+                    Remez fit on f ∈ [0,1) only.
+                </p>
+                <div id="exp_compare" class="plot"></div>
+                <div class="coeff-row" id="exp_coeffs"></div>
+            </section>
+
+            <!-- ===================== LN ===================== -->
+            <section class="section">
+                <div class="section-head">
+                    <h2>§6 — ln_opt: corrected vs buggy coefficients</h2>
+                    <span class="tag warn">bug fixed this session</span>
+                </div>
+                <p class="section-sub">
+                    LO2, LO3, LO4 were transcription errors in earlier source —
+                    off by ~5e-5 in the 6th–7th significant digit. Inflated true
+                    error 4.3× (1.24e-5 → 5.34e-5) while staying under the loose
+                    float16 pass threshold the whole time.
+                </p>
+                <div id="log_compare" class="plot"></div>
+                <div class="coeff-row" id="ln_coeffs"></div>
+                <div class="err-stat" id="ln_errstat"></div>
+            </section>
+
+            <!-- ===================== ATAN TIERS ===================== -->
+            <section class="section">
+                <div class="section-head">
+                    <h2>§7 — arctan tiers: f16 / hsp / precise</h2>
+                    <span class="tag ok">3.62e-7 RAU (precise)</span>
+                </div>
+                <p class="section-sub">
+                    Each tier is independently Remez-fit at its target precision
+                    — truncating the precise coefficients to a lower bit width
+                    would give a worse result than refitting from scratch. The
+                    old (pre-Remez) set is ~180× worse than the new precise tier
+                    despite using a similar number of terms.
+                </p>
+                <div id="atan_compare" class="plot"></div>
+            </section>
+
+            <footer>
+                radicaltrig — Michael Ledesma (cello-phane@github) — Unlicense /
+                Public Domain
+            </footer>
+        </div>
+
+        <script>
+            // ============================================================================
+            // PLOTLY DARK THEME
+            // ============================================================================
+            const FONT = {
+                family: "'IBM Plex Mono', monospace",
+                size: 11,
+                color: "#8B8FA0",
+            };
+            const COLORS = {
+                teal: "#5FD4C4",
+                coral: "#FF6B5B",
+                violet: "#9D8DF1",
+                amber: "#F0B848",
+                text: "#E8E6E0",
+                mute: "#8B8FA0",
+                rule: "#262C3B",
+            };
+
+            function baseLayout(extra) {
+                return Object.assign(
+                    {
+                        paper_bgcolor: "rgba(0,0,0,0)",
+                        plot_bgcolor: "rgba(0,0,0,0)",
+                        font: FONT,
+                        margin: { t: 10, r: 56, b: 40, l: 50 },
+                        legend: {
+                            orientation: "h",
+                            y: 1.18,
+                            font: { color: COLORS.text, size: 11 },
+                            bgcolor: "rgba(0,0,0,0)",
+                        },
+                        xaxis: {
+                            gridcolor: COLORS.rule,
+                            zerolinecolor: COLORS.rule,
+                            color: COLORS.mute,
+                            linecolor: COLORS.rule,
+                        },
+                        yaxis: {
+                            gridcolor: COLORS.rule,
+                            zerolinecolor: COLORS.rule,
+                            color: COLORS.mute,
+                            linecolor: COLORS.rule,
+                        },
+                        yaxis2: {
+                            overlaying: "y",
+                            side: "right",
+                            showgrid: false,
+                            color: COLORS.coral,
+                            linecolor: COLORS.rule,
+                            type: "log",
+                        },
+                    },
+                    extra || {},
+                );
+            }
+            const PLOT_CONFIG = { displayModeBar: false, responsive: true };
+
+            // ============================================================================
+            // CURRENT VERIFIED COEFFICIENTS (matches radicaltrig.c / rkt_bench.cpp)
+            // ============================================================================
+            const LN2 = 0.6931471805599453;
+
+            const WC = [
+                0.78539816339744830962, 0.64607158024987317298,
+                0.63401589172451679138, 0.68515350354689586789,
+                0.32501622369042378935, 1.51901679307446258196,
+            ];
+
+            const CP = [
+                1.0, -0.4999999963, 0.0416666418, -0.0013888397, 0.0000247609,
+                -0.0000002605,
+            ];
+            const SP = [
+                1.0, -0.1666666664, 0.0083333315, -0.000198409, 0.0000027526,
+                -0.0000000239,
+            ];
+
+            const EC = [
+                1.12837896, -0.376120155, 0.1127854475, -0.0266759613,
+                0.0048839769, -0.0005515128,
+            ];
+            const IC = [
+                0.88483386, 0.55368004, -1.09760618, 12.50086509, -37.51720638,
+                49.68064167,
+            ];
+
+            const EE = [
+                0.9999996448, 0.6931585166, 0.2401252369, 0.0558844141,
+                0.0089394589, 0.0018923354,
+            ];
+
+            // ln_opt: corrected (this session) vs buggy (old transcription)
+            const LO_FIXED = [
+                0.92845174, 4.63558759, 11.71261199, 0.00664451, -0.29545176,
+                -2.77203887,
+            ];
+            const LO_BUGGY = [
+                0.92845174, 4.63558759, 11.71255199, 0.00668451, -0.29543836,
+                -2.77203887,
+            ];
+
+            const ATAN_F16 = [
+                0.999814257, -0.3262377264, 0.1566730269, -0.045037137,
+            ];
+            const ATAN_HSP = [
+                0.9999737848, -0.3318111223, 0.1857423872, -0.0927448646,
+                0.0242641934,
+            ];
+            const ATAN_PRECISE = [
+                0.9999994301, -0.33327071, 0.1988770404, -0.1351294716,
+                0.0843566601, -0.0374368276, 0.008002612,
+            ];
+            const ATAN_OLD = [
+                1.000087, -0.33288950512027, 0.19383271707398,
+                -0.11735031947869, 0.05368137843104, -0.01213232131734,
+            ];
+
+            // ============================================================================
+            // REFERENCE IMPLEMENTATIONS
+            // ============================================================================
+            function horner(C, x) {
+                let p = C[C.length - 1];
+                for (let i = C.length - 2; i >= 0; i--) p = p * x + C[i];
+                return p;
+            }
+
+            function warp(t) {
+                const v = t - 0.5;
+                return 0.5 + v * horner(WC, v * v);
+            }
+            function warpExact(t) {
+                const s = Math.sin((t * Math.PI) / 2),
+                    c = Math.cos((t * Math.PI) / 2);
+                return s / (s + c);
+            }
+
+            function rauSinCos(phi) {
+                let pb = ((phi % 4) + 4) % 4;
+                const q = Math.floor(pb);
+                const t = pb - q;
+                let w = warp(t);
+                if (q % 2 === 1) w = 1 - w;
+                const omw = 1 - w;
+                const D = omw * omw + w * w;
+                const r = 1 / Math.sqrt(D);
+                const cosSign = [1, -1, -1, 1][q],
+                    sinSign = [1, 1, -1, -1][q];
+                return [omw * r * cosSign, w * r * sinSign]; // [cos, sin]
+            }
+
+            function csPolySinCos(rad) {
+                const rau = rad * (2.0 / Math.PI);
+                let pb = ((rau % 4) + 4) % 4;
+                const qi = Math.floor(pb) & 3;
+                const f = pb - Math.floor(pb);
+                const x = f * (Math.PI / 2);
+                const x2 = x * x;
+                let c = horner(CP, x2);
+                let s = horner(SP, x2) * x;
+                if (qi & 1) {
+                    const tmp = c;
+                    c = s;
+                    s = tmp;
+                }
+                const cosSign = [1, -1, -1, 1][qi],
+                    sinSign = [1, 1, -1, -1][qi];
+                return [c * cosSign, s * sinSign];
+            }
+
+            function expPoly(x) {
+                const z = x / LN2;
+                const n = Math.floor(z);
+                const f = z - n;
+                return horner(EE, f) * Math.pow(2, n);
+            }
+
+            function lnOpt(x, LO) {
+                const e = Math.floor(Math.log2(x));
+                const m = x / Math.pow(2, e);
+                const t = 2 * m - 3;
+                return (
+                    e * LN2 +
+                    LO[0] * Math.sqrt(LO[1] * t + LO[2]) +
+                    LO[3] * t * t +
+                    LO[4] * t +
+                    LO[5]
+                );
+            }
+
+            function erfPoly(x) {
+                return x * horner(EC, x * x);
+            }
+
+            function erfApproxRef(x) {
+                // Abramowitz-Stegun 7.1.26, used only as a "ground truth" reference
+                // since JS has no built-in erf.
+                const a1 = 0.254829592,
+                    a2 = -0.284496736,
+                    a3 = 1.421413741,
+                    a4 = -1.453152027,
+                    a5 = 1.061405429,
+                    p = 0.3275911;
+                const sign = x < 0 ? -1 : 1;
+                const ax = Math.abs(x);
+                const t = 1 / (1 + p * ax);
+                const y =
+                    1 -
+                    ((((a5 * t + a4) * t + a3) * t + a2) * t + a1) *
+                        t *
+                        Math.exp(-ax * ax);
+                return sign * y;
+            }
+
+            function erfinvPoly(x) {
+                const INV_SQRT2 = 0.7071067812;
+                const v = x * INV_SQRT2;
+                return x * horner(IC, v * v);
+            }
+            function erfinvHybrid(x) {
+                const ax = Math.abs(x);
+                if (ax >= 0.9999) return Math.sign(x) * 4.0;
+                if (ax < 0.949) return erfinvPoly(x);
+                return (
+                    Math.sign(x) *
+                    0.886226925453 *
+                    Math.sqrt(-Math.log(1 - ax * ax))
+                );
+            }
+            function erfinvRef(x) {
+                // Newton refine erf^{-1} using the AS erf approximation as ground truth
+                let guess = erfinvHybrid(x);
+                for (let i = 0; i < 6; i++) {
+                    const fx = erfApproxRef(guess) - x;
+                    const dfx =
+                        (2 / Math.sqrt(Math.PI)) * Math.exp(-guess * guess);
+                    guess -= fx / dfx;
+                }
+                return guess;
+            }
+
+            function atanPoly(x, C) {
+                return x * horner(C, x * x);
+            }
+
+            // ============================================================================
+            // THESIS: live diagonal coordinate diagram
+            // ============================================================================
+            (function renderThesis() {
+                const t = 0.62;
+                const w = warp(t);
+                const omw = 1 - w;
+                const D = omw * omw + w * w;
+                const r = 1 / Math.sqrt(D);
+                const cx = 18,
+                    cy = 142,
+                    R = 110;
+                const px = cx + omw * r * R,
+                    py = cy - w * r * R;
+                const dx = cx + omw * R,
+                    dy = cy - w * R;
+
+                const svg = document.getElementById("thesisSvg");
+                svg.innerHTML = `
+    <circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="#262C3B" stroke-width="1.5"/>
+    <line x1="${cx}" y1="${cy}" x2="${cx + R}" y2="${cy}" stroke="#262C3B" stroke-width="1"/>
+    <line x1="${cx}" y1="${cy}" x2="${cx}" y2="${cy - R}" stroke="#262C3B" stroke-width="1"/>
+    <line x1="${cx}" y1="${cy - R}" x2="${cx + R}" y2="${cy}" stroke="#9D8DF1" stroke-width="1" stroke-dasharray="3,3" opacity="0.5"/>
+    <line x1="${cx}" y1="${cy}" x2="${dx}" y2="${dy}" stroke="#F0B848" stroke-width="1.4" stroke-dasharray="2,2"/>
+    <circle cx="${dx}" cy="${dy}" r="3.5" fill="#F0B848"/>
+    <line x1="${dx}" y1="${dy}" x2="${px}" y2="${py}" stroke="#5FD4C4" stroke-width="1" stroke-dasharray="2,2" opacity="0.7"/>
+    <circle cx="${px}" cy="${py}" r="4" fill="#5FD4C4"/>
+    <line x1="${cx}" y1="${cy}" x2="${px}" y2="${py}" stroke="#5FD4C4" stroke-width="1.6"/>
+  `;
+                document.getElementById("thesisReadout").innerHTML =
+                    ` --Example of a sampled point--<br/>
+    <span class="lbl">t</span> = <span class="val">${t.toFixed(2)}</span>  (raw diagonal parameter)<br/>
+    <span class="lbl">w</span> = warp(t) = <span class="val">${w.toFixed(6)}</span><br/>
+    <span class="lbl">D</span> = (1−w)² + w² = <span class="val">${D.toFixed(6)}</span><br/>
+    <span class="lbl">(cos, sin)</span> = ((1−w), w) &nbsp; | ((1−w)/√D, w/√D)<br/>
+    &nbsp;&nbsp;&nbsp;&nbsp;(<span class="val">${omw.toFixed(6)}</span>, <span class="val">${w.toFixed(6)}</span>) &nbsp;| (<span class="val">${(omw * r).toFixed(6)}</span>, <span class="val">${(w * r).toFixed(6)}</span>)<br/>
+    &nbsp;&nbsp;<b>yellow = diagonal point | teal = unit circle</b>
+  `;
+            })();
+
+            // ============================================================================
+            // PLOT BUILDERS
+            // ============================================================================
+            function comparePlot(id, xs, yTrue, yApprox, yErr, names) {
+                Plotly.newPlot(
+                    id,
+                    [
+                        {
+                            x: xs,
+                            y: yTrue,
+                            name: names[0],
+                            line: { width: 2, color: COLORS.text },
+                        },
+                        {
+                            x: xs,
+                            y: yApprox,
+                            name: names[1],
+                            line: { width: 2, color: COLORS.teal, dash: "dot" },
+                        },
+                        {
+                            x: xs,
+                            y: yErr,
+                            name: "|error|",
+                            yaxis: "y2",
+                            line: { width: 1.2, color: COLORS.coral },
+                        },
+                    ],
+                    baseLayout(),
+                    PLOT_CONFIG,
+                );
+            }
+
+            function coeffChips(containerId, label, arr) {
+                const el = document.getElementById(containerId);
+                if (!el) return;
+                el.innerHTML = arr
+                    .map(
+                        (v, i) =>
+                            `<div class="coeff-chip"><b>${label}${i}</b> = ${v}</div>`,
+                    )
+                    .join("");
+            }
+
+            // ---- §1 warp ----
+            (function () {
+                const xs = [],
+                    yTrue = [],
+                    yApprox = [],
+                    yErr = [];
+                for (let i = 0; i <= 400; i++) {
+                    const t = 0.001 + (0.998 * i) / 400;
+                    xs.push(t);
+                    const ex = warpExact(t),
+                        ap = warp(t);
+                    yTrue.push(ex);
+                    yApprox.push(ap);
+                    yErr.push(Math.abs(ex - ap) + 1e-12);
+                }
+                comparePlot("warp_compare", xs, yTrue, yApprox, yErr, [
+                    "exact sin/(sin+cos)",
+                    "warp polynomial",
+                ]);
+                coeffChips(
+                    "warp_coeffs",
+                    "WC",
+                    WC.map((v) => v.toFixed(8)),
+                );
+            })();
+
+            // ---- §2 sincos ----
+            (function () {
+                const xs = [],
+                    sinTrue = [],
+                    sinRkt = [],
+                    sinCs = [],
+                    errRkt = [],
+                    errCs = [];
+                for (let i = 0; i <= 600; i++) {
+                    const rad = (2 * Math.PI * i) / 600;
+                    xs.push(rad);
+                    const t = Math.sin(rad);
+                    const [, sR] = rauSinCos(rad * (2 / Math.PI));
+                    const [, sC] = csPolySinCos(rad);
+                    sinTrue.push(t);
+                    sinRkt.push(sR);
+                    sinCs.push(sC);
+                    errRkt.push(Math.abs(sR - t) + 1e-12);
+                    errCs.push(Math.abs(sC - t) + 1e-12);
+                }
+                Plotly.newPlot(
+                    "sincos_compare",
+                    [
+                        {
+                            x: xs,
+                            y: sinTrue,
+                            name: "sin(x)",
+                            line: { width: 2, color: COLORS.text },
+                        },
+                        {
+                            x: xs,
+                            y: sinRkt,
+                            name: "rau_sincosf",
+                            line: {
+                                width: 1.6,
+                                color: COLORS.teal,
+                                dash: "dot",
+                            },
+                        },
+                        {
+                            x: xs,
+                            y: sinCs,
+                            name: "cs_poly_sincos",
+                            line: {
+                                width: 1.6,
+                                color: COLORS.violet,
+                                dash: "dash",
+                            },
+                        },
+                        {
+                            x: xs,
+                            y: errRkt,
+                            name: "|err| rau",
+                            yaxis: "y2",
+                            line: { width: 1, color: COLORS.coral },
+                        },
+                        {
+                            x: xs,
+                            y: errCs,
+                            name: "|err| cs_poly",
+                            yaxis: "y2",
+                            line: { width: 1, color: COLORS.amber },
+                        },
+                    ],
+                    baseLayout(),
+                    PLOT_CONFIG,
+                );
+            })();
+
+            // ---- §3 erf ----
+            (function () {
+                const xs = [],
+                    yTrue = [],
+                    yApprox = [],
+                    yErr = [];
+                for (let i = 0; i <= 500; i++) {
+                    const x = -1.2 + (2.4 * i) / 500;
+                    xs.push(x);
+                    const t = erfApproxRef(x),
+                        p = erfPoly(x);
+                    yTrue.push(t);
+                    yApprox.push(p);
+                    yErr.push(Math.abs(t - p) + 1e-12);
+                }
+                comparePlot("erf_compare", xs, yTrue, yApprox, yErr, [
+                    "erf(x)",
+                    "erf_poly",
+                ]);
+                coeffChips(
+                    "erf_coeffs",
+                    "EC",
+                    EC.map((v) => v.toFixed(8)),
+                );
+            })();
+
+            // ---- §4 erfinv ----
+            (function () {
+                const xs = [],
+                    yTrue = [],
+                    yApprox = [],
+                    yErr = [];
+                for (let i = 0; i <= 500; i++) {
+                    const x = -0.9999 + (1.9998 * i) / 500;
+                    xs.push(x);
+                    const t = erfinvRef(x),
+                        p = erfinvHybrid(x);
+                    yTrue.push(t);
+                    yApprox.push(p);
+                    yErr.push(Math.abs(t - p) + 1e-12);
+                }
+                comparePlot("erfinv_compare", xs, yTrue, yApprox, yErr, [
+                    "erfinv(x)",
+                    "erfinv_hybrid",
+                ]);
+            })();
+
+            // ---- §5 exp ----
+            (function () {
+                const xs = [],
+                    yTrue = [],
+                    yApprox = [],
+                    yErr = [];
+                for (let i = 0; i <= 500; i++) {
+                    const x = -5 + (10 * i) / 500;
+                    xs.push(x);
+                    const t = Math.exp(x),
+                        p = expPoly(x);
+                    yTrue.push(t);
+                    yApprox.push(p);
+                    yErr.push(Math.abs(t - p) / t + 1e-15);
+                }
+                comparePlot("exp_compare", xs, yTrue, yApprox, yErr, [
+                    "exp(x)",
+                    "exp_poly",
+                ]);
+                coeffChips(
+                    "exp_coeffs",
+                    "EE",
+                    EE.map((v) => v.toFixed(8)),
+                );
+            })();
+
+            // ---- §6 ln (corrected vs buggy) ----
+            (function () {
+                const xs = [],
+                    yTrue = [],
+                    yFixed = [],
+                    yErrFixed = [],
+                    yErrBuggy = [];
+                for (let i = 0; i <= 500; i++) {
+                    const x = 0.05 + (19.95 * i) / 500;
+                    xs.push(x);
+                    const t = Math.log(x);
+                    const pf = lnOpt(x, LO_FIXED);
+                    const pb = lnOpt(x, LO_BUGGY);
+                    yTrue.push(t);
+                    yFixed.push(pf);
+                    yErrFixed.push(Math.abs(t - pf) + 1e-12);
+                    yErrBuggy.push(Math.abs(t - pb) + 1e-12);
+                }
+                Plotly.newPlot(
+                    "log_compare",
+                    [
+                        {
+                            x: xs,
+                            y: yTrue,
+                            name: "ln(x)",
+                            line: { width: 2, color: COLORS.text },
+                        },
+                        {
+                            x: xs,
+                            y: yFixed,
+                            name: "ln_opt (corrected)",
+                            line: {
+                                width: 1.6,
+                                color: COLORS.teal,
+                                dash: "dot",
+                            },
+                        },
+                        {
+                            x: xs,
+                            y: yErrFixed,
+                            name: "|err| corrected",
+                            yaxis: "y2",
+                            line: { width: 1, color: COLORS.coral },
+                        },
+                        {
+                            x: xs,
+                            y: yErrBuggy,
+                            name: "|err| buggy LO2-4",
+                            yaxis: "y2",
+                            line: {
+                                width: 1,
+                                color: COLORS.amber,
+                                dash: "dash",
+                            },
+                        },
+                    ],
+                    baseLayout(),
+                    PLOT_CONFIG,
+                );
+
+                coeffChips(
+                    "ln_coeffs",
+                    "LO",
+                    LO_FIXED.map((v) => v.toFixed(8)),
+                );
+
+                const maxFixed = Math.max(...yErrFixed);
+                const maxBuggy = Math.max(...yErrBuggy);
+                document.getElementById("ln_errstat").innerHTML =
+                    `max error — corrected: <span class="num">${maxFixed.toExponential(2)}</span>` +
+                    ` &nbsp;·&nbsp; buggy: <span class="num bad">${maxBuggy.toExponential(2)}</span>` +
+                    ` &nbsp;·&nbsp; ratio: <span class="num bad">${(maxBuggy / maxFixed).toFixed(1)}×</span>`;
+            })();
+
+            // ---- §7 atan tiers ----
+            (function () {
+                const xs = [];
+                const tiers = [
+                    {
+                        name: "f16 (4 terms)",
+                        C: ATAN_F16,
+                        color: COLORS.amber,
+                        dash: "dot",
+                    },
+                    {
+                        name: "hsp (5 terms)",
+                        C: ATAN_HSP,
+                        color: COLORS.violet,
+                        dash: "dash",
+                    },
+                    {
+                        name: "precise (7 terms)",
+                        C: ATAN_PRECISE,
+                        color: COLORS.teal,
+                        dash: "dot",
+                    },
+                    {
+                        name: "old (not Remez)",
+                        C: ATAN_OLD,
+                        color: COLORS.coral,
+                        dash: "dashdot",
+                    },
+                ];
+                const series = tiers.map((t) => ({
+                    name: t.name,
+                    color: t.color,
+                    dash: t.dash,
+                    err: [],
+                }));
+                for (let i = 0; i <= 500; i++) {
+                    const x = (1.0 * i) / 500;
+                    xs.push(x);
+                    const trueAtan = Math.atan(x);
+                    tiers.forEach((t, idx) => {
+                        const err =
+                            Math.abs(atanPoly(x, t.C) - trueAtan) *
+                            (2 / Math.PI);
+                        series[idx].err.push(err + 1e-12);
+                    });
+                }
+                Plotly.newPlot(
+                    "atan_compare",
+                    series.map((s) => ({
+                        x: xs,
+                        y: s.err,
+                        name: s.name,
+                        line: { width: 1.6, color: s.color, dash: s.dash },
+                    })),
+                    baseLayout({
+                        yaxis: {
+                            gridcolor: COLORS.rule,
+                            color: COLORS.mute,
+                            linecolor: COLORS.rule,
+                            type: "log",
+                            title: "|error| (RAU)",
+                        },
+                    }),
+                    PLOT_CONFIG,
+                );
+            })();
+        </script>
+    </body>
+</html>
