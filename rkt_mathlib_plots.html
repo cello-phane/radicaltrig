@@ -60,12 +60,39 @@
                 font-weight: 600;
                 letter-spacing: -0.01em;
             }
+            h1 {
+                font-size: clamp(28px, 4vw, 42px);
+                line-height: 1.15;
+                margin: 0 0 16px;
+                font-weight: 600;
+                letter-spacing: -0.01em;
+            }
             .lede {
                 color: var(--mute);
                 font-size: 15px;
                 line-height: 1.65;
                 max-width: 640px;
+                margin: 0 0 18px;
+            }
+            .axis-note {
+                font-family: var(--mono);
+                font-size: 9.5px;
+                line-height: 1.75;
+                color: var(--mute);
+                max-width: 760px;
+                background: var(--panel-2);
+                border: 1px solid var(--rule);
+                border-radius: 8px;
+                padding: 14px 18px;
                 margin: 0 0 32px;
+            }
+            .axis-note b {
+                color: var(--text);
+                font-weight: 400;
+            }
+            .axis-note .u {
+                color: var(--amber);
+                font-weight: 500;
             }
 
             /* signature: live diagonal coordinate readout */
@@ -218,7 +245,20 @@
                     lines are reference values, dotted lines are the polynomial,
                     and the red trace (right axis) is absolute error.
                 </p>
-
+                <p class="axis-note">
+                    <b>Reading the error axis:</b> the right-hand axis is
+                    log-scaled and plotted in plain scientific notation (e.g.
+                    3.7e-8). For a quick intuitive read, that maps to SI
+                    magnitude prefixes — <span class="u">µ</span> = 10⁻⁶
+                    (micro), <span class="u">n</span> = 10⁻⁹ (nano),
+                    <span class="u">p</span> = 10⁻¹² (pico). So 3.7e-8 ≈
+                    <b>37 n</b>, 1.68e-7 ≈ <b>168 n</b>, and 7.1e-4 ≈
+                    <b>710 µ</b>. Smaller prefix order (p &lt; n &lt; µ) means a
+                    tighter fit — float32-class functions in this library sit in
+                    the tens-to-hundreds of <span class="u">n</span> range,
+                    while float16-class functions sit in the hundreds of
+                    <span class="u">µ</span> range.
+                </p>
                 <div class="thesis" id="thesisBlock">
                     <svg viewBox="0 0 160 160" id="thesisSvg"></svg>
                     <div class="thesis-readout" id="thesisReadout"></div>
