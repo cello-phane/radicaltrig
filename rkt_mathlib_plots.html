@@ -1,6 +1,16 @@
 <!doctype html>
 <html lang="en">
     <head>
+        <script>
+            (function () {
+                try {
+                    var t = localStorage.getItem("rkt_theme") || "dark";
+                    document.documentElement.setAttribute("data-theme", t);
+                    var s = localStorage.getItem("rkt_fontscale") || "1";
+                    document.documentElement.style.setProperty("--fs-scale", s);
+                } catch (e) {}
+            })();
+        </script>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>RKT Math Library — Reference</title>
@@ -22,11 +32,33 @@
                 --coral: #ff6b5b;
                 --violet: #9d8df1;
                 --amber: #f0b848;
+                --tooltip-bg: #1d2333;
+                --tooltip-text: #f4f6fb;
+                --tooltip-border: #3a4257;
                 --mono: "IBM Plex Mono", monospace;
                 --sans: "IBM Plex Sans", sans-serif;
+                --fs-scale: 1;
+            }
+            html[data-theme="light"] {
+                --ink: #f6f5f2;
+                --panel: #ffffff;
+                --panel-2: #eef0f4;
+                --rule: #d8dae2;
+                --text: #1a1d27;
+                --mute: #5b5f6e;
+                --teal: #0e8c80;
+                --coral: #c43e2e;
+                --violet: #6a57d6;
+                --amber: #a86600;
+                --tooltip-bg: #1a1d27;
+                --tooltip-text: #f6f5f2;
+                --tooltip-border: #3a3f52;
             }
             * {
                 box-sizing: border-box;
+            }
+            html {
+                font-size: calc(16px * var(--fs-scale));
             }
             body {
                 margin: 0;
@@ -34,11 +66,86 @@
                 color: var(--text);
                 font-family: var(--sans);
                 -webkit-font-smoothing: antialiased;
+                transition:
+                    background 0.2s ease,
+                    color 0.2s ease;
             }
             .wrap {
                 max-width: 1180px;
                 margin: 0 auto;
                 padding: 48px 28px 80px;
+            }
+
+            /* ---- Controls bar ---- */
+            .controls-bar {
+                position: sticky;
+                top: 0;
+                z-index: 20;
+                display: flex;
+                align-items: center;
+                justify-content: flex-end;
+                gap: 18px;
+                padding: 10px 28px;
+                background: var(--panel);
+                border-bottom: 1px solid var(--rule);
+                font-family: var(--mono);
+                font-size: 12px;
+                color: var(--mute);
+            }
+            .controls-group {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+            .theme-toggle {
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+                background: var(--panel-2);
+                border: 1px solid var(--rule);
+                border-radius: 99px;
+                padding: 5px 12px;
+                cursor: pointer;
+                color: var(--text);
+                font-family: var(--mono);
+                font-size: 12px;
+                transition:
+                    background 0.15s ease,
+                    border-color 0.15s ease;
+            }
+            .theme-toggle:hover {
+                border-color: var(--teal);
+            }
+            .fs-slider {
+                -webkit-appearance: none;
+                width: 120px;
+                height: 3px;
+                border-radius: 99px;
+                background: var(--rule);
+                outline: none;
+                cursor: pointer;
+            }
+            .fs-slider::-webkit-slider-thumb {
+                -webkit-appearance: none;
+                width: 14px;
+                height: 14px;
+                border-radius: 50%;
+                background: var(--teal);
+                cursor: pointer;
+                border: 2px solid var(--panel);
+            }
+            .fs-slider::-moz-range-thumb {
+                width: 14px;
+                height: 14px;
+                border-radius: 50%;
+                background: var(--teal);
+                cursor: pointer;
+                border: 2px solid var(--panel);
+            }
+            .fs-label {
+                color: var(--text);
+                min-width: 34px;
+                text-align: right;
             }
 
             /* ---- Header / thesis ---- */
@@ -47,7 +154,7 @@
             }
             .eyebrow {
                 font-family: var(--mono);
-                font-size: 11px;
+                font-size: 0.6875rem;
                 letter-spacing: 0.12em;
                 text-transform: uppercase;
                 color: var(--teal);
@@ -69,14 +176,14 @@
             }
             .lede {
                 color: var(--mute);
-                font-size: 15px;
+                font-size: 0.9375rem;
                 line-height: 1.65;
                 max-width: 640px;
                 margin: 0 0 18px;
             }
             .axis-note {
                 font-family: var(--mono);
-                font-size: 12.5px;
+                font-size: 0.78125rem;
                 line-height: 1.75;
                 color: var(--mute);
                 max-width: 760px;
@@ -113,7 +220,7 @@
             }
             .thesis-readout {
                 font-family: var(--mono);
-                font-size: 13px;
+                font-size: 0.8125rem;
                 line-height: 1.9;
                 color: var(--mute);
             }
@@ -145,14 +252,14 @@
                 flex-wrap: wrap;
             }
             .section-head h2 {
-                font-size: 18px;
+                font-size: 1.125rem;
                 font-weight: 600;
                 margin: 0;
                 letter-spacing: -0.01em;
             }
             .tag {
                 font-family: var(--mono);
-                font-size: 11px;
+                font-size: 0.6875rem;
                 padding: 3px 9px;
                 border-radius: 99px;
                 border: 1px solid currentColor;
@@ -166,7 +273,7 @@
             }
             .section-sub {
                 color: var(--mute);
-                font-size: 13.5px;
+                font-size: 0.84375rem;
                 line-height: 1.6;
                 margin: 8px 0 18px;
                 max-width: 760px;
@@ -174,7 +281,7 @@
 
             .plot {
                 width: 100%;
-                height: 340px;
+                height: 100%;
             }
 
             .coeff-row {
@@ -183,7 +290,7 @@
                 flex-wrap: wrap;
                 margin-top: 16px;
                 font-family: var(--mono);
-                font-size: 12px;
+                font-size: 0.75rem;
             }
             .coeff-chip {
                 background: var(--panel-2);
@@ -202,7 +309,7 @@
                 align-items: baseline;
                 gap: 6px;
                 font-family: var(--mono);
-                font-size: 12.5px;
+                font-size: 0.78125rem;
                 color: var(--mute);
                 margin-top: 14px;
             }
@@ -217,7 +324,7 @@
             footer {
                 color: var(--mute);
                 font-family: var(--mono);
-                font-size: 11.5px;
+                font-size: 0.71875rem;
                 text-align: center;
                 margin-top: 48px;
                 letter-spacing: 0.02em;
@@ -231,6 +338,26 @@
         </style>
     </head>
     <body>
+        <div class="controls-bar">
+            <div class="controls-group">
+                <span>A−</span>
+                <input
+                    type="range"
+                    class="fs-slider"
+                    id="fsSlider"
+                    min="0.8"
+                    max="1.4"
+                    step="0.05"
+                    value="1"
+                />
+                <span>A+</span>
+                <span class="fs-label" id="fsLabel">100%</span>
+            </div>
+            <button class="theme-toggle" id="themeToggle">
+                <span id="themeIcon">☾</span>
+                <span id="themeLabel">Dark</span>
+            </button>
+        </div>
         <div class="wrap">
             <header>
                 <p class="eyebrow">RKT Math Library — Reference</p>
@@ -387,15 +514,30 @@
                 size: 11,
                 color: "#8B8FA0",
             };
-            const COLORS = {
-                teal: "#5FD4C4",
-                coral: "#FF6B5B",
-                violet: "#9D8DF1",
-                amber: "#F0B848",
-                text: "#E8E6E0",
-                mute: "#8B8FA0",
-                rule: "#262C3B",
-            };
+            function readThemeColors() {
+                return {
+                    teal: cssVarEarly("--teal", "#5FD4C4"),
+                    coral: cssVarEarly("--coral", "#FF6B5B"),
+                    violet: cssVarEarly("--violet", "#9D8DF1"),
+                    amber: cssVarEarly("--amber", "#F0B848"),
+                    text: cssVarEarly("--text", "#E8E6E0"),
+                    mute: cssVarEarly("--mute", "#8B8FA0"),
+                    rule: cssVarEarly("--rule", "#262C3B"),
+                };
+            }
+            function cssVarEarly(name, fallback) {
+                const v = getComputedStyle(document.documentElement)
+                    .getPropertyValue(name)
+                    .trim();
+                return v || fallback;
+            }
+            let COLORS = readThemeColors();
+
+            function cssVar(name) {
+                return getComputedStyle(document.documentElement)
+                    .getPropertyValue(name)
+                    .trim();
+            }
 
             function baseLayout(extra) {
                 return Object.assign(
@@ -409,6 +551,14 @@
                             y: 1.18,
                             font: { color: COLORS.text, size: 11 },
                             bgcolor: "rgba(0,0,0,0)",
+                        },
+                        hoverlabel: {
+                            bgcolor: cssVar("--tooltip-bg"),
+                            bordercolor: cssVar("--tooltip-border"),
+                            font: {
+                                family: "'IBM Plex Mono', monospace",
+                                color: cssVar("--tooltip-text"),
+                            },
                         },
                         xaxis: {
                             gridcolor: COLORS.rule,
@@ -626,7 +776,7 @@
             // ============================================================================
             // THESIS: live diagonal coordinate diagram
             // ============================================================================
-            (function renderThesis() {
+            function renderThesis() {
                 const t = 0.62;
                 const w = warp(t);
                 const omw = 1 - w;
@@ -642,26 +792,26 @@
 
                 const svg = document.getElementById("thesisSvg");
                 svg.innerHTML = `
-    <circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="#262C3B" stroke-width="1.5"/>
-    <line x1="${cx}" y1="${cy}" x2="${cx + R}" y2="${cy}" stroke="#262C3B" stroke-width="1"/>
-    <line x1="${cx}" y1="${cy}" x2="${cx}" y2="${cy - R}" stroke="#262C3B" stroke-width="1"/>
-    <line x1="${cx}" y1="${cy - R}" x2="${cx + R}" y2="${cy}" stroke="#9D8DF1" stroke-width="1" stroke-dasharray="3,3" opacity="0.5"/>
-    <line x1="${cx}" y1="${cy}" x2="${dx}" y2="${dy}" stroke="#F0B848" stroke-width="1.4" stroke-dasharray="2,2"/>
-    <circle cx="${dx}" cy="${dy}" r="3.5" fill="#F0B848"/>
-    <line x1="${dx}" y1="${dy}" x2="${px}" y2="${py}" stroke="#5FD4C4" stroke-width="1" stroke-dasharray="2,2" opacity="0.7"/>
-    <circle cx="${px}" cy="${py}" r="4" fill="#5FD4C4"/>
-    <line x1="${cx}" y1="${cy}" x2="${px}" y2="${py}" stroke="#5FD4C4" stroke-width="1.6"/>
-  `;
+              <circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="#262C3B" stroke-width="1.5"/>
+              <line x1="${cx}" y1="${cy}" x2="${cx + R}" y2="${cy}" stroke="#262C3B" stroke-width="1"/>
+              <line x1="${cx}" y1="${cy}" x2="${cx}" y2="${cy - R}" stroke="#262C3B" stroke-width="1"/>
+              <line x1="${cx}" y1="${cy - R}" x2="${cx + R}" y2="${cy}" stroke="#9D8DF1" stroke-width="1" stroke-dasharray="3,3" opacity="0.5"/>
+              <line x1="${cx}" y1="${cy}" x2="${dx}" y2="${dy}" stroke="#F0B848" stroke-width="1.4" stroke-dasharray="2,2"/>
+              <circle cx="${dx}" cy="${dy}" r="3.5" fill="#F0B848"/>
+              <line x1="${dx}" y1="${dy}" x2="${px}" y2="${py}" stroke="#5FD4C4" stroke-width="1" stroke-dasharray="2,2" opacity="0.7"/>
+              <circle cx="${px}" cy="${py}" r="4" fill="#5FD4C4"/>
+              <line x1="${cx}" y1="${cy}" x2="${px}" y2="${py}" stroke="#5FD4C4" stroke-width="1.6"/>
+            `;
                 document.getElementById("thesisReadout").innerHTML =
                     ` --Example of a sampled point--<br/>
-    <span class="lbl">t</span> = <span class="val">${t.toFixed(2)}</span>  (raw diagonal parameter)<br/>
-    <span class="lbl">w</span> = warp(t) = <span class="val">${w.toFixed(6)}</span><br/>
-    <span class="lbl">D</span> = (1−w)² + w² = <span class="val">${D.toFixed(6)}</span><br/>
-    <span class="lbl">(cos, sin)</span> = ((1−w), w) &nbsp; | ((1−w)/√D, w/√D)<br/>
-    &nbsp;&nbsp;&nbsp;&nbsp;(<span class="val">${omw.toFixed(6)}</span>, <span class="val">${w.toFixed(6)}</span>) &nbsp;| (<span class="val">${(omw * r).toFixed(6)}</span>, <span class="val">${(w * r).toFixed(6)}</span>)<br/>
-    &nbsp;&nbsp;<b>yellow = diagonal point | teal = unit circle</b>
-  `;
-            })();
+              <span class="lbl">t</span> = <span class="val">${t.toFixed(2)}</span>  (raw diagonal parameter)<br/>
+              <span class="lbl">w</span> = warp(t) = <span class="val">${w.toFixed(6)}</span><br/>
+              <span class="lbl">D</span> = (1−w)² + w² = <span class="val">${D.toFixed(6)}</span><br/>
+              <span class="lbl">(cos, sin)</span> = ((1−w), w) &nbsp; | ((1−w)/√D, w/√D)<br/>
+              &nbsp;&nbsp;&nbsp;&nbsp;(<span class="val">${omw.toFixed(6)}</span>, <span class="val">${w.toFixed(6)}</span>) &nbsp;| (<span class="val">${(omw * r).toFixed(6)}</span>, <span class="val">${(w * r).toFixed(6)}</span>)<br/>
+              &nbsp;&nbsp;<b>yellow = diagonal point | teal = unit circle</b>
+            `;
+            }
 
             // ============================================================================
             // PLOT BUILDERS
@@ -707,7 +857,7 @@
             }
 
             // ---- §1 warp ----
-            (function () {
+            function renderWarpPlot() {
                 const xs = [],
                     yTrue = [],
                     yApprox = [],
@@ -730,10 +880,10 @@
                     "WC",
                     WC.map((v) => v.toFixed(8)),
                 );
-            })();
+            }
 
             // ---- §2 sincos ----
-            (function () {
+            function renderSincosPlot() {
                 const xs = [],
                     sinTrue = [],
                     sinRkt = [],
@@ -799,10 +949,10 @@
                     baseLayout(),
                     PLOT_CONFIG,
                 );
-            })();
+            }
 
             // ---- §3 erf ----
-            (function () {
+            function renderErfPlot() {
                 const xs = [],
                     yTrue = [],
                     yApprox = [],
@@ -825,10 +975,10 @@
                     "EC",
                     EC.map((v) => v.toFixed(8)),
                 );
-            })();
+            }
 
             // ---- §4 erfinv ----
-            (function () {
+            function renderErfinvPlot() {
                 const xs = [],
                     yTrue = [],
                     yApprox = [],
@@ -846,10 +996,10 @@
                     "erfinv(x)",
                     "erfinv_hybrid",
                 ]);
-            })();
+            }
 
             // ---- §5 exp ----
-            (function () {
+            function renderExpPlot() {
                 const xs = [],
                     yTrue = [],
                     yApprox = [],
@@ -872,10 +1022,10 @@
                     "EE",
                     EE.map((v) => v.toFixed(8)),
                 );
-            })();
+            }
 
             // ---- §6 ln (corrected vs buggy) ----
-            (function () {
+            function renderLnPlot() {
                 const xs = [],
                     yTrue = [],
                     yFixed = [],
@@ -946,10 +1096,10 @@
                     `max error — corrected: <span class="num">${maxFixed.toExponential(2)}</span>` +
                     ` &nbsp;·&nbsp; buggy: <span class="num bad">${maxBuggy.toExponential(2)}</span>` +
                     ` &nbsp;·&nbsp; ratio: <span class="num bad">${(maxBuggy / maxFixed).toFixed(1)}×</span>`;
-            })();
+            }
 
             // ---- §7 atan tiers ----
-            (function () {
+            function renderAtanPlot() {
                 const xs = [];
                 const tiers = [
                     {
@@ -1013,7 +1163,76 @@
                     }),
                     PLOT_CONFIG,
                 );
-            })();
+            }
+
+            // ============================================================================
+            // RENDER ORCHESTRATION + THEME / FONT-SIZE CONTROLS
+            // ============================================================================
+            function renderAll() {
+                COLORS = readThemeColors();
+                renderThesis();
+                renderWarpPlot();
+                renderSincosPlot();
+                renderErfPlot();
+                renderErfinvPlot();
+                renderExpPlot();
+                renderLnPlot();
+                renderAtanPlot();
+            }
+
+            const THEME_KEY = "rkt_theme";
+            const FONTSCALE_KEY = "rkt_fontscale";
+
+            function applyTheme(theme) {
+                document.documentElement.setAttribute("data-theme", theme);
+                localStorage.setItem(THEME_KEY, theme);
+                const icon = document.getElementById("themeIcon");
+                const label = document.getElementById("themeLabel");
+                if (theme === "dark") {
+                    icon.textContent = "☀";
+                    label.textContent = "Light";
+                } else {
+                    icon.textContent = "☾";
+                    label.textContent = "Dark";
+                }
+                // wait one frame so CSS vars resolve before re-reading them
+                requestAnimationFrame(renderAll);
+            }
+
+            function applyFontScale(scale) {
+                document.documentElement.style.setProperty("--fs-scale", scale);
+                localStorage.setItem(FONTSCALE_KEY, scale);
+                document.getElementById("fsLabel").textContent =
+                    Math.round(scale * 100) + "%";
+            }
+
+            const savedTheme = localStorage.getItem(THEME_KEY) || "dark";
+            const savedScale = parseFloat(
+                localStorage.getItem(FONTSCALE_KEY) || "1",
+            );
+            applyTheme(savedTheme);
+            applyFontScale(savedScale);
+            document.getElementById("fsSlider").value = savedScale;
+
+            document
+                .getElementById("themeToggle")
+                .addEventListener("click", () => {
+                    const current =
+                        document.documentElement.getAttribute("data-theme") ===
+                        "light"
+                            ? "light"
+                            : "dark";
+                    applyTheme(current === "light" ? "dark" : "light");
+                });
+
+            document
+                .getElementById("fsSlider")
+                .addEventListener("input", (e) => {
+                    applyFontScale(parseFloat(e.target.value));
+                });
+
+            // initial render (in case applyTheme's rAF already fired, this is idempotent)
+            renderAll();
         </script>
     </body>
 </html>
