@@ -201,7 +201,7 @@ function calculateAngleMode(u, v) {
 
   // Wrap mode: complement angle
   if (uiState.angleWrapMode) {
-    p = ccwDirection ? p : 4 - p;
+    p = ccwDirection ? p : 4 - p;   // this branch is also convention-sensitive
     const wrapped = 360 - Math.abs(angleBetweenDeg);
     return {
       rau: p,
@@ -213,9 +213,8 @@ function calculateAngleMode(u, v) {
   
   // Default mode: standard angle measurement
   if (uiState.defaultMode) {
-    p = ccwDirection ? 4 - p : p;
     return {
-      rau: p,
+      rau: p,                         // no more 4 - p flip
       signedDeg: angleBetweenDeg * (ccwDirection ? 1 : -1),
       unsignedDeg: Math.abs(angleBetweenDeg),
       ccw: ccwDirection
