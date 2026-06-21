@@ -201,7 +201,7 @@ function calculateAngleMode(u, v) {
 
   // Wrap mode: complement angle
   if (uiState.angleWrapMode) {
-    p = ccwDirection ? p : 4 - p;   // this branch is also convention-sensitive
+    p = ccwDirection ? p : 4 - p;
     const wrapped = 360 - Math.abs(angleBetweenDeg);
     return {
       rau: p,
@@ -213,8 +213,9 @@ function calculateAngleMode(u, v) {
   
   // Default mode: standard angle measurement
   if (uiState.defaultMode) {
+    p = ccwDirection ? 4 - p : p;
     return {
-      rau: p,                         // no more 4 - p flip
+      rau: p,
       signedDeg: angleBetweenDeg * (ccwDirection ? 1 : -1),
       unsignedDeg: Math.abs(angleBetweenDeg),
       ccw: ccwDirection
@@ -321,22 +322,11 @@ function displayBetweenMode(resultsElement) {
   const angleBetween = Math.abs(signedAngleRounded) > Math.abs(unsignedAngleRounded) 
     ? Math.round((360 - unsignedAngleRounded) * 100) / 100
     : unsignedAngleRounded;
-  if(u.y < 0) {
-    u.y = Math.abs(u.y);
-  }
-  else {
-    u.y = -(u.y);
-  }
-  if(v.y < 0) {
-    v.y = Math.abs(v.y);
-  }
-  else {
-    v.y = -(u.y);
-  }
+
   resultsElement.textContent = 
-`Vector u = (${fmt(u.x)}, ${fmt(u.y)})
+`Vector u = (${fmt(u.x)}, ${u.y < 0 ? fmt(Math.abs(u.y)) : fmt(u.y)})
   |u| = ${fmt(uMag)}
-Vector v = (${fmt(v.x)}, ${fmt(v.y)})
+Vector v = (${fmt(v.x)}, ${v.y < 0 ? fmt(Math.abs(v.y)) : fmt(v.y)})
   |v| = ${fmt(vMag)}
 Dot product = ${fmt(dot)}
 Cross product = ${fmt(cross)}
@@ -367,8 +357,8 @@ function displayIndividualMode(resultsElement) {
   
   const refVec = { x: 1, y: 0 };
   
-  const uPhase = RAUConverter.vectorToRAU(refVec, u);
-  const vPhase = RAUConverter.vectorToRAU(refVec, v);
+  const uPhase = RAUConverter.vectorToRAU(u, refVec);
+  const vPhase = RAUConverter.vectorToRAU(v, refVec);
   
   const uSin = radicalSine(uPhase);
   const uCos = radicalCosine(uPhase);
@@ -407,4 +397,3 @@ Cross product = ${fmt(cross)}`;
 }
 // Make function globally available
 window.updateResultsDisplay = updateResultsDisplay;
-
