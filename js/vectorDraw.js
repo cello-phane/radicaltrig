@@ -453,8 +453,7 @@ function initVectorCanvas() {
     const my = e.clientY - rect.top - cy;
     
     const len = Math.hypot(mx, my);
-    const angleDeg = rauToDeg(RAUConverter.vectorToRAU({ x: mx, y: -my }, { x: 1, y: 0 }));//negate Y for convention
-    
+    const angleDeg = rauToDeg(RAUConverter.vectorToRAU({ x: 1, y: 0 }, { x: mx, y: -my }));
     if (dragging === 'u') {
       controls.uLength.value = len;
       controls.uAngle.value = angleDeg;
