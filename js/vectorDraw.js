@@ -425,25 +425,24 @@ function initVectorCanvas() {
   // ------------------------
   
   canvas.addEventListener('mousedown', (e) => {
-    const rect = canvas.getBoundingClientRect();
-    const mx = e.clientX - rect.left;
-    const my = e.clientY - rect.top;
-    
-    // Get current vector endpoints
-    const u = AppState.section2.u;
-    const v = AppState.section2.v;
-    
-    const uEnd = { x: cx + u.x, y: cy - u.y };  // flip Y
-    const vEnd = { x: cx + v.x, y: cy - v.y };  // flip Y
-    // Check which vector was clicked
-    const distU = Math.hypot(mx - uEnd.x, my - uEnd.y);
-    const distV = Math.hypot(mx - vEnd.x, my - vEnd.y);
-    
-    if (distU < CANVAS_CONFIG.HIT_THRESHOLD) {
-      dragging = 'u';
-    } else if (distV < CANVAS_CONFIG.HIT_THRESHOLD) {
-      dragging = 'v';
-    }
+      const rect = canvas.getBoundingClientRect();
+      const mx = e.clientX - rect.left;
+      const my = e.clientY - rect.top;
+      
+      const u = AppState.section2.u;
+      const v = AppState.section2.v;
+      
+      const uEnd = { x: cx + u.x, y: cy - u.y };  // flip to match draw
+      const vEnd = { x: cx + v.x, y: cy - v.y };  // flip to match draw
+      
+      const distU = Math.hypot(mx - uEnd.x, my - uEnd.y);
+      const distV = Math.hypot(mx - vEnd.x, my - vEnd.y);
+      
+      if (distU < CANVAS_CONFIG.HIT_THRESHOLD) {
+        dragging = 'u';
+      } else if (distV < CANVAS_CONFIG.HIT_THRESHOLD) {
+        dragging = 'v';
+      }
   });
   
   canvas.addEventListener('mousemove', (e) => {
