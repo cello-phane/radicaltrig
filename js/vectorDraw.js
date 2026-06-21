@@ -367,7 +367,7 @@ function initVectorCanvas() {
     const v = {
       x: vLen * Math.cos(vA),
       //x: vLen * radicalCosine(degToRau(vAngleDeg)), // slighty imprecise because degrees(360 steps for now)
-      y: -vLen * Math.sin(vA) // Invert Y for canvas
+      y: vLen * Math.sin(vA) // Invert Y for canvas
       //y: -vLen * radicalSine(degToRau(vAngleDeg)) // Invert Y for canvas // slighty imprecise because degrees(360 steps for now)
     };
     
