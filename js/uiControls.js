@@ -356,8 +356,8 @@ function displayIndividualMode(resultsElement) {
   
   const refVec = { x: 1, y: 0 };
   
-  const uPhase = RAUConverter.vectorToRAU(u, refVec);
-  const vPhase = RAUConverter.vectorToRAU(v, refVec);
+  const uPhase = RAUConverter.vectorToRAU(refVec, u);
+  const vPhase = RAUConverter.vectorToRAU(refVec, v);
   
   const uSin = radicalSine(uPhase);
   const uCos = radicalCosine(uPhase);
