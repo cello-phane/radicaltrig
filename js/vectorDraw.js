@@ -245,18 +245,18 @@ function initVectorCanvas() {
   /**
    * Draw vectors u and v
    */
-  function drawVectors(u, v) {
+    function drawVectors(u, v) {
     // Vector U
     ctx.strokeStyle = CANVAS_CONFIG.VECTOR_U_COLOR;
     ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.moveTo(cx, cy);
-    ctx.lineTo(cx + u.x, cy + u.y);
+    ctx.lineTo(cx + u.x, cy - u.y);   // flip y for canvas
     ctx.stroke();
     
     ctx.fillStyle = CANVAS_CONFIG.VECTOR_U_COLOR;
     ctx.beginPath();
-    ctx.arc(cx + u.x, cy + u.y, CANVAS_CONFIG.KNOB_RADIUS, 0, Math.PI * 2);
+    ctx.arc(cx + u.x, cy - u.y, CANVAS_CONFIG.KNOB_RADIUS, 0, Math.PI * 2);
     ctx.fill();
     
     // Vector V
@@ -264,12 +264,12 @@ function initVectorCanvas() {
     ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.moveTo(cx, cy);
-    ctx.lineTo(cx + v.x, cy + v.y);
+    ctx.lineTo(cx + v.x, cy - v.y);   // flip y for canvas
     ctx.stroke();
     
     ctx.fillStyle = CANVAS_CONFIG.VECTOR_V_COLOR;
     ctx.beginPath();
-    ctx.arc(cx + v.x, cy + v.y, CANVAS_CONFIG.KNOB_RADIUS, 0, Math.PI * 2);
+    ctx.arc(cx + v.x, cy - v.y, CANVAS_CONFIG.KNOB_RADIUS, 0, Math.PI * 2);
     ctx.fill();
   }
   
@@ -359,20 +359,14 @@ function initVectorCanvas() {
     // Calculate vector components
     const u = {
       x: uLen * Math.cos(uA),
-      //x: uLen * radicalCosine(degToRau(uAngleDeg)), // slighty imprecise because degrees(360 steps for now)
-      y: -uLen * Math.sin(uA) // Invert Y for canvas
-      //y: -uLen * radicalSine(degToRau(uAngleDeg)) // Invert Y for canvas // slighty imprecise because degrees(360 steps for now)
+      y: uLen * Math.sin(uA)   // math convention, no flip
     };
-    
     const v = {
       x: vLen * Math.cos(vA),
-      //x: vLen * radicalCosine(degToRau(vAngleDeg)), // slighty imprecise because degrees(360 steps for now)
-      y: -vLen * Math.sin(vA) // Invert Y for canvas
-      //y: -vLen * radicalSine(degToRau(vAngleDeg)) // Invert Y for canvas // slighty imprecise because degrees(360 steps for now)
+      y: vLen * Math.sin(vA)
     };
     
-    // Update state
-    setSection2Vectors(u, v);
+    setSection2Vectors(u, v);   // clean math-space vectors stored
     setSection2Angles(uAngleDeg, vAngleDeg);
     
     // Calculate angle between vectors
@@ -439,9 +433,8 @@ function initVectorCanvas() {
     const u = AppState.section2.u;
     const v = AppState.section2.v;
     
-    const uEnd = { x: cx + u.x, y: cy + u.y };
-    const vEnd = { x: cx + v.x, y: cy + v.y };
-    
+    const uEnd = { x: cx + u.x, y: cy - u.y };  // flip Y
+    const vEnd = { x: cx + v.x, y: cy - v.y };  // flip Y
     // Check which vector was clicked
     const distU = Math.hypot(mx - uEnd.x, my - uEnd.y);
     const distV = Math.hypot(mx - vEnd.x, my - vEnd.y);
@@ -461,7 +454,7 @@ function initVectorCanvas() {
     const my = e.clientY - rect.top - cy;
     
     const len = Math.hypot(mx, my);
-    const angleDeg = rauToDeg(RAUConverter.vectorToRAU({ x: mx, y: my }, { x: 1, y: 0 }));
+    const angleDeg = rauToDeg(RAUConverter.vectorToRAU({ x: mx, y: -my }, { x: 1, y: 0 }));//negate Y for convention
     
     if (dragging === 'u') {
       controls.uLength.value = len;
