@@ -324,9 +324,9 @@ function displayBetweenMode(resultsElement) {
     : unsignedAngleRounded;
 
   resultsElement.textContent = 
-`Vector u = (${fmt(u.x)}, ${u.y < 0 ? fmt(Math.abs(u.y)) : fmt(u.y)})
+`Vector u = (${fmt(u.x)}, ${u.y === 0 ? fmt(0) : u.y < 0 ? `+${fmt(Math.abs(u.y))}` : `-${fmt(u.y)}`})
   |u| = ${fmt(uMag)}
-Vector v = (${fmt(v.x)}, ${v.y < 0 ? fmt(Math.abs(v.y)) : fmt(v.y)})
+Vector v = (${fmt(v.x)}, ${v.y === 0 ? fmt(0) : v.y < 0 ? `+${fmt(Math.abs(v.y))}` : `-${fmt(v.y)}`})
   |v| = ${fmt(vMag)}
 Dot product = ${fmt(dot)}
 Cross product = ${fmt(cross)}
