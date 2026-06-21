@@ -139,7 +139,7 @@ function initRAUCanvas() {
     draw();
   }
   
-  // Click handler
+    // Click handler
   canvas.addEventListener('click', (e) => {
     if (dragging === 'intro') return; // Don't trigger on drag release
     
@@ -424,25 +424,29 @@ function initVectorCanvas() {
   // INTERACTION
   // ------------------------
   
-  canvas.addEventListener('mousedown', (e) => {
-      const rect = canvas.getBoundingClientRect();
-      const mx = e.clientX - rect.left;
-      const my = e.clientY - rect.top;
-      
-      const u = AppState.section2.u;
-      const v = AppState.section2.v;
-      
-      const uEnd = { x: cx + u.x, y: cy - u.y };  // flip to match draw
-      const vEnd = { x: cx + v.x, y: cy - v.y };  // flip to match draw
-      
-      const distU = Math.hypot(mx - uEnd.x, my - uEnd.y);
-      const distV = Math.hypot(mx - vEnd.x, my - vEnd.y);
-      
-      if (distU < CANVAS_CONFIG.HIT_THRESHOLD) {
-        dragging = 'u';
-      } else if (distV < CANVAS_CONFIG.HIT_THRESHOLD) {
-        dragging = 'v';
-      }
+  canvas.addEventListener('mousemove', (e) => {
+    if (!dragging || dragging === 'intro') return;
+    
+    const rect = canvas.getBoundingClientRect();
+    const mx = e.clientX - rect.left - cx;
+    const my = e.clientY - rect.top - cy;
+    
+    const len = Math.hypot(mx, my);
+    const angleDeg = rauToDeg(RAUConverter.vectorToRAU({ x: mx, y: my }, { x: 1, y: 0 }));
+    
+    if (dragging === 'u') {
+      controls.uLength.value = len;
+      controls.uAngle.value = angleDeg;
+      updateValueDisplay('uLengthVal', formatValue(len, 0));
+      updateValueDisplay('uAngleVal', formatValue(angleDeg, 0), '°');
+    } else if (dragging === 'v') {
+      controls.vLength.value = len;
+      controls.vAngle.value = angleDeg;
+      updateValueDisplay('vLengthVal', formatValue(len, 0));
+      updateValueDisplay('vAngleVal', formatValue(angleDeg, 0), '°');
+    }
+    
+    render();
   });
   
   canvas.addEventListener('mousemove', (e) => {
