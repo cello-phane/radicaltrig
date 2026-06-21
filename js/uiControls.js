@@ -324,9 +324,9 @@ function displayBetweenMode(resultsElement) {
     : unsignedAngleRounded;
 
   resultsElement.textContent = 
-`Vector u = (${fmt(u.x)}, ${u.y === 0 ? fmt(0) : u.y < 0 ? `+${fmt(Math.abs(u.y))}` : `-${fmt(u.y)}`})
+`Vector u = ${fmt(u.x)}, ${u.y === 0 ? fmt(0) : u.y < 0 ? `+${fmt(Math.abs(u.y))}` : `-${fmt(u.y)}`}
   |u| = ${fmt(uMag)}
-Vector v = (${fmt(v.x)}, ${v.y === 0 ? fmt(0) : v.y < 0 ? `+${fmt(Math.abs(v.y))}` : `-${fmt(v.y)}`})
+Vector v = ${fmt(v.x)}, ${v.y === 0 ? fmt(0) : v.y < 0 ? `+${fmt(Math.abs(v.y))}` : `-${fmt(v.y)}`}
   |v| = ${fmt(vMag)}
 Dot product = ${fmt(dot)}
 Cross product = ${cross === 0 ? fmt(0) : cross < 0 ? `+${fmt(Math.abs(cross))}` : `-${fmt(cross)}`}
@@ -373,7 +373,7 @@ function displayIndividualMode(resultsElement) {
   
   resultsElement.textContent = 
 `Vector u:
-  Components = (${fmt(u.x)}, ${fmt(u.y)})
+  Components = ${fmt(u.x)}, ${u.y === 0 ? fmt(0) : u.y < 0 ? `+${fmt(Math.abs(u.y))}` : `-${fmt(u.y)}`}
   Magnitude = ${fmt(uMag)}
   _______________________________
   Angle from +x = ${uAngle.toFixed(2)}° (CCW)
@@ -383,7 +383,7 @@ function displayIndividualMode(resultsElement) {
   rcos(u) = ${formatValue(uCos)}
 
 Vector v:
-  Components = (${fmt(v.x)}, ${fmt(v.y)})
+  Components = ${fmt(v.x)}, ${v.y === 0 ? fmt(0) : v.y < 0 ? `+${fmt(Math.abs(v.y))}` : `-${fmt(v.y)}`}
   Magnitude = ${fmt(vMag)}
   _______________________________
   Angle from +x = ${vAngle.toFixed(2)}° (CCW)
@@ -393,7 +393,7 @@ Vector v:
   rcos(v) = ${formatValue(vCos)}
 
 Dot product = ${fmt(dot)}
-Cross product = ${fmt(cross)}`;
+Cross product = ${cross === 0 ? fmt(0) : cross < 0 ? `+${fmt(Math.abs(cross))}` : `-${fmt(cross)}`}
 }
 // Make function globally available
 window.updateResultsDisplay = updateResultsDisplay;
