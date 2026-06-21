@@ -224,8 +224,8 @@ function calculateAngleMode(u, v) {
     
   // Fallback
   return {
-    rau: p,
-    signedDeg: angleBetweenDeg,
+    rau: ccwDirection ? 4 - p : p,
+    signedDeg: angleBetweenDeg * (ccwDirection ? 1 : -1),
     unsignedDeg: Math.abs(angleBetweenDeg),
     ccw: ccwDirection
   };
