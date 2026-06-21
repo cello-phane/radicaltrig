@@ -329,7 +329,7 @@ function displayBetweenMode(resultsElement) {
 Vector v = (${fmt(v.x)}, ${v.y === 0 ? fmt(0) : v.y < 0 ? `+${fmt(Math.abs(v.y))}` : `-${fmt(v.y)}`})
   |v| = ${fmt(vMag)}
 Dot product = ${fmt(dot)}
-Cross product = ${fmt(cross)}
+Cross product = ${cross === 0 ? fmt(0) : cross < 0 ? `+${fmt(Math.abs(cross))}` : `-${fmt(cross)}`}
 _______________________________
 Signed angle (u→v) = ${signedAngleRounded.toFixed(5)}° ${angleData.ccw ? '(CCW)' : '(CW)'}
 Angle between = ${angleBetween.toFixed(2)}°
