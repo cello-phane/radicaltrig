@@ -296,6 +296,18 @@ function displaySection2Results(resultsElement) {
 function displayBetweenMode(resultsElement) {
   const u = AppState.section2.u;
   const v = AppState.section2.v;
+  if(u.y < 0) {
+    u.y = Math.abs(u.y);
+  }
+  else {
+    u.y = -(u.y);
+  }
+  if(v.y < 0) {
+    v.y = Math.abs(v.y);
+  }
+  else {
+    v.y = -(u.y);
+  }
   
   const uMag = Math.hypot(u.x, u.y);
   const vMag = Math.hypot(v.x, v.y);
