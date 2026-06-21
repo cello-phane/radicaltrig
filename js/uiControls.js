@@ -322,14 +322,16 @@ function displayBetweenMode(resultsElement) {
   const angleBetween = Math.abs(signedAngleRounded) > Math.abs(unsignedAngleRounded) 
     ? Math.round((360 - unsignedAngleRounded) * 100) / 100
     : unsignedAngleRounded;
-  
+  const uy = u.y === 0 ? fmt(0) : u.y < 0 ? `+${fmt(Math.abs(u.y))}` : `-${fmt(u.y)}`;
+  const vy = v.y === 0 ? fmt(0) : v.y < 0 ? `+${fmt(Math.abs(v.y))}` : `-${fmt(v.y)}`;
+  const crs = cross === 0 ? fmt(0) : cross < 0 ? `+${fmt(Math.abs(cross))}` : `-${fmt(cross)}`;
   resultsElement.textContent = 
-`Vector u = (${fmt(u.x)}, ${u.y < 0 ? `+${fmt(Math.abs(u.y))}` : `-${fmt(u.y)}`})
+`Vector u = ${fmt(u.x)}, ${uy}
   |u| = ${fmt(uMag)}
-Vector v = (${fmt(v.x)}, ${v.y < 0 ? `+${fmt(Math.abs(v.y))}` : `-${fmt(v.y)}`})
+Vector v = ${fmt(v.x)}, ${vy}
   |v| = ${fmt(vMag)}
 Dot product = ${fmt(dot)}
-Cross product = ${cross < 0 ? `+${fmt(Math.abs(cross))}` : `-${fmt(cross)}`}
+Cross product = ${crs}
 _______________________________
 Signed angle (u→v) = ${signedAngleRounded.toFixed(5)}° ${angleData.ccw ? '(CCW)' : '(CW)'}
 Angle between = ${angleBetween.toFixed(2)}°
@@ -370,10 +372,12 @@ function displayIndividualMode(resultsElement) {
   const vAngle = Math.round(AppState.section2.vAngle * 100) / 100;
   
   const fmt = (n) => n.toFixed(3).padStart(8);
-  
+  const uy = u.y === 0 ? fmt(0) : u.y < 0 ? `+${fmt(Math.abs(u.y))}` : `-${fmt(u.y)}`;
+  const vy = v.y === 0 ? fmt(0) : v.y < 0 ? `+${fmt(Math.abs(v.y))}` : `-${fmt(v.y)}`;
+  const crs = cross === 0 ? fmt(0) : cross < 0 ? `+${fmt(Math.abs(cross))}` : `-${fmt(cross)}`;
   resultsElement.textContent = 
 `Vector u:
-  Components = (${fmt(u.x)}, ${u.y < 0 ? `+${fmt(Math.abs(u.y))}` : `-${fmt(u.y)}`})
+  Components = ${fmt(u.x)}, ${uy}
   Magnitude = ${fmt(uMag)}
   _______________________________
   Angle from +x = ${uAngle.toFixed(2)}° (CCW)
@@ -383,7 +387,7 @@ function displayIndividualMode(resultsElement) {
   rcos(u) = ${formatValue(uCos)}
 
 Vector v:
-  Components = (${fmt(v.x)}, ${v.y < 0 ? `+${fmt(Math.abs(v.y))}` : `-${fmt(v.y)}`})
+  Components = ${fmt(v.x)}, ${vy}
   Magnitude = ${fmt(vMag)}
   _______________________________
   Angle from +x = ${vAngle.toFixed(2)}° (CCW)
@@ -393,7 +397,7 @@ Vector v:
   rcos(v) = ${formatValue(vCos)}
 
 Dot product = ${fmt(dot)}
-Cross product = ${cross < 0 ? `+${fmt(Math.abs(cross))}` : `-${fmt(cross)}`}`;
+Cross product = ${crs}`;
 }
 // Make function globally available
 window.updateResultsDisplay = updateResultsDisplay;
