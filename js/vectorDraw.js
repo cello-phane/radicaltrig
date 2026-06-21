@@ -139,7 +139,7 @@ function initRAUCanvas() {
     draw();
   }
   
-    // Click handler
+  // Click handler
   canvas.addEventListener('click', (e) => {
     if (dragging === 'intro') return; // Don't trigger on drag release
     
@@ -245,18 +245,18 @@ function initVectorCanvas() {
   /**
    * Draw vectors u and v
    */
-    function drawVectors(u, v) {
+  function drawVectors(u, v) {
     // Vector U
     ctx.strokeStyle = CANVAS_CONFIG.VECTOR_U_COLOR;
     ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.moveTo(cx, cy);
-    ctx.lineTo(cx + u.x, cy - u.y);   // flip y for canvas
+    ctx.lineTo(cx + u.x, cy + u.y);
     ctx.stroke();
     
     ctx.fillStyle = CANVAS_CONFIG.VECTOR_U_COLOR;
     ctx.beginPath();
-    ctx.arc(cx + u.x, cy - u.y, CANVAS_CONFIG.KNOB_RADIUS, 0, Math.PI * 2);
+    ctx.arc(cx + u.x, cy + u.y, CANVAS_CONFIG.KNOB_RADIUS, 0, Math.PI * 2);
     ctx.fill();
     
     // Vector V
@@ -264,12 +264,12 @@ function initVectorCanvas() {
     ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.moveTo(cx, cy);
-    ctx.lineTo(cx + v.x, cy - v.y);   // flip y for canvas
+    ctx.lineTo(cx + v.x, cy + v.y);
     ctx.stroke();
     
     ctx.fillStyle = CANVAS_CONFIG.VECTOR_V_COLOR;
     ctx.beginPath();
-    ctx.arc(cx + v.x, cy - v.y, CANVAS_CONFIG.KNOB_RADIUS, 0, Math.PI * 2);
+    ctx.arc(cx + v.x, cy + v.y, CANVAS_CONFIG.KNOB_RADIUS, 0, Math.PI * 2);
     ctx.fill();
   }
   
@@ -359,14 +359,20 @@ function initVectorCanvas() {
     // Calculate vector components
     const u = {
       x: uLen * Math.cos(uA),
-      y: uLen * Math.sin(uA)   // math convention, no flip
-    };
-    const v = {
-      x: vLen * Math.cos(vA),
-      y: vLen * Math.sin(vA)
+      //x: uLen * radicalCosine(degToRau(uAngleDeg)), // slighty imprecise because degrees(360 steps for now)
+      y: -uLen * Math.sin(uA) // Invert Y for canvas
+      //y: -uLen * radicalSine(degToRau(uAngleDeg)) // Invert Y for canvas // slighty imprecise because degrees(360 steps for now)
     };
     
-    setSection2Vectors(u, v);   // clean math-space vectors stored
+    const v = {
+      x: vLen * Math.cos(vA),
+      //x: vLen * radicalCosine(degToRau(vAngleDeg)), // slighty imprecise because degrees(360 steps for now)
+      y: -vLen * Math.sin(vA) // Invert Y for canvas
+      //y: -vLen * radicalSine(degToRau(vAngleDeg)) // Invert Y for canvas // slighty imprecise because degrees(360 steps for now)
+    };
+    
+    // Update state
+    setSection2Vectors(u, v);
     setSection2Angles(uAngleDeg, vAngleDeg);
     
     // Calculate angle between vectors
@@ -424,29 +430,27 @@ function initVectorCanvas() {
   // INTERACTION
   // ------------------------
   
-  canvas.addEventListener('mousemove', (e) => {
-    if (!dragging || dragging === 'intro') return;
-    
+  canvas.addEventListener('mousedown', (e) => {
     const rect = canvas.getBoundingClientRect();
-    const mx = e.clientX - rect.left - cx;
-    const my = e.clientY - rect.top - cy;
+    const mx = e.clientX - rect.left;
+    const my = e.clientY - rect.top;
     
-    const len = Math.hypot(mx, my);
-    const angleDeg = rauToDeg(RAUConverter.vectorToRAU({ x: mx, y: my }, { x: 1, y: 0 }));
+    // Get current vector endpoints
+    const u = AppState.section2.u;
+    const v = AppState.section2.v;
     
-    if (dragging === 'u') {
-      controls.uLength.value = len;
-      controls.uAngle.value = angleDeg;
-      updateValueDisplay('uLengthVal', formatValue(len, 0));
-      updateValueDisplay('uAngleVal', formatValue(angleDeg, 0), '°');
-    } else if (dragging === 'v') {
-      controls.vLength.value = len;
-      controls.vAngle.value = angleDeg;
-      updateValueDisplay('vLengthVal', formatValue(len, 0));
-      updateValueDisplay('vAngleVal', formatValue(angleDeg, 0), '°');
+    const uEnd = { x: cx + u.x, y: cy + u.y };
+    const vEnd = { x: cx + v.x, y: cy + v.y };
+    
+    // Check which vector was clicked
+    const distU = Math.hypot(mx - uEnd.x, my - uEnd.y);
+    const distV = Math.hypot(mx - vEnd.x, my - vEnd.y);
+    
+    if (distU < CANVAS_CONFIG.HIT_THRESHOLD) {
+      dragging = 'u';
+    } else if (distV < CANVAS_CONFIG.HIT_THRESHOLD) {
+      dragging = 'v';
     }
-    
-    render();
   });
   
   canvas.addEventListener('mousemove', (e) => {
@@ -457,7 +461,8 @@ function initVectorCanvas() {
     const my = e.clientY - rect.top - cy;
     
     const len = Math.hypot(mx, my);
-    const angleDeg = rauToDeg(RAUConverter.vectorToRAU({ x: 1, y: 0 }, { x: mx, y: my }));
+    const angleDeg = rauToDeg(RAUConverter.vectorToRAU({ x: mx, y: my }, { x: 1, y: 0 }));
+    
     if (dragging === 'u') {
       controls.uLength.value = len;
       controls.uAngle.value = angleDeg;
