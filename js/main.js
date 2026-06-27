@@ -361,7 +361,6 @@ function setSection1Phase(phase) {
 function setSection2Vectors(u, v) {
   AppState.section2.u = u;
   AppState.section2.v = v;
-}
 
 /**
  * Update section 2 angle data
