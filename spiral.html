@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Logarithmic Spiral · e^x · ln(x)</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@300;400;500&display=swap');
+
+:root {
+  --bg:     #0e0e12;
+  --bg2:    #14141a;
+  --panel:  #18181f;
+  --border: #28283a;
+  --text:   #c8c8d8;
+  --dim:    #5a5a70;
+  --spiral: #e8c840;   /* gold   — spiral itself      */
+  --circle: #3a6ad4;   /* blue   — concentric circles */
+  --expx:   #e05050;   /* red    — e^x                */
+  --lnx:    #40c080;   /* green  — ln(x)              */
+  --recip:  #c060e0;   /* purple — 1/x                */
+  --dot:    #ffffff;
+  --phi:    #f07820;   /* orange — φ markers          */
+  --mono: 'JetBrains Mono', monospace;
+  --serif: 'EB Garamond', Georgia, serif;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--serif);
+  font-size: 15px;
+  min-height: 100vh;
+  padding: 20px;
+}
+
+h1 {
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--spiral);
+  margin-bottom: 4px;
+}
+.subtitle {
+  font-size: 13px;
+  color: var(--dim);
+  font-style: italic;
+  margin-bottom: 16px;
+}
+
+/* ── CONTROLS BAR ── */
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  align-items: center;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 10px 14px;
+  margin-bottom: 14px;
+}
+.ctrl {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--dim);
+}
+.ctrl label { white-space: nowrap; }
+.ctrl input[type=range] {
+  width: 100px; height: 3px;
+  accent-color: var(--spiral);
+}
+.ctrl .val {
+  min-width: 44px;
+  color: var(--spiral);
+  font-weight: 500;
+}
+.ctrl input[type=checkbox] { accent-color: var(--spiral); }
+
+/* ── TWO PANELS ── */
+.panels {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+@media (max-width: 700px) { .panels { grid-template-columns: 1fr; } }
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 10px;
+}
+.panel-title {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--dim);
+  margin-bottom: 6px;
+  display: flex;
+  justify-content: space-between;
+}
+canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 2px;
+}
+
+/* ── STATS ROW ── */
+.stats {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+.stat {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: 5px 9px;
+  flex: 1;
+  min-width: 80px;
+}
+.stat .sl {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--dim);
+  display: block;
+  margin-bottom: 2px;
+}
+.stat .sv {
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+}
+
+/* ── LEGEND ── */
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 10px;
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--dim);
+}
+.leg {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.leg-line {
+  width: 18px; height: 2px;
+  border-radius: 1px;
+}
+.leg-circle {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+}
+
+/* ── ANNOTATION ── */
+.annotation {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 10px 14px;
+  margin-top: 12px;
+  font-size: 13px;
+  color: var(--dim);
+  line-height: 1.6;
+  font-family: var(--mono);
+  font-size: 11px;
+}
+.annotation span { font-family: var(--serif); font-size: 13px; }
+</style>
+</head>
+<body>
+
+<h1>Logarithmic Spiral · e^x · ln(x) · 1/x</h1>
+<div class="subtitle">Polar intersections with concentric circles · Rectilinear unrolling · φ-scaled radii</div>
+
+<div class="controls">
+  <div class="ctrl">
+    <label>a (pitch)</label>
+    <input type="range" id="pitchSlider" min="0.1" max="0.8" step="0.01" value="0.2">
+    <span class="val" id="pitchVal">0.20</span>
+  </div>
+  <div class="ctrl">
+    <label>turns</label>
+    <input type="range" id="turnsSlider" min="1" max="4" step="0.25" value="2.5">
+    <span class="val" id="turnsVal">2.5</span>
+  </div>
+  <div class="ctrl">
+    <label>θ probe</label>
+    <input type="range" id="thetaSlider" min="0" max="1570" step="1" value="400">
+    <span class="val" id="thetaVal">0.00</span>
+  </div>
+  <div class="ctrl">
+    <label><input type="checkbox" id="showPhi" checked> φ circles</label>
+  </div>
+  <div class="ctrl">
+    <label><input type="checkbox" id="showAngle" checked> pitch angle</label>
+  </div>
+  <div class="ctrl">
+    <label><input type="checkbox" id="showGolden"> golden spiral</label>
+  </div>
+</div>
+
+<div class="panels">
+  <div class="panel">
+    <div class="panel-title">
+      <span>Polar · r = e^(aθ)</span>
+      <span id="polarInfo"></span>
+    </div>
+    <canvas id="cvPolar"></canvas>
+  </div>
+  <div class="panel">
+    <div class="panel-title">
+      <span>Rectilinear · unrolled</span>
+      <span id="rectInfo"></span>
+    </div>
+    <canvas id="cvRect"></canvas>
+  </div>
+</div>
+
+<div class="stats">
+  <div class="stat"><span class="sl">θ (radians)</span><span class="sv" id="sv_theta">0.000</span></div>
+  <div class="stat"><span class="sl">r = e^(aθ)</span><span class="sv" id="sv_r">1.000</span></div>
+  <div class="stat"><span class="sl">pitch angle α</span><span class="sv" id="sv_alpha">0.0°</span></div>
+  <div class="stat"><span class="sl">ln(r) = aθ</span><span class="sv" id="sv_lnr">0.000</span></div>
+  <div class="stat"><span class="sl">Q = e^h−h−1</span><span class="sv" id="sv_Q">0.000</span></div>
+  <div class="stat"><span class="sl">circle index n</span><span class="sv" id="sv_n">0</span></div>
+</div>
+
+<div class="legend">
+  <div class="leg"><div class="leg-line" style="background:var(--spiral)"></div> spiral r=e^(aθ)</div>
+  <div class="leg"><div class="leg-line" style="background:var(--circle);opacity:.5"></div> concentric circles</div>
+  <div class="leg"><div class="leg-line" style="background:var(--expx)"></div> e^x (rectilinear)</div>
+  <div class="leg"><div class="leg-line" style="background:var(--lnx)"></div> ln(x) reflection</div>
+  <div class="leg"><div class="leg-line" style="background:var(--recip)"></div> 1/x (derivative of ln)</div>
+  <div class="leg"><div class="leg-circle" style="background:var(--phi)"></div> φ-ratio circle crossings</div>
+  <div class="leg"><div class="leg-line" style="background:var(--phi);opacity:.6;height:1px;border-top:1px dashed var(--phi)"></div> golden spiral</div>
+</div>
+
+<div class="annotation">
+  <span>Key identities visible in both panels:</span><br>
+  r = e^(aθ)  ←→  θ = ln(r)/a  &nbsp;[spiral = e^x and ln(x) simultaneously in polar coords]<br>
+  Unroll: map (r,θ) → (θ, ln r)  →  straight line y = aθ  &nbsp;[spiral becomes line in log-polar]<br>
+  Circle crossings at θ = nπ/2: radii φ⁰, φ¹, φ², φ³... for golden spiral (a = 2ln(φ)/π)<br>
+  Pitch angle α = arctan(1/a): constant at every crossing — self-similarity of e^x<br>
+  Q accumulator between circles: e^h − h − 1 ≈ h²/2 — area above e^x between crossings
+</div>
+
+<script>
+const PHI = (1 + Math.sqrt(5)) / 2;
+const dpr = window.devicePixelRatio || 1;
+
+// ── helpers ──────────────────────────────────────
+function initCv(id, aspect) {
+  const cv = document.getElementById(id);
+  const W = cv.offsetWidth;
+  const H = Math.round(W * aspect);
+  cv.width = W * dpr; cv.height = H * dpr;
+  cv.style.height = H + 'px';
+  const ctx = cv.getContext('2d');
+  ctx.scale(dpr, dpr);
+  return { ctx, W, H };
+}
+
+function getParams() {
+  return {
+    a:      parseFloat(document.getElementById('pitchSlider').value),
+    turns:  parseFloat(document.getElementById('turnsSlider').value),
+    theta:  parseFloat(document.getElementById('thetaSlider').value) / 1000,
+    phi:    document.getElementById('showPhi').checked,
+    angle:  document.getElementById('showAngle').checked,
+    golden: document.getElementById('showGolden').checked,
+  };
+}
+
+// ── POLAR PANEL ──────────────────────────────────
+function drawPolar(p) {
+  const { ctx, W, H } = initCv('cvPolar', 1.0);
+  const cx = W / 2, cy = H / 2;
+  const maxR_raw = Math.exp(p.a * p.turns * 2 * Math.PI);
+  const scale = Math.min(W, H) * 0.44 / maxR_raw;
+
+  function toXY(r, th) {
+    return [cx + r * Math.cos(th) * scale, cy - r * Math.sin(th) * scale];
+  }
+
+  ctx.fillStyle = '#0e0e12'; ctx.fillRect(0, 0, W, H);
+
+  // Grid lines (faint radial + angular)
+  ctx.strokeStyle = 'rgba(40,40,58,0.8)'; ctx.lineWidth = 0.5;
+  for (let i = 0; i < 12; i++) {
+    const th = i * Math.PI / 6;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.lineTo(cx + Math.cos(th) * W, cy - Math.sin(th) * W);
+    ctx.stroke();
+  }
+
+  // Concentric circles at integer multiples of 2π/turns
+  const nCircles = Math.ceil(p.turns * 2) + 1;
+  for (let n = 0; n <= nCircles; n++) {
+    const th_n = n * Math.PI / 2;  // every quarter turn
+    const r_n = Math.exp(p.a * th_n);
+    if (r_n * scale > Math.max(W, H)) break;
+    const isQB = (n % 4 === 0);  // quadrant boundary
+    ctx.beginPath();
+    ctx.arc(cx, cy, r_n * scale, 0, Math.PI * 2);
+    ctx.strokeStyle = isQB
+      ? 'rgba(58,106,212,0.55)'
+      : 'rgba(58,106,212,0.22)';
+    ctx.lineWidth = isQB ? 1 : 0.6;
+    ctx.stroke();
+
+    // Label radius
+    if (r_n * scale > 14 && r_n * scale < Math.min(W,H)*0.46) {
+      ctx.fillStyle = 'rgba(58,106,212,0.7)';
+      ctx.font = '9px JetBrains Mono,monospace';
+      ctx.textAlign = 'left';
+      const lbl = n === 0 ? 'r=1' : `r=e^(${p.a.toFixed(2)}·${(th_n).toFixed(2)})`;
+      ctx.fillText(lbl, cx + r_n * scale + 3, cy - 2);
+    }
+  }
+
+  // φ circles (orange) when enabled
+  if (p.phi) {
+    for (let n = 0; n <= 8; n++) {
+      const r_phi = Math.pow(PHI, n);
+      if (r_phi * scale > Math.min(W,H)*0.5) break;
+      if (r_phi * scale < 4) continue;
+      ctx.beginPath();
+      ctx.arc(cx, cy, r_phi * scale, 0, Math.PI * 2);
+      ctx.strokeStyle = 'rgba(240,120,32,0.4)';
+      ctx.lineWidth = 0.8;
+      ctx.setLineDash([3, 3]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      if (n > 0 && r_phi * scale < Math.min(W,H)*0.46) {
+        ctx.fillStyle = 'rgba(240,120,32,0.7)';
+        ctx.font = '9px JetBrains Mono,monospace';
+        ctx.fillText(`φ^${n}`, cx + r_phi * scale + 2, cy + 10);
+      }
+    }
+  }
+
+  // Golden spiral (dashed orange)
+  if (p.golden) {
+    const aG = 2 * Math.log(PHI) / Math.PI;
+    ctx.strokeStyle = 'rgba(240,120,32,0.6)';
+    ctx.lineWidth = 1.2;
+    ctx.setLineDash([4, 3]);
+    ctx.beginPath();
+    let gfirst = true;
+    for (let i = 0; i <= 800; i++) {
+      const th = p.turns * 2 * Math.PI * i / 800;
+      const r = Math.exp(aG * th);
+      if (r * scale > Math.min(W,H) * 0.5) { gfirst = true; break; }
+      const [x, y] = toXY(r, th);
+      gfirst ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+      gfirst = false;
+    }
+    ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  // Main spiral
+  const N = 1200;
+  const thetaMax = p.turns * 2 * Math.PI;
+  ctx.strokeStyle = '#e8c840';
+  ctx.lineWidth = 1.8;
+  ctx.beginPath();
+  let first = true;
+  for (let i = 0; i <= N; i++) {
+    const th = thetaMax * i / N;
+    const r = Math.exp(p.a * th);
+    if (r * scale > Math.min(W,H) * 0.5) { first = true; break; }
+    const [x, y] = toXY(r, th);
+    first ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    first = false;
+  }
+  ctx.stroke();
+
+  // Probe point
+  const r_probe = Math.exp(p.a * p.theta);
+  const [px, py] = toXY(r_probe, p.theta);
+
+  // Radial line to probe
+  ctx.strokeStyle = 'rgba(232,200,64,0.3)';
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(px, py); ctx.stroke();
+
+  // Pitch angle arc
+  if (p.angle && r_probe * scale > 20) {
+    const alpha = Math.atan(1 / p.a);
+    const tangentAngle = p.theta + Math.PI / 2 - Math.atan(p.a);
+    const arcR = Math.min(r_probe * scale * 0.35, 30);
+    const radialAngle = p.theta;  // angle of radial line
+
+    // Draw pitch angle arc
+    ctx.strokeStyle = 'rgba(232,200,64,0.6)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.arc(px, py, arcR, -radialAngle - Math.PI, -radialAngle - Math.PI + alpha);
+    ctx.stroke();
+
+    // Label α
+    const midA = -radialAngle - Math.PI + alpha / 2;
+    ctx.fillStyle = 'rgba(232,200,64,0.9)';
+    ctx.font = '10px JetBrains Mono,monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('α', px + (arcR + 8) * Math.cos(midA), py + (arcR + 8) * Math.sin(midA));
+  }
+
+  // Probe dot
+  ctx.beginPath(); ctx.arc(px, py, 5, 0, Math.PI * 2);
+  ctx.fillStyle = '#e8c840'; ctx.fill();
+  ctx.strokeStyle = '#0e0e12'; ctx.lineWidth = 1.5; ctx.stroke();
+
+  // Probe label
+  ctx.fillStyle = '#e8c840';
+  ctx.font = '10px JetBrains Mono,monospace';
+  ctx.textAlign = 'left';
+  ctx.fillText(`(θ=${p.theta.toFixed(2)}, r=${r_probe.toFixed(3)})`, px + 8, py - 5);
+
+  // Circle crossing dots
+  for (let n = 0; n <= nCircles; n++) {
+    const th_n = n * Math.PI / 2;
+    if (th_n > thetaMax) break;
+    const r_n = Math.exp(p.a * th_n);
+    if (r_n * scale > Math.min(W,H) * 0.5) break;
+    const [dx, dy] = toXY(r_n, th_n);
+    ctx.beginPath(); ctx.arc(dx, dy, 3.5, 0, Math.PI * 2);
+    ctx.fillStyle = n % 4 === 0 ? '#3a6ad4' : 'rgba(58,106,212,0.6)';
+    ctx.fill();
+  }
+
+  // Origin
+  ctx.beginPath(); ctx.arc(cx, cy, 3, 0, Math.PI * 2);
+  ctx.fillStyle = 'rgba(200,200,216,0.4)'; ctx.fill();
+
+  document.getElementById('polarInfo').textContent = `a=${p.a.toFixed(2)} α=${(Math.atan(1/p.a)*180/Math.PI).toFixed(1)}°`;
+}
+
+// ── RECT PANEL ───────────────────────────────────
+function drawRect(p) {
+  const { ctx, W, H } = initCv('cvRect', 1.0);
+
+  const thetaMax = p.turns * 2 * Math.PI;
+  const rMax = Math.exp(p.a * thetaMax);
+
+  // x axis = θ (0 to thetaMax), y axis = r (0 to rMax) and ln(r) (−∞ to ln(rMax))
+  // Show two y scales: left = r = e^(aθ), right = ln(r) = aθ
+  const pad = { l: 48, r: 14, t: 18, b: 36 };
+  const pw = W - pad.l - pad.r;
+  const ph = H - pad.t - pad.b;
+
+  const xmin = 0, xmax = thetaMax;
+  const ymin = 0, ymax = rMax * 1.05;
+
+  function tc(x, y) {
+    return [
+      pad.l + (x - xmin) / (xmax - xmin) * pw,
+      pad.t + ph - (y - ymin) / (ymax - ymin) * ph
+    ];
+  }
+  function tcLog(x, y) {
+    // y in log scale mapped to linear panel
+    const logy = Math.log(Math.max(y, 0.001));
+    const logymin = 0, logymax = Math.log(rMax * 1.05);
+    return [
+      pad.l + (x - xmin) / (xmax - xmin) * pw,
+      pad.t + ph - (logy - logymin) / (logymax - logymin) * ph
+    ];
+  }
+
+  ctx.fillStyle = '#0e0e12'; ctx.fillRect(0, 0, W, H);
+
+  // Grid
+  const nGridX = Math.ceil(thetaMax / (Math.PI / 2));
+  ctx.strokeStyle = 'rgba(40,40,58,0.9)'; ctx.lineWidth = 0.5;
+  for (let i = 0; i <= nGridX; i++) {
+    const x = i * Math.PI / 2;
+    if (x > thetaMax) break;
+    const [cx] = tc(x, 0); const [, cy1] = tc(x, ymin); const [, cy2] = tc(x, ymax);
+    ctx.beginPath(); ctx.moveTo(cx, cy2); ctx.lineTo(cx, cy1 + pad.b); ctx.stroke();
+  }
+
+  // Horizontal reference lines at circle radii
+  for (let n = 0; n <= nGridX; n++) {
+    const th_n = n * Math.PI / 2;
+    if (th_n > thetaMax) break;
+    const r_n = Math.exp(p.a * th_n);
+    const [, ry] = tc(0, r_n);
+    const isQB = n % 4 === 0;
+    ctx.strokeStyle = isQB ? 'rgba(58,106,212,0.4)' : 'rgba(58,106,212,0.15)';
+    ctx.lineWidth = isQB ? 0.8 : 0.4;
+    ctx.beginPath(); ctx.moveTo(pad.l, ry); ctx.lineTo(pad.l + pw, ry); ctx.stroke();
+    // label
+    if (r_n < ymax * 0.95 && ry > pad.t + 8) {
+      ctx.fillStyle = 'rgba(58,106,212,0.7)';
+      ctx.font = '9px JetBrains Mono,monospace';
+      ctx.textAlign = 'right';
+      ctx.fillText(r_n.toFixed(2), pad.l - 3, ry + 3);
+    }
+  }
+
+  // Axes
+  ctx.strokeStyle = 'rgba(90,90,112,0.6)'; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(pad.l, pad.t + ph); ctx.lineTo(pad.l + pw, pad.t + ph); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(pad.l, pad.t); ctx.lineTo(pad.l, pad.t + ph); ctx.stroke();
+
+  // x axis labels (θ values)
+  ctx.fillStyle = 'rgba(90,90,112,0.8)';
+  ctx.font = '9px JetBrains Mono,monospace';
+  ctx.textAlign = 'center';
+  for (let i = 0; i <= nGridX; i++) {
+    const x = i * Math.PI / 2;
+    if (x > thetaMax) break;
+    const [cx, cy] = tc(x, 0);
+    const lbls = ['0', 'π/2', 'π', '3π/2', '2π', '5π/2', '3π', '7π/2', '4π'];
+    ctx.fillText(lbls[i] || `${i}π/2`, cx, cy + pad.b - 22);
+  }
+
+  // 1/x curve (purple) — derivative of ln(x), shown as function of θ
+  ctx.strokeStyle = '#c060e0'; ctx.lineWidth = 1.5;
+  ctx.beginPath(); let first = true;
+  for (let i = 0; i <= 500; i++) {
+    const th = thetaMax * i / 500;
+    const r = Math.exp(p.a * th);
+    const y = 1 / r;  // 1/r as function of θ
+    const [cx, cy] = tc(th, y * ymax * 0.3); // scale to fit panel
+    first ? ctx.moveTo(cx, cy) : ctx.lineTo(cx, cy);
+    first = false;
+  }
+  ctx.stroke();
+
+  // ln(x) as x-axis diagonal (green) — aθ scaled
+  ctx.strokeStyle = '#40c080'; ctx.lineWidth = 1.5;
+  ctx.setLineDash([5, 3]);
+  ctx.beginPath(); first = true;
+  for (let i = 0; i <= 400; i++) {
+    const th = thetaMax * i / 400;
+    const lnr = p.a * th; // = ln(r)
+    const y_scaled = lnr / (p.a * thetaMax) * ymax; // scale ln(r) to panel
+    const [cx, cy] = tc(th, y_scaled);
+    first ? ctx.moveTo(cx, cy) : ctx.lineTo(cx, cy);
+    first = false;
+  }
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // e^x curve (red) — r = e^(aθ) vs θ  — THE MAIN CURVE
+  ctx.strokeStyle = '#e05050'; ctx.lineWidth = 2;
+  ctx.beginPath(); first = true;
+  for (let i = 0; i <= 600; i++) {
+    const th = thetaMax * i / 600;
+    const r = Math.exp(p.a * th);
+    if (r > ymax) { first = true; break; }
+    const [cx, cy] = tc(th, r);
+    first ? ctx.moveTo(cx, cy) : ctx.lineTo(cx, cy);
+    first = false;
+  }
+  ctx.stroke();
+
+  // φ circle intersection markers (orange vertical lines)
+  if (p.phi) {
+    for (let n = 1; n <= 10; n++) {
+      const r_phi = Math.pow(PHI, n);
+      if (r_phi >= ymax) break;
+      const th_phi = Math.log(r_phi) / p.a;
+      if (th_phi > thetaMax) break;
+      const [cx, cy_top] = tc(th_phi, r_phi);
+      const [, cy_bot] = tc(th_phi, 0);
+      ctx.strokeStyle = 'rgba(240,120,32,0.5)';
+      ctx.lineWidth = 0.8; ctx.setLineDash([3, 3]);
+      ctx.beginPath(); ctx.moveTo(cx, cy_bot); ctx.lineTo(cx, cy_top); ctx.stroke();
+      ctx.setLineDash([]);
+      // dot on e^x curve
+      ctx.beginPath(); ctx.arc(cx, cy_top, 3.5, 0, Math.PI * 2);
+      ctx.fillStyle = '#f07820'; ctx.fill();
+      ctx.fillStyle = 'rgba(240,120,32,0.8)';
+      ctx.font = '9px JetBrains Mono,monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText(`φ^${n}`, cx, cy_top - 7);
+    }
+  }
+
+  // Area above e^x shaded between probe and next circle
+  const th_probe = p.theta;
+  const r_probe = Math.exp(p.a * th_probe);
+  const n_next = Math.ceil(th_probe / (Math.PI / 2));
+  const th_next = n_next * Math.PI / 2;
+  if (th_next <= thetaMax) {
+    const r_next = Math.exp(p.a * th_next);
+    if (r_next < ymax * 0.98) {
+      // shade above e^x between probe θ and next crossing
+      ctx.fillStyle = 'rgba(232,200,64,0.07)';
+      ctx.beginPath();
+      ctx.moveTo(...tc(th_probe, r_next)); // top left (rectangle top)
+      ctx.lineTo(...tc(th_next, r_next));  // top right
+      // down along e^x curve from th_next back to th_probe
+      for (let i = 50; i >= 0; i--) {
+        const th = th_probe + (th_next - th_probe) * i / 50;
+        const r = Math.exp(p.a * th);
+        ctx.lineTo(...tc(th, r));
+      }
+      ctx.closePath();
+      ctx.fill();
+      // Label Q
+      const thMid = (th_probe + th_next) / 2;
+      const rMid = Math.exp(p.a * thMid);
+      const Q_val = Math.exp(p.a * (th_next - th_probe)) - p.a * (th_next - th_probe) - 1;
+      ctx.fillStyle = 'rgba(232,200,64,0.7)';
+      ctx.font = '9px JetBrains Mono,monospace';
+      ctx.textAlign = 'center';
+      if (r_next < ymax * 0.9) {
+        ctx.fillText(`Q=${Q_val.toFixed(3)}`, ...tc(thMid, (r_next + rMid) / 2));
+      }
+    }
+  }
+
+  // Probe vertical line
+  const [pvx, pvy_top] = tc(p.theta, r_probe);
+  const [, pvy_bot] = tc(p.theta, 0);
+  ctx.strokeStyle = 'rgba(232,200,64,0.4)'; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(pvx, pvy_bot); ctx.lineTo(pvx, pvy_top); ctx.stroke();
+
+  // Probe dot on e^x
+  ctx.beginPath(); ctx.arc(pvx, pvy_top, 5, 0, Math.PI * 2);
+  ctx.fillStyle = '#e8c840'; ctx.fill();
+  ctx.strokeStyle = '#0e0e12'; ctx.lineWidth = 1.5; ctx.stroke();
+
+  // Circle crossing dots
+  for (let n = 0; n <= nGridX; n++) {
+    const th_n = n * Math.PI / 2;
+    if (th_n > thetaMax) break;
+    const r_n = Math.exp(p.a * th_n);
+    if (r_n >= ymax) break;
+    const [dx, dy] = tc(th_n, r_n);
+    ctx.beginPath(); ctx.arc(dx, dy, 3.5, 0, Math.PI * 2);
+    ctx.fillStyle = '#3a6ad4'; ctx.fill();
+    // vertical dash from 0 to dot
+    ctx.strokeStyle = 'rgba(58,106,212,0.3)';
+    ctx.lineWidth = 0.7;
+    const [, by] = tc(th_n, 0);
+    ctx.beginPath(); ctx.moveTo(dx, by); ctx.lineTo(dx, dy); ctx.stroke();
+  }
+
+  // Curve labels
+  ctx.font = '10px JetBrains Mono,monospace'; ctx.textAlign = 'left';
+  const lx = pad.l + pw * 0.02, ly = pad.t + 12;
+  const labelItems = [
+    ['e^(aθ) = r', '#e05050'],
+    ['ln(r) = aθ', '#40c080'],
+    ['1/r (scaled)', '#c060e0'],
+  ];
+  labelItems.forEach(([lbl, col], i) => {
+    ctx.fillStyle = col;
+    ctx.fillText(lbl, lx, ly + i * 14);
+  });
+
+  document.getElementById('rectInfo').textContent =
+    `r=${r_probe.toFixed(3)} ln(r)=${Math.log(r_probe).toFixed(3)}`;
+}
+
+// ── STATS UPDATE ─────────────────────────────────
+function updateStats(p) {
+  const r = Math.exp(p.a * p.theta);
+  const alpha = Math.atan(1 / p.a) * 180 / Math.PI;
+  const n_circ = Math.floor(p.theta / (Math.PI / 2));
+  const h = p.theta - n_circ * Math.PI / 2;  // distance to last circle crossing
+  const Q = Math.exp(p.a * h) - p.a * h - 1;
+  document.getElementById('sv_theta').textContent = p.theta.toFixed(3);
+  document.getElementById('sv_r').textContent     = r.toFixed(4);
+  document.getElementById('sv_alpha').textContent = alpha.toFixed(2) + '°';
+  document.getElementById('sv_lnr').textContent   = Math.log(r).toFixed(4);
+  document.getElementById('sv_Q').textContent     = Q.toFixed(5);
+  document.getElementById('sv_n').textContent     = n_circ;
+  document.getElementById('thetaVal').textContent = p.theta.toFixed(3);
+  document.getElementById('pitchVal').textContent = p.a.toFixed(2);
+  document.getElementById('turnsVal').textContent = p.turns.toFixed(2);
+}
+
+// ── MAIN RENDER ──────────────────────────────────
+function render() {
+  const p = getParams();
+  drawPolar(p);
+  drawRect(p);
+  updateStats(p);
+}
+
+// ── EVENT LISTENERS ──────────────────────────────
+['pitchSlider','turnsSlider','thetaSlider','showPhi','showAngle','showGolden']
+  .forEach(id => document.getElementById(id).addEventListener('input', render));
+
+window.addEventListener('resize', () => {
+  clearTimeout(window._resizeTimer);
+  window._resizeTimer = setTimeout(render, 80);
+});
+
+render();
+</script>
+</body>
+</html>
