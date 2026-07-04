@@ -442,14 +442,16 @@
             <section class="section">
                 <div class="section-head">
                     <h2>§4 — erfinv_hybrid</h2>
-                    <span class="tag ok">7.1e-4 · float16</span>
+                    <span class="tag ok">4.0e-8 · float32</span>
                 </div>
                 <p class="section-sub">
-                    Polynomial for |x| &lt; 0.949 (94.9% of uniform inputs, zero
-                    transcendentals), log+sqrt asymptotic tail beyond. The
-                    switch point is visible as a kink in the error trace.
+                    Original RKT degree-11 minimax (Remez) seed + one Newton
+                    refinement for |x| ≤ 0.701 (~70% of uniform inputs, ~4.0e-8
+                    max error). A piecewise polynomial is used for > 0.701 tail,
+                    accurate to ~2.3e-7.
                 </p>
                 <div id="erfinv_compare" class="plot"></div>
+                <div class="coeff-row" id="erfinv_coeffs"></div>
             </section>
 
             <!-- ===================== EXP ===================== -->
@@ -488,7 +490,9 @@
             <section class="section">
                 <div class="section-head">
                     <h2>§7 — arctan tiers: f16 / hsp / precise</h2>
-                    <span class="tag ok">7.32e-7 RAU · join gap 9.74e-11 (precise)</span>
+                    <span class="tag ok"
+                        >7.32e-7 RAU · join gap 9.74e-11 (precise)</span
+                    >
                 </div>
                 <p class="section-sub">
                     Each tier is independently Remez-fit at its target precision
@@ -620,6 +624,21 @@
                 49.68064167,
             ];
 
+            // erfinv tail, |x| > 0.701 — from Mike Giles,
+            // "Approximating the erfinv Function", GPU Computing Gems
+            // Jade Edition (2010). Single-precision, two regions keyed
+            // on w = -ln((1-|x|)(1+|x|)). Highest degree to lowest degree.
+            const GILES1 = [
+                0.0000000281022636, 0.000000343273939, -0.0000035233877,
+                -0.00000439150654, 0.00021858087, -0.00125372503,
+                -0.00417768164, 0.246640727, 1.50140941,
+            ];
+
+            const GILES2 = [
+                -0.000200214257, 0.000100950558, 0.00134934322, -0.00367342844,
+                0.00573950773, -0.0076224613, 0.00943887047, 1.00167406,
+                2.83297682,
+            ];
             const EE = [
                 0.9999996448, 0.6931585166, 0.2401252369, 0.0558844141,
                 0.0089394589, 0.0018923354,
@@ -662,7 +681,14 @@
                 return p;
             }
 
-
+            function hornerDesc(C, x) {
+                // Descending-degree Horner: C[0] is the highest-degree
+                // coefficient. Used for the GILES tables, which are kept
+                // in the order Giles originally published them.
+                let p = C[0];
+                for (let i = 1; i < C.length; i++) p = p * x + C[i];
+                return p;
+            }
 
             function warp(t) {
                 const v = t - 0.5;
@@ -751,20 +777,44 @@
                 return sign * y;
             }
 
-            function erfinvPoly(x) {
-                const INV_SQRT2 = 0.7071067812;
+            function erfinvPolySeed(x) {
+                // Original RKT Remez seed, pre-Newton. Degree-11 minimax
+                // in v² where v = x/√2. On its own only ~7e-4 accurate;
+                // the seed is refined below.
+                const INV_SQRT2 = 0.7071067811865476;
                 const v = x * INV_SQRT2;
                 return x * horner(IC, v * v);
             }
+            function erfinvPolyRefined(x) {
+                // Original RKT Remez seed + one Newton refinement using
+                // the library's own erfPoly/expPoly. ~4.0e-8 max error.
+                let y = erfinvPolySeed(x);
+                y -=
+                    (erfPoly(y) - x) /
+                    ((2 / Math.sqrt(Math.PI)) * expPoly(-y * y));
+                return y;
+            }
+            function erfinvGilesTail(x) {
+                // Adapted from Mike Giles, "Approximating the erfinv
+                // Function", GPU Computing Gems Jade Edition (2010).
+                // ~9e-16 max error (machine epsilon) for 0.701 < |x| < 1.
+                const ax = Math.abs(x);
+                if (ax >= 1.0) return Math.sign(x) * Infinity;
+                let w = -Math.log((1 - ax) * (1 + ax));
+                let p;
+                if (w < 5.0) {
+                    w -= 2.5;
+                    p = hornerDesc(GILES1, w);
+                } else {
+                    w = Math.sqrt(w) - 3.0;
+                    p = hornerDesc(GILES2, w);
+                }
+                return p * x;
+            }
             function erfinvHybrid(x) {
                 const ax = Math.abs(x);
-                if (ax >= 0.9999) return Math.sign(x) * 4.0;
-                if (ax < 0.949) return erfinvPoly(x);
-                return (
-                    Math.sign(x) *
-                    0.886226925453 *
-                    Math.sqrt(-Math.log(1 - ax * ax))
-                );
+                if (ax <= 0.701) return erfinvPolyRefined(x);
+                return erfinvGilesTail(x);
             }
             function erfinvRef(x) {
                 // Newton refine erf^{-1} using the AS erf approximation as ground truth
@@ -1005,6 +1055,11 @@
                     "erfinv(x)",
                     "erfinv_hybrid",
                 ]);
+                coeffChips(
+                    "erfinv_coeffs",
+                    "IC",
+                    IC.map((v) => v.toFixed(8)),
+                );
             }
 
             // ---- §5 exp ----
