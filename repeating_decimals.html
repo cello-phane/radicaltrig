@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <title>Eulerism Engine: Radical Lab Theme</title>
     <style>
-        :root { 
+        :root {
             --bg: #f4f1ea;        /* Desaturated Cream */
             --border: #b8b1a3;    /* Muted Tan */
             --accent: #92c5de;    /* Pale Blue Accent */
@@ -13,104 +13,104 @@
             --display-bg: #fffdf9;
             --header-red: #a52a2a; /* Deep Red for Labels */
         }
-        
-        body { 
-            background: var(--bg); 
-            color: var(--text-main); 
-            font-family: 'Courier New', monospace; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            padding: 40px 20px; 
+
+        body {
+            background: var(--bg);
+            color: var(--text-main);
+            font-family: 'Courier New', monospace;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
         }
 
-        .container { 
-            border: 1px solid var(--border); 
-            padding: 30px; 
-            background: #fff; 
-            box-shadow: 4px 4px 0px rgba(0,0,0,0.05); 
-            width: 100%; 
-            max-width: 900px; 
+        .container {
+            border: 1px solid var(--border);
+            padding: 30px;
+            background: #fff;
+            box-shadow: 4px 4px 0px rgba(0,0,0,0.05);
+            width: 100%;
+            max-width: 900px;
         }
 
-        .panel { 
-            border: 1px solid var(--border); 
-            padding: 25px; 
-            margin-bottom: 30px; 
-            position: relative; 
+        .panel {
+            border: 1px solid var(--border);
+            padding: 25px;
+            margin-bottom: 30px;
+            position: relative;
             background: var(--bg);
         }
 
-        h3 { 
-            margin-top: 0; 
-            color: var(--header-red); 
-            letter-spacing: 3px; 
+        h3 {
+            margin-top: 0;
+            color: var(--header-red);
+            letter-spacing: 3px;
             font-size: 1.2rem;
             border-bottom: 1px solid var(--border);
             padding-bottom: 10px;
         }
 
-        .display { 
-            background: var(--display-bg); 
-            border: 1px solid var(--border); 
-            padding: 15px; 
-            margin: 15px 0; 
-            min-height: 80px; 
-            word-break: break-all; 
-            font-size: 0.95rem; 
-            line-height: 1.6; 
-            color: #222; 
+        .display {
+            background: var(--display-bg);
+            border: 1px solid var(--border);
+            padding: 15px;
+            margin: 15px 0;
+            min-height: 80px;
+            word-break: break-all;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            color: #222;
             box-shadow: inset 1px 1px 3px rgba(0,0,0,0.1);
         }
 
-        .controls { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); 
-            gap: 15px; 
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 15px;
         }
 
-        input { 
-            background: var(--accent); 
-            border: 1px solid var(--border); 
-            color: #000; 
-            padding: 10px; 
+        input {
+            background: var(--accent);
+            border: 1px solid var(--border);
+            color: #000;
+            padding: 10px;
             font-weight: bold;
             outline: none;
         }
 
-        label { 
-            font-size: 0.75rem; 
-            text-transform: uppercase; 
-            color: var(--text-main); 
-            margin-bottom: 5px; 
-            display: block; 
+        label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: var(--text-main);
+            margin-bottom: 5px;
+            display: block;
         }
 
-        button { 
-            background: var(--accent); 
-            color: #000; 
-            border: 1px solid var(--border); 
-            padding: 10px 20px; 
-            cursor: pointer; 
-            font-weight: bold; 
+        button {
+            background: var(--accent);
+            color: #000;
+            border: 1px solid var(--border);
+            padding: 10px 20px;
+            cursor: pointer;
+            font-weight: bold;
             text-transform: uppercase;
         }
 
         button:hover { background: #fff; }
 
-        .status { 
-            font-size: 0.7rem; 
-            color: var(--text-muted); 
+        .status {
+            font-size: 0.7rem;
+            color: var(--text-muted);
             margin-bottom: 15px;
             font-style: italic;
         }
 
-        .copy-btn { 
-            position: absolute; 
-            top: 25px; 
-            right: 25px; 
-            font-size: 0.7rem; 
-            padding: 5px 12px; 
+        .copy-btn {
+            position: absolute;
+            top: 25px;
+            right: 25px;
+            font-size: 0.7rem;
+            padding: 5px 12px;
         }
     </style>
 </head>
@@ -146,7 +146,7 @@
     function safeCopy(id) {
         const text = document.getElementById(id).innerText;
         const parts = text.split('.');
-        
+
         // If string has more than 50 decimal places, slice to prevent Inverse Analyst halt
         if (parts.length > 1 && parts[1].length > 50) {
             const safeText = parts[0] + "." + parts[1].substring(0, 50);
@@ -187,38 +187,38 @@
 	    const isNegative = (q < 0n) !== (d < 0n);
 	    const absQ = q < 0n ? -q : q;
 	    const absD = d < 0n ? -d : d;
-	    
+
 	    const intPart = absQ / absD;
 	    let remainder = absQ % absD;
-	    
+
 	    let digits = '';
 	    const seen = new Map(); // remainder → position
 	    let cycleStart = -1;
-	    
+
 	    for (let i = 0; i < maxDigits; i++) {
 	        if (remainder === 0n) break; // Terminates
-	        
+
 	        if (seen.has(remainder.toString())) {
 	            cycleStart = seen.get(remainder.toString());
 	            break;
 	        }
-	        
+
 	        seen.set(remainder.toString(), digits.length);
-	        
+
 	        remainder *= 10n;
 	        const digit = remainder / absD;
 	        digits += digit.toString();
 	        remainder = remainder % absD;
 	    }
-	    
+
 	    let nonRepeating = digits;
 	    let repeating = '';
-	    
+
 	    if (cycleStart !== -1) {
 	        nonRepeating = digits.slice(0, cycleStart);
 	        repeating = digits.slice(cycleStart);
 	    }
-	    
+
 	    return {
 	        sign: isNegative ? '-' : '',
 	        intPart: intPart.toString(),
@@ -227,176 +227,74 @@
 	        period: repeating.length
 	    };
 	}
-	
+
     // --- FORWARD ENGINE ---
     function calculateForward() {
         const q = BigInt(document.getElementById('q').value);
         const d = BigInt(document.getElementById('d').value);
         const r = parseInt(document.getElementById('r').value);
-        
-        if (d === 0n) { 
-            document.getElementById('output').innerText = "ERR: DIV_BY_ZERO"; 
-            return; 
+
+        if (d === 0n) {
+            document.getElementById('output').innerText = "ERR: DIV_BY_ZERO";
+            return;
         }
-        
+
         const result = fullLongDivision(q, d, 1000);
-        
+
         // Handle terminating decimals
         if (result.repeating === '') {
-            const output = result.sign + result.intPart + 
+            const output = result.sign + result.intPart +
                 (result.nonRepeating ? '.' + result.nonRepeating : '');
             document.getElementById('output').innerText = output;
             return;
         }
-        
+
         // Build with r repetitions
         const fractional = result.nonRepeating + result.repeating.repeat(r);
-        document.getElementById('output').innerText = 
+        document.getElementById('output').innerText =
             result.sign + result.intPart + '.' + fractional;
     }
-	
-	function gcd(a,b){ return b==0n ? a : gcd(b, a%b); }
 
-	function simplify(n,d){
-	    let g = gcd(n,d);
-	    return { n: n/g, d: d/g };
-	}
-	
-	function parseTerminatingDecimal(decimalStr) { 
-		let sign = 1n;
-		if (decimalStr.startsWith('-')) {
-		    sign = -1n;
-		    decimalStr = decimalStr.slice(1);
-		}
-		let parts = decimalStr.split(".");
-		if (parts.length !== 2) return null; 
-		let intPart = parts[0]; 
-		let fracPart = parts[1]; // Reject empty fractional part 
-		if (fracPart.length === 0) return null; 
-		// If the fractional part contains parentheses, it's repeating → skip 
-		if (fracPart.includes("(") || fracPart.includes(")")) return null;
-		// If it contains non-digits → skip 
-		if (!/^\d+$/.test(fracPart)) return null; 
-		// TERMINATING DECIMAL DETECTED
-		let numerator = BigInt(fracPart); 
-		let denominator = 10n ** BigInt(fracPart.length); 
-		// include integer part if user types something like 2.75 
-		if (intPart && intPart !== "0") { 
-			numerator += BigInt(intPart) * denominator; 
-			
-		}
-		return { numerator: sign * numerator, denominator };
-	}
-	
-	function parseRepeatingDecimal(str) {
-	    str = str.trim();
-	
-	    // Handle sign
-	    let sign = 1n;
-	    if (str.startsWith('-')) {
-	        sign = -1n;
-	        str = str.slice(1);
-	    }
-	
-	    // Must contain parentheses
-	    if (!str.includes("(") || !str.includes(")")) return null;
-	
-	    // Require decimal point: supports 0.(3), 1.2(34), etc.
-	    let match = str.match(/^(\d+)?\.(\d*)\((\d+)\)$/);
-	    if (!match) return null;
-	
-	    let intPartStr    = match[1] || "0";
-	    let nonRepeatStr  = match[2] || "";
-	    let repeatStr     = match[3];
-	
-	    let I = BigInt(intPartStr);
-	    let A = nonRepeatStr;
-	    let B = repeatStr;
-	
-	    let n = BigInt(A.length);
-	    let m = BigInt(B.length);
-	
-	    let pow10n = 10n ** n;
-	    let pow10m = 10n ** m;
-	
-	    let intAB = BigInt((A + B) || "0");
-	    let intA  = BigInt(A || "0");
-	
-	    // (AB − A) / (10^n (10^m − 1))
-	    let numerator   = intAB - intA;
-	    let denominator = pow10n * (pow10m - 1n);
-	
-	    // Add integer part
-	    numerator += I * denominator;
-	
-	    return { numerator: sign * numerator, denominator };
-	}
-	
     // --- INVERSE ENGINE ---
     function calculateInverse() {
-	    let input = document.getElementById('decimalInput').value.trim();
-		if (input.startsWith(".")) input = "0" + input;
-		if (input.startsWith("-.")) input = "-0" + input.slice(1);
-		// Pure integer shortcut
-		if (/^-?\d+$/.test(input)) {
-		    document.getElementById('inverseOutput').innerText =
-		        `RATIONAL_ORIGIN: ${input} / 1 | PERIOD: 0`;
-		    return;
-		}
-	    if (!input) return;
-	
-	    // STEP 1 — terminating decimal
-	    let term = parseTerminatingDecimal(input);
-	    if (term) {
-	        let simp = simplify(term.numerator, term.denominator);
-	        const period = analyzePeriod(simp.d);
-	        document.getElementById('inverseOutput').innerText =
-	            `RATIONAL_ORIGIN: ${simp.n} / ${simp.d} | PERIOD: ${period}`;
-	        return;
-	    }
-	
-	    // STEP 2 — repeating decimal
-	    let repeat = parseRepeatingDecimal(input);
-	    if (repeat) {
-	        let simp = simplify(repeat.numerator, repeat.denominator);
-	        const period = analyzePeriod(simp.d);
-	        document.getElementById('inverseOutput').innerText =
-	            `RATIONAL_ORIGIN: ${simp.n} / ${simp.d} | PERIOD: ${period}`;
-	        return;
-	    }
-		
-		// STEP 3 — fallback to continued fractions
-	    let parts = input.split('.');
-	    let intPart = BigInt(parts[0] || "0");
-	    let fracPartStr = parts[1] || "";
-	
-	    let truncatedFrac = fracPartStr.substring(0, 50);
-	    let x = parseFloat("0." + truncatedFrac);
-	
-	    let h1 = 1n, h2 = 0n;
-	    let k1 = 0n, k2 = 1n;
-	    let b = x;
-	    const tolerance = 1.0e-51;
-	
-	    for (let i = 0; i < 24; i++) {
-	        let a = BigInt(Math.floor(b));
-	        let tempH = h1; h1 = a * h1 + h2; h2 = tempH;
-	        let tempK = k1; k1 = a * k1 + k2; k2 = tempK;
-	
-	        if (Math.abs(x - Number(h1) / Number(k1)) < tolerance) break;
-	        let remainder = b - Math.floor(b);
-	        if (remainder < 1.0e-12) break;
-	        b = 1 / remainder;
-	    }
-	
-	    let finalNumerator = (intPart * k1) + h1;
-	    let finalDenominator = k1;
-		const [numer, denom] = simplify(finalNumerator, finalDenominator);
-	    const period = analyzePeriod(denom);
-	    document.getElementById('inverseOutput').innerText =
-	        `RATIONAL_ORIGIN: ${numer} / ${denom} | PERIOD: ${period}`;
+        let input = document.getElementById('decimalInput').value.trim();
+        if (!input) return;
+
+        // Split into Integer and Fractional parts to avoid float overflow
+        let parts = input.split('.');
+        let intPart = BigInt(parts[0] || "0");
+        let fracPartStr = parts[1] || "";
+
+        // 1. If the string is too long, we truncate it to 50 digits
+        // to match the 'Safe Spot' of the Continued Fraction algorithm.
+        let truncatedFrac = fracPartStr.substring(0, 50);
+        let x = parseFloat("0." + truncatedFrac);
+
+        let h1 = 1n, h2 = 0n;
+        let k1 = 0n, k2 = 1n;
+        let b = x;
+        const tolerance = 1.0e-51;
+
+        // 2. The Loop: Recovering the ratio
+        for (let i = 0; i < 24; i++) {
+            let a = BigInt(Math.floor(b));
+            let tempH = h1; h1 = a * h1 + h2; h2 = tempH;
+            let tempK = k1; k1 = a * k1 + k2; k2 = tempK;
+
+            if (Math.abs(x - Number(h1) / Number(k1)) < tolerance) break;
+            let remainder = b - Math.floor(b);
+            if (remainder < 1.0e-12) break;
+            b = 1 / remainder;
+        }
+
+        // 3. Add back the integer part: (intPart * k1 + h1) / k1
+        let finalNumerator = (intPart * k1) + h1;
+        let finalDenominator = k1;
+
+        const period = analyzePeriod(finalDenominator);
+        document.getElementById('inverseOutput').innerText =
+            `RATIONAL_ORIGIN: ${finalNumerator} / ${finalDenominator} | PERIOD: ${period}`;
     }
 </script>
 </body>
 </html>
-
