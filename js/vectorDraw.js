@@ -85,7 +85,14 @@ function initRAUCanvas() {
    * Draw radius and knob at current phase
    */
   function drawRadius() {
-    const phase = AppState.section1.phase;
+    const rawPhase = AppState.section1.phase;
+    // Display-only warp: when warpMode is on, the red line shows where
+    // the warp-corrected chord parameter lands instead of the raw one.
+    // See geom.js's applyDisplayWarp / RAU_WARP for the shared transform
+    // (same one used by the protractor tick overlay).
+    const uiState = getUIState();
+    const useWarp = !!(uiState && uiState.warpMode);
+    const phase = applyDisplayWarp(rawPhase, useWarp);
     const components = getRotationComponents(phase);
 
     const px = cx + components.cos * radius;
@@ -187,6 +194,11 @@ function initRAUCanvas() {
     updateResultsDisplay();
     draw();
   });
+
+  // Expose a redraw hook so other controls (e.g. the shared
+  // linear/warp mode selector in protractor.js) can refresh this
+  // canvas without needing access to this closure's internals.
+  window.refreshIntroCanvas = draw;
 
   // Initial draw
   draw();
