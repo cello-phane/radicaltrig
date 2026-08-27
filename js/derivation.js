@@ -20,9 +20,44 @@ function getColors() {
         construction: isDark ? '#00d4ff' : '#0088cc',
         line: isDark ? '#ff6b9d' : '#cc0066',
         angle: isDark ? '#ffd93d' : '#ffaa00',
+        target: isDark ? '#8899ff' : '#4455cc',
         text: isDark ? '#eee' : '#333'
     };
 }
+
+// ============================================================================
+// WARP POLYNOMIAL (rau_warp_11 — confirmed double-precision coefficients)
+// Same derivation as in protractor.js: w(t) = 0.5 + warp11(t), an
+// 11th-order odd Horner polynomial in v = t - 0.5, fit so that evenly
+// spaced t produces (nearly) evenly spaced angle t*90deg once projected.
+// Defined locally here (rather than shared from geom.js) because this
+// file's initial drawDerivation() call at the bottom runs before
+// geom.js has executed, given the <script> order in index.html.
+// ============================================================================
+const DERIV_WARP = (function() {
+    const C1 = 0.78539816339744830962; // = pi/4, exact
+    const C2 = 0.64607158024987317298;
+    const C3 = 0.63401589172451679138;
+    const C4 = 0.68515350354689586789;
+    const C5 = 0.32501622369042378935;
+    const C6 = 1.51901679307446258196;
+
+    function warp11(t) {
+        const v = t - 0.5;
+        const v2 = v * v;
+        let poly = C6;
+        poly = v2 * poly + C5;
+        poly = v2 * poly + C4;
+        poly = v2 * poly + C3;
+        poly = v2 * poly + C2;
+        poly = v2 * poly + C1;
+        return v * poly;
+    }
+
+    return {
+        apply(t) { return 0.5 + warp11(t); }
+    };
+})();
 
 function drawDerivation() {
     const colors = getColors();
@@ -30,6 +65,13 @@ function drawDerivation() {
     const showGrid = document.getElementById('derivShowGrid').checked;
     const showLabels = document.getElementById('derivShowLabels').checked;
     const showConstruction = document.getElementById('derivShowConstruction').checked;
+    const useWarpEl = document.getElementById('derivUseWarp');
+    const useWarp = useWarpEl ? useWarpEl.checked : false;
+
+    // p is the chord parameter actually used to place the point.
+    // Linear mode: p === t (raw parameter, non-uniform in angle).
+    // Warp mode:   p = DERIV_WARP.apply(t) (corrected, ~uniform in angle).
+    const p = useWarp ? DERIV_WARP.apply(t) : t;
     
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
@@ -110,14 +152,40 @@ function drawDerivation() {
         ctx.fillText('(0, 1)', p2.x - 35, p2.y - 5);
     }
     
-    // Calculations
-    const diagX = 1 - t, diagY = t;
-    const r = Math.sqrt(1 - 2*t + 2*t*t);
+    // Calculations — all downstream math uses p (the actually-placed
+    // parameter), not the raw slider value t
+    const diagX = 1 - p, diagY = p;
+    const r = Math.sqrt(1 - 2*p + 2*p*p);
     const circleX = diagX / r, circleY = diagY / r;
     
     const pDiag = toCanvas(diagX, diagY);
     const pCircle = toCanvas(circleX, circleY);
     const origin = toCanvas(0, 0);
+
+    // Ideal target angle (what a perfectly uniform parameter would give)
+    const targetAngleRad = t * (Math.PI / 2);
+
+    // If in warp mode, draw a faint ghost ray at the ideal target angle
+    // so the gap between "where warp lands" and "where it should land"
+    // is visible directly on the canvas
+    if (useWarp) {
+        const gx = Math.cos(targetAngleRad), gy = Math.sin(targetAngleRad);
+        const gStart = toCanvas(gx * 0.15, gy * 0.15);
+        const gEnd = toCanvas(gx * 1.15, gy * 1.15);
+        ctx.strokeStyle = colors.target;
+        ctx.lineWidth = 1.5;
+        ctx.setLineDash([4, 4]);
+        ctx.beginPath();
+        ctx.moveTo(gStart.x, gStart.y);
+        ctx.lineTo(gEnd.x, gEnd.y);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        if (showLabels) {
+            ctx.fillStyle = colors.target;
+            ctx.font = '10px monospace';
+            ctx.fillText('ideal t·90°', gEnd.x + 4, gEnd.y);
+        }
+    }
     
     // Construction lines
     if (showConstruction) {
@@ -136,7 +204,7 @@ function drawDerivation() {
             ctx.font = '12px monospace';
             const midX = (origin.x + pDiag.x) / 2;
             const midY = (origin.y + pDiag.y) / 2;
-            ctx.fillText('r = √(1-2t+2t²)', midX + 10, midY - 5);
+            ctx.fillText(useWarp ? 'r = √(1-2w+2w²)' : 'r = √(1-2t+2t²)', midX + 10, midY - 5);
         }
         
         // Vertical and horizontal construction lines from diagonal point
@@ -161,8 +229,8 @@ function drawDerivation() {
         if (showLabels) {
             ctx.fillStyle = '#888';
             ctx.font = '11px monospace';
-            ctx.fillText('1-t', pDiagBottom.x - 10, pDiagBottom.y + 15);
-            ctx.fillText('t', pDiagLeft.x - 20, pDiagLeft.y);
+            ctx.fillText(useWarp ? '1-w' : '1-t', pDiagBottom.x - 10, pDiagBottom.y + 15);
+            ctx.fillText(useWarp ? 'w' : 't', pDiagLeft.x - 20, pDiagLeft.y);
         }
     }
     
@@ -222,6 +290,17 @@ function drawDerivation() {
     document.getElementById('derivCos').textContent = circleX.toFixed(3);
     document.getElementById('derivSin').textContent = circleY.toFixed(3);
     document.getElementById('derivAngle').textContent = (angleRad * 180 / Math.PI).toFixed(1) + '°';
+
+    // Target angle + deviation readout (only meaningful once you're
+    // comparing against a "desired uniform" t; shown in both modes so
+    // the linear-mode error is visible too, not just the warp-mode fix)
+    const targetDeg = t * 90;
+    const actualDeg = angleRad * 180 / Math.PI;
+    const deltaDeg = actualDeg - targetDeg;
+    const targetEl = document.getElementById('derivTargetAngle');
+    const deltaEl = document.getElementById('derivDeltaAngle');
+    if (targetEl) targetEl.textContent = targetDeg.toFixed(1) + '°';
+    if (deltaEl) deltaEl.textContent = (deltaDeg >= 0 ? '+' : '') + deltaDeg.toFixed(3) + '°';
 }
 window.setDerivT = function(value) {
     document.getElementById('derivTSlider').value = value;
@@ -233,6 +312,8 @@ document.getElementById('derivTSlider').addEventListener('input', drawDerivation
 document.getElementById('derivShowGrid').addEventListener('change', drawDerivation);
 document.getElementById('derivShowLabels').addEventListener('change', drawDerivation);
 document.getElementById('derivShowConstruction').addEventListener('change', drawDerivation);
+const derivUseWarpEl = document.getElementById('derivUseWarp');
+if (derivUseWarpEl) derivUseWarpEl.addEventListener('change', drawDerivation);
 document.getElementById('themeToggle').addEventListener('click', () => setTimeout(drawDerivation, 50));
     
 // Initial draw
