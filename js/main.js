@@ -33,6 +33,13 @@ const AppState = {
     defaultMode: true,
     currentSection: "section1",
     theme: "light", // Store in memory instead of localStorage
+    // Shared display-only mode for the "Introduction to RAU" section:
+    // false = raw/linear t (non-uniform angle spacing, the ground truth)
+    // true  = warp-corrected t (near-uniform angle spacing)
+    // Drives the draggable red line + sidebar readout (vectorDraw.js /
+    // uiControls.js) AND the protractor tick overlay (protractor.js) —
+    // all three read this same flag so they never show conflicting modes.
+    warpMode: false,
   },
 };
 
@@ -105,7 +112,7 @@ function initializeTheme() {
   // Set initial theme from state
   if (AppState.ui.theme === "dark") {
     document.body.classList.add("dark-mode");
-    themeBtn.textContent = "☀️ Light Mode";
+    themeBtn.textContent = "☀ Light Mode";
   } else {
     themeBtn.textContent = "🌙 Dark Mode";
   }
@@ -114,7 +121,7 @@ function initializeTheme() {
   themeBtn.addEventListener("click", () => {
     const isDark = document.body.classList.toggle("dark-mode");
     AppState.ui.theme = isDark ? "dark" : "light";
-    themeBtn.textContent = isDark ? "☀️ Light Mode" : "🌙 Dark Mode";
+    themeBtn.textContent = isDark ? "☀ Light Mode" : "🌙 Dark Mode";
   });
 }
 
