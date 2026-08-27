@@ -77,6 +77,43 @@ const RAU = (function() {
 })();
 
 // ============================================================================
+// WARP POLYNOMIAL (rau_warp_11 — confirmed double-precision coefficients)
+//
+// w(t) = 0.5 + warp11(t), where warp11 is an 11th-order odd Horner
+// polynomial in v = t - 0.5. Placing chord ticks at w(t) for evenly
+// spaced t makes the resulting arc angle land close to the ideal
+// uniform grid t*90deg, instead of the raw chord-parameter nonuniformity
+// you get from RAU.tToVector(t) directly. See rkt-mathlib notes /
+// the "uniform vs non-uniform stepping" writeup for the derivation.
+// ============================================================================
+const RAU_WARP = (function() {
+  const C1 = 0.78539816339744830962; // = pi/4, exact
+  const C2 = 0.64607158024987317298;
+  const C3 = 0.63401589172451679138;
+  const C4 = 0.68515350354689586789;
+  const C5 = 0.32501622369042378935;
+  const C6 = 1.51901679307446258196;
+
+  function warp11(t) {
+    const v = t - 0.5;
+    const v2 = v * v;
+    let poly = C6;
+    poly = v2 * poly + C5;
+    poly = v2 * poly + C4;
+    poly = v2 * poly + C3;
+    poly = v2 * poly + C2;
+    poly = v2 * poly + C1;
+    return v * poly;
+  }
+
+  return {
+    // maps a "desired uniform" t in [0,1] to the chord parameter w
+    // that (approximately) lands at true angle t*90 degrees
+    apply(t) { return 0.5 + warp11(t); }
+  };
+})();
+
+// ============================================================================
 // PROTRACTOR STATE
 // ============================================================================
 
@@ -84,7 +121,8 @@ const ProtractorState = {
   ticks: 72,
   radius: 117,
   labelMode: 't', // 't', 'deg', 'rad', or 'none'
-  currentT: 0.0
+  currentT: 0.0,
+  mode: 'linear' // 'linear' (raw t, non-uniform) or 'warp' (warped t, uniform)
 };
 
 // ============================================================================
@@ -166,12 +204,20 @@ function drawProtractor() {
   
   // Draw quarter-circle arc (0° to 90°)
   drawArc(svg, cx, cy, radius);
+
+  // In warp mode, draw the faint ideal-uniform reference grid first so
+  // the real ticks draw on top of it
+  if (ProtractorState.mode === 'warp') {
+    drawIdealGrid(svg, cx, cy, radius);
+  }
   
   // Draw tick marks
   drawTicks(svg, cx, cy, radius);
   
   // Draw axis reference line
   drawAxisLine(svg, cx, cy, radius);
+
+  updateProtractorReadout();
 }
 
 /**
@@ -200,6 +246,37 @@ function drawArc(svg, cx, cy, radius) {
 }
 
 /**
+ * Draw faint reference ticks at the ideal uniform-angle grid
+ * (t * 90 degrees, evenly spaced) so the warp-mode ticks can be
+ * visually compared against the target they're trying to hit.
+ * @param {SVGSVGElement} svg - SVG container
+ * @param {number} cx - Center X
+ * @param {number} cy - Center Y
+ * @param {number} radius - Arc radius
+ */
+function drawIdealGrid(svg, cx, cy, radius) {
+  const ticks = ProtractorState.ticks;
+  const majorEvery = Math.max(1, Math.floor(ticks / 12)); // ~12 reference marks
+
+  for (let i = 0; i <= ticks; i += majorEvery) {
+    const t = i / ticks;
+    const theta = t * PI_HALF;
+    const gx1 = Math.cos(theta) * (radius + 10);
+    const gy1 = -Math.sin(theta) * (radius + 10);
+    const gx2 = Math.cos(theta) * (radius - 6);
+    const gy2 = -Math.sin(theta) * (radius - 6);
+
+    svg.appendChild(createSVGElement('line', {
+      x1: gx1, y1: gy1, x2: gx2, y2: gy2,
+      stroke: 'rgba(255,255,255,0.18)',
+      'stroke-width': 1,
+      'stroke-dasharray': '2 3'
+    }));
+  }
+}
+const PI_HALF = Math.PI / 2;
+
+/**
  * Draw tick marks and labels
  * @param {SVGSVGElement} svg - SVG container
  * @param {number} cx - Center X
@@ -210,10 +287,15 @@ function drawTicks(svg, cx, cy, radius) {
   const ticks = ProtractorState.ticks;
   const labelMode = ProtractorState.labelMode;
   const labelInterval = Math.max(1, Math.floor(ticks / 12));
+  const useWarp = ProtractorState.mode === 'warp';
   
   for (let i = 0; i <= ticks; i++) {
     const t = i / ticks;
-    const v = RAU.tToVector(t);
+    // p is the actual chord parameter used to place the point.
+    // In linear mode p === t (raw, non-uniform result).
+    // In warp mode p = RAU_WARP.apply(t) (corrected, ~uniform result).
+    const p = useWarp ? RAU_WARP.apply(t) : t;
+    const v = RAU.tToVector(p);
     
     // Outer point (on arc)
     const outer = {
@@ -240,7 +322,8 @@ function drawTicks(svg, cx, cy, radius) {
     
     svg.appendChild(line);
     
-    // Draw label if applicable
+    // Draw label if applicable — label always shows t (the intended
+    // fraction), not p, since that's what the person set on the dial
     if (labelMode !== 'none' && (i === 0 || i === ticks || i % labelInterval === 0)) {
       drawLabel(svg, t, v, radius, i % 4 === 0);
     }
@@ -318,6 +401,35 @@ function drawAxisLine(svg, cx, cy, radius) {
   svg.appendChild(line);
 }
 
+/**
+ * Compute and display the max deviation between the actual arc angle
+ * and the ideal uniform grid (t * 90 degrees), across all ticks.
+ * Only meaningful/shown in warp mode — in linear mode the deviation
+ * is large and expected (that's the whole point of the comparison),
+ * so the readout focuses on warp mode's residual error instead.
+ */
+function updateProtractorReadout() {
+  const el = document.getElementById('protractorReadout');
+  if (!el) return;
+
+  const ticks = ProtractorState.ticks;
+  const useWarp = ProtractorState.mode === 'warp';
+  let maxDeltaDeg = 0;
+
+  for (let i = 0; i <= ticks; i++) {
+    const t = i / ticks;
+    const p = useWarp ? RAU_WARP.apply(t) : t;
+    const actualDeg = RAU.tToAngle(p) * 180 / Math.PI;
+    const targetDeg = t * 90;
+    const d = Math.abs(actualDeg - targetDeg);
+    if (d > maxDeltaDeg) maxDeltaDeg = d;
+  }
+
+  el.textContent = useWarp
+    ? `warped t · max deviation from ideal grid: ${maxDeltaDeg.toFixed(4)}°`
+    : `linear t · max deviation from ideal grid: ${maxDeltaDeg.toFixed(2)}° (uncorrected)`;
+}
+
 // ============================================================================
 // EVENT HANDLERS
 // ============================================================================
@@ -349,6 +461,15 @@ function initializeEventListeners() {
       drawProtractor();
     });
   }
+
+  // Tick placement mode control (linear t vs warped t)
+  const tickModeSel = document.getElementById('tickMode');
+  if (tickModeSel) {
+    tickModeSel.addEventListener('change', (e) => {
+      ProtractorState.mode = e.target.value;
+      drawProtractor();
+    });
+  }
   
   // Theme toggle (redraw on theme change)
   const themeToggle = document.getElementById('themeToggle');
@@ -372,3 +493,4 @@ initializeEventListeners();
 
 // Expose RAU utilities globally
 window.RAU = RAU;
+window.RAU_WARP = RAU_WARP;
