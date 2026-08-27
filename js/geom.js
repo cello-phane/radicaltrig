@@ -53,9 +53,14 @@ function radicalTan(t) {
   t = ((t % 4) + 4) % 4;
   const q = Math.floor(t);
   const f = t - q;
-  
-  if (f >= 0.999999) return 0; // Avoid division by zero at transitions
-  
+
+  // NOTE: no early-return guard here. f/(1-f) correctly diverges to
+  // +/-Infinity as f -> 1 in Q0/Q2 (the true limit of tan at that
+  // boundary), and -1/base correctly collapses to 0 in Q1/Q3. A prior
+  // version special-cased f >= 0.999999 to return 0 unconditionally,
+  // which was right for Q1/Q3 but silently wrong for Q0/Q2 (tan should
+  // blow up there, not vanish). JS division handles both cases without
+  // throwing, so the guard was both unnecessary and incorrect.
   const base = f / (1 - f);
   return (q === 1 || q === 3) ? -1 / base : base;
 }
@@ -212,7 +217,13 @@ function getRotationComponents(phase) {
   
   return {
     cos: cosVal,
-    sin: Math.sign(phase) * sinVal,
+    // NOTE: previously `Math.sign(phase) * sinVal`. Since phase is already
+    // clamped to >= 0 above, Math.sign(phase) is only ever 0 or 1 here, so
+    // it never did anything except (coincidentally, harmlessly) zero out
+    // sin at phase === 0, where sin is 0 anyway. radicalSine already
+    // returns the correctly signed value for its quadrant; removed the
+    // dead multiply for clarity.
+    sin: sinVal,
     quadrant: q
   };
 }
