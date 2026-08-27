@@ -104,6 +104,15 @@
                   </select>
               </div>
 
+              <div class="row">
+                  <label style="flex:1">Tick placement:</label>
+                  <select id="tickMode">
+                      <option value="linear">Linear t (non-uniform)</option>
+                      <option value="warp">Warped t (uniform)</option>
+                  </select>
+              </div>
+              <div class="small" id="protractorReadout" style="margin-top:6px; font-family:monospace; opacity:0.85;"></div>
+
           </div>
           <!-- Derivation Canvas - Added seamlessly below RAU Protractor -->
           <div class="card" style="margin-top: 20px;">
@@ -121,6 +130,7 @@
                       <label><input type="checkbox" id="derivShowGrid" checked> Grid</label>
                       <label><input type="checkbox" id="derivShowLabels" checked> Labels</label>
                       <label><input type="checkbox" id="derivShowConstruction" checked> Construction</label>
+                      <label><input type="checkbox" id="derivUseWarp"> Use warp polynomial (uniform t)</label>
                   </div>
 
                   <div style="display: flex; gap: 8px; margin-top: 12px;">
@@ -141,7 +151,11 @@
                       <strong style="color: var(--accent);">On Unit Circle:</strong><br>
                       rcos = (1-t)/r = <span id="derivCos">0.707</span><br>
                       rsin = t/r = <span id="derivSin">0.707</span><br>
-                      Angle: <span id="derivAngle">45.0°</span>
+                      Angle: <span id="derivAngle">45.0°</span><br><br>
+
+                      <strong style="color: var(--accent);">Target vs Actual:</strong><br>
+                      target (t·90°): <span id="derivTargetAngle">45.0°</span><br>
+                      deviation: <span id="derivDeltaAngle">+0.000°</span>
                   </div>
               </div>
           </div>
