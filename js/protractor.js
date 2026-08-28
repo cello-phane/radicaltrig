@@ -358,17 +358,24 @@ function drawTicks(svg, cx, cy, radius) {
 function drawLabel(svg, t, v, radius, isMajor) {
   const labelMode = ProtractorState.labelMode;
   let text = '';
-  
+
+  // Angle used for BOTH the label text and its rotation must come from
+  // the vector actually being plotted (v), not from RAU.tToAngle(t).
+  // t is the raw, un-warped fraction — using it here silently mislabels
+  // any tick drawn at a warped position (warp/dual mode) with the
+  // linear angle instead of the angle the dot is actually sitting at.
+  const theta = Math.atan2(v.y, v.x);
+
   // Format text based on mode
   switch (labelMode) {
     case 't':
       text = RAU.formatT(t, 3);
       break;
     case 'deg':
-      text = RAU.formatDeg(RAU.tToAngle(t), 1) + '°';
+      text = RAU.formatDeg(theta, 1) + '°';
       break;
     case 'rad':
-      text = RAU.formatRad(RAU.tToAngle(t), 2) + 'r';
+      text = RAU.formatRad(theta, 2) + 'r';
       break;
     default:
       return;
@@ -379,8 +386,9 @@ function drawLabel(svg, t, v, radius, isMajor) {
   const lx = v.x * (radius + labelOffset);
   const ly = -v.y * (radius + labelOffset);
   
-  // Calculate rotation angle (perpendicular to radius)
-  const theta = RAU.tToAngle(t);
+  // Calculate rotation angle (perpendicular to radius) — same theta
+  // as above, kept as one variable so text and rotation can never
+  // drift apart from each other again.
   const rotationDeg = -theta * 180 / Math.PI;
   
   // Create text element
