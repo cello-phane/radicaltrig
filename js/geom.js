@@ -104,6 +104,59 @@ function radicalAtan(value) {
   return value / (1 + value);
 }
 
+// ============================================================================
+// DISPLAY-ONLY WARP MODE
+//
+// The functions above (radicalSine/radicalCosine/radicalTan/rauToRad) are
+// the ground truth and are used everywhere in the app (collision
+// detection, RAUConverter, etc.) — none of that changes here.
+//
+// This block adds a purely cosmetic warp transform used ONLY by the two
+// "Introduction to RAU" display surfaces (the draggable red line + the
+// sidebar readout in vectorDraw.js / uiControls.js), so the person can
+// compare "raw t" against "warp-corrected t" the same way the protractor
+// overlay already lets them compare tick placement.
+// ============================================================================
+const RAU_WARP = (function() {
+  const C1 = 0.78539816339744830962; // = pi/4, exact
+  const C2 = 0.64607158024987317298;
+  const C3 = 0.63401589172451679138;
+  const C4 = 0.68515350354689586789;
+  const C5 = 0.32501622369042378935;
+  const C6 = 1.51901679307446258196;
+
+  function warp11(t) {
+    const v = t - 0.5;
+    const v2 = v * v;
+    let poly = C6;
+    poly = v2 * poly + C5;
+    poly = v2 * poly + C4;
+    poly = v2 * poly + C3;
+    poly = v2 * poly + C2;
+    poly = v2 * poly + C1;
+    return v * poly;
+  }
+
+  return {
+    apply(t) { return 0.5 + warp11(t); }
+  };
+})();
+
+/**
+ * Apply the display-only warp to a full RAU phase (0-4), correcting the
+ * fractional part within whatever quadrant it falls in. Leaves the
+ * integer (quadrant) part untouched.
+ * @param {number} phase - Raw RAU phase
+ * @param {boolean} useWarp - If false, returns phase unchanged
+ * @returns {number} Warp-corrected phase
+ */
+function applyDisplayWarp(phase, useWarp) {
+  if (!useWarp) return phase;
+  const q = Math.floor(phase);
+  const lt = phase - q;
+  return q + RAU_WARP.apply(lt);
+}
+
 /**
  * Compute angle(in radians) between two vectors
  * @param {{x: number, y: number}} u - Reference vector
