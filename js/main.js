@@ -112,7 +112,7 @@ function initializeTheme() {
   // Set initial theme from state
   if (AppState.ui.theme === "dark") {
     document.body.classList.add("dark-mode");
-    themeBtn.textContent = "☀ Light Mode";
+    themeBtn.textContent = "☀️ Light Mode";
   } else {
     themeBtn.textContent = "🌙 Dark Mode";
   }
@@ -121,7 +121,7 @@ function initializeTheme() {
   themeBtn.addEventListener("click", () => {
     const isDark = document.body.classList.toggle("dark-mode");
     AppState.ui.theme = isDark ? "dark" : "light";
-    themeBtn.textContent = isDark ? "☀ Light Mode" : "🌙 Dark Mode";
+    themeBtn.textContent = isDark ? "☀️ Light Mode" : "🌙 Dark Mode";
   });
 }
 
