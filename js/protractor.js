@@ -76,42 +76,13 @@ const RAU = (function() {
   };
 })();
 
-// ============================================================================
-// WARP POLYNOMIAL (rau_warp_11 — confirmed double-precision coefficients)
-//
-// w(t) = 0.5 + warp11(t), where warp11 is an 11th-order odd Horner
-// polynomial in v = t - 0.5. Placing chord ticks at w(t) for evenly
-// spaced t makes the resulting arc angle land close to the ideal
-// uniform grid t*90deg, instead of the raw chord-parameter nonuniformity
-// you get from RAU.tToVector(t) directly. See rkt-mathlib notes /
-// the "uniform vs non-uniform stepping" writeup for the derivation.
-// ============================================================================
-const RAU_WARP = (function() {
-  const C1 = 0.78539816339744830962; // = pi/4, exact
-  const C2 = 0.64607158024987317298;
-  const C3 = 0.63401589172451679138;
-  const C4 = 0.68515350354689586789;
-  const C5 = 0.32501622369042378935;
-  const C6 = 1.51901679307446258196;
-
-  function warp11(t) {
-    const v = t - 0.5;
-    const v2 = v * v;
-    let poly = C6;
-    poly = v2 * poly + C5;
-    poly = v2 * poly + C4;
-    poly = v2 * poly + C3;
-    poly = v2 * poly + C2;
-    poly = v2 * poly + C1;
-    return v * poly;
-  }
-
-  return {
-    // maps a "desired uniform" t in [0,1] to the chord parameter w
-    // that (approximately) lands at true angle t*90 degrees
-    apply(t) { return 0.5 + warp11(t); }
-  };
-})();
+// NOTE: RAU_WARP is no longer defined in this file. geom.js (loaded
+// before this script — see index.html's <script> order) now defines
+// the single shared RAU_WARP + applyDisplayWarp used by the protractor
+// ticks below, the red-line canvas (vectorDraw.js), and the sidebar
+// readout (uiControls.js). Having two `const RAU_WARP` declarations
+// across scripts sharing one global scope would throw a redeclaration
+// error, so this was the one removed in favor of the shared copy.
 
 // ============================================================================
 // PROTRACTOR STATE
@@ -124,6 +95,7 @@ const ProtractorState = {
   currentT: 0.0,
   mode: 'linear' // 'linear' (raw t, non-uniform) or 'warp' (warped t, uniform)
 };
+const PI_HALF = Math.PI / 2;
 
 // ============================================================================
 // SVG UTILITIES
@@ -274,7 +246,6 @@ function drawIdealGrid(svg, cx, cy, radius) {
     }));
   }
 }
-const PI_HALF = Math.PI / 2;
 
 /**
  * Draw tick marks and labels
@@ -294,6 +265,7 @@ function drawTicks(svg, cx, cy, radius) {
     // p is the actual chord parameter used to place the point.
     // In linear mode p === t (raw, non-uniform result).
     // In warp mode p = RAU_WARP.apply(t) (corrected, ~uniform result).
+    // RAU_WARP comes from geom.js (loaded before this file).
     const p = useWarp ? RAU_WARP.apply(t) : t;
     const v = RAU.tToVector(p);
     
@@ -404,9 +376,6 @@ function drawAxisLine(svg, cx, cy, radius) {
 /**
  * Compute and display the max deviation between the actual arc angle
  * and the ideal uniform grid (t * 90 degrees), across all ticks.
- * Only meaningful/shown in warp mode — in linear mode the deviation
- * is large and expected (that's the whole point of the comparison),
- * so the readout focuses on warp mode's residual error instead.
  */
 function updateProtractorReadout() {
   const el = document.getElementById('protractorReadout');
@@ -462,12 +431,26 @@ function initializeEventListeners() {
     });
   }
 
-  // Tick placement mode control (linear t vs warped t)
-  const tickModeSel = document.getElementById('tickMode');
-  if (tickModeSel) {
-    tickModeSel.addEventListener('change', (e) => {
+  // Shared parameter mode control (linear t vs warped t) — this is the
+  // single control for the whole "Introduction to RAU" section: it
+  // drives the protractor ticks here, the draggable red line in
+  // vectorDraw.js, and the sidebar readout in uiControls.js, all via
+  // the one AppState.ui.warpMode flag.
+  const paramModeSel = document.getElementById('paramMode');
+  if (paramModeSel) {
+    paramModeSel.addEventListener('change', (e) => {
+      const useWarp = e.target.value === 'warp';
       ProtractorState.mode = e.target.value;
+      if (window.AppState) {
+        window.AppState.ui.warpMode = useWarp;
+      }
       drawProtractor();
+      if (typeof window.refreshIntroCanvas === 'function') {
+        window.refreshIntroCanvas();
+      }
+      if (typeof window.updateResultsDisplay === 'function') {
+        window.updateResultsDisplay();
+      }
     });
   }
   
@@ -493,4 +476,3 @@ initializeEventListeners();
 
 // Expose RAU utilities globally
 window.RAU = RAU;
-window.RAU_WARP = RAU_WARP;
