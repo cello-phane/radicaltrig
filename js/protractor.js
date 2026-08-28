@@ -256,6 +256,16 @@ function drawIdealGrid(svg, cx, cy, radius) {
  * @param {number} cy - Center Y
  * @param {number} radius - Tick radius
  */
+// Minimum angular gap (degrees) required between two consecutive tick
+// labels before the next candidate is skipped. Index-based decimation
+// (e.g. "every 6th tick") doesn't work here because tick *index* spacing
+// and tick *angle* spacing are only the same thing in warp mode — in
+// linear mode they diverge on purpose (that's the whole nonuniformity
+// this app demonstrates), so labels near the quadrant edges bunch up in
+// real degrees even when evenly spaced by index. Filtering by the
+// actual rendered angle fixes that regardless of mode.
+const MIN_LABEL_GAP_DEG = 7;
+
 function drawOneTick(svg, v, radius, isMajor, color) {
   const tickLength = isMajor ? 8 : 3;
   const outer = { x: v.x * radius, y: -v.y * radius };
@@ -270,8 +280,26 @@ function drawOneTick(svg, v, radius, isMajor, color) {
 function drawTicks(svg, cx, cy, radius) {
   const ticks = ProtractorState.ticks;
   const labelMode = ProtractorState.labelMode;
-  const labelInterval = Math.max(1, Math.floor(ticks / 12));
   const mode = ProtractorState.mode;
+
+  // Tracks the angle (degrees) of the last label actually drawn, so
+  // each new candidate can be checked against real angular distance
+  // rather than tick index. Reset per draw call (i.e. per full sweep
+  // from t=0 to t=1), and endpoints (t=0, t=1) always draw regardless
+  // of the gap, so the quadrant boundaries are never silently dropped.
+  let lastLabelAngleDeg = null;
+
+  function maybeLabel(t, v, isMajor) {
+    if (labelMode === 'none') return;
+    const angleDeg = Math.atan2(v.y, v.x) * 180 / Math.PI;
+    const isEndpoint = (t === 0 || t === 1);
+    if (!isEndpoint && lastLabelAngleDeg !== null &&
+        Math.abs(angleDeg - lastLabelAngleDeg) < MIN_LABEL_GAP_DEG) {
+      return; // too close to the previous label — skip to avoid overlap
+    }
+    drawLabel(svg, t, v, radius, isMajor);
+    lastLabelAngleDeg = angleDeg;
+  }
 
   for (let i = 0; i <= ticks; i++) {
     const t = i / ticks;
@@ -295,7 +323,9 @@ function drawTicks(svg, cx, cy, radius) {
         stroke: '#ff8800', 'stroke-width': 1.5, opacity: 0.9
       }));
 
-      if (labelMode !== 'none') drawLabel(svg, t, vWarp, radius, true);
+      // Label at the warped position — that's the one meant to read
+      // cleanly; the linear tick right next to it is the comparison.
+      maybeLabel(t, vWarp, true);
       continue;
     }
 
@@ -308,11 +338,12 @@ function drawTicks(svg, cx, cy, radius) {
 
     drawOneTick(svg, v, radius, isMajor, isMajor ? 'rgba(46,226,196,0.95)' : 'rgba(255,255,255,0.12)');
 
-    // Label always shows t (the intended fraction), not p, since
-    // that's what the person set on the dial
-    if (labelMode !== 'none' && (i === 0 || i === ticks || i % labelInterval === 0)) {
-      drawLabel(svg, t, v, radius, isMajor);
-    }
+    // Every tick is a label candidate — maybeLabel decides whether it's
+    // actually far enough (in degrees) from the last drawn label to be
+    // worth showing. This naturally yields more labels in the sparse
+    // middle of the arc and fewer near the crowded edges, instead of a
+    // fixed count that looks fine in one region and overlaps in another.
+    maybeLabel(t, v, isMajor);
   }
 }
 
