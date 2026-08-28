@@ -178,7 +178,9 @@ function drawProtractor() {
   drawArc(svg, cx, cy, radius);
 
   // In warp mode, draw the faint ideal-uniform reference grid first so
-  // the real ticks draw on top of it
+  // the real ticks draw on top of it. Skipped in dual mode — the orange
+  // gap segments are already the comparison, a third overlay would just
+  // add clutter.
   if (ProtractorState.mode === 'warp') {
     drawIdealGrid(svg, cx, cy, radius);
   }
@@ -254,50 +256,62 @@ function drawIdealGrid(svg, cx, cy, radius) {
  * @param {number} cy - Center Y
  * @param {number} radius - Tick radius
  */
+function drawOneTick(svg, v, radius, isMajor, color) {
+  const tickLength = isMajor ? 8 : 3;
+  const outer = { x: v.x * radius, y: -v.y * radius };
+  const inner = { x: v.x * (radius - tickLength), y: -v.y * (radius - tickLength) };
+  svg.appendChild(createSVGElement('line', {
+    x1: outer.x, y1: outer.y, x2: inner.x, y2: inner.y,
+    stroke: color,
+    'stroke-width': isMajor ? 2 : 1
+  }));
+}
+
 function drawTicks(svg, cx, cy, radius) {
   const ticks = ProtractorState.ticks;
   const labelMode = ProtractorState.labelMode;
   const labelInterval = Math.max(1, Math.floor(ticks / 12));
-  const useWarp = ProtractorState.mode === 'warp';
-  
+  const mode = ProtractorState.mode;
+
   for (let i = 0; i <= ticks; i++) {
     const t = i / ticks;
+    const isMajor = i % 4 === 0;
+
+    // Dual mode: at major ticks, draw BOTH linear and warped placement
+    // plus an orange segment showing the gap between them. Minor ticks
+    // stay on the plain linear backdrop to avoid clutter (12 orange
+    // segments already tells the story — 72 would just be noise).
+    if (mode === 'dual' && isMajor) {
+      const vLin = RAU.tToVector(t);
+      const vWarp = RAU.tToVector(RAU_WARP.apply(t));
+
+      drawOneTick(svg, vLin, radius, true, 'rgba(120,170,255,0.95)');
+      drawOneTick(svg, vWarp, radius, true, 'rgba(46,226,196,0.95)');
+
+      const outerLin = { x: vLin.x * radius, y: -vLin.y * radius };
+      const outerWarp = { x: vWarp.x * radius, y: -vWarp.y * radius };
+      svg.appendChild(createSVGElement('line', {
+        x1: outerLin.x, y1: outerLin.y, x2: outerWarp.x, y2: outerWarp.y,
+        stroke: '#ff8800', 'stroke-width': 1.5, opacity: 0.9
+      }));
+
+      if (labelMode !== 'none') drawLabel(svg, t, vWarp, radius, true);
+      continue;
+    }
+
     // p is the actual chord parameter used to place the point.
-    // In linear mode p === t (raw, non-uniform result).
-    // In warp mode p = RAU_WARP.apply(t) (corrected, ~uniform result).
+    // Linear mode / dual-minor-ticks: p === t (raw, non-uniform).
+    // Warp mode: p = RAU_WARP.apply(t) (corrected, ~uniform).
     // RAU_WARP comes from geom.js (loaded before this file).
-    const p = useWarp ? RAU_WARP.apply(t) : t;
+    const p = (mode === 'warp') ? RAU_WARP.apply(t) : t;
     const v = RAU.tToVector(p);
-    
-    // Outer point (on arc)
-    const outer = {
-      x: v.x * radius,
-      y: -v.y * radius // Negative Y for SVG coordinate system
-    };
-    
-    // Inner point (tick start)
-    const tickLength = (i % 4 === 0) ? 8 : 3;
-    const inner = {
-      x: v.x * (radius - tickLength),
-      y: -v.y * (radius - tickLength)
-    };
-    
-    // Draw tick line
-    const line = createSVGElement('line', {
-      x1: outer.x,
-      y1: outer.y,
-      x2: inner.x,
-      y2: inner.y,
-      stroke: (i % 4 === 0) ? 'rgba(46,226,196,0.95)' : 'rgba(255,255,255,0.12)',
-      'stroke-width': (i % 4 === 0) ? 2 : 1
-    });
-    
-    svg.appendChild(line);
-    
-    // Draw label if applicable — label always shows t (the intended
-    // fraction), not p, since that's what the person set on the dial
+
+    drawOneTick(svg, v, radius, isMajor, isMajor ? 'rgba(46,226,196,0.95)' : 'rgba(255,255,255,0.12)');
+
+    // Label always shows t (the intended fraction), not p, since
+    // that's what the person set on the dial
     if (labelMode !== 'none' && (i === 0 || i === ticks || i % labelInterval === 0)) {
-      drawLabel(svg, t, v, radius, i % 4 === 0);
+      drawLabel(svg, t, v, radius, isMajor);
     }
   }
 }
@@ -382,7 +396,22 @@ function updateProtractorReadout() {
   if (!el) return;
 
   const ticks = ProtractorState.ticks;
-  const useWarp = ProtractorState.mode === 'warp';
+  const mode = ProtractorState.mode;
+
+  if (mode === 'dual') {
+    let maxGap = 0;
+    for (let i = 0; i <= ticks; i++) {
+      const t = i / ticks;
+      const linDeg = RAU.tToAngle(t) * 180 / Math.PI;
+      const warpDeg = RAU.tToAngle(RAU_WARP.apply(t)) * 180 / Math.PI;
+      const gap = Math.abs(warpDeg - linDeg);
+      if (gap > maxGap) maxGap = gap;
+    }
+    el.textContent = `dual · max gap between linear and warped placement: ${maxGap.toFixed(2)}° (orange segments show it directly at major ticks)`;
+    return;
+  }
+
+  const useWarp = mode === 'warp';
   let maxDeltaDeg = 0;
 
   for (let i = 0; i <= ticks; i++) {
@@ -431,18 +460,18 @@ function initializeEventListeners() {
     });
   }
 
-  // Shared parameter mode control (linear t vs warped t) — this is the
+  // Shared parameter mode control (linear / warp / dual) — this is the
   // single control for the whole "Introduction to RAU" section: it
   // drives the protractor ticks here, the draggable red line in
-  // vectorDraw.js, and the sidebar readout in uiControls.js, all via
-  // the one AppState.ui.warpMode flag.
+  // vectorDraw.js, the sidebar readout in uiControls.js, AND the
+  // Diagonal Derivation canvas in derivation.js, all via the one
+  // AppState.ui.paramMode field.
   const paramModeSel = document.getElementById('paramMode');
   if (paramModeSel) {
     paramModeSel.addEventListener('change', (e) => {
-      const useWarp = e.target.value === 'warp';
       ProtractorState.mode = e.target.value;
       if (window.AppState) {
-        window.AppState.ui.warpMode = useWarp;
+        window.AppState.ui.paramMode = e.target.value;
       }
       drawProtractor();
       if (typeof window.refreshIntroCanvas === 'function') {
@@ -450,6 +479,9 @@ function initializeEventListeners() {
       }
       if (typeof window.updateResultsDisplay === 'function') {
         window.updateResultsDisplay();
+      }
+      if (typeof window.drawDerivation === 'function') {
+        window.drawDerivation();
       }
     });
   }
