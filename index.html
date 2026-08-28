@@ -109,9 +109,10 @@
                   <select id="paramMode">
                       <option value="linear">Linear t (non-uniform)</option>
                       <option value="warp">Warped t (uniform)</option>
+                      <option value="dual">Both (show difference)</option>
                   </select>
               </div>
-              <div class="small" style="opacity:0.7; margin-top:2px;">Applies to the ticks below, the red line above, and the sidebar readout.</div>
+              <div class="small" style="opacity:0.7; margin-top:2px;">Applies to the ticks below, the red line above, the sidebar readout, and the Diagonal Derivation card below.</div>
               <div class="small" id="protractorReadout" style="margin-top:6px; font-family:monospace; opacity:0.85;"></div>
 
           </div>
@@ -131,8 +132,9 @@
                       <label><input type="checkbox" id="derivShowGrid" checked> Grid</label>
                       <label><input type="checkbox" id="derivShowLabels" checked> Labels</label>
                       <label><input type="checkbox" id="derivShowConstruction" checked> Construction</label>
-                      <label><input type="checkbox" id="derivUseWarp"> Use warp polynomial (uniform t)</label>
+                      <label><input type="checkbox" id="derivShowAllQuadrants"> Show all quadrants</label>
                   </div>
+                  <div class="small" style="opacity:0.7; margin: 4px 0 8px;">Linear / warped / dual follows the "Parameter mode" control in the card above.</div>
 
                   <div style="display: flex; gap: 8px; margin-top: 12px;">
                       <button onclick="setDerivT(0)">t=0</button>
@@ -156,7 +158,7 @@
 
                       <strong style="color: var(--accent);">Target vs Actual:</strong><br>
                       target (t·90°): <span id="derivTargetAngle">45.0°</span><br>
-                      deviation: <span id="derivDeltaAngle">+0.000°</span>
+                      <span id="derivDeltaLabel">deviation</span>: <span id="derivDeltaAngle">+0.000°</span>
                   </div>
               </div>
           </div>
