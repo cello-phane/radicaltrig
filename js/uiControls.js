@@ -265,7 +265,15 @@ function updateResultsDisplay() {
  * @param {HTMLElement} resultsElement - Results container
  */
 function displaySection1Results(resultsElement) {
-  const phase = AppState.section1.phase;
+  const rawPhase = AppState.section1.phase;
+
+  // Display-only warp: shares the same toggle (and the same
+  // RAU_WARP/applyDisplayWarp transform from geom.js) as the red line
+  // in vectorDraw.js and the protractor tick overlay in protractor.js,
+  // so all three surfaces always agree on which mode is active.
+  const uiState = getUIState();
+  const useWarp = !!(uiState && uiState.warpMode);
+  const phase = applyDisplayWarp(rawPhase, useWarp);
 
   const rs = radicalSine(phase);
   const rc = radicalCosine(phase);
@@ -275,7 +283,11 @@ function displaySection1Results(resultsElement) {
 
   const tanDisplay = Math.abs(rt) > 1e6 ? "undefined" : formatValue(rt);
 
-  resultsElement.textContent = `RAU Phase = ${formatValue(phase)}
+  const modeLine = useWarp
+    ? `Mode = warped t  (raw t = ${formatValue(rawPhase)})\n`
+    : `Mode = linear t  (raw, uncorrected)\n`;
+
+  resultsElement.textContent = `${modeLine}RAU Phase = ${formatValue(phase)}
 Radian = ${formatValue(radian)} (${degrees.toFixed(5)}°)
 _______________________________
 tan(θ) = ${tanDisplay}
