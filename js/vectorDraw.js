@@ -86,30 +86,71 @@ function initRAUCanvas() {
    */
   function drawRadius() {
     const rawPhase = AppState.section1.phase;
-    // Display-only warp: when warpMode is on, the red line shows where
-    // the warp-corrected chord parameter lands instead of the raw one.
-    // See geom.js's applyDisplayWarp / RAU_WARP for the shared transform
-    // (same one used by the protractor tick overlay).
     const uiState = getUIState();
-    const useWarp = !!(uiState && uiState.warpMode);
+    const mode = (uiState && uiState.paramMode) || 'linear';
+
+    function pointFor(phase) {
+      const components = getRotationComponents(phase);
+      return { x: cx + components.cos * radius, y: cy - components.sin * radius };
+    }
+
+    if (mode === 'dual') {
+      // Linear (raw t) and warped (corrected t) points shown together,
+      // connected by an orange segment showing the gap between them —
+      // same idea as the Q0 detail in derivation.js.
+      const linPt = pointFor(rawPhase);
+      const warpPt = pointFor(applyDisplayWarp(rawPhase, true));
+
+      ctx.strokeStyle = "#4488ff";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.lineTo(linPt.x, linPt.y);
+      ctx.stroke();
+      ctx.fillStyle = "#4488ff";
+      ctx.beginPath();
+      ctx.arc(linPt.x, linPt.y, CANVAS_CONFIG.KNOB_RADIUS, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.strokeStyle = "#a366ff";
+      ctx.lineWidth = 2;
+      ctx.setLineDash([5, 4]);
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.lineTo(warpPt.x, warpPt.y);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = "#a366ff";
+      ctx.beginPath();
+      ctx.arc(warpPt.x, warpPt.y, CANVAS_CONFIG.KNOB_RADIUS, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.strokeStyle = "#ff8800";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(linPt.x, linPt.y);
+      ctx.lineTo(warpPt.x, warpPt.y);
+      ctx.stroke();
+      return;
+    }
+
+    // Display-only warp: when mode is 'warp', the red line shows where
+    // the warp-corrected chord parameter lands instead of the raw one.
+    // See geom.js's applyDisplayWarp / RAU_WARP for the shared transform.
+    const useWarp = mode === 'warp';
     const phase = applyDisplayWarp(rawPhase, useWarp);
-    const components = getRotationComponents(phase);
+    const pt = pointFor(phase);
 
-    const px = cx + components.cos * radius;
-    const py = cy - components.sin * radius;
-
-    // Radius line
     ctx.strokeStyle = "#ff4444";
     ctx.lineWidth = 2.5;
     ctx.beginPath();
     ctx.moveTo(cx, cy);
-    ctx.lineTo(px, py);
+    ctx.lineTo(pt.x, pt.y);
     ctx.stroke();
 
-    // Knob
     ctx.fillStyle = "#ff4444";
     ctx.beginPath();
-    ctx.arc(px, py, CANVAS_CONFIG.KNOB_RADIUS, 0, Math.PI * 2);
+    ctx.arc(pt.x, pt.y, CANVAS_CONFIG.KNOB_RADIUS, 0, Math.PI * 2);
     ctx.fill();
   }
 
