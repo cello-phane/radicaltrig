@@ -76,6 +76,14 @@ const RAU = (function() {
   };
 })();
 
+// NOTE: RAU_WARP is no longer defined in this file. geom.js (loaded
+// before this script — see index.html's <script> order) now defines
+// the single shared RAU_WARP + applyDisplayWarp used by the protractor
+// ticks below, the red-line canvas (vectorDraw.js), and the sidebar
+// readout (uiControls.js). Having two `const RAU_WARP` declarations
+// across scripts sharing one global scope would throw a redeclaration
+// error, so this was the one removed in favor of the shared copy.
+
 // ============================================================================
 // PROTRACTOR STATE
 // ============================================================================
@@ -84,8 +92,10 @@ const ProtractorState = {
   ticks: 72,
   radius: 117,
   labelMode: 't', // 't', 'deg', 'rad', or 'none'
-  currentT: 0.0
+  currentT: 0.0,
+  mode: 'linear' // 'linear' (raw t, non-uniform) or 'warp' (warped t, uniform)
 };
+const PI_HALF = Math.PI / 2;
 
 // ============================================================================
 // SVG UTILITIES
@@ -166,12 +176,22 @@ function drawProtractor() {
   
   // Draw quarter-circle arc (0° to 90°)
   drawArc(svg, cx, cy, radius);
+
+  // In warp mode, draw the faint ideal-uniform reference grid first so
+  // the real ticks draw on top of it. Skipped in dual mode — the orange
+  // gap segments are already the comparison, a third overlay would just
+  // add clutter.
+  if (ProtractorState.mode === 'warp') {
+    drawIdealGrid(svg, cx, cy, radius);
+  }
   
   // Draw tick marks
   drawTicks(svg, cx, cy, radius);
   
   // Draw axis reference line
   drawAxisLine(svg, cx, cy, radius);
+
+  updateProtractorReadout();
 }
 
 /**
@@ -200,50 +220,130 @@ function drawArc(svg, cx, cy, radius) {
 }
 
 /**
+ * Draw faint reference ticks at the ideal uniform-angle grid
+ * (t * 90 degrees, evenly spaced) so the warp-mode ticks can be
+ * visually compared against the target they're trying to hit.
+ * @param {SVGSVGElement} svg - SVG container
+ * @param {number} cx - Center X
+ * @param {number} cy - Center Y
+ * @param {number} radius - Arc radius
+ */
+function drawIdealGrid(svg, cx, cy, radius) {
+  const ticks = ProtractorState.ticks;
+  const majorEvery = Math.max(1, Math.floor(ticks / 12)); // ~12 reference marks
+
+  for (let i = 0; i <= ticks; i += majorEvery) {
+    const t = i / ticks;
+    const theta = t * PI_HALF;
+    const gx1 = Math.cos(theta) * (radius + 10);
+    const gy1 = -Math.sin(theta) * (radius + 10);
+    const gx2 = Math.cos(theta) * (radius - 6);
+    const gy2 = -Math.sin(theta) * (radius - 6);
+
+    svg.appendChild(createSVGElement('line', {
+      x1: gx1, y1: gy1, x2: gx2, y2: gy2,
+      stroke: 'rgba(255,255,255,0.18)',
+      'stroke-width': 1,
+      'stroke-dasharray': '2 3'
+    }));
+  }
+}
+
+/**
  * Draw tick marks and labels
  * @param {SVGSVGElement} svg - SVG container
  * @param {number} cx - Center X
  * @param {number} cy - Center Y
  * @param {number} radius - Tick radius
  */
+// Minimum angular gap (degrees) required between two consecutive tick
+// labels before the next candidate is skipped. Index-based decimation
+// (e.g. "every 6th tick") doesn't work here because tick *index* spacing
+// and tick *angle* spacing are only the same thing in warp mode — in
+// linear mode they diverge on purpose (that's the whole nonuniformity
+// this app demonstrates), so labels near the quadrant edges bunch up in
+// real degrees even when evenly spaced by index. Filtering by the
+// actual rendered angle fixes that regardless of mode.
+const MIN_LABEL_GAP_DEG = 7;
+
+function drawOneTick(svg, v, radius, isMajor, color) {
+  const tickLength = isMajor ? 8 : 3;
+  const outer = { x: v.x * radius, y: -v.y * radius };
+  const inner = { x: v.x * (radius - tickLength), y: -v.y * (radius - tickLength) };
+  svg.appendChild(createSVGElement('line', {
+    x1: outer.x, y1: outer.y, x2: inner.x, y2: inner.y,
+    stroke: color,
+    'stroke-width': isMajor ? 2 : 1
+  }));
+}
+
 function drawTicks(svg, cx, cy, radius) {
   const ticks = ProtractorState.ticks;
   const labelMode = ProtractorState.labelMode;
-  const labelInterval = Math.max(1, Math.floor(ticks / 12));
-  
+  const mode = ProtractorState.mode;
+
+  // Tracks the angle (degrees) of the last label actually drawn, so
+  // each new candidate can be checked against real angular distance
+  // rather than tick index. Reset per draw call (i.e. per full sweep
+  // from t=0 to t=1), and endpoints (t=0, t=1) always draw regardless
+  // of the gap, so the quadrant boundaries are never silently dropped.
+  let lastLabelAngleDeg = null;
+
+  function maybeLabel(t, v, isMajor) {
+    if (labelMode === 'none') return;
+    const angleDeg = Math.atan2(v.y, v.x) * 180 / Math.PI;
+    const isEndpoint = (t === 0 || t === 1);
+    if (!isEndpoint && lastLabelAngleDeg !== null &&
+        Math.abs(angleDeg - lastLabelAngleDeg) < MIN_LABEL_GAP_DEG) {
+      return; // too close to the previous label — skip to avoid overlap
+    }
+    drawLabel(svg, t, v, radius, isMajor);
+    lastLabelAngleDeg = angleDeg;
+  }
+
   for (let i = 0; i <= ticks; i++) {
     const t = i / ticks;
-    const v = RAU.tToVector(t);
-    
-    // Outer point (on arc)
-    const outer = {
-      x: v.x * radius,
-      y: -v.y * radius // Negative Y for SVG coordinate system
-    };
-    
-    // Inner point (tick start)
-    const tickLength = (i % 4 === 0) ? 8 : 3;
-    const inner = {
-      x: v.x * (radius - tickLength),
-      y: -v.y * (radius - tickLength)
-    };
-    
-    // Draw tick line
-    const line = createSVGElement('line', {
-      x1: outer.x,
-      y1: outer.y,
-      x2: inner.x,
-      y2: inner.y,
-      stroke: (i % 4 === 0) ? 'rgba(46,226,196,0.95)' : 'rgba(255,255,255,0.12)',
-      'stroke-width': (i % 4 === 0) ? 2 : 1
-    });
-    
-    svg.appendChild(line);
-    
-    // Draw label if applicable
-    if (labelMode !== 'none' && (i === 0 || i === ticks || i % labelInterval === 0)) {
-      drawLabel(svg, t, v, radius, i % 4 === 0);
+    const isMajor = i % 4 === 0;
+
+    // Dual mode: at major ticks, draw BOTH linear and warped placement
+    // plus an orange segment showing the gap between them. Minor ticks
+    // stay on the plain linear backdrop to avoid clutter (12 orange
+    // segments already tells the story — 72 would just be noise).
+    if (mode === 'dual' && isMajor) {
+      const vLin = RAU.tToVector(t);
+      const vWarp = RAU.tToVector(RAU_WARP.apply(t));
+
+      drawOneTick(svg, vLin, radius, true, 'rgba(120,170,255,0.95)');
+      drawOneTick(svg, vWarp, radius, true, 'rgba(46,226,196,0.95)');
+
+      const outerLin = { x: vLin.x * radius, y: -vLin.y * radius };
+      const outerWarp = { x: vWarp.x * radius, y: -vWarp.y * radius };
+      svg.appendChild(createSVGElement('line', {
+        x1: outerLin.x, y1: outerLin.y, x2: outerWarp.x, y2: outerWarp.y,
+        stroke: '#ff8800', 'stroke-width': 1.5, opacity: 0.9
+      }));
+
+      // Label at the warped position — that's the one meant to read
+      // cleanly; the linear tick right next to it is the comparison.
+      maybeLabel(t, vWarp, true);
+      continue;
     }
+
+    // p is the actual chord parameter used to place the point.
+    // Linear mode / dual-minor-ticks: p === t (raw, non-uniform).
+    // Warp mode: p = RAU_WARP.apply(t) (corrected, ~uniform).
+    // RAU_WARP comes from geom.js (loaded before this file).
+    const p = (mode === 'warp') ? RAU_WARP.apply(t) : t;
+    const v = RAU.tToVector(p);
+
+    drawOneTick(svg, v, radius, isMajor, isMajor ? 'rgba(46,226,196,0.95)' : 'rgba(255,255,255,0.12)');
+
+    // Every tick is a label candidate — maybeLabel decides whether it's
+    // actually far enough (in degrees) from the last drawn label to be
+    // worth showing. This naturally yields more labels in the sparse
+    // middle of the arc and fewer near the crowded edges, instead of a
+    // fixed count that looks fine in one region and overlaps in another.
+    maybeLabel(t, v, isMajor);
   }
 }
 
@@ -258,17 +358,24 @@ function drawTicks(svg, cx, cy, radius) {
 function drawLabel(svg, t, v, radius, isMajor) {
   const labelMode = ProtractorState.labelMode;
   let text = '';
-  
+
+  // Angle used for BOTH the label text and its rotation must come from
+  // the vector actually being plotted (v), not from RAU.tToAngle(t).
+  // t is the raw, un-warped fraction — using it here silently mislabels
+  // any tick drawn at a warped position (warp/dual mode) with the
+  // linear angle instead of the angle the dot is actually sitting at.
+  const theta = Math.atan2(v.y, v.x);
+
   // Format text based on mode
   switch (labelMode) {
     case 't':
       text = RAU.formatT(t, 3);
       break;
     case 'deg':
-      text = RAU.formatDeg(RAU.tToAngle(t), 1) + '°';
+      text = RAU.formatDeg(theta, 1) + '°';
       break;
     case 'rad':
-      text = RAU.formatRad(RAU.tToAngle(t), 2) + 'r';
+      text = RAU.formatRad(theta, 2) + 'r';
       break;
     default:
       return;
@@ -279,8 +386,9 @@ function drawLabel(svg, t, v, radius, isMajor) {
   const lx = v.x * (radius + labelOffset);
   const ly = -v.y * (radius + labelOffset);
   
-  // Calculate rotation angle (perpendicular to radius)
-  const theta = RAU.tToAngle(t);
+  // Calculate rotation angle (perpendicular to radius) — same theta
+  // as above, kept as one variable so text and rotation can never
+  // drift apart from each other again.
   const rotationDeg = -theta * 180 / Math.PI;
   
   // Create text element
@@ -318,6 +426,47 @@ function drawAxisLine(svg, cx, cy, radius) {
   svg.appendChild(line);
 }
 
+/**
+ * Compute and display the max deviation between the actual arc angle
+ * and the ideal uniform grid (t * 90 degrees), across all ticks.
+ */
+function updateProtractorReadout() {
+  const el = document.getElementById('protractorReadout');
+  if (!el) return;
+
+  const ticks = ProtractorState.ticks;
+  const mode = ProtractorState.mode;
+
+  if (mode === 'dual') {
+    let maxGap = 0;
+    for (let i = 0; i <= ticks; i++) {
+      const t = i / ticks;
+      const linDeg = RAU.tToAngle(t) * 180 / Math.PI;
+      const warpDeg = RAU.tToAngle(RAU_WARP.apply(t)) * 180 / Math.PI;
+      const gap = Math.abs(warpDeg - linDeg);
+      if (gap > maxGap) maxGap = gap;
+    }
+    el.textContent = `dual · max gap between linear and warped placement: ${maxGap.toFixed(2)}° (orange segments show it directly at major ticks)`;
+    return;
+  }
+
+  const useWarp = mode === 'warp';
+  let maxDeltaDeg = 0;
+
+  for (let i = 0; i <= ticks; i++) {
+    const t = i / ticks;
+    const p = useWarp ? RAU_WARP.apply(t) : t;
+    const actualDeg = RAU.tToAngle(p) * 180 / Math.PI;
+    const targetDeg = t * 90;
+    const d = Math.abs(actualDeg - targetDeg);
+    if (d > maxDeltaDeg) maxDeltaDeg = d;
+  }
+
+  el.textContent = useWarp
+    ? `warped t · max deviation from ideal grid: ${maxDeltaDeg.toFixed(4)}°`
+    : `linear t · max deviation from ideal grid: ${maxDeltaDeg.toFixed(2)}° (uncorrected)`;
+}
+
 // ============================================================================
 // EVENT HANDLERS
 // ============================================================================
@@ -347,6 +496,32 @@ function initializeEventListeners() {
     labelMode.addEventListener('change', (e) => {
       ProtractorState.labelMode = e.target.value;
       drawProtractor();
+    });
+  }
+
+  // Shared parameter mode control (linear / warp / dual) — this is the
+  // single control for the whole "Introduction to RAU" section: it
+  // drives the protractor ticks here, the draggable red line in
+  // vectorDraw.js, the sidebar readout in uiControls.js, AND the
+  // Diagonal Derivation canvas in derivation.js, all via the one
+  // AppState.ui.paramMode field.
+  const paramModeSel = document.getElementById('paramMode');
+  if (paramModeSel) {
+    paramModeSel.addEventListener('change', (e) => {
+      ProtractorState.mode = e.target.value;
+      if (window.AppState) {
+        window.AppState.ui.paramMode = e.target.value;
+      }
+      drawProtractor();
+      if (typeof window.refreshIntroCanvas === 'function') {
+        window.refreshIntroCanvas();
+      }
+      if (typeof window.updateResultsDisplay === 'function') {
+        window.updateResultsDisplay();
+      }
+      if (typeof window.drawDerivation === 'function') {
+        window.drawDerivation();
+      }
     });
   }
   

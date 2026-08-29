@@ -85,24 +85,72 @@ function initRAUCanvas() {
    * Draw radius and knob at current phase
    */
   function drawRadius() {
-    const phase = AppState.section1.phase;
-    const components = getRotationComponents(phase);
+    const rawPhase = AppState.section1.phase;
+    const uiState = getUIState();
+    const mode = (uiState && uiState.paramMode) || 'linear';
 
-    const px = cx + components.cos * radius;
-    const py = cy - components.sin * radius;
+    function pointFor(phase) {
+      const components = getRotationComponents(phase);
+      return { x: cx + components.cos * radius, y: cy - components.sin * radius };
+    }
 
-    // Radius line
+    if (mode === 'dual') {
+      // Linear (raw t) and warped (corrected t) points shown together,
+      // connected by an orange segment showing the gap between them —
+      // same idea as the Q0 detail in derivation.js.
+      const linPt = pointFor(rawPhase);
+      const warpPt = pointFor(applyDisplayWarp(rawPhase, true));
+
+      ctx.strokeStyle = "#4488ff";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.lineTo(linPt.x, linPt.y);
+      ctx.stroke();
+      ctx.fillStyle = "#4488ff";
+      ctx.beginPath();
+      ctx.arc(linPt.x, linPt.y, CANVAS_CONFIG.KNOB_RADIUS, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.strokeStyle = "#a366ff";
+      ctx.lineWidth = 2;
+      ctx.setLineDash([5, 4]);
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.lineTo(warpPt.x, warpPt.y);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = "#a366ff";
+      ctx.beginPath();
+      ctx.arc(warpPt.x, warpPt.y, CANVAS_CONFIG.KNOB_RADIUS, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.strokeStyle = "#ff8800";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(linPt.x, linPt.y);
+      ctx.lineTo(warpPt.x, warpPt.y);
+      ctx.stroke();
+      return;
+    }
+
+    // Display-only warp: when mode is 'warp', the red line shows where
+    // the warp-corrected chord parameter lands instead of the raw one.
+    // See geom.js's applyDisplayWarp / RAU_WARP for the shared transform.
+    const useWarp = mode === 'warp';
+    const phase = applyDisplayWarp(rawPhase, useWarp);
+    const pt = pointFor(phase);
+
     ctx.strokeStyle = "#ff4444";
     ctx.lineWidth = 2.5;
     ctx.beginPath();
     ctx.moveTo(cx, cy);
-    ctx.lineTo(px, py);
+    ctx.lineTo(pt.x, pt.y);
     ctx.stroke();
 
-    // Knob
     ctx.fillStyle = "#ff4444";
     ctx.beginPath();
-    ctx.arc(px, py, CANVAS_CONFIG.KNOB_RADIUS, 0, Math.PI * 2);
+    ctx.arc(pt.x, pt.y, CANVAS_CONFIG.KNOB_RADIUS, 0, Math.PI * 2);
     ctx.fill();
   }
 
@@ -187,6 +235,11 @@ function initRAUCanvas() {
     updateResultsDisplay();
     draw();
   });
+
+  // Expose a redraw hook so other controls (e.g. the shared
+  // linear/warp mode selector in protractor.js) can refresh this
+  // canvas without needing access to this closure's internals.
+  window.refreshIntroCanvas = draw;
 
   // Initial draw
   draw();

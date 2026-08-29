@@ -265,22 +265,55 @@ function updateResultsDisplay() {
  * @param {HTMLElement} resultsElement - Results container
  */
 function displaySection1Results(resultsElement) {
-  const phase = AppState.section1.phase;
+  const rawPhase = AppState.section1.phase;
 
-  const rs = radicalSine(phase);
-  const rc = radicalCosine(phase);
-  const rt = radicalTan(phase);
-  const radian = rauToRad(phase);
-  const degrees = radian * (180 / Math.PI);
+  // Display-only warp: shares the same toggle (and the same
+  // RAU_WARP/applyDisplayWarp transform from geom.js) as the red line
+  // in vectorDraw.js and the protractor tick overlay in protractor.js,
+  // so all surfaces always agree on which mode is active.
+  const uiState = getUIState();
+  const mode = (uiState && uiState.paramMode) || 'linear';
 
-  const tanDisplay = Math.abs(rt) > 1e6 ? "undefined" : formatValue(rt);
+  function block(phase) {
+    const rs = radicalSine(phase);
+    const rc = radicalCosine(phase);
+    const rt = radicalTan(phase);
+    const radian = rauToRad(phase);
+    const degrees = radian * (180 / Math.PI);
+    const tanDisplay = Math.abs(rt) > 1e6 ? "undefined" : formatValue(rt);
+    return { phase, rs, rc, rt, radian, degrees, tanDisplay };
+  }
 
-  resultsElement.textContent = `RAU Phase = ${formatValue(phase)}
-Radian = ${formatValue(radian)} (${degrees.toFixed(5)}°)
+  if (mode === 'dual') {
+    const lin = block(rawPhase);
+    const warp = block(applyDisplayWarp(rawPhase, true));
+    const deltaDeg = warp.degrees - lin.degrees;
+
+    resultsElement.textContent = `Mode = dual (linear vs warped)
+raw t = ${formatValue(rawPhase)}
 _______________________________
-tan(θ) = ${tanDisplay}
-sin(θ) = ${formatValue(rs)}
-cos(θ) = ${formatValue(rc)}`;
+LINEAR   RAU=${formatValue(lin.phase)}  ${lin.degrees.toFixed(5)}°
+  sin=${formatValue(lin.rs)} cos=${formatValue(lin.rc)} tan=${lin.tanDisplay}
+WARPED   RAU=${formatValue(warp.phase)}  ${warp.degrees.toFixed(5)}°
+  sin=${formatValue(warp.rs)} cos=${formatValue(warp.rc)} tan=${warp.tanDisplay}
+_______________________________
+Δ angle (warp - linear) = ${(deltaDeg >= 0 ? '+' : '')}${deltaDeg.toFixed(5)}°`;
+    return;
+  }
+
+  const useWarp = mode === 'warp';
+  const b = block(applyDisplayWarp(rawPhase, useWarp));
+
+  const modeLine = useWarp
+    ? `Mode = warped t  (raw t = ${formatValue(rawPhase)})\n`
+    : `Mode = linear t  (raw, uncorrected)\n`;
+
+  resultsElement.textContent = `${modeLine}RAU Phase = ${formatValue(b.phase)}
+Radian = ${formatValue(b.radian)} (${b.degrees.toFixed(5)}°)
+_______________________________
+tan(θ) = ${b.tanDisplay}
+sin(θ) = ${formatValue(b.rs)}
+cos(θ) = ${formatValue(b.rc)}`;
 }
 
 /**

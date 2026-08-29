@@ -33,6 +33,16 @@ const AppState = {
     defaultMode: true,
     currentSection: "section1",
     theme: "light", // Store in memory instead of localStorage
+    // Shared display-only mode for the "Introduction to RAU" section:
+    // 'linear' = raw t (non-uniform angle spacing, the ground truth)
+    // 'warp'   = warp-corrected t (near-uniform angle spacing)
+    // 'dual'   = show both simultaneously, with the gap between them
+    //            highlighted in orange
+    // Drives the draggable red line + sidebar readout (vectorDraw.js /
+    // uiControls.js), the protractor tick overlay (protractor.js), AND
+    // the Diagonal Derivation canvas (derivation.js) — all four read
+    // this same field so they never show conflicting modes.
+    paramMode: 'linear',
   },
 };
 
