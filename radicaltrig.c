@@ -206,8 +206,13 @@ float rau_tanf(float x) {
     if (denom < 1e-6f) denom = 1e-6f;  /* pole magnitude clamp */
     float rho = w / denom;
 
-    /* tan sign: negative in Q1 (x<0,y>0) and Q3 (x>0,y<0) */
-    Uint32 sign = (Uint32)(((qi >> 1) ^ (qi & 1)) & 1) << 31;
+    /* tan sign: positive in Q0 (x>0,y>0) and Q2 (x<0,y<0),
+     * negative in Q1 (x<0,y>0) and Q3 (x>0,y<0) — simplifies to the
+     * low bit of the quadrant index. (Fixed: the previous XOR-based
+     * formula ((qi>>1)^(qi&1)) flipped the sign in Q2 and Q3 — verified
+     * both by inspection and by comparing rau_tanf's sign against
+     * sin/cos from rau_sincosf across all four quadrants.) */
+    Uint32 sign = (Uint32)(qi & 1) << 31;
     return bits_to_float(float_to_bits(rho) ^ sign);
 }
 
@@ -333,7 +338,12 @@ float rau_invdiagonal_from_ratio(float ry, float rx) {
 
     float poly_out = rau_kernel_unwarp(k);
 
-    Uint32 sign = float_to_bits(rx) & 0x80000000u;
+    /* Sign of the result is sign(ry/rx), i.e. sign(ry) XOR sign(rx) —
+     * not sign(rx) alone. (Fixed: using only rx's sign disagreed with
+     * rau_invdiagonal_from_ratio_quotient(ry/rx) — its documented
+     * equivalent — whenever ry was negative; verified by direct
+     * comparison across all four sign combinations of ry, rx.) */
+    Uint32 sign = (float_to_bits(ry) ^ float_to_bits(rx)) & 0x80000000u;
     return bits_to_float(float_to_bits(poly_out) ^ sign);
 }
 
@@ -522,6 +532,13 @@ float rau_atanf(float x, int *err) {
         float inv = 1.0f / ax;              // scalar fallback
     #endif
         a = ((float)M_PI_2 - rau_atanf_polyf(inv)) * (float)M_2_PI;
+    } else {
+        /* Fixed: this branch was previously missing entirely, leaving
+         * `a` uninitialized for every |x| <= 1 — i.e. the common case,
+         * not an edge case. Verified via -Wmaybe-uninitialized and by
+         * direct comparison against atanf(x)*(2/pi), which the old code
+         * returned ~0 garbage for regardless of x. */
+        a = rau_atanf_polyf(ax) * (float)M_2_PI;
     }
     return SDL_copysignf(a, x);
 }
