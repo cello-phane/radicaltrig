@@ -36,16 +36,16 @@ function getColors() {
 // than shared from geom.js) because this file's initial drawDerivation()
 // call at the bottom runs before geom.js has executed, given the
 // <script> order in index.html.
+//
+// Two tiers, mirroring geom.js's RAU_WARP / RAU_WARP_QUALITY and the C
+// library's RAU_WARP_QUALITY — kept at the same default (tier 0) so
+// this canvas, the protractor, the red line, and the C library's default
+// build all agree with each other unless deliberately switched together.
 // ============================================================================
-const DERIV_WARP = (function() {
-    const C1 = 0.78539816339744830962; // = pi/4, exact
-    const C2 = 0.64607158024987317298;
-    const C3 = 0.63401589172451679138;
-    const C4 = 0.68515350354689586789;
-    const C5 = 0.32501622369042378935;
-    const C6 = 1.51901679307446258196;
+const DERIV_WARP_QUALITY = 0; // 0 = tier 0 (default, matches geom.js and the C library), 1 = v2
 
-    function warp11(t) {
+function derivMakeWarp11(C1, C2, C3, C4, C5, C6) {
+    return function warp11(t) {
         const v = t - 0.5;
         const v2 = v * v;
         let poly = C6;
@@ -55,12 +55,32 @@ const DERIV_WARP = (function() {
         poly = v2 * poly + C2;
         poly = v2 * poly + C1;
         return v * poly;
-    }
-
-    return {
-        apply(t) { return 0.5 + warp11(t); }
     };
-})();
+}
+
+const derivWarp11_tier0 = derivMakeWarp11(
+    0.78539816339744830962, // = pi/4, exact
+    0.64607158024987317298,
+    0.63401589172451679138,
+    0.68515350354689586789,
+    0.32501622369042378935,
+    1.51901679307446258196
+);
+
+const derivWarp11_tier1 = derivMakeWarp11(
+    0.7853981633974483, // unchanged from tier 0 — pi/4, exact
+    0.6460261721112686,
+    0.6346711435786873,
+    0.6812793876895539,
+    0.33448057938003534,
+    1.5121252251949524
+);
+
+const DERIV_WARP = {
+    apply(t) {
+        return 0.5 + (DERIV_WARP_QUALITY === 1 ? derivWarp11_tier1(t) : derivWarp11_tier0(t));
+    }
+};
 
 /**
  * Draw the full |x|+|y|=1 diamond and, for each of the other three
