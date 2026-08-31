@@ -264,6 +264,56 @@ function updateResultsDisplay() {
  * Display results for Section 1 (Simple RAU)
  * @param {HTMLElement} resultsElement - Results container
  */
+/**
+ * Wrap the last character of a formatted number in a flagged span if its
+ * true residual error (vs an exact reference) is large enough that the
+ * current display precision could plausibly round it either way — i.e.
+ * the error is >= half a unit in the last displayed place. This doesn't
+ * mean the digit shown is wrong; it means don't fully trust it being
+ * "exact" just because it renders cleanly (see the t=1/90 case: computed
+ * radian rounds to the same 0.017453 as the true value purely by
+ * coincidence of where the rounding boundary falls, while the actual
+ * residual error is ~5e-7 — comparable to the flagging threshold at
+ * precision=6).
+ * @param {number} computed - The RAU-library value actually displayed
+ * @param {number} reference - Exact reference (e.g. Math.sin of the
+ *   true target angle), or undefined/NaN to skip flagging entirely
+ * @param {number} precision - Current display precision (decimal places)
+ * @returns {string} Plain formatted string, or one with a trailing
+ *   `<span class="rounded-risk">` around the last character
+ */
+function formatFlagged(computed, reference, precision) {
+  const str = formatValue(computed, precision);
+  if (typeof reference !== 'number' || !isFinite(reference)) return str;
+  if (!/\d$/.test(str)) return str; // guards "—" and similar non-numeric renders
+  const err = Math.abs(computed - reference);
+  const halfULP = 0.5 * Math.pow(10, -precision);
+  if (err < halfULP) return str;
+  const last = str.slice(-1);
+  const rest = str.slice(0, -1);
+  const title = 'differs from the exact target by ' + err.toExponential(2) +
+    ' — may not round the same way at every input, even though it matches here';
+  return rest + '<span class="rounded-risk" title="' + title + '">' + last + '</span>';
+}
+
+/**
+ * Exact reference values for the RAW (un-warped) target angle — what
+ * warp mode is trying to approximate. Computed via native Math.sin/cos/
+ * tan, which are effectively exact in double precision, so any gap
+ * between these and the RAU library's output is genuine approximation
+ * error, not reference error.
+ * @param {number} rawPhase - The raw, un-warped RAU phase
+ */
+function exactAngleReference(rawPhase) {
+  const trueAngle = rawPhase * (Math.PI / 2); // 1 RAU = pi/2 rad, exactly
+  return {
+    radian: trueAngle,
+    sin: Math.sin(trueAngle),
+    cos: Math.cos(trueAngle),
+    tan: Math.tan(trueAngle)
+  };
+}
+
 function displaySection1Results(resultsElement) {
   const rawPhase = AppState.section1.phase;
 
@@ -273,6 +323,7 @@ function displaySection1Results(resultsElement) {
   // so all surfaces always agree on which mode is active.
   const uiState = getUIState();
   const mode = (uiState && uiState.paramMode) || 'linear';
+  const precision = (uiState && typeof uiState.precision === 'number') ? uiState.precision : 6;
 
   function block(phase) {
     const rs = radicalSine(phase);
@@ -288,14 +339,19 @@ function displaySection1Results(resultsElement) {
     const lin = block(rawPhase);
     const warp = block(applyDisplayWarp(rawPhase, true));
     const deltaDeg = warp.degrees - lin.degrees;
+    // Only the WARPED block is an approximation of anything — linear
+    // mode is exact-by-construction (it's the definition, not a fit to
+    // a target), so it's never flagged.
+    const ref = exactAngleReference(rawPhase);
+    const warpTanStr = warp.tanDisplay === 'undefined' ? 'undefined' : formatFlagged(warp.rt, ref.tan, precision);
 
-    resultsElement.textContent = `Mode = dual (linear vs warped)
+    resultsElement.innerHTML = `Mode = dual (linear vs warped)
 raw t = ${formatValue(rawPhase)}
 _______________________________
 LINEAR   RAU=${formatValue(lin.phase)}  ${lin.degrees.toFixed(5)}°
   sin=${formatValue(lin.rs)} cos=${formatValue(lin.rc)} tan=${lin.tanDisplay}
 WARPED   RAU=${formatValue(warp.phase)}  ${warp.degrees.toFixed(5)}°
-  sin=${formatValue(warp.rs)} cos=${formatValue(warp.rc)} tan=${warp.tanDisplay}
+  sin=${formatFlagged(warp.rs, ref.sin, precision)} cos=${formatFlagged(warp.rc, ref.cos, precision)} tan=${warpTanStr}
 _______________________________
 Δ angle (warp - linear) = ${(deltaDeg >= 0 ? '+' : '')}${deltaDeg.toFixed(5)}°`;
     return;
@@ -308,12 +364,24 @@ _______________________________
     ? `Mode = warped t  (raw t = ${formatValue(rawPhase)})\n`
     : `Mode = linear t  (raw, uncorrected)\n`;
 
-  resultsElement.textContent = `${modeLine}RAU Phase = ${formatValue(b.phase)}
+  if (useWarp) {
+    const ref = exactAngleReference(rawPhase);
+    const tanStr = b.tanDisplay === 'undefined' ? 'undefined' : formatFlagged(b.rt, ref.tan, precision);
+    resultsElement.innerHTML = `${modeLine}RAU Phase = ${formatValue(b.phase)}
+Radian = ${formatFlagged(b.radian, ref.radian, precision)} (${b.degrees.toFixed(5)}°)
+_______________________________
+tan(θ) = ${tanStr}
+sin(θ) = ${formatFlagged(b.rs, ref.sin, precision)}
+cos(θ) = ${formatFlagged(b.rc, ref.cos, precision)}`;
+  } else {
+    // Linear mode: nothing to flag, it isn't approximating anything
+    resultsElement.textContent = `${modeLine}RAU Phase = ${formatValue(b.phase)}
 Radian = ${formatValue(b.radian)} (${b.degrees.toFixed(5)}°)
 _______________________________
 tan(θ) = ${b.tanDisplay}
 sin(θ) = ${formatValue(b.rs)}
 cos(θ) = ${formatValue(b.rc)}`;
+  }
 }
 
 /**
