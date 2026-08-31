@@ -158,6 +158,10 @@ canvas {
   padding: 4px;
 }
 
+.controls #paramValue input[type=text] {
+  width: 20%;
+}
+
 pre#resultsContent {
   background: var(--bg);
   padding: 10px;
