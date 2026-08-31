@@ -539,6 +539,44 @@
                 <div id="atan_compare" class="plot"></div>
             </section>
 
+            <!-- ===================== GAMMA / LGAMMA ===================== -->
+            <section class="section">
+                <div class="section-head">
+                    <h2>§8 — Gamma / lgamma (Lanczos, g=7, n=9)</h2>
+                    <span class="tag ok">integration test, no shortcuts</span>
+                </div>
+                <p class="section-sub">
+                    Built entirely from the library's own <code>exp_poly</code>,
+                    <code>ln_opt</code>, and <code>rauSinCos</code> — not
+                    native Math.exp/log/sin — so any error in those primitives
+                    composes visibly here. Deliberately has no
+                    "if integer, return factorial(n-1)" shortcut: that shortcut
+                    returns an exact value using no RKT math at all, which
+                    would look like zero error while testing nothing. The
+                    reference curve uses the identical Lanczos algorithm with
+                    native transcendentals, isolating RKT's own approximation
+                    error rather than comparing against a different method.
+                </p>
+                <div id="gamma_compare" class="plot"></div>
+                <div id="gamma_errstat" class="err-stat"></div>
+                <div class="coeff-row" id="gamma_coeffs"></div>
+                <p class="section-sub" style="margin-top: 14px">
+                    <b>lgamma</b> avoids Gamma's huge dynamic range (Γ(15) ≈
+                    8.7×10¹⁰) — useful whenever only the log is needed, e.g.
+                    log-likelihoods or Stirling-scale factorials.
+                </p>
+                <div id="lgamma_compare" class="plot"></div>
+                <div id="lgamma_errstat" class="err-stat"></div>
+                <p class="section-sub" style="margin-top: 14px">
+                    <b>Reflection formula</b>, z &lt; 0.5 — exercises
+                    <code>rktSinPiZ</code> (via <code>rauSinCos</code>), the
+                    one part of this pipeline the direct positive-domain sweep
+                    above never touches:
+                </p>
+                <div id="gamma_reflection_table" class="err-stat"
+                     style="font-family: monospace; white-space: pre; line-height: 1.6"></div>
+            </section>
+
             <footer>
                 radicaltrig — Michael Ledesma (cello-phane@github) — Unlicense /
                 Public Domain
@@ -835,6 +873,107 @@
 
             function erfPoly(x) {
                 return x * horner(EC, x * x);
+            }
+
+            // ============================================================================
+            // GAMMA / LGAMMA -- Lanczos approximation (g=7, n=9), built entirely
+            // from the library's own primitives (expPoly, lnOpt, rauSinCos) rather
+            // than native Math.exp/log/sin. This makes Gamma an integration test
+            // for the whole library: any error in exp_poly, ln_opt, or the
+            // sincos/warp pipeline shows up here, composed together.
+            //
+            // Two things deliberately NOT done, both caught the hard way in an
+            // earlier pass at this same derivation:
+            //   1. No "if integer, return factorial(n-1)" shortcut. That shortcut
+            //      returns an exact value with no RKT math involved at all --
+            //      it looks like "0 error" but tests nothing.
+            //   2. The reciprocal-sqrt step inside sincos's diagonal normalise
+            //      must be 1/sqrt(D), not sqrt(D). A helper named "sqrt" that
+            //      silently computed the wrong one of these cost ~95% error at
+            //      z=-7.3/-10.2/-15.7 before it was caught. rauSinCos above
+            //      already uses the correct 1/Math.sqrt(D) -- reused as-is here,
+            //      not reimplemented, specifically to avoid repeating that bug.
+            // ============================================================================
+            const GAMMA_G = 7;
+            const GAMMA_P = [
+                0.99999999999980993, 676.5203681218851, -1259.1392167224028,
+                771.32342877765313, -176.61502916214059, 12.507343278686905,
+                -0.13857109526572012, 9.9843695780195716e-6,
+                1.5056327351493116e-7,
+            ];
+            const SQRT_2PI = 2.5066282746310005;
+            const LOG_2PI = 1.8378770664093453;
+
+            function lanczosSum(z) {
+                let s = GAMMA_P[0];
+                for (let k = 1; k < GAMMA_P.length; k++) s += GAMMA_P[k] / (z + k);
+                return s;
+            }
+
+            // sin(pi*z) via the library's own sincos, not Math.sin. Phi is in
+            // RAU units (1 RAU = 90 deg), and rauSinCos expects phi already in
+            // that convention -- pi radians = 2 RAU, so sin(pi*z) = rauSinCos(2z)[1].
+            function rktSinPiZ(z) {
+                return rauSinCos(2 * z)[1];
+            }
+
+            function rktPow(x, y) {
+                return expPoly(y * lnOpt(x, LO_FIXED));
+                // return expPoly(y * Math.log(x));
+            }
+
+            // rktGamma -- direct Lanczos + reflection, RKT primitives throughout.
+            // No integer shortcut (see note above). Recursion depth is bounded
+            // since reflection only ever needs one step (z<0.5 -> 1-z >= 0.5).
+            function rktGamma(z, depth) {
+                depth = depth || 0;
+                if (depth > 50) return NaN;
+                if (z < 0.5) {
+                    return Math.PI / (rktSinPiZ(z) * rktGamma(1 - z, depth + 1));
+                }
+                z -= 1;
+                const A = lanczosSum(z);
+                const t = z + GAMMA_G + 0.5;
+                const power = rktPow(t, z + 0.5);
+                return SQRT_2PI * power * expPoly(-t) * A;
+            }
+
+            // rktLnGamma -- ln|Gamma(z)| for z > 0.5, avoiding the huge dynamic
+            // range of rktGamma itself for large z (Gamma(15) ~ 8.7e10).
+            function rktLnGamma(z) {
+                z -= 1;
+                const A = lanczosSum(z);
+                const t = z + GAMMA_G + 0.5;
+                return (
+                    0.5 * LOG_2PI + (z + 0.5) * lnOpt(t, LO_FIXED) - t + lnOpt(A, LO_FIXED)
+                );
+            }
+
+            // Reference: the SAME algorithm, but with native Math.exp/Math.log/
+            // Math.sin instead of RKT's approximations. This isolates RKT's own
+            // error (matches the "Gamma_math" vs "Gamma_rkt" comparison already
+            // verified in Python) rather than comparing against a completely
+            // different method.
+            function gammaRef(z, depth) {
+                depth = depth || 0;
+                if (depth > 50) return NaN;
+                if (z < 0.5) {
+                    return Math.PI / (Math.sin(Math.PI * z) * gammaRef(1 - z, depth + 1));
+                }
+                z -= 1;
+                let A = GAMMA_P[0];
+                for (let k = 1; k < GAMMA_P.length; k++) A += GAMMA_P[k] / (z + k);
+                const t = z + GAMMA_G + 0.5;
+                const power = Math.exp((z + 0.5) * Math.log(t));
+                return Math.sqrt(2 * Math.PI) * power * Math.exp(-t) * A;
+            }
+
+            function lnGammaRef(z) {
+                z -= 1;
+                let A = GAMMA_P[0];
+                for (let k = 1; k < GAMMA_P.length; k++) A += GAMMA_P[k] / (z + k);
+                const t = z + GAMMA_G + 0.5;
+                return 0.5 * Math.log(2 * Math.PI) + (z + 0.5) * Math.log(t) - t + Math.log(A);
             }
 
             function erfApproxRef(x) {
@@ -1509,6 +1648,81 @@
                     ` &nbsp;·&nbsp; ratio: <span class="num bad">${(maxBuggy / maxFixed).toFixed(1)}×</span>`;
             }
 
+            // ---- §8 gamma / lgamma ----
+            function renderGammaPlot() {
+                // Direct Gamma sweep, log-scale (Gamma grows very fast).
+                // Relative error, not absolute -- Gamma spans ~11 orders of
+                // magnitude over this domain, so absolute error would be
+                // meaningless (dominated entirely by the largest z).
+                const xs = [],
+                    yTrue = [],
+                    yApprox = [],
+                    yErr = [];
+                for (let i = 0; i <= 400; i++) {
+                    const z = 0.2 + (11.8 * i) / 400;
+                    xs.push(z);
+                    const t = gammaRef(z),
+                        p = rktGamma(z);
+                    yTrue.push(t);
+                    yApprox.push(p);
+                    yErr.push(Math.abs(t - p) / Math.abs(t) + 1e-15);
+                }
+                comparePlot("gamma_compare", xs, yTrue, yApprox, yErr, [
+                    "Gamma(z) [native]",
+                    "rktGamma(z)",
+                ]);
+                Plotly.relayout("gamma_compare", { "yaxis.type": "log" });
+
+                const maxRelErr = Math.max(...yErr);
+                document.getElementById("gamma_errstat").innerHTML =
+                    `max relative error (z ∈ [0.2, 12]): <span class="num">${maxRelErr.toExponential(2)}</span>`;
+
+                coeffChips(
+                    "gamma_coeffs",
+                    "P",
+                    GAMMA_P.map((v) => v.toExponential(6)),
+                );
+
+                // lgamma sweep -- wider domain, absolute error (lgamma grows
+                // only logarithmically, so absolute error stays meaningful).
+                const xs2 = [],
+                    yTrue2 = [],
+                    yApprox2 = [],
+                    yErr2 = [];
+                for (let i = 0; i <= 400; i++) {
+                    const z = 0.6 + (49.4 * i) / 400;
+                    xs2.push(z);
+                    const t = lnGammaRef(z),
+                        p = rktLnGamma(z);
+                    yTrue2.push(t);
+                    yApprox2.push(p);
+                    yErr2.push(Math.abs(t - p) + 1e-15);
+                }
+                comparePlot("lgamma_compare", xs2, yTrue2, yApprox2, yErr2, [
+                    "lnGamma(z) [native]",
+                    "rktLnGamma(z)",
+                ]);
+                const maxAbsErr2 = Math.max(...yErr2);
+                document.getElementById("lgamma_errstat").innerHTML =
+                    `max absolute error (z ∈ [0.6, 50]): <span class="num">${maxAbsErr2.toExponential(2)}</span>`;
+
+                // Reflection formula spot-checks, z < 0.5 -- the only part of
+                // this pipeline that exercises rktSinPiZ / rauSinCos's sin
+                // output. Never touched by the sweep above.
+                const negTests = [-0.5, -1.5, -2.5, -3.5, -4.5, -7.3, -10.2, -15.7];
+                let table = "  z       rktGamma          reference         rel.err\n";
+                let maxNegErr = 0;
+                for (const z of negTests) {
+                    const out = rktGamma(z);
+                    const ref = gammaRef(z);
+                    const rel = Math.abs(out - ref) / Math.abs(ref);
+                    maxNegErr = Math.max(maxNegErr, rel);
+                    table += `  ${z.toFixed(1).padStart(5)}   ${out.toExponential(6).padStart(15)}   ${ref.toExponential(6).padStart(15)}   ${rel.toExponential(2)}\n`;
+                }
+                table += `\n  max relative error (reflection domain): ${maxNegErr.toExponential(2)}`;
+                document.getElementById("gamma_reflection_table").textContent = table;
+            }
+
             // ---- §7 atan tiers ----
             function renderAtanPlot() {
                 const xs = [];
@@ -1590,6 +1804,7 @@
                 renderExpPlot();
                 renderLnPlot();
                 renderAtanPlot();
+                renderGammaPlot();
             }
 
             const THEME_KEY = "rkt_theme";
