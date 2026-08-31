@@ -229,3 +229,12 @@ pre#resultsContent {
 #mathBlock svg {
   height: 34px;
 }
+
+.rounded-risk {
+    color: #9a6b00;
+    background: rgba(255, 176, 0, 0.22);
+    border-bottom: 1px dotted #9a6b00;
+    border-radius: 2px;
+    padding: 0 1px;
+    cursor: help;
+}
