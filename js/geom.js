@@ -129,7 +129,7 @@ function radicalAtan(value) {
 // is still directly reachable via RAU_WARP_V2.apply() for anyone who
 // wants it regardless of this default.
 // ============================================================================
-const JS_WARP_QUALITY = 0; // 0 = tier 0 (matches C library default), 1 = v2
+const JS_WARP_QUALITY = 1; // 1 = v2 (default, matches C library default), 0 = tier 0 (original, still available)
 
 function makeWarp11(C1, C2, C3, C4, C5, C6) {
   return function warp11(t) {

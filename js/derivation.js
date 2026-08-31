@@ -42,7 +42,7 @@ function getColors() {
 // this canvas, the protractor, the red line, and the C library's default
 // build all agree with each other unless deliberately switched together.
 // ============================================================================
-const DERIV_WARP_QUALITY = 0; // 0 = tier 0 (default, matches geom.js and the C library), 1 = v2
+const DERIV_WARP_QUALITY = 1; // 1 = v2 (default, matches geom.js and the C library), 0 = tier 0 (original, still available)
 
 function derivMakeWarp11(C1, C2, C3, C4, C5, C6) {
     return function warp11(t) {

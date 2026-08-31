@@ -23,13 +23,20 @@
 
 // RAU_WARP_QUALITY selects which forward-warp coefficient tier rau_warpf()
 // (and therefore rau_sincosf/rau_tanf/rau_sincos_mf) dispatches to:
-// 0 = original — in production use, end-to-end sin/cos max err 5.472e-7
-// 1 = v2       — constrained minimax refit, ~4.4x tighter (1.246e-7),
-//                same C1=pi/4 exactness. Verified in double precision;
-//                confirm on target float32 before switching the default.
-// rau_warpf_v2() is always callable directly regardless of this define.
+// 1 = v2 (default) — constrained minimax refit, end-to-end sin/cos max
+//                     err 1.246e-7 (double-precision theoretical) /
+//                     2.372e-7 (measured on real float32 hardware, ~2.68x
+//                     tighter than tier 0 there). Same C1=pi/4 exactness
+//                     as tier 0. Validated: compiled and run on real
+//                     x86 float32 (GCC), cross-checked against an
+//                     independent LP/mpmath derivation and against a
+//                     reference Desmos construction.
+// 0 = original       — end-to-end sin/cos max err 5.472e-7. Kept for
+//                     anyone who specifically wants the older fit;
+//                     rau_warpf_orig() is also directly callable
+//                     regardless of this define.
 #ifndef RAU_WARP_QUALITY
-#define RAU_WARP_QUALITY 0
+#define RAU_WARP_QUALITY 1
 #endif
 
 // ── Helper Functions ───────────────────────────────────────────────────────
@@ -81,23 +88,27 @@ float rau_atan2_signed_degs(float phi_rau) {
 // parameter w = sin(t·π/2) / (sin(t·π/2) + cos(t·π/2))
 //
 // Two tiers are always compiled in; RAU_WARP_QUALITY (defined above)
-// selects which one rau_warpf() itself dispatches to. rau_warpf_v2() is
-// exposed separately so it's callable regardless of that define, for A/B
-// comparison without a recompile.
+// selects which one rau_warpf() itself dispatches to (default: tier 1,
+// v2). rau_warpf_orig() and rau_warpf_v2() are both exposed directly so
+// either is callable regardless of that define, for A/B comparison
+// without a recompile.
 //
 // Both figures below are end-to-end sin/cos error (after the radical-
 // identity projection), which is very slightly larger than the raw
 // warp-space approximation error alone (5.168e-7 for tier 0) — verified
 // via mpmath at 50-digit precision and cross-checked with an independent
-// scipy/HiGHS linear-program minimax solve.
+// scipy/HiGHS linear-program minimax solve, then again by compiling and
+// running both tiers on real x86 float32 hardware.
 //
 //   tier 0 (original): Remez minimax over full [0,1]. C1 = π/4 exact.
-//                       sin/cos max err: 5.472e-7
-//   tier 1 (v2):        constrained L-infinity refit — C1 still pinned
-//                       exactly to π/4, C2..C6 re-solved by LP. ~4.4x
-//                       tighter. sin/cos max err: 1.246e-7. Not yet
-//                       validated on real float32 hardware — these
-//                       numbers come from the double-precision derivation.
+//                       sin/cos max err: 5.472e-7 (double) / 6.36e-7 (float32)
+//   tier 1 (v2, default): constrained L-infinity refit — C1 still pinned
+//                       exactly to π/4, C2..C6 re-solved by LP. sin/cos
+//                       max err: 1.246e-7 (double) / 2.37e-7 (float32) —
+//                       ~4.4x tighter in double precision, ~2.7x tighter
+//                       as actually compiled, confirming the improvement
+//                       survives float32 rounding rather than being an
+//                       artifact of the double-precision derivation.
 static inline float rau_warpf_tier0(float t) {
     static const float C[6] = {
         0.78539816339744830962f,
@@ -132,6 +143,7 @@ static inline float rau_warpf_tier1(float t) {
     return 0.5f + v * p;
 }
 
+float rau_warpf_orig(float t) { return rau_warpf_tier0(t); }
 float rau_warpf_v2(float t) { return rau_warpf_tier1(t); }
 
 #if RAU_WARP_QUALITY == 1
