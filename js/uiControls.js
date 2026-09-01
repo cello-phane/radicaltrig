@@ -421,6 +421,30 @@ function displayBetweenMode(resultsElement) {
   const tanDisplay = Math.abs(rt) > 1e6 ? "undefined" : formatValue(rt);
   const fmt = (n) => n.toFixed(5).padStart(8);
 
+  // Demonstrates rauInvpolyf: angleData.rau's fractional part is the
+  // EXACT chord ratio w (from the cross/dot formula above, no warp
+  // involved). Running it through rauInvpolyf recovers the approximate
+  // "uniform angle fraction" t directly in RAU units — rauInpolyf
+  // already does the radian->RAU (x2/pi) conversion internally, so
+  // nothing further needs converting on this side.
+  //
+  // For the "true t" reference to compare against, we don't need a
+  // radian step either: these vectors' angle was set directly in
+  // degrees (AppState.section2.angleBetweenDeg, unrounded — NOT the
+  // angleBetween display variable above, which is rounded to 2dp and
+  // too coarse to check a ~1e-7-scale residual against), so true t is
+  // just degrees/90. No trig call anywhere in this reference value.
+  const localQ = Math.floor(angleData.rau);
+  const localW = angleData.rau - localQ;
+  const recoveredT = rauInvpolyf(localW);
+  // NOTE: this assumes the simple/default angle mode, where
+  // angleData.rau's fractional part lines up directly with
+  // angleBetweenDeg/90. bias/wrap mode apply extra transforms to
+  // angleData.rau (see calculateAngleMode above) that this quick
+  // comparison doesn't account for — fine for the illustrative default
+  // case, not a general-purpose check across all three angle modes.
+  const trueT = AppState.section2.angleBetweenDeg / 90;
+
   // FIX: Use higher precision for angle calculations
   // Round to avoid floating-point artifacts (0.25° or 0.5° errors)
   const signedAngleRounded = Math.round(angleData.signedDeg * 100) / 100;
@@ -456,7 +480,10 @@ Radian = ${formatValue(rad)}
 _______________________________
 tan(θ) = ${tanDisplay}
 sin(θ) = ${formatValue(rs)}
-cos(θ) = ${formatValue(rc)}`;
+cos(θ) = ${formatValue(rc)}
+_______________________________
+Recovered t (rau_invpolyf) = ${formatValue(recoveredT)}
+  true t (exact)           = ${formatValue(trueT)}  (diff: ${(recoveredT - trueT).toExponential(2)})`;
 }
 
 /**

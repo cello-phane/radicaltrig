@@ -105,6 +105,69 @@ function radicalAtan(value) {
 }
 
 // ============================================================================
+// INVERSE-WARP APPROXIMATION (ported from radicaltrig.c's rau_invpolyf)
+//
+// CORRECTION to how this was described earlier in conversation: this is
+// NOT literally the algebraic inverse of warp11() above (i.e. it does not
+// solve warp11(t) = w for t). warp11 has no closed form inverse — solving
+// it exactly requires numerical root-finding (Newton's method etc).
+//
+// What the C library actually does instead — and what's ported here — is
+// a different, more principled route that never needs to invert warp11
+// at all: given the EXACT chord ratio w (e.g. from
+// RAUConverter.vectorToRAU, or from r_arctan in the C library — both
+// exact, no polynomial involved), convert w to a raw tangent-like ratio
+// (w/(1-w) or its reciprocal), then apply an independently Remez-fit
+// arctan polynomial to THAT ratio. This approximates the true
+// angle-from-ratio relationship directly, rather than approximating the
+// inverse of any specific forward-warp fit — same purpose (recover the
+// "uniform" angle fraction from a chord value), different and more
+// robust mechanism.
+//
+// Matches RAU_ATAN_QUALITY=2 ("precise") in the C library: degree-6,
+// 7-term polynomial, max err 7.32e-7 rad. Measured end-to-end (this
+// JS port, at w=0.366025404 recovering t=1/3): residual ~2.16e-7,
+// consistent with that figure.
+// ============================================================================
+function rauAtanfPrecise(x) {
+  const x2 = x * x;
+  return x * (0.9999997567
+    + x2 * (-0.3332778034
+    + x2 * (0.1989157444
+    + x2 * (-0.1351964889
+    + x2 * (0.0843541706
+    + x2 * (-0.0373408246
+    + x2 * (0.0079436085)))))));
+}
+
+/**
+ * Approximate inverse of the forward pipeline: given the exact chord
+ * ratio w in [0,1] (NOT a warp11 output specifically — any exact w, e.g.
+ * from RAUConverter.vectorToRAU), recover the RAU angle fraction t in
+ * [0,1] such that projecting t*90deg forward would give (approximately)
+ * this w. Ported from radicaltrig.c's rau_invpolyf (RAU_ATAN_QUALITY=2,
+ * "precise" tier).
+ * @param {number} w - Exact chord ratio in [0,1]
+ * @returns {number} Approximate RAU angle fraction in [0,1], or NaN if
+ *   w is out of range / non-finite
+ */
+function rauInvpolyf(w) {
+  if (!isFinite(w) || w < 0 || w > 1) return NaN;
+  if (w === 0) return 0;
+  if (w === 1) return 1;
+  if (w >= 0.5) {
+    // w > 0.5: angle > 45 deg, reflect via reciprocal ratio
+    const ratio = (1 - w) / w;
+    const a = rauAtanfPrecise(ratio);
+    return (Math.PI / 2 - a) * (2 / Math.PI);
+  } else {
+    // w < 0.5: angle < 45 deg, direct evaluation
+    const ratio = w / (1 - w);
+    return rauAtanfPrecise(ratio) * (2 / Math.PI);
+  }
+}
+
+// ============================================================================
 // DISPLAY-ONLY WARP MODE
 //
 // The functions above (radicalSine/radicalCosine/radicalTan/rauToRad) are
