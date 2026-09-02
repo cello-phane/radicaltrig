@@ -433,6 +433,11 @@ R_vec tested across all four quadrants, 79 points including all cardinals. Max e
 The guard <code>{x=0: 1, −1}</code> in the integer branch of r_cos must be <code>{mod(x,4)=0: 1, −1}</code> to correctly return cos=+1 at x=4, 8, 12,... as well as x=0.
 </div>
 
+<div class="box box-red">
+<span class="box-label">radicaltrig.c fixes</span>
+<code>rau_atanf</code> left <code>a</code> uninitialized for |x|≤1 (the common case) — added the missing branch. <code>rau_tanf</code>'s sign was flipped in Q2/Q3 — fixed to <code>qi &amp; 1</code>. <code>rau_invdiagonal_from_ratio</code> used sign(rx) alone instead of sign(ry)^sign(rx) — fixed to match its <code>_quotient</code> twin.
+</div>
+
 <!-- ══ §4 INVERSE PATH ══════════════════════════════════════════════════ -->
 <h2><span class="sec-num">§4</span>Inverse Path  (cos, sin) → φ</h2>
 
@@ -605,12 +610,16 @@ Store <strong>sign(cos)</strong> and <strong>sign(sin)</strong> as two bits. Upd
 <div class="formula">
 P_w(x) = v·(C1 + v²·(C2 + v²·(C3 + v²·(C4 + v²·(C5 + v²·C6)))))<br>
 where v = x − 0.5<br><br>
-C1 = <span class="hi">0.78539732</span>    <span class="c">← ≈ π/4</span><br>
-C2 = <span class="hi">0.64607089</span><br>
-C3 = <span class="hi">0.63401085</span><br>
-C4 = <span class="hi">0.68518412</span><br>
-C5 = <span class="hi">0.32482231</span><br>
-C6 = <span class="hi">1.52006419</span>
+C1 = <span class="hi">0.78539816339744830962</span>    <span class="c">← = π/4, exact</span><br>
+C2 = <span class="hi">0.64607158024987317298</span><br>
+C3 = <span class="hi">0.63401589172451679138</span><br>
+C4 = <span class="hi">0.68515350354689586789</span><br>
+C5 = <span class="hi">0.32501622369042378935</span><br>
+C6 = <span class="hi">1.51901679307446258196</span>
+</div>
+<div class="formula">
+v2 refit (default, ~4.4x tighter, C1 unchanged):<br>
+C2 = <span class="hi">0.6460261721112686</span>, C3 = <span class="hi">0.6346711435786873</span>, C4 = <span class="hi">0.6812793876895539</span>, C5 = <span class="hi">0.33448057938003534</span>, C6 = <span class="hi">1.5121252251949524</span>
 </div>
 
 <div class="formula">

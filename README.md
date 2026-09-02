@@ -5,6 +5,9 @@
 [Related to the trig formulas](https://www.youtube.com/watch?v=ffw-x4dhTkI)  
 [Trigonometric ratios and formulas](https://youtu.be/TJr4YfEgVuk)  
 
+### Library & Demo
+[C/JS/GLSL source](radicaltrig.c) · [Interactive demo](https://cello-phane.github.io/radicaltrig/index.html)
+
 ### Radical Angle Unit (RAU)
 [Rotating axes](https://www.desmos.com/calculator/4cefade964)  
 After a 90 degree sweep, every point(all 4) has covered the circle, enabling periodicity from 0 to 2π.  
