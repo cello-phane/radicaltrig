@@ -257,27 +257,26 @@
             function rauToXY(t) {
                 const q = Math.floor(t) % 4;
                 const lt = t - q; // local parameter in [0,1)
-                const r = Math.sqrt(1 - 2 * lt + 2 * lt * lt); // project onto unit circle
                 switch (q) {
                     case 0:
                         return {
-                            cos: (1 - lt) / r,
-                            sin: lt / r,
+                            cos: 1 - lt,
+                            sin: lt,
                         }; // (1,0) → (0,1)
                     case 1:
                         return {
-                            cos: -lt / r,
-                            sin: (1 - lt) / r,
+                            cos: -lt,
+                            sin: 1 - lt,
                         }; // (0,1) → (-1,0)
                     case 2:
                         return {
-                            cos: (-1 + lt) / r,
-                            sin: -lt / r,
+                            cos: -1 + lt,
+                            sin: -lt,
                         }; // (-1,0) → (0,-1)
                     case 3:
                         return {
-                            cos: lt / r,
-                            sin: (-1 + lt) / r,
+                            cos: lt,
+                            sin: -1 + lt,
                         }; // (0,-1) → (1,0)
                 }
             }
