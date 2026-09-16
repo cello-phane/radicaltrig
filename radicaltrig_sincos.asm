@@ -3,7 +3,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 %ifndef SINCOS_RAU_RSQRTNW
 %define SINCOS_RAU_RSQRTNW
-; https://godbolt.org/z/oGPPo1qT4
+; https://godbolt.org/z/Mvvh4o5vs (sine test) https://godbolt.org/z/zG8bE7Px4 (cosine test)
 global sincos_rau_rsqrtnw
 
 align 64
