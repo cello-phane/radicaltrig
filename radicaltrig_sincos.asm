@@ -1,15 +1,13 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;SINE_RAU (rsqrt + 1 newton step);;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;SINECOS_RAU_RSQRTNW;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+%ifndef SINCOS_RAU_RSQRTNW
+%define SINCOS_RAU_RSQRTNW
 
-%ifndef SINE_RAU_RSQRTNW
-%define SINE_RAU_RSQRTNW
-
-global sine_rau_rsqrtnw		; only needed for external linkage in this standalone
+global sincos_rau_rsqrtnw
 
 align 64
-sine_rau_rsqrtnw:
-
+sincos_rau_rsqrtnw:
 	cvtsd2ss xmm0,xmm0		; narrow to float32 (rau_sincosf(C-variant) precision)
 
     ; --- radians -> RAU ---
@@ -32,7 +30,7 @@ sine_rau_rsqrtnw:
     						; qi_full&3 differ only by full multiples of 4, which
     						; cancel out of m - trunc(m) either way)
 
-	  ; --- warp polynomial: v = frac - 0.5, Horner in v^2, then one step in v ---
+	; --- warp polynomial: v = frac - 0.5, Horner in v^2, then one step in v ---
     ; p = (((((c0*z + c1)*z + c2)*z + c3)*z + c4)*z + c5)
 
     ; Optional: use Estrin scheme(instead of linear Horner to evaluate the polynomial):
@@ -92,83 +90,74 @@ sine_rau_rsqrtnw:
 
 .no_flip:
 
-    ; --- diagonal normalize ---
-    movss xmm6,[.one]
-    subss xmm6,xmm5
+	; --- diagonal normalize: BOTH numerators share this one sqrt(D) ---
+	movss xmm6,[.one]
+	subss xmm6,xmm5			; xmm6 = omw (cos numerator)
 
-    movss xmm7,xmm6
-    mulss xmm7,xmm7
+	movss xmm7,xmm6
+	mulss xmm7,xmm7
+	movss xmm1,xmm5
+	mulss xmm1,xmm1
+	addss xmm7,xmm1			; xmm7 = D
 
-    movss xmm1,xmm5
-    mulss xmm1,xmm1
+	sqrtss xmm7,xmm7
+	movss xmm1,[.one]
+	divss xmm1,xmm7			; xmm1 = inv = 1/sqrt(D)
+	;; specific assignments
+	mulss xmm5,xmm1			; xmm5 = sin_raw = w*inv
+	;mulss xmm6,xmm1		; xmm6 = cos_raw = omw*inv
 
-    addss xmm7,xmm1          ; xmm7 = D
+	; --- sign application --- ;; specific assignments
+	
+	; sine sign = qi bit1
+	mov edx,eax
+	shr edx,1
+	and edx,1
+	shl edx,31
+	movd xmm2,edx
+	pxor xmm5,xmm2
+	
+	; cosine sign = qi bit1 XOR bit0
+	;mov edx,eax
+	;shr edx,1
+	;xor edx,eax
+	;and edx,1
+	;shl edx,31
+	;movd xmm2,edx
+	;pxor xmm6,xmm2
 
-    ; --- reciprocal sqrt ---
-    rsqrtss xmm1,xmm7        ; xmm1 = y0 ≈ 1/sqrt(D)
+	; widen outputs
+	; return double(sin)
+	cvtss2sd xmm0,xmm5
 
-    ; --- Newton-Raphson correction ---
-    movss xmm6,xmm1
-    mulss xmm6,xmm6          ; y0²
-    mulss xmm6,xmm7          ; D*y0²
-    mulss xmm6,[.half]       ; 0.5*D*y0²
+	;return double(cos)
+	;cvtss2sd xmm0,xmm6
 
-    movss xmm2,[.three_halves]
-    subss xmm2,xmm6          ; 1.5 - 0.5*D*y0²
-
-    mulss xmm1,xmm2          ; y1
-
-    ; --- normalized sine ---
-    mulss xmm1,xmm5        ; w/sqrt(D)
-	; --- normalized cosine ---
-	; movss xmm0,[.one]
-	; subss xmm0,xmm5
-	; mulss xmm1,xmm0		 ; (1-w)/sqrt(D)
-
-    ; --- sign ---
-    mov edx,eax
-    shr edx,1
-    and edx,1
-    shl edx,31
-    movd xmm2,edx
-    pxor xmm1,xmm2
-
-    movss xmm0,xmm1
-    cvtss2sd xmm0,xmm0 ; widen back
-    
 	ret
 
 align 8
 
-.three_halves: 
-	dd 0x3FC00000
-
 .two_over_pi:
-	dd 0x3F22F983		; 0.63661977236758134308 (2/pi), float32
-
+	dd 0x3F22F983
 .quarter:
-	dd 0x3E800000		; 0.25
-
+	dd 0x3E800000
 .four:
-	dd 0x40800000		; 4.0
-
+	dd 0x40800000
 .half:
-	dd 0x3F000000		; 0.5
-
+	dd 0x3F000000
 .one:
-	dd 0x3F800000		; 1.0
-
+	dd 0x3F800000
 .coef0:
-	dd 0x3FC26F24		; 1.51901679307446258196
+	dd 0x3FC26F24
 .coef1:
-	dd 0x3EA66887		; 0.32501622369042378935
+	dd 0x3EA66887
 .coef2:
-	dd 0x3F2F6638		; 0.68515350354689586789
+	dd 0x3F2F6638
 .coef3:
-	dd 0x3F224EDE		; 0.63401589172451679138
+	dd 0x3F224EDE
 .coef4:
-	dd 0x3F2564F2		; 0.64607158024987317298
+	dd 0x3F2564F2
 .coef5:
-	dd 0x3F490FDB		; 0.78539816339744830962 (pi/4)
+	dd 0x3F490FDB
 
 %endif
