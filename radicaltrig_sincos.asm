@@ -136,28 +136,30 @@ sincos_rau_rsqrtnw:
 	ret
 
 align 8
-
+.three_halves: 			; for sine only
+	dd 0x3FC00000
 .two_over_pi:
-	dd 0x3F22F983
+	dd 0x3F22F983		; 0.63661977236758134308 (2/pi), float32
 .quarter:
-	dd 0x3E800000
+	dd 0x3E800000		; 0.25
 .four:
-	dd 0x40800000
+	dd 0x40800000		; 4.0
 .half:
-	dd 0x3F000000
+	dd 0x3F000000		; 0.5
 .one:
-	dd 0x3F800000
+	dd 0x3F800000		; 1.0
+
 .coef0:
-	dd 0x3FC26F24
+	dd 0x3FC26F24		; 1.51901679307446258196
 .coef1:
-	dd 0x3EA66887
+	dd 0x3EA66887		; 0.32501622369042378935
 .coef2:
-	dd 0x3F2F6638
+	dd 0x3F2F6638		; 0.68515350354689586789
 .coef3:
-	dd 0x3F224EDE
+	dd 0x3F224EDE		; 0.63401589172451679138
 .coef4:
-	dd 0x3F2564F2
+	dd 0x3F2564F2		; 0.64607158024987317298
 .coef5:
-	dd 0x3F490FDB
+	dd 0x3F490FDB		; 0.78539816339744830962 (pi/4)
 
 %endif
