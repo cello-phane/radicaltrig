@@ -136,7 +136,7 @@ sincos_rau:
 	ret
 
 align 8
-.three_halves: 			; for sine only
+.three_halves: 			; for rsqrt version only
 	dd 0x3FC00000
 .two_over_pi:
 	dd 0x3F22F983		; 0.63661977236758134308 (2/pi), float32
