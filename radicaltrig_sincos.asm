@@ -1,13 +1,13 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;SINECOS_RAU_RSQRTNW;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;SINECOS_RAU;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-%ifndef SINCOS_RAU_RSQRTNW
-%define SINCOS_RAU_RSQRTNW
+%ifndef SINCOS_RAU
+%define SINCOS_RAU
 ; https://godbolt.org/z/Mvvh4o5vs (sine test) https://godbolt.org/z/zG8bE7Px4 (cosine test)
-global sincos_rau_rsqrtnw
+global sincos_rau
 
 align 64
-sincos_rau_rsqrtnw:
+sincos_rau:
 	cvtsd2ss xmm0,xmm0		; narrow to float32 (rau_sincosf(C-variant) precision)
 
     ; --- radians -> RAU ---
