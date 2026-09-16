@@ -3,7 +3,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 %ifndef SINCOS_RAU_RSQRTNW
 %define SINCOS_RAU_RSQRTNW
-
+; https://godbolt.org/z/oGPPo1qT4
 global sincos_rau_rsqrtnw
 
 align 64
@@ -16,7 +16,7 @@ sincos_rau_rsqrtnw:
     ; --- floor-based mod4: m = phi - 4*floor(phi/4) ---
     movss xmm1,xmm0
     mulss xmm1,[.quarter]
-    roundss xmm1,xmm1,0x09		; round down (floor), suppress inexact
+    roundss xmm1,xmm1,0x09	; round down (floor), suppress inexact
     mulss xmm1,[.four]
     subss xmm0,xmm1			; xmm0 = m, in [0,4)
 
@@ -92,7 +92,7 @@ sincos_rau_rsqrtnw:
 
 	; --- diagonal normalize: BOTH numerators share this one sqrt(D) ---
 	movss xmm6,[.one]
-	subss xmm6,xmm5			; xmm6 = omw (cos numerator)
+	subss xmm6,xmm5			; xmm6 = (1-w) (cos numerator)
 
 	movss xmm7,xmm6
 	mulss xmm7,xmm7
@@ -105,7 +105,7 @@ sincos_rau_rsqrtnw:
 	divss xmm1,xmm7			; xmm1 = inv = 1/sqrt(D)
 	;; specific assignments
 	mulss xmm5,xmm1			; xmm5 = sin_raw = w*inv
-	;mulss xmm6,xmm1		; xmm6 = cos_raw = omw*inv
+	;mulss xmm6,xmm1		; xmm6 = cos_raw = (1-w)*inv
 
 	; --- sign application --- ;; specific assignments
 	
