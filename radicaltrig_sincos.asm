@@ -10,7 +10,7 @@ global sine_rau_rsqrtnw		; only needed for external linkage in this standalone
 align 64
 sine_rau_rsqrtnw:
 
-	  cvtsd2ss xmm0,xmm0		; narrow to float32 (rau_sincosf(C-variant) precision)
+	cvtsd2ss xmm0,xmm0		; narrow to float32 (rau_sincosf(C-variant) precision)
 
     ; --- radians -> RAU ---
     mulss xmm0,[.two_over_pi]
@@ -78,7 +78,7 @@ sine_rau_rsqrtnw:
     ; xmm5 = p
 
     ; continue
-    mulss xmm5,xmm3			  ; v*p
+    mulss xmm5,xmm3			; v*p
     addss xmm5,[.half]		; xmm5 = w = v*p + 0.5
 
     ; --- odd-quadrant reversal: if qi&1, w = 1-w ---
@@ -119,7 +119,11 @@ sine_rau_rsqrtnw:
     mulss xmm1,xmm2          ; y1
 
     ; --- normalized sine ---
-    mulss xmm1,xmm5          ; w/sqrt(D)
+    mulss xmm1,xmm5        ; w/sqrt(D)
+	; --- normalized cosine ---
+	; movss xmm0,[.one]
+	; subss xmm0,xmm5
+	; mulss xmm1,xmm0		 ; (1-w)/sqrt(D)
 
     ; --- sign ---
     mov edx,eax
@@ -130,7 +134,7 @@ sine_rau_rsqrtnw:
     pxor xmm1,xmm2
 
     movss xmm0,xmm1
-    cvtss2sd xmm0,xmm0
+    cvtss2sd xmm0,xmm0 ; widen back
     
 	ret
 
