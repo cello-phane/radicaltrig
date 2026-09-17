@@ -89,7 +89,6 @@ sincos_rau:
     movss xmm5,xmm6
 
 .no_flip:
-
 	; --- diagonal normalize: BOTH numerators share this one sqrt(D) ---
 	movss xmm6,[.one]
 	subss xmm6,xmm5			; xmm6 = (1-w) (cos numerator)
@@ -99,10 +98,27 @@ sincos_rau:
 	movss xmm1,xmm5
 	mulss xmm1,xmm1
 	addss xmm7,xmm1			; xmm7 = D
-
+	
+	; --- sqrt+div ---
 	sqrtss xmm7,xmm7
 	movss xmm1,[.one]
 	divss xmm1,xmm7			; xmm1 = inv = 1/sqrt(D)
+	; --- end sqrt+div ---
+
+	; -- or --
+
+	; --- reciprocal sqrt+newton ---
+    ; rsqrtss xmm1,xmm7        ; xmm1 = y0 ≈ 1/sqrt(D)
+    ; --- Newton-Raphson correction --- ; xmm3 = rsqrt
+    ; movss xmm3,xmm1
+    ; mulss xmm3,xmm3          ; y0²
+    ; mulss xmm3,xmm7          ; D*y0²
+    ; mulss xmm3,[.half]       ; 0.5*D*y0²
+    ; movss xmm2,[.three_halves]
+	; subss xmm2,xmm3          ; 1.5 - 0.5*D*y0²
+	; mulss xmm1,xmm2          ; y1
+	; --- end Newton-Raphson ---
+
 	;; specific assignments
 	mulss xmm5,xmm1			; xmm5 = sin_raw = w*inv
 	;mulss xmm6,xmm1		; xmm6 = cos_raw = (1-w)*inv
@@ -118,15 +134,16 @@ sincos_rau:
 	pxor xmm5,xmm2
 	
 	; cosine sign = qi bit1 XOR bit0
-	;mov edx,eax
-	;shr edx,1
-	;xor edx,eax
-	;and edx,1
-	;shl edx,31
-	;movd xmm2,edx
-	;pxor xmm6,xmm2
+	; mov edx,eax
+	; shr edx,1
+	; xor edx,eax
+	; and edx,1
+	; shl edx,31
+	; movd xmm2,edx
+	; pxor xmm6,xmm2
 
-	; widen outputs
+	; --- widen outputs ---
+
 	; return double(sin)
 	cvtss2sd xmm0,xmm5
 
