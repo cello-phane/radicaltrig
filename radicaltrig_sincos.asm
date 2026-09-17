@@ -1,12 +1,13 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;SINECOS_RAU;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-%ifndef SINCOS_RAU
-%define SINCOS_RAU
-; https://godbolt.org/z/Mvvh4o5vs (sine test) https://godbolt.org/z/zG8bE7Px4 (cosine test)
+; https://godbolt.org/z/6zrjqEE7z (sine test) https://godbolt.org/z/Tq4chjes3 (cosine test)
+default rel
 global sincos_rau
 
+section .text
 align 64
+
 sincos_rau:
 	cvtsd2ss xmm0,xmm0		; narrow to float32 (rau_sincosf(C-variant) precision)
 
@@ -21,14 +22,12 @@ sincos_rau:
     subss xmm0,xmm1			; xmm0 = m, in [0,4)
 
     ; --- quadrant + fraction ---
-    cvttss2si eax,xmm0		; truncate m -> integer part (m>=0, so trunc==floor)
-    and eax,3				; qi = qi_full & 3 (guards the rare m==4.0 rounding edge)
-    cvtsi2ss xmm2,eax
-    subss xmm0,xmm2			; xmm0 = frac = m - qi   (note: uses UNMASKED qi implicitly
-    						; via reuse below; frac itself only needs m - trunc(m),
-    						; which is correctly computed here since qi_full and
-    						; qi_full&3 differ only by full multiples of 4, which
-    						; cancel out of m - trunc(m) either way)
+	cvttss2si eax,xmm0       ; eax = qi_full
+	mov edx,eax              ; preserve qi_full
+	and edx,3                ; edx = qi
+
+	cvtsi2ss xmm2,eax        ; convert qi_full, NOT masked qi
+	subss xmm0,xmm2          ; frac = m - qi_full
 
 	; --- warp polynomial: v = frac - 0.5, Horner in v^2, then one step in v ---
     ; p = (((((c0*z + c1)*z + c2)*z + c3)*z + c4)*z + c5)
@@ -80,7 +79,6 @@ sincos_rau:
     addss xmm5,[.half]		; xmm5 = w = v*p + 0.5
 
     ; --- odd-quadrant reversal: if qi&1, w = 1-w ---
-    mov edx,eax
     and edx,1
     jz .no_flip
 
@@ -178,5 +176,3 @@ align 8
 	dd 0x3F2564F2		; 0.64607158024987317298
 .coef5:
 	dd 0x3F490FDB		; 0.78539816339744830962 (pi/4)
-
-%endif
