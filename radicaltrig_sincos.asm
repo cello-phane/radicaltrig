@@ -36,7 +36,7 @@ sincos_rau:
     mulss xmm4,xmm4			; xmm4 = v^2 = (xmm3-0.5)^2
 
     ; ------- Horner --------
-    ; p = (((((c0*z + c1)*v^2 + c2)*v^2 + c3)*v^2 + c4)*v^2 + c5)
+    ; p = (((((c0*v^2 + c1)*v^2 + c2)*v^2 + c3)*v^2 + c4)*v^2 + c5)
 	; p = ((((([.coef0]*v^2 + [.coef1])*v^2 + [.coef2])*v^2 + [.coef3])*v^2 + [.coef4])*v^2 + [.coef5])
     ; movss xmm5,[.coef0]
     ; mulss xmm5,xmm4
@@ -53,7 +53,7 @@ sincos_rau:
 
     ; -------- Estrin --------
     ; Optional: use Estrin scheme(instead of linear Horner to evaluate the polynomial):
-	; p0123 = {(c0 + v^2 * c1)} + {(v^4 * (c2 + v^2 + c3)}
+	; p0123 = {(c0 + v^2 * c1)} + {(v^4 * (c2 + v^2 * c3)}
 	; p = {p0123} + {(v^8 * (c4 + v^2 * c5)}
     ; p0123 = {([.coef0] + xmm4 * [.coef1])}=xmm5 + {xmm4*xmm4 * ([.coef2] + xmm4 * [.coef3])} = xmm0
     ; p     = p0123 + {xmm4*xmm4*xmm4*xmm4 * ([c.oef4] + xmm4 * [.coef5])} = xmm1
