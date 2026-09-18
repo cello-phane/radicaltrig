@@ -29,20 +29,15 @@ sincos_rau:
 	cvtsi2ss xmm2,eax        ; convert qi_full, NOT masked qi
 	subss xmm0,xmm2          ; frac = m - qi_full
 
-	; --- warp polynomial: v = frac - 0.5, Horner in v^2, then one step in v ---
-    ; p = (((((c0*z + c1)*z + c2)*z + c3)*z + c4)*z + c5)
-
-    ; Optional: use Estrin scheme(instead of linear Horner to evaluate the polynomial):
-    ; {xmm4 = (xmm3-0.5)^2}
-    ; p0123 = {([.coef0] + xmm4 * [.coef1])}=xmm5 + {xmm4*xmm4 * ([.coef2] + xmm4 * [.coef3])}=xmm0
-    ; p     = p0123 + {xmm4*xmm4*xmm4*xmm4 * ([c.oef4] + xmm4 * [.coef5])}=xmm1
-    ;       = xmm5 {xmm5 = (xmm3 * p)+0.5} (odd-quadrant fix afterwards with a subss)
+	; --- warp polynomial: v = frac - 0.5, then one step in v ---
     movss xmm3,xmm0
     subss xmm3,[.half]		; xmm3 = v
     movss xmm4,xmm3
-    mulss xmm4,xmm4			  ; xmm4 = v^2
+    mulss xmm4,xmm4			; xmm4 = v^2 = (xmm3-0.5)^2
 
     ; ------- Horner --------
+    ; p = (((((c0*z + c1)*v^2 + c2)*v^2 + c3)*v^2 + c4)*v^2 + c5)
+	; p = ((((([.coef0]*v^2 + [.coef1])*v^2 + [.coef2])*v^2 + [.coef3])*v^2 + [.coef4])*v^2 + [.coef5])
     ; movss xmm5,[.coef0]
     ; mulss xmm5,xmm4
     ; addss xmm5,[.coef1]
@@ -57,6 +52,11 @@ sincos_rau:
     ; xmm5 = p
 
     ; -------- Estrin --------
+    ; Optional: use Estrin scheme(instead of linear Horner to evaluate the polynomial):
+	; p0123 = {(c0*v^2 + c1) + (v^4 * (c2 + v^2 + c3)} + *v^ + c5}
+	; p = {p0123} + {(v^8 * (c4 + v^2 * c5)}
+    ; p0123 = {([.coef0] + xmm4 * [.coef1])}=xmm5 + {xmm4*xmm4 * ([.coef2] + xmm4 * [.coef3])} = xmm0
+    ; p     = p0123 + {xmm4*xmm4*xmm4*xmm4 * ([c.oef4] + xmm4 * [.coef5])} = xmm1
     movss xmm5,[.coef4]
     mulss xmm5,xmm4
     addss xmm5,[.coef5]
@@ -75,10 +75,10 @@ sincos_rau:
     ; xmm5 = p
 
     ; continue
-    mulss xmm5,xmm3			; v*p
-    addss xmm5,[.half]		; xmm5 = w = v*p + 0.5
+    mulss xmm5,xmm3			; xmm5 = v*p = xmm3*xmm5
+    addss xmm5,[.half]		; xmm5 = v*p + 0.5 = w
 
-    ; --- odd-quadrant reversal: if qi&1, w = 1-w ---
+    ; --- odd-quadrant fix(reversal of numerator term w): if qi&1, w = 1-w ---
     and edx,1
     jz .no_flip
 
