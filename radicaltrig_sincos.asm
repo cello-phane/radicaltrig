@@ -121,7 +121,6 @@ sincos_rau:
 	; sine sign = qi bit1, periodic (correct for sin(|x|))
 	mov edx,eax
 	shr edx,1
-	and edx,1
 	shl edx,31
 	movd xmm2,edx
 	pxor xmm5,xmm2
@@ -144,7 +143,6 @@ sincos_rau:
 	; mov edx,eax
 	; shr edx,1
 	; xor edx,eax
-	; and edx,1
 	; shl edx,31
 	; movd xmm2,edx
 	; pxor xmm6,xmm2
