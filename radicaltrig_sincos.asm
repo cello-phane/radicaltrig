@@ -34,9 +34,14 @@ sincos_rau:
 	movq    rdx,xmm0
 	shr     rdx,63
 	shl     rdx,63
+
+	; [---------TOGGLE cos=comment, sin=uncomment------]
+	; for sin inputs of 0.0 (positive), hardcoded path
 	xorpd xmm2, xmm2
 	ucomisd xmm0, xmm2              ; +0.0 == -0.0 is true under IEEE compare
 	je .early_zero
+	; [------------------TOGGLE END--------------------]
+
 	; --- |x|, double precision ---
 	andpd   xmm0,[.abs_mask_dbl]
 
@@ -109,20 +114,37 @@ sincos_rau:
 	sqrtss xmm7,xmm7
 	movss xmm1,[.one]
 	divss xmm1,xmm7			; xmm1 = inv = 1/sqrt(D)
-
+	; build sin and cos separately into xmm5/xmm6
 	mulss xmm5,xmm1			; xmm5 = sin_raw = w*inv
+	mulss xmm6,xmm1			; xmm6 = cos_raw = (1-w)*inv
 
+	; [-------------- TOGGLE ---------------]
 	; --- quadrant-derived periodic sign ---
+	; -------------------------------------
+	;             sin  -  sign
+	; -------------------------------------
 	mov r8d,eax
 	shr r8d,1
 	shl r8d,31
 	movd xmm2,r8d
 	pxor xmm5,xmm2
-
-	; --- widen and restore original input sign ---
 	cvtss2sd xmm0,xmm5
+	; --- widen and restore original input sign ---
 	movq xmm1,rdx
 	xorpd xmm0,xmm1
+
+	; -------------------------------------
+	;             cos  -  sign
+	; -------------------------------------
+	; mov edx,eax
+	; shr edx,1
+	; xor edx,eax
+	; shl edx,31
+	; movd xmm2,edx
+	; pxor xmm6,xmm2
+	; cvtss2sd xmm0,xmm6
+	; [-------------- TOGGLE END ------------]
+
 
 %ifdef WIN64_ABI
 	movdqu xmm6, [rsp]
