@@ -1,9 +1,20 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;SINECOS_RAU v2;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;SINE_RAU;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; https://godbolt.org/z/6zrjqEE7z (sine test) https://godbolt.org/z/Tq4chjes3 (cosine test)
 ;
-; TOGGLE: exactly one of the two blocks marked "TOGGLE: SIN" / "TOGGLE: COS"
+; ABI selection: this function writes xmm6/xmm7 as scratch. Under SysV64
+; (Linux/macOS) ALL xmm registers are caller-saved, so this is fine as-is.
+; Under Win64, xmm6-xmm15 are CALLEE-saved -- a caller may have a live
+; value sitting in xmm6/xmm7 across this call, and this function would
+; silently corrupt it unless it saves/restores them itself.
+;
+; Assemble for Linux/SysV64 (default, no extra cost):
+;     nasm -f elf64 sincos_rau.asm -o sincos_rau.o
+;
+; Assemble for Windows x64 (adds the save/restore prologue+epilogue):
+;     nasm -f win64 -DWIN64_ABI sincos_rau.asm -o sincos_rau.obj
+;
+; Same source, same algorithm, only the register-preservation differs.
 default rel
 global sincos_rau
 
@@ -11,16 +22,23 @@ section .text
 align 64
 
 sincos_rau:
-	; --- snapshot sign of original x (needed for the SIN toggle only) ---
-	; Must live in a register nothing else in this function touches:
-	; rax/eax gets reused below for qi_full, and writing eax zero-extends
-	; the full 64-bit rax, so storing the sign there would be clobbered
-	; before use. r8 is untouched elsewhere in this function.
-	movq r8, xmm0                   ; r8 = raw bits of x
-	mov rcx, 0x8000000000000000
-	and r8, rcx                     ; r8 = sign bit of x, isolated
+%ifdef WIN64_ABI
+	; Win64 ABI: xmm6/xmm7 are callee-saved -- preserve the caller's values
+	sub rsp, 32
+	movdqu [rsp], xmm6
+	movdqu [rsp+16], xmm7
+%endif
 
-	andpd xmm0, [.abs_mask_dbl]     ; xmm0 = |x|, double precision
+	; --- snapshot sign of original x ---
+	; rdx = 0x0000000000000000 or 0x8000000000000000
+	movq    rdx,xmm0
+	shr     rdx,63
+	shl     rdx,63
+	xorpd xmm2, xmm2
+	ucomisd xmm0, xmm2              ; +0.0 == -0.0 is true under IEEE compare
+	je .early_zero
+	; --- |x|, double precision ---
+	andpd   xmm0,[.abs_mask_dbl]
 
 	; --- radians -> RAU, done in double precision ---
 	mulsd xmm0, [.two_over_pi_dbl]  ; xmm0 = phi = |x| * 2/pi
@@ -34,8 +52,8 @@ sincos_rau:
 
 	; --- quadrant + fraction, still double ---
 	cvttsd2si eax,xmm0              ; eax = qi_full
-	mov edx,eax                     ; preserve qi_full
-	and edx,3                       ; edx = qi
+	mov r8d,eax                     ; preserve qi_full
+	and r8d,3                       ; r8d = qi
 
 	cvtsi2sd xmm2,eax               ; convert qi_full (double), NOT masked qi
 	subsd xmm0,xmm2                 ; frac = m - qi_full, double, in [0,1)
@@ -50,8 +68,6 @@ sincos_rau:
 	mulss xmm4,xmm4			; xmm4 = v^2 = (xmm3-0.5)^2
 
 	; -------- Estrin --------
-	; p0123 = {(c0 + v^2 * c1)} + {(v^4 * (c2 + v^2 * c3)}
-	; p     = p0123 + {(v^8 * (c4 + v^2 * c5)}
 	movss xmm5,[.coef4]
 	mulss xmm5,xmm4
 	addss xmm5,[.coef5]
@@ -69,12 +85,11 @@ sincos_rau:
 	addss xmm5,xmm1
 	; xmm5 = p
 
-	; continue
 	mulss xmm5,xmm3			; xmm5 = v*p = xmm3*xmm5
 	addss xmm5,[.half]		; xmm5 = v*p + 0.5 = w
 
-	; --- odd-quadrant fix (reversal of numerator term w): if qi&1, w = 1-w ---
-	and edx,1
+	; --- odd-quadrant fix ---
+	and r8d,1
 	jz .no_flip
 
 	movss xmm6,[.one]
@@ -82,9 +97,8 @@ sincos_rau:
 	movss xmm5,xmm6
 
 .no_flip:
-	; --- diagonal normalize: BOTH numerators share this one sqrt(D) ---
 	movss xmm6,[.one]
-	subss xmm6,xmm5			; xmm6 = (1-w) (cos numerator)
+	subss xmm6,xmm5			; xmm6 = (1-w)
 
 	movss xmm7,xmm6
 	mulss xmm7,xmm7
@@ -92,63 +106,42 @@ sincos_rau:
 	mulss xmm1,xmm1
 	addss xmm7,xmm1			; xmm7 = D
 
-	; --- sqrt+div ---
 	sqrtss xmm7,xmm7
 	movss xmm1,[.one]
 	divss xmm1,xmm7			; xmm1 = inv = 1/sqrt(D)
-	; --- end sqrt+div ---
 
-	; -- or --
-
-	; --- reciprocal sqrt+newton ---
-    ; rsqrtss xmm1,xmm7        ; xmm1 = y0 ≈ 1/sqrt(D)
-    ; movss xmm3,xmm1
-    ; mulss xmm3,xmm3          ; y0²
-    ; mulss xmm3,xmm7          ; D*y0²
-    ; mulss xmm3,[.half]       ; 0.5*D*y0²
-    ; movss xmm2,[.three_halves]
-	; subss xmm2,xmm3          ; 1.5 - 0.5*D*y0²
-	; mulss xmm1,xmm2          ; y1
-	; --- end Newton-Raphson ---
-
-	;; mul with reciprocal
 	mulss xmm5,xmm1			; xmm5 = sin_raw = w*inv
-	mulss xmm6,xmm1			; xmm6 = cos_raw = (1-w)*inv
 
-	; ============================================================
-	; TOGGLE: SIN -- keep this pair active for a sin() build
-	; ============================================================
-	; sine sign = qi bit1, periodic (correct for sin(|x|))
-	mov edx,eax
-	shr edx,1
-	shl edx,31
-	movd xmm2,edx
+	; --- quadrant-derived periodic sign ---
+	mov r8d,eax
+	shr r8d,1
+	shl r8d,31
+	movd xmm2,r8d
 	pxor xmm5,xmm2
 
-	; widen, then apply OVERALL sign of original x -- sin only, since
-	; sin is odd. This must stay inside the SIN block: do not let it
-	; run on the cos path.
+	; --- widen and restore original input sign ---
 	cvtss2sd xmm0,xmm5
-	movq xmm1,r8                     ; xmm1 = sign bit of original x
-	xorpd xmm0,xmm1                  ; f(-x) = -f(x), exactly
+	movq xmm1,rdx
+	xorpd xmm0,xmm1
+
+%ifdef WIN64_ABI
+	movdqu xmm6, [rsp]
+	movdqu xmm7, [rsp+16]
+	add rsp, 32
+%endif
 	ret
 
-	; ============================================================
-	; TOGGLE: COS -- comment out the SIN block above and uncomment
-	; this pair for a cos() build. No overall-sign step: cosine is
-	; even, so only the quadrant-derived periodic sign applies.
-	; ============================================================
-	; cosine sign = qi bit1 XOR bit0, periodic (correct for cos(|x|)
-	; == cos(x), since cosine never depends on the sign of x)
-	; mov edx,eax
-	; shr edx,1
-	; xor edx,eax
-	; shl edx,31
-	; movd xmm2,edx
-	; pxor xmm6,xmm2
-	;
-	; cvtss2sd xmm0,xmm6
-	; ret
+.early_zero:
+	; rdx already holds exactly +0.0's or -0.0's bit pattern -- no
+	; extra masking needed, and no xmm6/xmm7 has been touched yet on
+	; this path, so no restore needed here either.
+	movq xmm0, rdx
+%ifdef WIN64_ABI
+	movdqu xmm6, [rsp]
+	movdqu xmm7, [rsp+16]
+	add rsp, 32
+%endif
+	ret
 
 align 16
 .abs_mask_dbl:
@@ -162,8 +155,6 @@ align 8
 .four_dbl:
 	dq 0x4010000000000000	; 4.0, double
 
-.three_halves: 			; for rsqrt version only
-	dd 0x3FC00000
 .half:
 	dd 0x3F000000		; 0.5
 .one:
