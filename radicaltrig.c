@@ -111,12 +111,12 @@ float rau_atan2_signed_degs(float phi_rau) {
 //                       artifact of the double-precision derivation.
 static inline float rau_warpf_tier0(float t) {
     static const float C[6] = {
-        0.78539816339744830962f,
-        0.64607158024987317298f,
-        0.63401589172451679138f,
-        0.68515350354689586789f,
-        0.32501622369042378935f,
-        1.51901679307446258196f
+        0.7853980572931007f,
+        0.645998410943566f,
+        0.6358057177332058f,
+        0.6676945542914484f,
+        0.39804812605847295f,
+        1.4099248224897576f
     };
     float v  = t - 0.5f;
     float v2 = v * v;
