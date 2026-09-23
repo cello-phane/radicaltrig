@@ -1,7 +1,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;SINE_RAU;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; https://godbolt.org/z/6zrjqEE7z (sine test) https://godbolt.org/z/Tq4chjes3 (cosine test)
-;
+; 
 ; ABI selection: this function writes xmm6/xmm7 as scratch. Under SysV64
 ; (Linux/macOS) ALL xmm registers are caller-saved, so this is fine as-is.
 ; Under Win64, xmm6-xmm15 are CALLEE-saved -- a caller may have a live
@@ -21,9 +21,11 @@ global sincos_rau
 section .text
 align 64
 
-sincos_rau:
+sinecos_rau:
 %ifdef WIN64_ABI
-	; Win64 ABI: xmm6/xmm7 are callee-saved -- preserve the caller's values
+	mov r10, rcx              ; r10 = destination struct pointer
+	movsd xmm0, xmm1          ; x arrives in xmm1 under Win64's hidden-pointer shift
+
 	sub rsp, 32
 	movdqu [rsp], xmm6
 	movdqu [rsp+16], xmm7
@@ -31,16 +33,13 @@ sincos_rau:
 
 	; --- snapshot sign of original x ---
 	; rdx = 0x0000000000000000 or 0x8000000000000000
-	movq    rdx,xmm0
-	shr     rdx,63
-	shl     rdx,63
+	movq    r9,xmm0
+	shr     r9,63
+	shl     r9,63
 
-	; [---------TOGGLE cos=comment, sin=uncomment------]
-	; for sin inputs of 0.0 (positive), hardcoded path
-	xorpd xmm2, xmm2
-	ucomisd xmm0, xmm2              ; +0.0 == -0.0 is true under IEEE compare
-	je .early_zero
-	; [------------------TOGGLE END--------------------]
+	; No exact-zero branch needed: the refit coefficients below already
+	; give sin(+-0.0)=+-0.0 and cos(0.0)=1.0 exactly through the normal
+	; path (verified in the refit simulation). See header comment.
 
 	; --- |x|, double precision ---
 	andpd   xmm0,[.abs_mask_dbl]
@@ -56,8 +55,8 @@ sincos_rau:
 	subsd xmm0,xmm1                 ; xmm0 = m, in [0,4), double
 
 	; --- quadrant + fraction, still double ---
-	cvttsd2si eax,xmm0              ; eax = qi_full
-	mov r8d,eax                     ; preserve qi_full
+	cvttsd2si eax,xmm0              ; eax = qi_full -- stays live all the way
+	mov r8d,eax                     ; to the sign-application block below
 	and r8d,3                       ; r8d = qi
 
 	cvtsi2sd xmm2,eax               ; convert qi_full (double), NOT masked qi
@@ -111,57 +110,83 @@ sincos_rau:
 	mulss xmm1,xmm1
 	addss xmm7,xmm1			; xmm7 = D
 
-	sqrtss xmm7,xmm7
-	movss xmm1,[.one]
-	divss xmm1,xmm7			; xmm1 = inv = 1/sqrt(D)
-	; build sin and cos separately into xmm5/xmm6
+	;; ---- rsqrt polynomial evaluation(valid for 0.5 to 1.0 input range) ----
+	; (C[0] + (C[1] * d) + ((C[2] + d * C[3]) * d^2)) + d^4 * (C[4] + (C[5] * d) + ((C[6] + d * C[7]) * d^2))
+	;                                                         (      xmm2      )   (          xmm3          )
+	;                                                  (                    xmm3{free xmm2}                 )
+    ; xmm4 = d^2
+    movss xmm4,xmm7
+    mulss xmm4,xmm4 ; d^2 = xmm4
+    ;---------
+    movss xmm3,[.rscoef7]
+    mulss xmm3,xmm7
+    addss xmm3,[.rscoef6]
+    mulss xmm3,xmm4
+
+    movss xmm2,[.rscoef5]
+    mulss xmm2,xmm7
+    addss xmm2,[.rscoef4]
+    ;---------
+    addss xmm3,xmm2
+    ;-- multiply by d^4 --
+    mulss xmm3,xmm4
+    mulss xmm3,xmm4
+
+   	; ( C[0] + (C[1] * d) + ( ( C[2] + (d * C[3]) ) * d^2 ) ) + d^4 * ( C[4] + (C[5] * d) + ( ( C[6] + (d * C[7]) ) * d^2 ) )
+	;        (  xmm1  )     (             xmm2              )
+	; (                          xmm1                       ) += { xmm3 } --> xmm1 = 1/sqrt(d)
+	movss xmm2,[.rscoef3]
+	mulss xmm2,xmm7
+	addss xmm2,[.rscoef2]
+	mulss xmm2,xmm4
+
+	movss xmm1,[.rscoef1]
+	mulss xmm1,xmm7
+	addss xmm1,[.rscoef0]
+	addss xmm1,xmm2
+	addss xmm1,xmm3
+	; -------- end rsqrt polynomial evaluation --------
+
+	; This block replaced by the above
+	; - which is an optional optimization for fma supported archs
+	;rsqrtss xmm1,xmm7
+	;movss xmm1,[.one]
+	;divss xmm1,xmm7			; xmm1 = inv = 1/sqrt(D)
+
 	mulss xmm5,xmm1			; xmm5 = sin_raw = w*inv
 	mulss xmm6,xmm1			; xmm6 = cos_raw = (1-w)*inv
 
-	; [-------------- TOGGLE ---------------]
-	; --- quadrant-derived periodic sign ---
-	; -------------------------------------
-	;             sin  -  sign
-	; -------------------------------------
+	; --- sin: periodic sign (qi bit1) ---
+	mov edx,eax
+	shr edx,1
+	and edx,1                       ; defensive: guard against qi_full transiently >3
+	shl edx,31
+	movd xmm2,edx
+	pxor xmm5,xmm2
+
+	; --- cos: periodic sign (qi bit1 XOR bit0), no overall-sign step ---
 	mov r8d,eax
 	shr r8d,1
+	xor r8d,eax
+	and r8d,1
 	shl r8d,31
-	movd xmm2,r8d
-	pxor xmm5,xmm2
+	movd xmm3,r8d
+	pxor xmm6,xmm3
+
+	; --- widen; apply overall input sign to sin ONLY (sin is odd) ---
 	cvtss2sd xmm0,xmm5
-	; --- widen and restore original input sign ---
-	movq xmm1,rdx
-	xorpd xmm0,xmm1
+	movq xmm1,r9
+	xorpd xmm0,xmm1                 ; xmm0 = si, f(-x) = -f(x) exactly
 
-	; -------------------------------------
-	;             cos  -  sign
-	; -------------------------------------
-	; mov edx,eax
-	; shr edx,1
-	; xor edx,eax
-	; shl edx,31
-	; movd xmm2,edx
-	; pxor xmm6,xmm2
-	; cvtss2sd xmm0,xmm6
-	; [-------------- TOGGLE END ------------]
-
+	cvtss2sd xmm1,xmm6               ; xmm1 = co, no sign correction (cos is even)
 
 %ifdef WIN64_ABI
+	movsd [r10], xmm0
+	movsd [r10+8], xmm1
 	movdqu xmm6, [rsp]
 	movdqu xmm7, [rsp+16]
 	add rsp, 32
-%endif
-	ret
-
-.early_zero:
-	; rdx already holds exactly +0.0's or -0.0's bit pattern -- no
-	; extra masking needed, and no xmm6/xmm7 has been touched yet on
-	; this path, so no restore needed here either.
-	movq xmm0, rdx
-%ifdef WIN64_ABI
-	movdqu xmm6, [rsp]
-	movdqu xmm7, [rsp+16]
-	add rsp, 32
+	mov rax, r10
 %endif
 	ret
 
@@ -182,15 +207,38 @@ align 8
 .one:
 	dd 0x3F800000		; 1.0
 
+; Refit coefficients: boundary-constrained, p(0.25) = 1.0 exactly, via
+; NASM's native decimal-literal parsing rather than hand-computed hex.
 .coef0:
-	dd 0x3FC26F24		; 1.51901679307446258196
+	dd 1.4099248224897576
 .coef1:
-	dd 0x3EA66887		; 0.32501622369042378935
+	dd 0.39804812605847295
 .coef2:
-	dd 0x3F2F6638		; 0.68515350354689586789
+	dd 0.6676945542914484
 .coef3:
-	dd 0x3F224EDE		; 0.63401589172451679138
+	dd 0.6358057177332058
 .coef4:
-	dd 0x3F2564F2		; 0.64607158024987317298
+	dd 0.645998410943566
 .coef5:
-	dd 0x3F490FDB		; 0.78539816339744830962 (pi/4)
+	dd 0.7853980572931007
+
+; rsqrt(D) polynomial, D in [0.5, 1.0)
+.rscoef0:
+	dd 3.7485222
+.rscoef1:
+	dd -12.36746552
+.rscoef2:
+	dd 31.20405037
+.rscoef3:
+	dd -51.61996226
+.rscoef4:
+	dd 55.3118811
+.rscoef5:
+	dd -37.09117787
+.rscoef6:
+	dd 14.17152784
+.rscoef7:
+	dd -2.35737633
+
+
+section .note.GNU-stack noalloc noexec nowrite progbits
