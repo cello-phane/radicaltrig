@@ -1,3 +1,5 @@
+; on CompilerExplorer: https://godbolt.org/z/xGcsjahsY
+; Local:
 ; Assemble for Linux/SysV64:
 ;     nasm -f elf64 sincos_fma.asm -o sincos_fma.o
 ; Assemble for Windows x64:
