@@ -26,7 +26,7 @@ const AppState = {
   // UI settings
   ui: {
     precision: 6,
-    maxPrecision: 15,
+    maxPrecision: 7,
     angleMode: "between",
     angleWrapMode: false,
     biasMode: false,
