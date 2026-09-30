@@ -92,24 +92,26 @@ float rau_atan2_signed_degs(float phi_rau) {
 // v2). rau_warpf_orig() and rau_warpf_v2() are both exposed directly so
 // either is callable regardless of that define, for A/B comparison
 // without a recompile.
-//
-// Both figures below are end-to-end sin/cos error (after the radical-
-// identity projection), which is very slightly larger than the raw
-// warp-space approximation error alone (5.168e-7 for tier 0) — verified
-// via mpmath at 50-digit precision and cross-checked with an independent
-// scipy/HiGHS linear-program minimax solve, then again by compiling and
-// running both tiers on real x86 float32 hardware.
-//
-//   tier 0 (original): Remez minimax over full [0,1]. C1 = π/4 exact.
-//                       sin/cos max err: 5.472e-7 (double) / 6.36e-7 (float32)
-//   tier 1 (v2, default): constrained L-infinity refit — C1 still pinned
-//                       exactly to π/4, C2..C6 re-solved by LP. sin/cos
-//                       max err: 1.246e-7 (double) / 2.37e-7 (float32) —
-//                       ~4.4x tighter in double precision, ~2.7x tighter
-//                       as actually compiled, confirming the improvement
-//                       survives float32 rounding rather than being an
-//                       artifact of the double-precision derivation.
+
 static inline float rau_warpf_tier0(float t) {
+    static const float C[7] = {
+        0.78539828866558314f,
+        0.64594625770051587f,
+        0.63827326697947083f,
+        0.62357916420830480f,
+        0.75561600946878778f,
+        0.079951715963356818f,
+        1.8429558690126906f
+    };
+    float v  = t - 0.5f;
+    float v2 = v * v;
+    float p  = C[6];
+    for (int i = 5; i >= 0; --i)
+        p = v2 * p + C[i];
+    return 0.5f + v * p;
+}
+
+static inline float rau_warpf_tier1(float t) {
     static const float C[6] = {
         0.7853980572931007f,
         0.645998410943566f,
@@ -117,23 +119,6 @@ static inline float rau_warpf_tier0(float t) {
         0.6676945542914484f,
         0.39804812605847295f,
         1.4099248224897576f
-    };
-    float v  = t - 0.5f;
-    float v2 = v * v;
-    float p  = C[5];
-    for (int i = 4; i >= 0; --i)
-        p = v2 * p + C[i];
-    return 0.5f + v * p;
-}
-
-static inline float rau_warpf_tier1(float t) {
-    static const float C[6] = {
-        0.78539816339744830962f, /* unchanged from tier 0 — pi/4, exact */
-        0.6460261721112686f,
-        0.6346711435786873f,
-        0.6812793876895539f,
-        0.33448057938003534f,
-        1.5121252251949524f
     };
     float v  = t - 0.5f;
     float v2 = v * v;

@@ -17,20 +17,7 @@
  *   0 = warp applied — arc-uniform, π/2 per RAU
  *   1 = raw diagonal  — no warp, non-uniform arc speed
  *   runtime blend: rau_sincos_mf(phi, M, s, c)  M∈[0,1]
- *
- * RAU_WARP_QUALITY (compile-time, default 1):
- *   1 = v2        (default) — constrained minimax refit, C1 still
- *                   exactly π/4, end-to-end sin/cos max err 1.246e-7
- *                   RAU (double precision) / 2.372e-7 (measured on real
- *                   float32 hardware, ~2.7x tighter than tier 0 there).
- *                   Validated: compiled and run on real x86 float32,
- *                   cross-checked against an independent LP/mpmath
- *                   derivation and against a reference Desmos
- *                   construction.
- *   0 = original  — end-to-end sin/cos max err 5.472e-7 RAU. Kept for
- *                   anyone who specifically wants the older fit.
- *   rau_warpf_orig() and rau_warpf_v2() are both callable directly
- *   regardless of this define, for A/B testing.
+
  *
  * Accuracy:
  *   rau_sincosf       1.246e-7  float32  (5.472e-7 with RAU_WARP_QUALITY=0)
