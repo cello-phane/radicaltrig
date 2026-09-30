@@ -1,4 +1,3 @@
-; on CompilerExplorer: https://godbolt.org/z/xGcsjahsY
 ; Local:
 ; Assemble for Linux/SysV64:
 ;     nasm -f elf64 sincos_fma.asm -o sincos_fma.o
@@ -207,8 +206,8 @@ align 16
     dd 0.079951715963356818
 .coef6:
     dd 1.8429558690126906
-; rsqrt(D) polynomial, D in [0.5, 1.0)
 
+; rsqrt(D) polynomial, D in [0.5, 1.0)
 .rscoef0:
     dd 1.1547001741792948507
 .rscoef1:
