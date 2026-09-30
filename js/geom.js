@@ -166,20 +166,9 @@ const warp11_tier0 = makeWarp11(
   1.8429558690126906,
 );
 
-const warp11_tier1 = makeWarp11(
-  0.78539816339744830962,
-  0.64607158024987317298,
-  0.63401589172451679138,
-  0.68515350354689586789,
-  0.32501622369042378935,
-  1.51901679307446258196,
-);
-
-const RAU_WARP_V2 = { apply(t) { return 0.5 + warp11_tier1(t); } };
-
 const RAU_WARP = {
   apply(t) {
-    return 0.5 + (JS_WARP_QUALITY === 1 ? warp11_tier1(t) : warp11_tier0(t));
+    return 0.5 + warp11_tier0(t);
   }
 };
 
