@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RAU sincos: Geometry and Algebra in One Pass</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.11/katex.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.11/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.11/contrib/auto-render.min.js"></script>
+<style>
+:root{
+  --ink:#1e2430; --sub:#5b6472; --line:#e2e6ec; --bg:#f4f6f9; --card:#ffffff;
+  --blue:#2454c7;  --blue-bg:#eef3ff;
+  --green:#1f8a4c; --green-bg:#effaf1;
+  --amber:#b7791f; --amber-bg:#fff8ea;
+  --teal:#0f8b8d;  --teal-bg:#eafbfb;
+  --purple:#6b3fc0; --purple-bg:#f5f0ff;
+  --rose:#c23a5e;  --rose-bg:#fdf0f4;
+  --pipe:#334066;
+}
+*{box-sizing:border-box;}
+body{
+  margin:0; padding:2rem 1.4rem 4rem; background:var(--bg); color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  max-width:1180px; margin-inline:auto;
+}
+h1{font-size:1.9rem; font-weight:700; text-align:center; margin:0 0 .3rem; letter-spacing:-.01em;}
+.subtitle{text-align:center; color:var(--sub); font-size:.95rem; margin-bottom:2rem;}
+.grid{display:grid; grid-template-columns:repeat(3,1fr); gap:1rem;}
+@media(max-width:900px){.grid{grid-template-columns:1fr;}}
+.card{
+  background:var(--card); border-radius:10px; padding:1.1rem 1.2rem 1.3rem;
+  box-shadow:0 1px 2px rgba(20,30,50,.06), 0 1px 12px rgba(20,30,50,.04);
+  border-top:4px solid var(--accent); display:flex; flex-direction:column; gap:.55rem;
+}
+.card h2{font-size:.98rem; font-weight:700; margin:0; color:var(--accent);}
+.card p{font-size:.82rem; line-height:1.5; margin:0; color:var(--ink);}
+.card .formula-box{
+  background:var(--accent-bg); border-radius:7px; padding:.6rem .7rem;
+  font-size:.83rem; line-height:1.55; overflow-x:auto;
+}
+.card .coef-box{
+  background:var(--accent-bg); border-radius:7px; padding:.55rem .7rem;
+  font-size:.72rem; line-height:1.6; font-family:'Courier New',monospace; color:var(--sub);
+}
+.card .coef-box b{color:var(--ink); font-weight:600;}
+.diagram-holder{background:#fff; border:1px solid var(--line); border-radius:7px; padding:.4rem;}
+.diagram-holder svg{display:block; width:100%; height:auto;}
+.c1{--accent:var(--blue); --accent-bg:var(--blue-bg);}
+.c2{--accent:var(--green); --accent-bg:var(--green-bg);}
+.c3{--accent:var(--amber); --accent-bg:var(--amber-bg);}
+.c4{--accent:var(--teal); --accent-bg:var(--teal-bg);}
+.c5{--accent:var(--purple); --accent-bg:var(--purple-bg);}
+.c6{--accent:var(--rose); --accent-bg:var(--rose-bg);}
+.c7{--accent:#3b4a75; --accent-bg:#eef0f7;}
+
+.wide-card{grid-column:1/-1; margin-top:1rem;}
+.two-col{display:grid; grid-template-columns:1fr 1fr; gap:1.1rem;}
+@media(max-width:760px){.two-col{grid-template-columns:1fr;}}
+.chart-cap{font-size:.72rem; color:var(--sub); text-align:center; margin-top:.3rem;}
+.legend{display:flex; gap:1.1rem; justify-content:center; font-size:.72rem; margin-top:.25rem; flex-wrap:wrap;}
+.legend span{display:inline-flex; align-items:center; gap:.35rem;}
+.swatch{width:14px; height:3px; border-radius:2px; display:inline-block;}
+
+.callout{
+  display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-top:.7rem;
+}
+@media(max-width:760px){.callout{grid-template-columns:1fr;}}
+.callout .box{border-radius:8px; padding:.7rem .85rem; font-size:.8rem; line-height:1.55;}
+.box-slow{background:var(--teal-bg); border:1px solid #0f8b8d33;}
+.box-fast{background:var(--rose-bg); border:1px solid #c23a5e33;}
+.box-title{font-weight:700; font-size:.72rem; text-transform:uppercase; letter-spacing:.05em; margin-bottom:.3rem; display:block;}
+.box-slow .box-title{color:var(--teal);}
+.box-fast .box-title{color:var(--rose);}
+
+.pipeline{
+  margin-top:1.6rem; background:var(--card); border-radius:10px; padding:1rem 1.2rem;
+  box-shadow:0 1px 2px rgba(20,30,50,.06);
+}
+.pipeline h3{font-size:.8rem; text-transform:uppercase; letter-spacing:.06em; color:var(--sub); margin:0 0 .8rem;}
+.pipe-row{display:flex; align-items:center; gap:.4rem; flex-wrap:wrap; justify-content:center;}
+.pipe-step{
+  background:#eef0f7; color:var(--pipe); border-radius:8px; padding:.45rem .8rem;
+  font-size:.78rem; font-weight:600; text-align:center; min-width:74px;
+}
+.pipe-step small{display:block; font-weight:400; color:var(--sub); font-size:.65rem; margin-top:.15rem;}
+.pipe-arrow{color:#b7bfcf; font-size:1rem;}
+.pipe-step.hl{background:var(--rose-bg); color:var(--rose);}
+</style>
+</head>
+<body>
+
+<h1>RAU sincos: Geometry and Algebra in One Pass</h1>
+<div class="subtitle">Warp the angle &rarr; build a vector &rarr; normalize with 1/&radic;D &rarr; apply signs</div>
+
+<div class="grid">
+
+  <!-- PANEL 1 -->
+  <div class="card c1">
+    <h2>1. Warp polynomial (angle &rarr; w)</h2>
+    <p>Map the reduced fraction <code>frac &isin; [0,1)</code> to <code>w &isin; [0,1]</code> using a smooth polynomial (Estrin form).</p>
+    <div class="formula-box">
+      \(v = \text{frac} - 0.5\)<br>
+      \(y = v^2\)
+    </div>
+    <div class="formula-box">
+      \(p(v) = v\big[(C_0+C_1y+C_2y^2+C_3y^3) + y^4(C_4+C_5y+C_6y^2)\big]\)<br>
+      \(w = 0.5 + p(v)\)
+    </div>
+    <div class="coef-box">
+      Coefficients (tier 0):<br>
+      <b>C0</b>=0.78539828866558314&nbsp; <b>C1</b>=0.64594625770051587<br>
+      <b>C2</b>=0.63827326697947083&nbsp; <b>C3</b>=0.62357916420830480<br>
+      <b>C4</b>=0.75561600946878778&nbsp; <b>C5</b>=0.079951715963356818<br>
+      <b>C6</b>=1.8429558690126906
+    </div>
+  </div>
+
+  <!-- PANEL 2 -->
+  <div class="card c2">
+    <h2>2. Quadrant reflection</h2>
+    <p>For odd quadrants (Q1, Q3), use <code>1&minus;w</code>. This mirrors the vector across the diagonal.</p>
+    <div class="diagram-holder">
+      <svg viewBox="0 0 240 220" xmlns="http://www.w3.org/2000/svg" font-family="Courier New,monospace">
+        <line x1="120" y1="10" x2="120" y2="210" stroke="#e2e6ec"/>
+        <line x1="20" y1="110" x2="220" y2="110" stroke="#e2e6ec"/>
+        <circle cx="120" cy="110" r="90" fill="none" stroke="#d6dbe4" stroke-width="1.4"/>
+        <path d="M120,110 L210,110 A90,90 0 0,0 120,20 Z" fill="#1f8a4c" opacity=".13"/>
+        <path d="M120,110 L120,20 A90,90 0 0,0 30,110 Z" fill="#2454c7" opacity=".13"/>
+        <path d="M120,110 L30,110 A90,90 0 0,0 120,200 Z" fill="#1f8a4c" opacity=".13"/>
+        <path d="M120,110 L120,200 A90,90 0 0,0 210,110 Z" fill="#2454c7" opacity=".13"/>
+        <text x="165" y="95" font-size="11" fill="#1f8a4c" text-anchor="middle">Q0 (0&deg;-90&deg;)</text>
+        <text x="165" y="108" font-size="10" fill="#1f8a4c" text-anchor="middle">w</text>
+        <text x="75" y="95" font-size="11" fill="#2454c7" text-anchor="middle">Q1 (90&deg;-180&deg;)</text>
+        <text x="75" y="108" font-size="10" fill="#2454c7" text-anchor="middle">1&minus;w</text>
+        <text x="75" y="128" font-size="11" fill="#1f8a4c" text-anchor="middle">Q2 (180&deg;-270&deg;)</text>
+        <text x="75" y="141" font-size="10" fill="#1f8a4c" text-anchor="middle">w</text>
+        <text x="165" y="128" font-size="11" fill="#2454c7" text-anchor="middle">Q3 (270&deg;-360&deg;)</text>
+        <text x="165" y="141" font-size="10" fill="#2454c7" text-anchor="middle">1&minus;w</text>
+        <text x="205" y="106" font-size="9" fill="#8890a0">0&deg;</text>
+        <text x="112" y="16" font-size="9" fill="#8890a0">90&deg;</text>
+        <text x="22" y="106" font-size="9" fill="#8890a0">180&deg;</text>
+        <text x="105" y="205" font-size="9" fill="#8890a0">270&deg;</text>
+      </svg>
+    </div>
+  </div>
+
+  <!-- PANEL 3 -->
+  <div class="card c3">
+    <h2>3. Build normalized vector</h2>
+    <p>From the (possibly reflected) w, form <code>(w, 1&minus;w)</code> and rotate into the correct quadrant using <code>i<sub>n</sub></code>.</p>
+    <div class="formula-box">
+      \(R_{vec} = \big(i_n.x\!\cdot\!(1{-}w) - i_n.y\!\cdot\!w,\; i_n.y\!\cdot\!(1{-}w) + i_n.x\!\cdot\!w\big)\)<br>
+      <span style="color:#8890a0;font-size:.72rem">(before normalization)</span><br><br>
+      \(D = w^2+(1-w)^2 \quad (0.5 \le D \le 1)\)
+    </div>
+    <div class="coef-box">
+      <b>i<sub>n</sub></b> (axis basis):<br>
+      <b>z = mod(Q,4) = index of <i>Q0 to Q3</i></b><br>
+      (1,0) z&lt;1&nbsp;&nbsp; (0,1) z&lt;2&nbsp;&nbsp; (&minus;1,0) z&lt;3&nbsp;&nbsp; (0,&minus;1) z&lt;4
+    </div>
+  </div>
+
+  <!-- PANEL 4 -->
+  <div class="card c4">
+    <h2>4. Normalize with 1/&radic;D</h2>
+    <p>Divide by &radic;D using a reciprocal-square-root polynomial (centered at 0.75) with one Newton refinement.</p>
+    <div class="formula-box">
+      \(S_a = R_{vec} \cdot \dfrac{1}{\sqrt D} \;\rightarrow\; |S_a| = 1\)
+    </div>
+    <div class="formula-box">
+      \(P_{base}(d)\) centered at 0.75, \(d = D-0.75 \in [-0.25,0.25]\)<br>
+      \(P(x) = \dfrac{1}{2}\dfrac{P_{base}(x)^2 + \tfrac{1}{x}}{P_{base}(x)}\)<br>
+      \(P \approx \dfrac{1}{\sqrt x}\; \{0.5\le x\le 1\}\)
+    </div>
+  </div>
+
+  <!-- PANEL 5 -->
+  <div class="card c5">
+    <h2>5. Final components</h2>
+    <p>Both numerators share the same 1/&radic;D.</p>
+    <div class="formula-box">
+      \(\text{sin\_raw} = w\cdot\dfrac{1}{\sqrt D}\)<br>
+      \(\text{cos\_raw} = (1-w)\cdot\dfrac{1}{\sqrt D}\)
+    </div>
+    <p>Apply periodic signs (from <code>qi</code>) and the overall input sign (sin is odd, cos is even).</p>
+    <div class="coef-box">
+      sign_sin = (qi&gt;&gt;1)&amp;1&nbsp; (periodic)<br>
+      sign_cos = ((qi&gt;&gt;1)^qi)&amp;1&nbsp; (periodic)
+    </div>
+  </div>
+
+  <!-- PANEL 6 -->
+  <div class="card c6">
+    <h2>6. Reciprocal-square-root polynomial</h2>
+    <p>Approximates 1/&radic;x for x&isin;[0.5,1] using a centered polynomial and one Newton refinement.</p>
+    <div class="coef-box">
+      S = [1.1547001741792948507,<br>
+      &nbsp;&nbsp;&minus;0.76979733693368505099,<br>
+      &nbsp;&nbsp;0.76998321274009581393,<br>
+      &nbsp;&nbsp;&minus;0.85582127579338446687,<br>
+      &nbsp;&nbsp;0.98389454964086504873,<br>
+      &nbsp;&nbsp;&minus;1.1731736300945866946,<br>
+      &nbsp;&nbsp;1.7987005561684346056,<br>
+      &nbsp;&nbsp;&minus;2.2836002361103702185]
+    </div>
+    <div class="formula-box" style="font-size:.75rem;">
+      \(P_{base}(d)=(S_1+S_2 d+(S_3+dS_4)d^2)+d^4(S_5+S_6 d+(S_7+dS_8)d^2)\)
+    </div>
+  </div>
+
+  <!-- PANEL 7: NEW -->
+  <div class="card c7 wide-card">
+    <h2>7. Interpolation: uniform vs. non-uniform sweep</h2>
+    <p>Skipping panel 1 entirely and feeding <code>w = frac</code> straight into panels 3&ndash;6 still lands exactly on the unit circle at every step &mdash; normalization (panel 4) guarantees that. What's lost is <em>timing</em>: the swept angle is no longer proportional to the input parameter. The two charts below compare the warped path (constant angular velocity, by construction) against the raw/unwarped path (a free, built-in ease-in&ndash;out).</p>
+
+    <div class="two-col">
+      <div>
+        <div class="diagram-holder">
+          <svg viewBox="0 0 260 180" xmlns="http://www.w3.org/2000/svg" font-family="Courier New,monospace">
+            <line x1="10" y1="10" x2="10" y2="160" stroke="#e2e6ec"/>
+            <line x1="10" y1="160" x2="250" y2="160" stroke="#e2e6ec"/>
+            <text x="4" y="14" font-size="8" fill="#8890a0">90&deg;</text>
+            <text x="4" y="164" font-size="8" fill="#8890a0">0&deg;</text>
+            <text x="8" y="175" font-size="8" fill="#8890a0">t=0</text>
+            <text x="238" y="175" font-size="8" fill="#8890a0">t=1</text>
+            <polyline points="10.00,160.00 11.20,159.25 12.40,158.50 13.60,157.75 14.80,157.00 16.00,156.25 17.20,155.50 18.40,154.75 19.60,154.00 20.80,153.25 22.00,152.50 23.20,151.75 24.40,151.00 25.60,150.25 26.80,149.50 28.00,148.75 29.20,148.00 30.40,147.25 31.60,146.50 32.80,145.75 34.00,145.00 35.20,144.25 36.40,143.50 37.60,142.75 38.80,142.00 40.00,141.25 41.20,140.50 42.40,139.75 43.60,139.00 44.80,138.25 46.00,137.50 47.20,136.75 48.40,136.00 49.60,135.25 50.80,134.50 52.00,133.75 53.20,133.00 54.40,132.25 55.60,131.50 56.80,130.75 58.00,130.00 59.20,129.25 60.40,128.50 61.60,127.75 62.80,127.00 64.00,126.25 65.20,125.50 66.40,124.75 67.60,124.00 68.80,123.25 70.00,122.50 71.20,121.75 72.40,121.00 73.60,120.25 74.80,119.50 76.00,118.75 77.20,118.00 78.40,117.25 79.60,116.50 80.80,115.75 82.00,115.00 83.20,114.25 84.40,113.50 85.60,112.75 86.80,112.00 88.00,111.25 89.20,110.50 90.40,109.75 91.60,109.00 92.80,108.25 94.00,107.50 95.20,106.75 96.40,106.00 97.60,105.25 98.80,104.50 100.00,103.75 101.20,103.00 102.40,102.25 103.60,101.50 104.80,100.75 106.00,100.00 107.20,99.25 108.40,98.50 109.60,97.75 110.80,97.00 112.00,96.25 113.20,95.50 114.40,94.75 115.60,94.00 116.80,93.25 118.00,92.50 119.20,91.75 120.40,91.00 121.60,90.25 122.80,89.50 124.00,88.75 125.20,88.00 126.40,87.25 127.60,86.50 128.80,85.75 130.00,85.00 131.20,84.25 132.40,83.50 133.60,82.75 134.80,82.00 136.00,81.25 137.20,80.50 138.40,79.75 139.60,79.00 140.80,78.25 142.00,77.50 143.20,76.75 144.40,76.00 145.60,75.25 146.80,74.50 148.00,73.75 149.20,73.00 150.40,72.25 151.60,71.50 152.80,70.75 154.00,70.00 155.20,69.25 156.40,68.50 157.60,67.75 158.80,67.00 160.00,66.25 161.20,65.50 162.40,64.75 163.60,64.00 164.80,63.25 166.00,62.50 167.20,61.75 168.40,61.00 169.60,60.25 170.80,59.50 172.00,58.75 173.20,58.00 174.40,57.25 175.60,56.50 176.80,55.75 178.00,55.00 179.20,54.25 180.40,53.50 181.60,52.75 182.80,52.00 184.00,51.25 185.20,50.50 186.40,49.75 187.60,49.00 188.80,48.25 190.00,47.50 191.20,46.75 192.40,46.00 193.60,45.25 194.80,44.50 196.00,43.75 197.20,43.00 198.40,42.25 199.60,41.50 200.80,40.75 202.00,40.00 203.20,39.25 204.40,38.50 205.60,37.75 206.80,37.00 208.00,36.25 209.20,35.50 210.40,34.75 211.60,34.00 212.80,33.25 214.00,32.50 215.20,31.75 216.40,31.00 217.60,30.25 218.80,29.50 220.00,28.75 221.20,28.00 222.40,27.25 223.60,26.50 224.80,25.75 226.00,25.00 227.20,24.25 228.40,23.50 229.60,22.75 230.80,22.00 232.00,21.25 233.20,20.50 234.40,19.75 235.60,19.00 236.80,18.25 238.00,17.50 239.20,16.75 240.40,16.00 241.60,15.25 242.80,14.50 244.00,13.75 245.20,13.00 246.40,12.25 247.60,11.50 248.80,10.75 250.00,10.00"
+              fill="none" stroke="#8890a0" stroke-width="1.6" stroke-dasharray="4,3"/>
+            <polyline points="10.00,160.00 11.20,159.52 12.40,159.04 13.60,158.55 14.80,158.05 16.00,157.55 17.20,157.05 18.40,156.54 19.60,156.02 20.80,155.50 22.00,154.98 23.20,154.45 24.40,153.91 25.60,153.37 26.80,152.83 28.00,152.27 29.20,151.72 30.40,151.15 31.60,150.59 32.80,150.01 34.00,149.43 35.20,148.85 36.40,148.26 37.60,147.66 38.80,147.06 40.00,146.45 41.20,145.84 42.40,145.22 43.60,144.59 44.80,143.96 46.00,143.32 47.20,142.68 48.40,142.03 49.60,141.37 50.80,140.71 52.00,140.04 53.20,139.37 54.40,138.68 55.60,138.00 56.80,137.31 58.00,136.61 59.20,135.90 60.40,135.19 61.60,134.47 62.80,133.75 64.00,133.02 65.20,132.28 66.40,131.54 67.60,130.79 68.80,130.04 70.00,129.28 71.20,128.51 72.40,127.74 73.60,126.96 74.80,126.17 76.00,125.38 77.20,124.58 78.40,123.78 79.60,122.97 80.80,122.16 82.00,121.34 83.20,120.51 84.40,119.68 85.60,118.84 86.80,118.00 88.00,117.15 89.20,116.30 90.40,115.44 91.60,114.57 92.80,113.71 94.00,112.83 95.20,111.95 96.40,111.07 97.60,110.18 98.80,109.29 100.00,108.39 101.20,107.49 102.40,106.59 103.60,105.68 104.80,104.77 106.00,103.85 107.20,102.93 108.40,102.01 109.60,101.08 110.80,100.15 112.00,99.22 113.20,98.28 114.40,97.34 115.60,96.40 116.80,95.46 118.00,94.52 119.20,93.57 120.40,92.62 121.60,91.67 122.80,90.72 124.00,89.77 125.20,88.82 126.40,87.86 127.60,86.91 128.80,85.95 130.00,85.00 131.20,84.05 132.40,83.09 133.60,82.14 134.80,81.18 136.00,80.23 137.20,79.28 138.40,78.33 139.60,77.38 140.80,76.43 142.00,75.48 143.20,74.54 144.40,73.60 145.60,72.66 146.80,71.72 148.00,70.78 149.20,69.85 150.40,68.92 151.60,67.99 152.80,67.07 154.00,66.15 155.20,65.23 156.40,64.32 157.60,63.41 158.80,62.51 160.00,61.61 161.20,60.71 162.40,59.82 163.60,58.93 164.80,58.05 166.00,57.17 167.20,56.29 168.40,55.43 169.60,54.56 170.80,53.70 172.00,52.85 173.20,52.00 174.40,51.16 175.60,50.32 176.80,49.49 178.00,48.66 179.20,47.84 180.40,47.03 181.60,46.22 182.80,45.42 184.00,44.62 185.20,43.83 186.40,43.04 187.60,42.26 188.80,41.49 190.00,40.72 191.20,39.96 192.40,39.21 193.60,38.46 194.80,37.72 196.00,36.98 197.20,36.25 198.40,35.53 199.60,34.81 200.80,34.10 202.00,33.39 203.20,32.69 204.40,32.00 205.60,31.32 206.80,30.63 208.00,29.96 209.20,29.29 210.40,28.63 211.60,27.97 212.80,27.32 214.00,26.68 215.20,26.04 216.40,25.41 217.60,24.78 218.80,24.16 220.00,23.55 221.20,22.94 222.40,22.34 223.60,21.74 224.80,21.15 226.00,20.57 227.20,19.99 228.40,19.41 229.60,18.85 230.80,18.28 232.00,17.73 233.20,17.17 234.40,16.63 235.60,16.09 236.80,15.55 238.00,15.02 239.20,14.50 240.40,13.98 241.60,13.46 242.80,12.95 244.00,12.45 245.20,11.95 246.40,11.45 247.60,10.96 248.80,10.48 250.00,10.00"
+              fill="none" stroke="#c23a5e" stroke-width="2.2"/>
+          </svg>
+        </div>
+        <div class="legend">
+          <span><span class="swatch" style="background:#8890a0;border-top:2px dashed #8890a0;height:0;"></span>warped &theta;=90&deg;&middot;t (uniform)</span>
+          <span><span class="swatch" style="background:#c23a5e;"></span>unwarped &theta;=atan2(t,1&minus;t)</span>
+        </div>
+        <div class="chart-cap">Position: swept angle vs. raw parameter t</div>
+      </div>
+
+      <div>
+        <div class="diagram-holder">
+          <svg viewBox="0 0 260 180" xmlns="http://www.w3.org/2000/svg" font-family="Courier New,monospace">
+            <line x1="10" y1="10" x2="10" y2="160" stroke="#e2e6ec"/>
+            <line x1="10" y1="160" x2="250" y2="160" stroke="#e2e6ec"/>
+            <text x="4" y="14" font-size="8" fill="#8890a0">2.0</text>
+            <text x="4" y="164" font-size="8" fill="#8890a0">1.0</text>
+            <text x="8" y="175" font-size="8" fill="#8890a0">t=0</text>
+            <text x="238" y="175" font-size="8" fill="#8890a0">t=1</text>
+            <line x1="10" y1="60" x2="250" y2="60" stroke="#eef0f5" stroke-dasharray="2,3"/>
+            <polyline points="10.00,160.00 11.20,158.49 12.40,156.97 13.60,155.43 14.80,153.88 16.00,152.31 17.20,150.73 18.40,149.13 19.60,147.52 20.80,145.90 22.00,144.25 23.20,142.60 24.40,140.93 25.60,139.24 26.80,137.55 28.00,135.83 29.20,134.11 30.40,132.37 31.60,130.62 32.80,128.85 34.00,127.07 35.20,125.28 36.40,123.48 37.60,121.66 38.80,119.84 40.00,118.00 41.20,116.15 42.40,114.29 43.60,112.42 44.80,110.55 46.00,108.66 47.20,106.76 48.40,104.86 49.60,102.95 50.80,101.03 52.00,99.10 53.20,97.17 54.40,95.24 55.60,93.30 56.80,91.36 58.00,89.41 59.20,87.46 60.40,85.52 61.60,83.57 62.80,81.62 64.00,79.67 65.20,77.73 66.40,75.79 67.60,73.85 68.80,71.92 70.00,70.00 71.20,68.08 72.40,66.18 73.60,64.28 74.80,62.39 76.00,60.52 77.20,58.66 78.40,56.81 79.60,54.98 80.80,53.17 82.00,51.38 83.20,49.61 84.40,47.85 85.60,46.12 86.80,44.42 88.00,42.74 89.20,41.09 90.40,39.46 91.60,37.87 92.80,36.30 94.00,34.77 95.20,33.27 96.40,31.81 97.60,30.38 98.80,29.00 100.00,27.65 101.20,26.34 102.40,25.07 103.60,23.85 104.80,22.67 106.00,21.54 107.20,20.45 108.40,19.41 109.60,18.43 110.80,17.49 112.00,16.60 113.20,15.77 114.40,14.99 115.60,14.26 116.80,13.59 118.00,12.97 119.20,12.41 120.40,11.91 121.60,11.46 122.80,11.08 124.00,10.75 125.20,10.48 126.40,10.27 127.60,10.12 128.80,10.03 130.00,10.00 131.20,10.03 132.40,10.12 133.60,10.27 134.80,10.48 136.00,10.75 137.20,11.08 138.40,11.46 139.60,11.91 140.80,12.41 142.00,12.97 143.20,13.59 144.40,14.26 145.60,14.99 146.80,15.77 148.00,16.60 149.20,17.49 150.40,18.43 151.60,19.41 152.80,20.45 154.00,21.54 155.20,22.67 156.40,23.85 157.60,25.07 158.80,26.34 160.00,27.65 161.20,29.00 162.40,30.38 163.60,31.81 164.80,33.27 166.00,34.77 167.20,36.30 168.40,37.87 169.60,39.46 170.80,41.09 172.00,42.74 173.20,44.42 174.40,46.12 175.60,47.85 176.80,49.61 178.00,51.38 179.20,53.17 180.40,54.98 181.60,56.81 182.80,58.66 184.00,60.52 185.20,62.39 186.40,64.28 187.60,66.18 188.80,68.08 190.00,70.00 191.20,71.92 192.40,73.85 193.60,75.79 194.80,77.73 196.00,79.67 197.20,81.62 198.40,83.57 199.60,85.52 200.80,87.46 202.00,89.41 203.20,91.36 204.40,93.30 205.60,95.24 206.80,97.17 208.00,99.10 209.20,101.03 210.40,102.95 211.60,104.86 212.80,106.76 214.00,108.66 215.20,110.55 216.40,112.42 217.60,114.29 218.80,116.15 220.00,118.00 221.20,119.84 222.40,121.66 223.60,123.48 224.80,125.28 226.00,127.07 227.20,128.85 228.40,130.62 229.60,132.37 230.80,134.11 232.00,135.83 233.20,137.55 234.40,139.24 235.60,140.93 236.80,142.60 238.00,144.25 239.20,145.90 240.40,147.52 241.60,149.13 242.80,150.73 244.00,152.31 245.20,153.88 246.40,155.43 247.60,156.97 248.80,158.49 250.00,160.00"
+              fill="none" stroke="#0f8b8d" stroke-width="2.2"/>
+            <circle cx="130" cy="10" r="3.2" fill="#0f8b8d"/>
+            <text x="136" y="8" font-size="8" fill="#0f8b8d">2&times; endpoint rate</text>
+          </svg>
+        </div>
+        <div class="legend">
+          <span><span class="swatch" style="background:#0f8b8d;"></span>d&theta;/dt = 1 / D(t)</span>
+        </div>
+        <div class="chart-cap">Sweep rate: slow at axis-aligned endpoints, fast through the diagonal middle</div>
+      </div>
+    </div>
+
+    <div class="formula-box" style="margin-top:.9rem;">
+      \(\dfrac{d\theta}{dt} = \dfrac{1}{D(t)}, \qquad D(t) = 2t^2-2t+1 \qquad\Rightarrow\qquad \dfrac{d\theta}{dt}:\; 1 \to 2 \to 1 \;\text{ as } t: 0\to0.5\to1\)
+    </div>
+
+    <div class="callout">
+      <div class="box box-slow">
+        <span class="box-title">d&theta;/dt &mdash; slow&middot;fast&middot;slow</span>
+        Angle swept per unit of raw parameter. Slowest right at the cardinal endpoints (rate&nbsp;=&nbsp;1), fastest at the diagonal midpoint (rate&nbsp;=&nbsp;2, exactly double). This is the free ease-in&ndash;out: the point eases out of 0&deg;/90&deg; and eases back in, without any explicit smoothstep or cosine call.
+      </div>
+      <div class="box box-fast">
+        <span class="box-title">dt/d&theta; = D(t) &mdash; fast&middot;slow&middot;fast</span>
+        The reciprocal view: how much raw parameter you need per unit of <em>true</em> angle. Largest at the endpoints (D=1, parameter has to move fast to keep up with true angle there), smallest at the midpoint (D=0.5). Same curve, opposite framing &mdash; whichever direction you're driving the system from.
+      </div>
+    </div>
+
+    <p style="margin-top:.4rem; color:#5b6472;">Endpoints (t=0,1) and the quadrant midpoint (t=0.5) always land exactly on the true angle regardless of warp &mdash; both curves cross there. The warp polynomial (panel 1) exists purely to flatten <code>d&theta;/dt</code> to a constant 1 everywhere in between; dropping it keeps that natural bulge instead, which is either a timing error or a free easing curve depending on what the caller actually needs from <code>t</code>.</p>
+  </div>
+
+</div>
+
+<div class="pipeline">
+  <h3>The complete pipeline</h3>
+  <div class="pipe-row">
+    <div class="pipe-step">x<small>radians</small></div>
+    <span class="pipe-arrow">&rarr;</span>
+    <div class="pipe-step">|x|<small>abs</small></div>
+    <span class="pipe-arrow">&rarr;</span>
+    <div class="pipe-step">RAU<small>&times;2/&pi;, mod 4</small></div>
+    <span class="pipe-arrow">&rarr;</span>
+    <div class="pipe-step">frac, qi<small>double</small></div>
+    <span class="pipe-arrow">&rarr;</span>
+    <div class="pipe-step hl">w<small>warp polynomial</small></div>
+    <span class="pipe-arrow">&rarr;</span>
+    <div class="pipe-step">R<sub>vec</sub><small>quadrant</small></div>
+    <span class="pipe-arrow">&rarr;</span>
+    <div class="pipe-step">D<small>w&sup2;+(1&minus;w)&sup2;</small></div>
+    <span class="pipe-arrow">&rarr;</span>
+    <div class="pipe-step">rsqrt<small>poly + Newton</small></div>
+    <span class="pipe-arrow">&rarr;</span>
+    <div class="pipe-step">sin, cos<small>signs + store</small></div>
+  </div>
+  <p style="text-align:center; font-size:.72rem; color:#8890a0; margin:.7rem 0 0;">Skipping the highlighted warp step gives the unwarped/fast path in panel 7 &mdash; every stage after it is unchanged.</p>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  renderMathInElement(document.body, {
+    delimiters: [{left:"\\(", right:"\\)", display:false}]
+  });
+});
+</script>
+</body>
+</html>
