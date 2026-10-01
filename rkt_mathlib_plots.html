@@ -397,13 +397,14 @@
             <section class="section">
                 <div class="section-head">
                     <h2>§1 — warp(t): the diagonal-to-arc correction</h2>
-                    <span class="tag ok">2.37e-7 · float32</span>
+                    <span class="tag ok" id="warp_tag">measuring…</span>
                 </div>
                 <p class="section-sub">
                     Maps the raw diagonal parameter t ∈ [0,1] to the arc-uniform
                     coordinate w = sin(t·π/2) / (sin(t·π/2) + cos(t·π/2)). Every
                     sin/cos call in the library is this polynomial plus one
-                    sqrt.
+                    sqrt. 7-coefficient endpoint-pinned set (w(0)=0, w(1)=1
+                    exactly) — supersedes the earlier 6-coefficient set.
                 </p>
                 <div id="warp_compare" class="plot"></div>
                 <div class="coeff-row" id="warp_coeffs"></div>
@@ -412,13 +413,16 @@
             <!-- ===================== SINCOS ===================== -->
             <section class="section">
                 <div class="section-head">
-                    <h2>§2 — rau_sincosf vs cs_poly_sincos</h2>
-                    <span class="tag ok">1.68e-7 / 1.77e-7</span>
+                    <h2>§2 — rau_sincosf vs sincos_apulsoft</h2>
+                    <span class="tag ok" id="sincos_tag">measuring…</span>
                 </div>
                 <p class="section-sub">
                     Two independent pipelines for sin/cos. rau_sincosf warps
-                    then normalises via one sqrt; cs_poly_sincos fits cos/sin
-                    directly with no sqrt at all. Both float32-class.
+                    then normalises via one 1/√D; sincos_apulsoft is a
+                    root-factored minimax fit adapted from apulSoft's
+                    "Branchless sincos" (apulsoft.ch/blog/branchless-sincos/),
+                    si = (x−π)(x+π)·x·P1(x²), co = (x−π/2)(x+π/2)·P2(x²),
+                    with no warp and no sqrt at all. Both float32-class.
                 </p>
                 <div id="sincos_compare" class="plot"></div>
             </section>
@@ -669,9 +673,26 @@
             // ============================================================================
             const LN2 = 0.6931471805599453;
 
+            // 7-coefficient endpoint-pinned set (stable): w(0)=0, w(1)=1
+            // exactly. Supersedes the earlier 6-coefficient set above.
             const WC = [
-                0.7853981633974483, 0.6460261721112686, 0.6346711435786873,
-                0.6812793876895539, 0.33448057938003534, 1.5121252251949524,
+                0.78539828866558314, 0.64594625770051587, 0.63827326697947083,
+                0.62357916420830480, 0.75561600946878778,
+                0.079951715963356818, 1.8429558690126906,
+            ];
+
+            // sincos_apulsoft coefficients -- apulSoft's root-factored
+            // minimax fit (apulsoft.ch/blog/branchless-sincos/), Estrin-
+            // scheme evaluation. Replaces the earlier direct-quadrant
+            // cs_poly_sincos (CP/SP below, now unused by any plot but kept
+            // for reference).
+            const APS = [
+                -0.10132104963779, 0.00662060857089096, -0.000173351320734045,
+                2.48668816803878e-6, -1.97103310997063e-8,
+            ];
+            const APC = [
+                -0.405284410277645, 0.0383849982168558, -0.00132798793179218,
+                2.37446117208029e-5, -2.23984068352572e-7,
             ];
 
             const CP = [
@@ -831,23 +852,32 @@
                 return [omw * r * cosSign, w * r * sinSign]; // [cos, sin]
             }
 
-            function csPolySinCos(rad) {
-                const rau = rad * (2.0 / Math.PI);
-                let pb = ((rau % 4) + 4) % 4;
-                const qi = Math.floor(pb) & 3;
-                const f = pb - Math.floor(pb);
-                const x = f * (Math.PI / 2);
-                const x2 = x * x;
-                let c = horner(CP, x2);
-                let s = horner(SP, x2) * x;
-                if (qi & 1) {
-                    const tmp = c;
-                    c = s;
-                    s = tmp;
-                }
-                const cosSign = [1, -1, -1, 1][qi],
-                    sinSign = [1, 1, -1, -1][qi];
-                return [c * cosSign, s * sinSign];
+            // sincos_apulsoft -- apulSoft's root-factored minimax sin/cos,
+            // Estrin-scheme evaluation. No warp, no reflect, no sqrt: the
+            // roots at ±π (sin) and ±π/2 (cos) are factored directly into
+            // the polynomial. wrap-to-[-pi,pi] via round-to-nearest is
+            // added here to accept any radian input, matching rauSinCos's
+            // interface; apulSoft's own reference assumes that's already
+            // done by the caller.
+            function sincosApulsoft(rad) {
+                const twoPi = 2 * Math.PI;
+                const n = Math.round(rad / twoPi);
+                const x = rad - n * twoPi; // wrap to [-pi,pi]
+                const x2 = x * x,
+                    x4 = x2 * x2,
+                    x8 = x4 * x4;
+
+                const sLo = APS[1] * x2 + APS[0]; // s1*x2+s0
+                const sHi = APS[3] * x2 + APS[2]; // s3*x2+s2
+                const poly1 = x8 * APS[4] + (x4 * sHi + sLo);
+
+                const cLo = APC[1] * x2 + APC[0]; // c1*x2+c0
+                const cHi = APC[3] * x2 + APC[2]; // c3*x2+c2
+                const poly2 = x8 * APC[4] + (x4 * cHi + cLo);
+
+                const si = (x - Math.PI) * (x + Math.PI) * x * poly1;
+                const co = (x - Math.PI / 2) * (x + Math.PI / 2) * poly2;
+                return [co, si]; // [cos, sin]
             }
 
             function expPoly(x) {
@@ -1403,6 +1433,9 @@
                     "WC",
                     WC.map((v) => v.toFixed(8)),
                 );
+                const maxWarpErr = Math.max(...yErr);
+                document.getElementById("warp_tag").textContent =
+                    `${maxWarpErr.toExponential(2)} · warp fit (f64)`;
             }
 
             // ---- §2 sincos ----
@@ -1410,20 +1443,20 @@
                 const xs = [],
                     sinTrue = [],
                     sinRkt = [],
-                    sinCs = [],
+                    sinAp = [],
                     errRkt = [],
-                    errCs = [];
+                    errAp = [];
                 for (let i = 0; i <= 600; i++) {
                     const rad = (2 * Math.PI * i) / 600;
                     xs.push(rad);
                     const t = Math.sin(rad);
                     const [, sR] = rauSinCos(rad * (2 / Math.PI));
-                    const [, sC] = csPolySinCos(rad);
+                    const [, sA] = sincosApulsoft(rad);
                     sinTrue.push(t);
                     sinRkt.push(sR);
-                    sinCs.push(sC);
+                    sinAp.push(sA);
                     errRkt.push(Math.abs(sR - t) + 1e-12);
-                    errCs.push(Math.abs(sC - t) + 1e-12);
+                    errAp.push(Math.abs(sA - t) + 1e-12);
                 }
                 Plotly.newPlot(
                     "sincos_compare",
@@ -1446,8 +1479,8 @@
                         },
                         {
                             x: xs,
-                            y: sinCs,
-                            name: "cs_poly_sincos",
+                            y: sinAp,
+                            name: "sincos_apulsoft",
                             line: {
                                 width: 1.6,
                                 color: COLORS.violet,
@@ -1463,8 +1496,8 @@
                         },
                         {
                             x: xs,
-                            y: errCs,
-                            name: "|err| cs_poly",
+                            y: errAp,
+                            name: "|err| apulsoft",
                             yaxis: "y2",
                             line: { width: 1, color: COLORS.amber },
                         },
@@ -1472,6 +1505,11 @@
                     baseLayout(),
                     PLOT_CONFIG,
                 );
+
+                const maxRkt = Math.max(...errRkt);
+                const maxAp = Math.max(...errAp);
+                document.getElementById("sincos_tag").textContent =
+                    `rau: ${maxRkt.toExponential(2)} · apulsoft: ${maxAp.toExponential(2)}`;
             }
 
             // ---- §3 erf ----
