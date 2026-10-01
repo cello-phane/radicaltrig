@@ -1,7 +1,7 @@
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="./diagram-dark.svg">
   <source media="(prefers-color-scheme: light)" srcset="./diagram-light.svg">
-  <img alt="Warp Coordinate Diagram" src="./diagram-light.svg">
+  <img alt="Warp Coordinate Diagram" src="./diagram-light.svg" width="300" height="260">
 </picture>
 
 ### Resources on youtube  
