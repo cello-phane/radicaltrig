@@ -581,7 +581,7 @@ dθ/dt : 1 → 2 → 1          <span class="c">← as t: 0 → 0.5 → 1</span>
 <p>Select a cardinal direction vector <strong>i</strong> from the integer part of φ, then apply the warp and projection within that quadrant. No branching on signs — the cardinal vector carries the sign information.</p>
 
 <div class="formula">
-z = mod(φ, 4)<br>
+z = floor(mod(φ, 4))<br>
 i = <span class="tl">{z&lt;1:(1,0)  z&lt;2:(0,1)  z&lt;3:(−1,0)  z&lt;4:(0,−1)}</span><br>
 w = warp(frac(z))           <span class="c">← w in [0,1)</span><br>
 D = 1 − 2w + 2w²            <span class="c">← = (1-w)²+w²</span><br><br>
@@ -612,7 +612,7 @@ R_vec = <span class="hi">(i.x·(1−w) − i.y·w,  i.y·(1−w) + i.x·w)</span
 <p>Both R_vec components share the same scalar divisor. Rather than call hardware <code>sqrt</code>+<code>div</code>, 1/√D is approximated directly with a centered polynomial plus one Newton refinement — the same pattern as the warp and arctan fits, applied to reciprocal square root.</p>
 
 <div class="formula">
-S_a = R_vec · (1/√D)              <span class="c">← |S_a| = 1</span><br><br>
+(1/√D) = P(D) by the following:
 d = D − 0.75                      <span class="c">← recenter, d ∈ [−0.25, 0.25]</span><br>
 P_base(d) ≈ 1/√D                  <span class="c">← 8-term Estrin fit, see §10</span><br>
 P(D) = ½·(P_base(d)² + 1/D) / P_base(d)   <span class="c">← one Newton-Raphson step</span>
