@@ -61,36 +61,47 @@ sincos_fma:
     vmulss xmm4,xmm3,xmm3              ; y = v²
 
     ; a0 = C0 + C1*y   (no FMA: separate mul + add)
-    vmulss xmm2,xmm4,[rel .coef1]
-    vaddss xmm2,xmm2,[rel .coef0]
+   ; vmulss xmm2,xmm4,[rel .coef1]
+   ; vaddss xmm2,xmm2,[rel .coef0]
+    vmovss xmm2,[rel .coef0]
+    vfmadd231ss xmm2,xmm4,[rel .coef1]
 
     ; a1 = C2 + C3*y
-    vmulss xmm5,xmm4,[rel .coef3]
-    vaddss xmm5,xmm5,[rel .coef2]
+   ; vmulss xmm5,xmm4,[rel .coef3]
+   ; vaddss xmm5,xmm5,[rel .coef2]
+		vmovss xmm5,[rel .coef2]
+		vfmadd231ss xmm5,xmm4,[rel .coef3]
 
     ; a2 = C4 + C5*y
-    vmulss xmm6,xmm4,[rel .coef5]
-    vaddss xmm6,xmm6,[rel .coef4]
+ ; vmulss xmm6,xmm4,[rel .coef5]
+ ; vaddss xmm6,xmm6,[rel .coef4]
+ 	vmovss xmm6,[rel .coef4]
+		vfmadd231ss xmm6,xmm4,[rel .coef5]
 
-    ; b0 = a0 + a1*y²
-    vmulss xmm5,xmm5,xmm4
-    vmulss xmm5,xmm5,xmm4
-    vaddss xmm5,xmm5,xmm2
+ 	; b0 = a0 + a1*y²
+ 	vmulss xmm5,xmm5,xmm4
 
-    vmulss xmm4,xmm4,xmm4               ; y²
+ ; vmulss xmm5,xmm5,xmm4
+ ; vaddss xmm5,xmm5,xmm2
+  vfmadd213ss xmm5,xmm4,xmm2
+
+ 	vmulss xmm4,xmm4,xmm4               ; y²
 
     ; a2 + C6*y²
-    vmulss xmm1,xmm4,[rel .coef6]
-    vaddss xmm1,xmm1,xmm6
-
+   ; vmulss xmm1,xmm4,[rel .coef6]
+   ; vaddss xmm1,xmm1,xmm6
+    vmovss xmm1,[rel .coef6]
+	vfmadd312ss xmm1,xmm6,xmm4
     vmulss xmm4,xmm4,xmm4               ; y⁴
 
     ; b0 + (a2 + C6*y²)*y⁴
-    vmulss xmm1,xmm1,xmm4
-    vaddss xmm5,xmm5,xmm1
+   ; vmulss xmm1,xmm1,xmm4
+   ; vaddss xmm5,xmm5,xmm1
+		vfmadd321ss xmm5,xmm1,xmm4
 
-    vmulss xmm5,xmm5,xmm3                ; p = v*(...)
-    vaddss xmm5,xmm5,[rel .half]         ; w = 0.5 + p
+   ; vmulss xmm5,xmm5,xmm3                ; p = v*(...)
+   ; vaddss xmm5,xmm5,[rel .half]         ; w = 0.5 + p
+		vfmadd123ss xmm5,xmm3,[rel .half]
 
     ; --- odd-quadrant fix: w -> 1-w for Q1/Q3 ---
     test r8d,1
@@ -106,31 +117,42 @@ sincos_fma:
 
     ; D = w² + (1-w)²
     vmulss xmm7,xmm5,xmm5
-    vmulss xmm4,xmm6,xmm6
-    vaddss xmm7,xmm7,xmm4
+   ; vmulss xmm4,xmm6,xmm6
+   ; vaddss xmm7,xmm7,xmm4
+    vfmadd321ss xmm7,xmm6,xmm6
     vmovss xmm8,xmm7
     vsubss xmm7,xmm7,[rel .threequarter]   ; xmm7 = d = D - 0.75  (recentered)
 
     ;; ---- rsqrt polynomial evaluation, no FMA ----
     vmulss xmm4,xmm7,xmm7                ; d²
 
-    vmulss xmm3,xmm7,[rel .rscoef7]
-    vaddss xmm3,xmm3,[rel .rscoef6]
+   ; vmulss xmm3,xmm7,[rel .rscoef7]
+   ; vaddss xmm3,xmm3,[rel .rscoef6]
+    vmovss xmm3,[rel .rscoef7]
+    vfmadd213ss xmm3,xmm7,[rel .rscoef6]
+
     vmulss xmm3,xmm3,xmm4
 
-    vmulss xmm2,xmm7,[rel .rscoef5]
-    vaddss xmm2,xmm2,[rel .rscoef4]
+   ; vmulss xmm2,xmm7,[rel .rscoef5]
+   ; vaddss xmm2,xmm2,[rel .rscoef4]
+	vmovss xmm2,[rel .rscoef5]
+	vfmadd123ss xmm2,xmm7,[rel .rscoef4]
 
     vaddss xmm3,xmm3,xmm2
     vmulss xmm3,xmm3,xmm4
     vmulss xmm3,xmm3,xmm4                ; * d⁴
 
-    vmulss xmm2,xmm7,[rel .rscoef3]
-    vaddss xmm2,xmm2,[rel .rscoef2]
+   ; vmulss xmm2,xmm7,[rel .rscoef3]
+   ; vaddss xmm2,xmm2,[rel .rscoef2]
+    vmovss xmm2,[rel .rscoef3]
+    vfmadd123ss xmm2,xmm7,[rel .rscoef2]
     vmulss xmm2,xmm2,xmm4
 
-    vmulss xmm1,xmm7,[rel .rscoef1]
-    vaddss xmm1,xmm1,[rel .rscoef0]
+   ; vmulss xmm1,xmm7,[rel .rscoef1]
+   ; vaddss xmm1,xmm1,[rel .rscoef0]
+    vmovss xmm1,[rel .rscoef1]
+    vfmadd123ss xmm1,xmm7,[rel .rscoef0]
+
     vaddss xmm1,xmm1,xmm2
     vaddss xmm1,xmm1,xmm3
 	; -------- end rsqrt polynomial evaluation --------
