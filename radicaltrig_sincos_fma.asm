@@ -14,6 +14,7 @@ section .text
 align 64
 
 sincos_fma:
+
 %ifdef WIN64_ABI
 	mov r10, rcx              ; r10 = destination struct pointer
 	vmovapd xmm0, xmm1        ; x arrives in xmm1 under Win64's hidden-pointer shift
@@ -107,6 +108,7 @@ sincos_fma:
     vmulss xmm7,xmm5,xmm5
     vmulss xmm4,xmm6,xmm6
     vaddss xmm7,xmm7,xmm4
+    vmovss xmm8,xmm7
     vsubss xmm7,xmm7,[rel .threequarter]   ; xmm7 = d = D - 0.75  (recentered)
 
     ;; ---- rsqrt polynomial evaluation, no FMA ----
@@ -131,14 +133,22 @@ sincos_fma:
     vaddss xmm1,xmm1,[rel .rscoef0]
     vaddss xmm1,xmm1,xmm2
     vaddss xmm1,xmm1,xmm3
-    ; xmm1 = 1/sqrt(D)
 	; -------- end rsqrt polynomial evaluation --------
 	; xmm1 = 1/sqrt(D)
 	; xmm5 = w
 	; xmm6 = 1-w
+	;refine 1/sqrt(D)
+	; y1 = y0 * (1.5 - 0.5*D*y0^2)   -- xmm8 = D, xmm1 = y0
+	vmulss xmm2, xmm1, xmm1        ; y0²
+	vmulss xmm2, xmm2, xmm8        ; D*y0²
+	vmulss xmm2, xmm2, [.half]     ; 0.5*D*y0²
+	vmovss xmm3, [.onehalf]        ; 1.5
+	vsubss xmm3, xmm3, xmm2
+	vmulss xmm0, xmm1, xmm3        ; y1
 
-	vmulss xmm5,xmm5,xmm1                ; xmm5 = sin_raw = w*inv
-	;vmulss xmm6,xmm6,xmm1                ; xmm6 = cos_raw = (1-w)*inv
+
+	vmulss xmm5,xmm5,xmm0                ; xmm5 = sin_raw = w*inv
+	vmulss xmm6,xmm6,xmm0                ; xmm6 = cos_raw = (1-w)*inv
 	; --- sin: periodic sign (qi bit1) ---
 	mov edx,eax
 	shr edx,1
@@ -148,20 +158,20 @@ sincos_fma:
 	vpxor xmm5,xmm5,xmm2
 
 	; --- cos: periodic sign (qi bit1 XOR bit0), no overall-sign step ---
-	;mov r8d,eax
-	;shr r8d,1
-	;xor r8d,eax
-	;and r8d,1
-	;shl r8d,31
-	;vmovd xmm3,r8d
-	;vpxor xmm6,xmm6,xmm3
+	mov r8d,eax
+	shr r8d,1
+	xor r8d,eax
+	and r8d,1
+	shl r8d,31
+	vmovd xmm3,r8d
+	vpxor xmm6,xmm6,xmm3
 
 	; --- widen; apply overall input sign to sin ONLY (sin is odd) ---
 	vcvtss2sd xmm0,xmm0,xmm5
 	vmovq xmm1,r9
 	vxorpd xmm0,xmm0,xmm1                ; xmm0 = si, f(-x) = -f(x) exactly
 
-	;vcvtss2sd xmm1,xmm1,xmm6              ; xmm1 = co, no sign correction (cos is even)
+	vcvtss2sd xmm1,xmm1,xmm6              ; xmm1 = co, no sign correction (cos is even)
 
 %ifdef WIN64_ABI
 	vmovsd [r10], xmm0
@@ -187,6 +197,8 @@ align 16
 
 .half:
 	dd 0x3F000000		; 0.5
+.onehalf:
+	dd 0x3FC00000		; 1.5
 .one:
 	dd 0x3F800000		; 1.0
 .threequarter:
@@ -206,8 +218,8 @@ align 16
     dd 0.079951715963356818
 .coef6:
     dd 1.8429558690126906
-
 ; rsqrt(D) polynomial, D in [0.5, 1.0)
+
 .rscoef0:
     dd 1.1547001741792948507
 .rscoef1:
