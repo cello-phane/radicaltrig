@@ -587,12 +587,7 @@ w = warp(frac(z))           <span class="c">← w in [0,1)</span><br>
 D = 1 − 2w + 2w²            <span class="c">← = (1-w)²+w²</span><br><br>
 R_vec = <span class="hi">(i.x·(1−w) − i.y·w,  i.y·(1−w) + i.x·w)</span>   <span class="c">← before normalization</span><br>
 <span class="hi">cos</span> = R_vec.x / √D<br>
-<span class="hi">sin</span> = R_vec.y / √D       <span class="c">← verified: max err 8.3e-16</span>
-</div>
-
-<div class="box box-grn">
-<span class="box-label">verified</span>
-R_vec tested across all four quadrants, 79 points including all cardinals. Max error vs reference: <strong>8.3×10⁻¹⁶</strong> — machine epsilon only. No algorithmic error.
+<span class="hi">sin</span> = R_vec.y / √D       <span class="c">← verified: max err ~4.3⁻⁹</span>
 </div>
 
 <!-- The page break occurs right here -->
@@ -752,7 +747,7 @@ Store <strong>sign(cos)</strong> and <strong>sign(sin)</strong> as two bits. Upd
     <tr>
       <td>Forward (cos,sin)</td>
       <td class="mono pur">R_vec or r_cos/r_sin</td>
-      <td class="mono teal">8.3×10⁻¹⁶</td>
+      <td class="mono teal">~4.3⁻⁹</td>
       <td>Always — machine epsilon</td>
     </tr>
     <tr>
