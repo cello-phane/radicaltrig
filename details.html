@@ -583,7 +583,7 @@ dθ/dt : 1 → 2 → 1          <span class="c">← as t: 0 → 0.5 → 1</span>
 <div class="formula">
 z = floor(mod(φ, 4))<br>
 i = <span class="tl">{z&lt;1:(1,0)  z&lt;2:(0,1)  z&lt;3:(−1,0)  z&lt;4:(0,−1)}</span><br>
-w = warp(frac(z))           <span class="c">← w in [0,1)</span><br>
+w = warp(frac(mod(φ, 4)))           <span class="c">← w in [0,1)</span><br>
 D = 1 − 2w + 2w²            <span class="c">← = (1-w)²+w²</span><br><br>
 R_vec = <span class="hi">(i.x·(1−w) − i.y·w,  i.y·(1−w) + i.x·w)</span>   <span class="c">← before normalization</span><br>
 <span class="hi">cos</span> = R_vec.x / √D<br>
