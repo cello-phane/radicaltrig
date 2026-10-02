@@ -592,19 +592,6 @@ R_vec = <span class="hi">(i.x·(1−w) − i.y·w,  i.y·(1−w) + i.x·w)</span
 
 <!-- The page break occurs right here -->
 <div class="page-break"></div>
-<h3>r_cos / r_sin — the offset-branch method</h3>
-<p>Use <code>m(x, o) = mod(cp·x + o, 4)</code> with offset <em>o=1 for cos</em>, <em>o=0 for sin</em> to route the correct magnitude to the correct output. <code>cp = 1</code> for RAU input, <code>cp = 2/π</code> for radian input.</p>
-
-<div class="cols">
-  <div class="box box-blue">
-    <span class="box-label">r_cos offset</span>
-    Uses <strong>m(x, 1)</strong> — the +1 shift routes Rs (cos magnitude) into the correct branch at each quadrant boundary.
-  </div>
-  <div class="box box-blue">
-    <span class="box-label">r_sin offset</span>
-    Uses <strong>m(x, 0)</strong> — no shift needed, Rc (sin magnitude) appears naturally in the first branch.
-  </div>
-</div>
 
 <!-- ══ §5 NORMALIZE WITH 1/√D ═══════════════════════════════════════════ -->
 <h2><span class="sec-num">§5</span>Normalize with 1/√D</h2>
