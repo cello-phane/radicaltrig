@@ -1931,9 +1931,9 @@
                     worstAbs = Math.max(worstAbs, Math.abs(rktLnGamma(z) - lnGammaRefFull(z)));
                 }
                 rtab += `  ${worstAbs.toExponential(2)}  (float32 ulp of the terms being combined)\n`;
-                rtab += "\n  special values:  ";
-                const sv = [0, -1, 1, 2, Infinity, 4.1e36, NaN];
-                rtab += sv.map((z) => `lgamma(${z}) = ${rktLnGamma(z)}`).join("   ");
+                //rtab += "\n  special values:  ";
+                //const sv = [0, -1, 1, 2, Infinity, 4.1e36, NaN];
+                //rtab += sv.map((z) => `lgamma(${z}) = ${rktLnGamma(z)}`).join("   ");
                 document.getElementById("lgamma_regions").textContent = rtab;
 
                 // Reflection formula spot-checks, z < 0.5 -- the only part of
