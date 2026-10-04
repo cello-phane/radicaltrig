@@ -507,14 +507,16 @@
             <!-- ===================== LN ===================== -->
             <section class="section">
                 <div class="section-head">
-                    <h2>§6 — ln_opt: corrected vs buggy coefficients</h2>
-                    <span class="tag warn">bug fixed this session</span>
+                    <h2>§6 — ln_na: degree-6 polynomial log</h2>
+                    <span class="tag ok" id="ln_tag">measuring…</span>
                 </div>
                 <p class="section-sub">
-                    LO2, LO3, LO4 were transcription errors in earlier source —
-                    off by ~5e-5 in the 6th–7th significant digit. Inflated true
-                    error 4.3× (1.24e-5 → 5.34e-5) while staying under the loose
-                    float16 pass threshold the whole time.
+                    ln(x) = e·ln2 + L(t), with e = ⌊log₂x⌋ pulled out exactly
+                    and t = 2·(x/2<sup>e</sup>) − 3 ∈ [−1, 1) the remapped
+                    mantissa. L is a 7-coefficient (degree-6) polynomial
+                    evaluated with plain Horner — no sqrt and no division in the
+                    kernel, so it is a straight chain of fused multiply-adds.
+                    Replaces the earlier sqrt-based ln_opt.
                 </p>
                 <div id="log_compare" class="plot"></div>
                 <div class="coeff-row" id="ln_coeffs"></div>
@@ -551,7 +553,7 @@
                 </div>
                 <p class="section-sub">
                     Built entirely from the library's own <code>exp_poly</code>,
-                    <code>ln_opt</code>, and <code>rauSinCos</code> — not
+                    <code>ln_na</code>, and <code>rauSinCos</code> — not
                     native Math.exp/log/sin — so any error in those primitives
                     composes visibly here. Deliberately has no
                     "if integer, return factorial(n-1)" shortcut: that shortcut
@@ -782,14 +784,12 @@
                 1.061405429, 0.3275911,
             ];
 
-            // ln_opt: corrected (this session) vs buggy (old transcription)
-            const LO_FIXED = [
-                0.92845174, 4.63558759, 11.71261199, 0.00664451, -0.29545176,
-                -2.77203887,
-            ];
-            const LO_BUGGY = [
-                0.92845174, 4.63558759, 11.71255199, 0.00668451, -0.29543836,
-                -2.77203887,
+            // ln_na: degree-6 polynomial on the remapped mantissa
+            // t = 2*m - 3, m in [1,2). Ascending order (C[0] is the constant
+            // term), so horner() applies directly.
+            const LN_C = [
+                0.405465292, 0.333341836, -0.0555613494, 0.0122789428,
+                -0.00305806467, 0.000951531392, -0.000272094961,
             ];
 
             const ATAN_F16 = [
@@ -887,17 +887,10 @@
                 return horner(EE, f) * Math.pow(2, n);
             }
 
-            function lnOpt(x, LO) {
+            function lnNa(x) {
                 const e = Math.floor(Math.log2(x));
-                const m = x / Math.pow(2, e);
-                const t = 2 * m - 3;
-                return (
-                    e * LN2 +
-                    LO[0] * Math.sqrt(LO[1] * t + LO[2]) +
-                    LO[3] * t * t +
-                    LO[4] * t +
-                    LO[5]
-                );
+                const t = (2 * x) / Math.pow(2, e) - 3;
+                return e * 0.69314718056 + horner(LN_C, t);
             }
 
             function erfPoly(x) {
@@ -906,9 +899,9 @@
 
             // ============================================================================
             // GAMMA / LGAMMA -- Lanczos approximation (g=7, n=9), built entirely
-            // from the library's own primitives (expPoly, lnOpt, rauSinCos) rather
+            // from the library's own primitives (expPoly, lnNa, rauSinCos) rather
             // than native Math.exp/log/sin. This makes Gamma an integration test
-            // for the whole library: any error in exp_poly, ln_opt, or the
+            // for the whole library: any error in exp_poly, ln_na, or the
             // sincos/warp pipeline shows up here, composed together.
             //
             // Two things deliberately NOT done, both caught the hard way in an
@@ -947,7 +940,7 @@
             }
 
             function rktPow(x, y) {
-                return expPoly(y * lnOpt(x, LO_FIXED));
+                return expPoly(y * lnNa(x));
                 // return expPoly(y * Math.log(x));
             }
 
@@ -974,7 +967,7 @@
                 const A = lanczosSum(z);
                 const t = z + GAMMA_G + 0.5;
                 return (
-                    0.5 * LOG_2PI + (z + 0.5) * lnOpt(t, LO_FIXED) - t + lnOpt(A, LO_FIXED)
+                    0.5 * LOG_2PI + (z + 0.5) * lnNa(t) - t + lnNa(A)
                 );
             }
 
@@ -1611,78 +1604,37 @@
                 );
             }
 
-            // ---- §6 ln (corrected vs buggy) ----
+            // ---- §6 ln_na ----
             function renderLnPlot() {
                 const xs = [],
                     yTrue = [],
-                    yFixed = [],
-                    yErrFixed = [],
-                    yErrBuggy = [];
+                    yApprox = [],
+                    yErr = [];
                 for (let i = 0; i <= 500; i++) {
                     const x = 0.05 + (19.95 * i) / 500;
                     xs.push(x);
                     const t = Math.log(x);
-                    const pf = lnOpt(x, LO_FIXED);
-                    const pb = lnOpt(x, LO_BUGGY);
+                    const p = lnNa(x);
                     yTrue.push(t);
-                    yFixed.push(pf);
-                    yErrFixed.push(Math.abs(t - pf) + 1e-12);
-                    yErrBuggy.push(Math.abs(t - pb) + 1e-12);
+                    yApprox.push(p);
+                    yErr.push(Math.abs(t - p) + 1e-12);
                 }
-                Plotly.newPlot(
-                    "log_compare",
-                    [
-                        {
-                            x: xs,
-                            y: yTrue,
-                            name: "ln(x)",
-                            line: { width: 2, color: COLORS.text },
-                        },
-                        {
-                            x: xs,
-                            y: yFixed,
-                            name: "ln_opt (corrected)",
-                            line: {
-                                width: 1.6,
-                                color: COLORS.teal,
-                                dash: "dot",
-                            },
-                        },
-                        {
-                            x: xs,
-                            y: yErrFixed,
-                            name: "|err| corrected",
-                            yaxis: "y2",
-                            line: { width: 1, color: COLORS.coral },
-                        },
-                        {
-                            x: xs,
-                            y: yErrBuggy,
-                            name: "|err| buggy LO2-4",
-                            yaxis: "y2",
-                            line: {
-                                width: 1,
-                                color: COLORS.amber,
-                                dash: "dash",
-                            },
-                        },
-                    ],
-                    baseLayout(),
-                    PLOT_CONFIG,
-                );
+                comparePlot("log_compare", xs, yTrue, yApprox, yErr, [
+                    "ln(x)",
+                    "ln_na",
+                ]);
 
                 coeffChips(
                     "ln_coeffs",
-                    "LO",
-                    LO_FIXED.map((v) => v.toFixed(8)),
+                    "C",
+                    LN_C.map((v) => v.toPrecision(9)),
                 );
 
-                const maxFixed = Math.max(...yErrFixed);
-                const maxBuggy = Math.max(...yErrBuggy);
+                const maxErr = Math.max(...yErr);
+                document.getElementById("ln_tag").textContent =
+                    `${maxErr.toExponential(2)} · max abs error`;
                 document.getElementById("ln_errstat").innerHTML =
-                    `max error — corrected: <span class="num">${maxFixed.toExponential(2)}</span>` +
-                    ` &nbsp;·&nbsp; buggy: <span class="num bad">${maxBuggy.toExponential(2)}</span>` +
-                    ` &nbsp;·&nbsp; ratio: <span class="num bad">${(maxBuggy / maxFixed).toFixed(1)}×</span>`;
+                    `max absolute error (x ∈ [0.05, 20]): <span class="num">${maxErr.toExponential(2)}</span>`;
             }
 
             // ---- §8 gamma / lgamma ----
