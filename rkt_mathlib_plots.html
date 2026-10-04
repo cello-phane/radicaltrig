@@ -403,8 +403,16 @@
                     Maps the raw diagonal parameter t ∈ [0,1] to the arc-uniform
                     coordinate w = sin(t·π/2) / (sin(t·π/2) + cos(t·π/2)). Every
                     sin/cos call in the library is this polynomial plus one
-                    sqrt. 7-coefficient endpoint-pinned set (w(0)=0, w(1)=1
-                    exactly) — supersedes the earlier 6-coefficient set.
+                    rsqrt. Single-precision model matching sincos_rau.asm: every
+                    operation is rounded with Math.fround and fused where the
+                    assembly uses FMA. 7-coefficient endpoint-pinned set,
+                    w = 0.5 + v·P(v²) with v = t − ½. In float32 the pinning
+                    residual falls below half an ulp of 0.5, so w(0) = 0 and
+                    w(1) = 1 come out exact, which gives exact 0 and ±1 at
+                    integer RAU inputs. The target is absolute accuracy
+                    (~1e-7); relative accuracy very close to a zero of sin or
+                    cos is not, and the Gamma code in §8 uses its own sinpi
+                    kernel for that instead.
                 </p>
                 <div id="warp_compare" class="plot"></div>
                 <div class="coeff-row" id="warp_coeffs"></div>
@@ -418,7 +426,9 @@
                 </div>
                 <p class="section-sub">
                     Two independent pipelines for sin/cos. rau_sincosf warps
-                    then normalises via one 1/√D; sincos_apulsoft is a
+                    (§1, float32 model) then normalises via one 1/√D, computed
+                    as a degree-7 polynomial plus one Newton step, as in
+                    sincos_rau.asm; sincos_apulsoft (double model) is a
                     root-factored minimax fit adapted from apulSoft's
                     "Branchless sincos" (apulsoft.ch/blog/branchless-sincos/),
                     si = (x−π)(x+π)·x·P1(x²), co = (x−π/2)(x+π/2)·P2(x²),
@@ -548,14 +558,17 @@
             <!-- ===================== GAMMA / LGAMMA ===================== -->
             <section class="section">
                 <div class="section-head">
-                    <h2>§8 — Gamma / lgamma (Lanczos, g=7, n=9)</h2>
+                    <h2>§8 — Gamma (Lanczos) and lgamma (float32 kernel)</h2>
                     <span class="tag ok">integration test, no shortcuts</span>
                 </div>
                 <p class="section-sub">
-                    Built entirely from the library's own <code>exp_poly</code>,
-                    <code>ln_na</code>, and <code>rauSinCos</code> — not
-                    native Math.exp/log/sin — so any error in those primitives
-                    composes visibly here. Deliberately has no
+                    The direct Gamma is built from the library's own
+                    <code>exp_poly</code> and <code>ln_na</code> — not native
+                    Math.exp/log — so any error in those primitives composes
+                    visibly here. The reflection
+                    formula uses a dedicated <code>sinpi</code> kernel rather
+                    than <code>rauSinCos</code>, so that sin(πz) stays
+                    relatively accurate near the poles. Deliberately has no
                     "if integer, return factorial(n-1)" shortcut: that shortcut
                     returns an exact value using no RKT math at all, which
                     would look like zero error while testing nothing. The
@@ -568,16 +581,29 @@
                 <div class="coeff-row" id="gamma_coeffs"></div>
                 <p class="section-sub" style="margin-top: 14px">
                     <b>lgamma</b> avoids Gamma's huge dynamic range (Γ(15) ≈
-                    8.7×10¹⁰) — useful whenever only the log is needed, e.g.
-                    log-likelihoods or Stirling-scale factorials.
+                    8.7×10¹⁰) and is a dedicated float32 kernel rather than the
+                    Lanczos sum: Stirling for z ≥ 3, two zero-factored
+                    polynomials around z = 1 and z = 2 (so the exact zeros are
+                    kept and relative error stays ~1e-7 right next to them),
+                    a recurrence below 0.75, and reflection through the sinpi
+                    kernel for z &lt; 0. It uses its own degree-9 log
+                    (4.5×10⁻⁸ absolute, versus 1.5×10⁻⁶ for ln_na) because
+                    lgamma multiplies ln z by z. One divide in total, where the
+                    Lanczos sum needs eight. Every operation is rounded with
+                    Math.fround and the result is widened to double on return;
+                    the reference is evaluated at the float32-narrowed
+                    argument.
                 </p>
                 <div id="lgamma_compare" class="plot"></div>
                 <div id="lgamma_errstat" class="err-stat"></div>
+                <div id="lgamma_regions" class="err-stat"
+                     style="font-family: monospace; white-space: pre; line-height: 1.6"></div>
                 <p class="section-sub" style="margin-top: 14px">
                     <b>Reflection formula</b>, z &lt; 0.5 — exercises
-                    <code>rktSinPiZ</code> (via <code>rauSinCos</code>), the
+                    <code>rktSinPiZ</code> (its own float32 sinpi kernel), the
                     one part of this pipeline the direct positive-domain sweep
-                    above never touches:
+                    above never touches. Poles at 0, −1, −2, … are tested
+                    exactly and return ±∞ / NaN as C99 tgamma does:
                 </p>
                 <div id="gamma_reflection_table" class="err-stat"
                      style="font-family: monospace; white-space: pre; line-height: 1.6"></div>
@@ -675,13 +701,43 @@
             // ============================================================================
             const LN2 = 0.6931471805599453;
 
-            // 7-coefficient endpoint-pinned set (stable): w(0)=0, w(1)=1
-            // exactly. Supersedes the earlier 6-coefficient set above.
+            // Warp: 7-coefficient endpoint-pinned set, w = 0.5 + v*P(v^2),
+            // v = t - 0.5 (same values as sincos_rau.asm .coef0-.coef6).
             const WC = [
                 0.78539828866558314, 0.64594625770051587, 0.63827326697947083,
                 0.62357916420830480, 0.75561600946878778,
                 0.079951715963356818, 1.8429558690126906,
             ];
+
+            // ---- single-precision model helpers ----
+            // f32 rounds to float32. fma32 is a float32 fused multiply-add:
+            // the product of two float32 values is exact in a double, so one
+            // double add and one rounding gives the fused result (a double
+            // rounding can differ from true FMA only in rare ties).
+            const f32 = Math.fround;
+            const fma32 = (a, b, c) => f32(a * b + c);
+
+            // Warp coefficients as the assembly stores them (float32).
+            const WC32 = WC.map(f32);
+
+            // sinpi kernel for Gamma/lgamma: sin(pi*f) = f * Q(f^2), |f| <= 1/2.
+            // Relative-minimax fit of sin(pi f)/f (pi folded into Q), then
+            // polished in float32 for Horner/FMA evaluation. Ascending order.
+            // Double-precision minimax error is 6e-9; the float32 evaluation
+            // sits at ~1.3e-7 relative, uniformly down to f -> 0.
+            const SINPI_Q = [
+                3.1415927410125732, -5.167709827423096, 2.5500638484954834,
+                -0.5982023477554321, 0.07747699320316315,
+            ].map(f32);
+
+            // 1/sqrt(D) on D in [0.5, 1], variable d = D - 0.75, ascending;
+            // coefficients and evaluation order as in sincos_rau.asm.
+            const RS = [
+                1.1547001741792948507, -0.76979733693368505099,
+                0.76998321274009581393, -0.85582127579338446687,
+                0.98389454964086504873, -1.1731736300945866946,
+                1.7987005561684346056, -2.2836002361103702185,
+            ].map(f32);
 
             // sincos_apulsoft coefficients -- apulSoft's root-factored
             // minimax fit (apulsoft.ch/blog/branchless-sincos/), Estrin-
@@ -828,9 +884,20 @@
                 return p;
             }
 
+            // Warp, float32, same operation order as sincos_rau.asm:
+            // P = (c0 + c1*y) + (c2 + c3*y)*y^2 + (c4 + c5*y + c6*y^2)*y^4,
+            // w = 0.5 + v*P, v = t - 0.5, y = v^2, every multiply-add fused.
             function warp(t) {
-                const v = t - 0.5;
-                return 0.5 + v * horner(WC, v * v);
+                const v = f32(f32(t) - 0.5);
+                const y = f32(v * v);
+                const a0 = fma32(WC32[1], y, WC32[0]);
+                const a1 = fma32(WC32[3], y, WC32[2]);
+                const a2 = fma32(WC32[5], y, WC32[4]);
+                const b0 = fma32(f32(a1 * y), y, a0);
+                const y2 = f32(y * y);
+                const c = fma32(WC32[6], y2, a2);
+                const p = fma32(f32(y2 * y2), c, b0);
+                return fma32(p, v, 0.5);
             }
             function warpExact(t) {
                 const s = Math.sin((t * Math.PI) / 2),
@@ -838,18 +905,38 @@
                 return s / (s + c);
             }
 
+            // rauSinCos(phi): phi in RAU (1 RAU = pi/2). Returns [cos, sin].
+            // Mirrors sincos_rau.asm: range reduction in double, then
+            // everything from the fraction onward in float32. Integer phi
+            // gives t == 0 exactly, hence exact 0 / +-1 results.
             function rauSinCos(phi) {
-                let pb = ((phi % 4) + 4) % 4;
-                const q = Math.floor(pb);
-                const t = pb - q;
-                let w = warp(t);
-                if (q % 2 === 1) w = 1 - w;
-                const omw = 1 - w;
-                const D = omw * omw + w * w;
-                const r = 1 / Math.sqrt(D);
-                const cosSign = [1, -1, -1, 1][q],
-                    sinSign = [1, 1, -1, -1][q];
-                return [omw * r * cosSign, w * r * sinSign]; // [cos, sin]
+                const neg = phi < 0 || Object.is(phi, -0);
+                const ax = Math.abs(phi);
+                const m = ax - 4 * Math.floor(ax * 0.25);
+                const qi = Math.floor(m);
+                let w = warp(m - qi);
+                if (qi & 1) w = f32(1 - w); // odd quadrant: w -> 1 - w
+                const omw = f32(1 - w);
+
+                // 1/sqrt(D), D = w^2 + (1-w)^2 in [0.5, 1]
+                const D = fma32(omw, omw, f32(w * w));
+                const d = f32(D - 0.75);
+                const d2 = f32(d * d);
+                const a67 = fma32(RS[7], d, RS[6]);
+                const a45 = fma32(RS[5], d, RS[4]);
+                const a23 = fma32(RS[3], d, RS[2]);
+                const a01 = fma32(RS[1], d, RS[0]);
+                const hi = f32(f32(f32(f32(a67 * d2) + a45) * d2) * d2);
+                const inv0 = f32(f32(a01 + f32(a23 * d2)) + hi);
+                const y2 = f32(f32(f32(inv0 * inv0) * D) * 0.5);
+                const inv = f32(inv0 * f32(1.5 - y2)); // one Newton step
+
+                let s = f32(w * inv),
+                    c = f32(omw * inv);
+                if ((qi >> 1) & 1) s = -s;
+                if (((qi >> 1) ^ qi) & 1) c = -c;
+                if (neg) s = -s;
+                return [c, s]; // [cos, sin]
             }
 
             // sincos_apulsoft -- apulSoft's root-factored minimax sin/cos,
@@ -899,22 +986,20 @@
 
             // ============================================================================
             // GAMMA / LGAMMA -- Lanczos approximation (g=7, n=9), built entirely
-            // from the library's own primitives (expPoly, lnNa, rauSinCos) rather
-            // than native Math.exp/log/sin. This makes Gamma an integration test
-            // for the whole library: any error in exp_poly, ln_na, or the
-            // sincos/warp pipeline shows up here, composed together.
+            // from the library's own primitives (expPoly, lnNa, and a dedicated
+            // sinpi kernel) rather than native Math.exp/log/sin. This makes Gamma
+            // an integration test for the library: any error in exp_poly, ln_na,
+            // or the sinpi kernel shows up here, composed together.
             //
             // Two things deliberately NOT done, both caught the hard way in an
             // earlier pass at this same derivation:
             //   1. No "if integer, return factorial(n-1)" shortcut. That shortcut
             //      returns an exact value with no RKT math involved at all --
             //      it looks like "0 error" but tests nothing.
-            //   2. The reciprocal-sqrt step inside sincos's diagonal normalise
-            //      must be 1/sqrt(D), not sqrt(D). A helper named "sqrt" that
-            //      silently computed the wrong one of these cost ~95% error at
-            //      z=-7.3/-10.2/-15.7 before it was caught. rauSinCos above
-            //      already uses the correct 1/Math.sqrt(D) -- reused as-is here,
-            //      not reimplemented, specifically to avoid repeating that bug.
+            //   2. (History) An earlier version routed sin(pi z) through
+            //      rauSinCos, where a sqrt-vs-1/sqrt mix-up cost ~95% error at
+            //      z=-7.3/-10.2/-15.7. Gamma now has its own sinpi kernel
+            //      (rktSinPiZ below), which has no normalise step at all.
             // ============================================================================
             const GAMMA_G = 7;
             const GAMMA_P = [
@@ -932,11 +1017,22 @@
                 return s;
             }
 
-            // sin(pi*z) via the library's own sincos, not Math.sin. Phi is in
-            // RAU units (1 RAU = 90 deg), and rauSinCos expects phi already in
-            // that convention -- pi radians = 2 RAU, so sin(pi*z) = rauSinCos(2z)[1].
+            // sin(pi*z) for Gamma's reflection formula. Deliberately NOT routed
+            // through rauSinCos: that pipeline is tuned for absolute accuracy,
+            // and Gamma near a pole needs relative accuracy of sin(pi*z) near
+            // its zeros. Reduce z = n + f with n = round(z), |f| <= 1/2 (exact
+            // in double), then sin(pi*z) = (-1)^n * f * Q(f^2) with Q a float32
+            // Horner/FMA polynomial. No cancellation anywhere, exactly 0 for
+            // integer z, and relative error ~1e-7 all the way down to f -> 0.
             function rktSinPiZ(z) {
-                return rauSinCos(2 * z)[1];
+                const n = Math.round(z);
+                const f = f32(z - n);
+                const y = f32(f * f);
+                let p = SINPI_Q[SINPI_Q.length - 1];
+                for (let i = SINPI_Q.length - 2; i >= 0; i--)
+                    p = fma32(p, y, SINPI_Q[i]);
+                const r = f32(f * p);
+                return n & 1 ? -r : r;
             }
 
             function rktPow(x, y) {
@@ -950,6 +1046,11 @@
             function rktGamma(z, depth) {
                 depth = depth || 0;
                 if (depth > 50) return NaN;
+                // Poles: exact test, no tolerance needed (integers are exact in
+                // floating point). Same convention as C99 tgamma: +-inf at +-0,
+                // NaN at negative integers.
+                if (z === 0) return Object.is(z, -0) ? -Infinity : Infinity;
+                if (z < 0 && z === Math.floor(z)) return NaN;
                 if (z < 0.5) {
                     return Math.PI / (rktSinPiZ(z) * rktGamma(1 - z, depth + 1));
                 }
@@ -960,15 +1061,105 @@
                 return SQRT_2PI * power * expPoly(-t) * A;
             }
 
-            // rktLnGamma -- ln|Gamma(z)| for z > 0.5, avoiding the huge dynamic
-            // range of rktGamma itself for large z (Gamma(15) ~ 8.7e10).
-            function rktLnGamma(z) {
-                z -= 1;
-                const A = lanczosSum(z);
-                const t = z + GAMMA_G + 0.5;
-                return (
-                    0.5 * LOG_2PI + (z + 0.5) * lnNa(t) - t + lnNa(A)
-                );
+            // ============================================================================
+            // lgamma -- float32 kernel. Every operation is rounded with Math.fround
+            // (FMA where the assembly would use it); the argument is narrowed on
+            // entry and the float32 result is widened to double on return.
+            //
+            //   z >= 3        Stirling:  (z-1/2) ln z - z + 1/2 ln 2pi + s*S(s^2), s = 1/z
+            //   1.5 <= z < 3  lgamma(2+w) = w * H2(w)    (exact zero at z = 2)
+            //   .75 <= z < 1.5 lgamma(1+v) = v * H1(v)   (exact zero at z = 1)
+            //   0 < z < .75   lgamma(z) = lgamma(z+1) - ln z
+            //   z < 0         reflection: ln(pi/|sin(pi z)|) - lgamma(1-z), via rktSinPiZ
+            //
+            // v = z-1 and w = z-2 are exact in float32 on their ranges (Sterbenz),
+            // so relative accuracy holds right down to the zeros at 1 and 2.
+            // One divide in the whole kernel (s = 1/z); the old Lanczos sum used eight.
+            // ============================================================================
+            const f32 = Math.fround;
+            const fma32 = (a, b, c) => f32(a * b + c);
+            const horner32 = (C, x) => {
+                let p = C[C.length - 1];
+                for (let i = C.length - 2; i >= 0; i--) p = fma32(p, x, C[i]);
+                return p;
+            };
+
+            // ln(m), m in [1,2), u = 2m-3 in [-1,1): degree-9 minimax, float32-polished (abs err ~4.5e-8)
+            const LG_LN = [
+                0.40546509623527527, 0.33333325386047363, -0.05555520951747894,
+                0.012346316128969193, -0.003088433528319001, 0.0008214362314902246,
+                -0.0002237597364000976, 6.652159208897501e-5, -2.4091788873192854e-5,
+                6.0515617406053934e-6,
+            ].map(f32);
+            // lgamma(1+v) = v*H1(v), v in [-1/4, 1/2]
+            const LG_H1 = [
+                -0.5772156715393066, 0.8224681615829468, -0.40068385004997253,
+                0.2704806327819824, -0.2072351574897766, 0.17176741361618042,
+                -0.15097805857658386, 0.11732026189565659, -0.049941807985305786,
+            ].map(f32);
+            // lgamma(2+w) = w*H2(w), w in [-1/2, 1]
+            const LG_H2 = [
+                0.42278435826301575, 0.322467178106308, -0.06735336035490036,
+                0.020577339455485344, -0.007372139021754265, 0.0029065601993352175,
+                -0.0012588949175551534, 0.0005170123185962439, -0.00012088380026398227,
+            ].map(f32);
+            // Stirling correction: 1/(12z) - 1/(360z^3) + 1/(1260z^5) - 1/(1680z^7) = s*S(s^2), s=1/z
+            const LG_ST = [1 / 12, -1 / 360, 1 / 1260, -1 / 1680].map(f32);
+            // sin(pi f) = f*Q(f^2), |f| <= 1/2
+            const LG_SINPI = [
+                3.1415927410125732, -5.167709827423096, 2.5500638484954834,
+                -0.5982023477554321, 0.07747699320316315,
+            ].map(f32);
+            const LG_LN2 = f32(0.6931471805599453);
+            const LG_LNPI = f32(1.1447298858494002);
+            const LG_HALF_LN2PI = f32(0.9189385332046727);
+
+            function lgLn(x) { // x > 0 finite, float32 in/out
+                let e = Math.floor(Math.log2(x));
+                let m = x / Math.pow(2, e);
+                if (m >= 2) { m /= 2; e++; } else if (m < 1) { m *= 2; e--; }
+                const p = horner32(LG_LN, f32(2 * m - 3)); // 2m-3 exact
+                return fma32(e, LG_LN2, p);
+            }
+            function lgSinPi(z) { // z float32, returns float32 sin(pi z)
+                const n = Math.round(z);
+                const f = f32(z - n);
+                const r = f32(f * horner32(LG_SINPI, f32(f * f)));
+                return n & 1 ? -r : r;
+            }
+            function lgammaPos(z) { // z > 0, float32
+                if (z < 0.75) return f32(lgammaPos(f32(z + 1)) - lgLn(z));
+                if (z < 1.5) { const v = f32(z - 1); return f32(v * horner32(LG_H1, v)) + 0; } // +0 turns -0 into +0 at z = 1
+                if (z < 3) { const w = f32(z - 2); return f32(w * horner32(LG_H2, w)); }
+                const lz = lgLn(z);
+                const r = fma32(f32(z - 0.5), lz, f32(-z));
+                const s = f32(1 / z);
+                const ser = f32(s * horner32(LG_ST, f32(s * s)));
+                return f32(r + f32(LG_HALF_LN2PI + ser));
+            }
+            // lgammaF32(z): ln|Gamma(z)|, every operation in float32; the argument is narrowed
+            // first and the float32 result is widened to double on return.
+            function lgammaF32(zIn) {
+                const z = f32(zIn);
+                if (z !== z) return NaN;
+                if (z === Infinity || z === -Infinity) return Infinity;
+                if (z <= 0 && z === Math.floor(z)) return Infinity; // poles
+                if (z > 0) return lgammaPos(z);
+                // reflection: ln|Gamma(z)| = ln(pi/|sin(pi z)|) - lgamma(1-z)
+                const a = f32(LG_LNPI - lgLn(Math.abs(lgSinPi(z))));
+                return f32(a - lgammaPos(f32(1 - z)));
+            }
+            // rktLnGamma(z): ln|Gamma(z)|, every operation in float32; the argument is narrowed
+            // first and the float32 result is widened to double on return.
+            function rktLnGamma(zIn) {
+                const z = f32(zIn);
+                if (z !== z) return NaN;
+                if (z === Infinity || z === -Infinity) return Infinity;
+                if (z <= 0 && z === Math.floor(z)) return Infinity; // poles
+                if (z > 0) return lgammaPos(z);
+                // reflection: ln|Gamma(z)| = ln(pi/|sin(pi z)|) - lgamma(1-z)
+                const a = f32(LG_LNPI - lgLn(Math.abs(rktSinPiZ(z))));
+                return f32(a - lgammaPos(f32(1 - z)));
             }
 
             // Reference: the SAME algorithm, but with native Math.exp/Math.log/
@@ -996,6 +1187,13 @@
                 for (let k = 1; k < GAMMA_P.length; k++) A += GAMMA_P[k] / (z + k);
                 const t = z + GAMMA_G + 0.5;
                 return 0.5 * Math.log(2 * Math.PI) + (z + 0.5) * Math.log(t) - t + Math.log(A);
+            }
+
+            // Full-range ln|Gamma| reference in double precision (reflection for z < 0.5).
+            function lnGammaRefFull(z) {
+                if (z < 0.5)
+                    return Math.log(Math.PI / Math.abs(Math.sin(Math.PI * z))) - lnGammaRef(1 - z);
+                return lnGammaRef(z);
             }
 
             function erfApproxRef(x) {
@@ -1409,9 +1607,9 @@
                     yApprox = [],
                     yErr = [];
                 for (let i = 0; i <= 400; i++) {
-                    const t = 0.001 + (0.998 * i) / 400;
+                    const t = i / 400;
                     xs.push(t);
-                    const ex = warpExact(t),
+                    const ex = i === 0 ? 0 : i === 400 ? 1 : warpExact(t),
                         ap = warp(t);
                     yTrue.push(ex);
                     yApprox.push(ap);
@@ -1419,7 +1617,7 @@
                 }
                 comparePlot("warp_compare", xs, yTrue, yApprox, yErr, [
                     "exact sin/(sin+cos)",
-                    "warp polynomial",
+                    "warp polynomial, f32",
                 ]);
                 coeffChips(
                     "warp_coeffs",
@@ -1428,7 +1626,7 @@
                 );
                 const maxWarpErr = Math.max(...yErr);
                 document.getElementById("warp_tag").textContent =
-                    `${maxWarpErr.toExponential(2)} · warp fit (f64)`;
+                    `${maxWarpErr.toExponential(2)} · warp fit (f32)`;
             }
 
             // ---- §2 sincos ----
@@ -1672,32 +1870,76 @@
                     GAMMA_P.map((v) => v.toExponential(6)),
                 );
 
-                // lgamma sweep -- wider domain, absolute error (lgamma grows
-                // only logarithmically, so absolute error stays meaningful).
+                // lgamma sweep. Relative error: the float32 kernel keeps it ~1e-7
+                // everywhere, including right next to the zeros at z = 1 and 2.
+                // Reference is evaluated at the float32-narrowed argument.
                 const xs2 = [],
                     yTrue2 = [],
                     yApprox2 = [],
                     yErr2 = [];
-                for (let i = 0; i <= 400; i++) {
-                    const z = 0.6 + (49.4 * i) / 400;
+                for (let i = 0; i <= 600; i++) {
+                    const z = f32(0.05 + (11.95 * i) / 600);
                     xs2.push(z);
-                    const t = lnGammaRef(z),
+                    const t = lnGammaRefFull(z),
                         p = rktLnGamma(z);
                     yTrue2.push(t);
                     yApprox2.push(p);
-                    yErr2.push(Math.abs(t - p) + 1e-15);
+                    yErr2.push(Math.abs(t - p) / Math.max(Math.abs(t), 1e-300) + 1e-12);
                 }
                 comparePlot("lgamma_compare", xs2, yTrue2, yApprox2, yErr2, [
                     "lnGamma(z) [native]",
-                    "rktLnGamma(z)",
+                    "rktLnGamma(z), f32",
                 ]);
-                const maxAbsErr2 = Math.max(...yErr2);
+                const maxRel2 = Math.max(...yErr2);
                 document.getElementById("lgamma_errstat").innerHTML =
-                    `max absolute error (z ∈ [0.6, 50]): <span class="num">${maxAbsErr2.toExponential(2)}</span>`;
+                    `max relative error (z ∈ [0.05, 12], plotted): <span class="num">${maxRel2.toExponential(2)}</span>`;
+
+                // Per-region worst case, dense grids, same regimes the kernel uses.
+                const regions = [
+                    ["(0, 0.5)", (u) => Math.pow(10, -30 + u * 29.7)],
+                    ["[0.5, 0.75)", (u) => 0.5 + 0.25 * u],
+                    ["[0.75, 1.5)  around z = 1", (u) => 0.75 + 0.75 * u],
+                    ["[1.5, 3)  around z = 2", (u) => 1.5 + 1.5 * u],
+                    ["[3, 10)", (u) => 3 + 7 * u],
+                    ["[10, 100)", (u) => 10 + 90 * u],
+                    ["[100, 1e4)", (u) => Math.pow(10, 2 + 2 * u)],
+                    ["[1e4, 1e30]", (u) => Math.pow(10, 4 + 26 * u)],
+                    ["(-1, 0)", (u) => -Math.pow(10, -30 + u * 29.99999), 1],
+                    ["(-10, -1)  (has zeros)", (u) => -(1.0001 + 8.9998 * u), 1],
+                    ["(-1e4, -10)", (u) => -Math.pow(10, 1.00001 + 2.99998 * u), 1],
+                ];
+                // Negative regions (floor = 1): relative error, or absolute error
+                // where |lgamma| < 1, because lgamma has zeros there.
+                let rtab = "  region                          max rel error     at z\n";
+                for (const [name, fn, floor = 1e-300] of regions) {
+                    let worst = 0,
+                        wz = 0;
+                    for (let i = 0; i <= 4000; i++) {
+                        const z = f32(fn(i / 4000));
+                        if (z <= 0 && z === Math.floor(z)) continue;
+                        const t = lnGammaRefFull(z),
+                            p = rktLnGamma(z);
+                        const e = Math.abs(t - p) / Math.max(Math.abs(t), floor);
+                        if (e > worst) { worst = e; wz = z; }
+                    }
+                    rtab += `  ${name.padEnd(30)}  ${worst.toExponential(2).padStart(10)}      ${wz.toPrecision(6)}\n`;
+                }
+                rtab += "\n  Negative rows: relative error, or absolute where |lgamma| < 1. lgamma has\n";
+                rtab += "  zeros there (z = -2.457, -2.571, -3.143, ...); worst absolute error at them:\n";
+                let worstAbs = 0;
+                for (const zr of [-2.4570247382, -2.7476826467, -3.1435808, -3.9552944, -4.0393620, -4.9915447, -5.0082183, -5.9986076]) {
+                    const z = f32(zr);
+                    worstAbs = Math.max(worstAbs, Math.abs(rktLnGamma(z) - lnGammaRefFull(z)));
+                }
+                rtab += `  ${worstAbs.toExponential(2)}  (float32 ulp of the terms being combined)\n`;
+                rtab += "\n  special values:  ";
+                const sv = [0, -1, 1, 2, Infinity, 4.1e36, NaN];
+                rtab += sv.map((z) => `lgamma(${z}) = ${rktLnGamma(z)}`).join("   ");
+                document.getElementById("lgamma_regions").textContent = rtab;
 
                 // Reflection formula spot-checks, z < 0.5 -- the only part of
-                // this pipeline that exercises rktSinPiZ / rauSinCos's sin
-                // output. Never touched by the sweep above.
+                // this pipeline that exercises rktSinPiZ and the pole checks.
+                // Never touched by the sweep above.
                 const negTests = [-0.5, -1.5, -2.5, -3.5, -4.5, -7.3, -10.2, -15.7];
                 let table = "  z       rktGamma          reference         rel.err\n";
                 let maxNegErr = 0;
