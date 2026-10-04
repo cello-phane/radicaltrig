@@ -1076,8 +1076,7 @@
             // so relative accuracy holds right down to the zeros at 1 and 2.
             // One divide in the whole kernel (s = 1/z); the old Lanczos sum used eight.
             // ============================================================================
-            const f32 = Math.fround;
-            const fma32 = (a, b, c) => f32(a * b + c);
+
             const horner32 = (C, x) => {
                 let p = C[C.length - 1];
                 for (let i = C.length - 2; i >= 0; i--) p = fma32(p, x, C[i]);
