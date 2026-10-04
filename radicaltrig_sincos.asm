@@ -1,7 +1,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;SINE_RAU;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; https://godbolt.org/z/GarveP5EY (pair test)
-; 
+;
 ; ABI selection: this function writes xmm6/xmm7 as scratch. Under SysV64
 ; (Linux/macOS) ALL xmm registers are caller-saved, so this is fine as-is.
 ; Under Win64, xmm6-xmm15 are CALLEE-saved -- a caller may have a live
@@ -14,7 +14,9 @@
 ; Assemble for Windows x64 (adds the save/restore prologue+epilogue):
 ;     nasm -f win64 -DWIN64_ABI sincos_rau.asm -o sincos_rau.obj
 ;
-; Same source, same algorithm, only the register-preservation differs.
+; Return convention: -- struct {double s, c;}
+; in xmm0:xmm1 under SysV64, via hidden pointer (RCX in, RAX out) under
+; Win64, with x correspondingly arriving in XMM1 not XMM0 under Win64.
 default rel
 global sincos_rau
 

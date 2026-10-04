@@ -1,4 +1,13 @@
-; Local:
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;SINCOS_RAU;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; https://godbolt.org/z/Me6v6ojx5 (pair test)
+;
+; ABI selection: this function writes xmm6/xmm7 as scratch. Under SysV64
+; (Linux/macOS) ALL xmm registers are caller-saved, so this is fine as-is.
+; Under Win64, xmm6-xmm15 are CALLEE-saved -- a caller may have a live
+; value sitting in xmm6/xmm7 across this call, and this function would
+; silently corrupt it unless it saves/restores them itself.
+;
 ; Assemble for Linux/SysV64:
 ;     nasm -f elf64 sincos_fma.asm -o sincos_fma.o
 ; Assemble for Windows x64:
