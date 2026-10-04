@@ -78,21 +78,21 @@ sincos_fma:
     ; a1 = C2 + C3*y
    ; vmulss xmm5,xmm4,[rel .coef3]
    ; vaddss xmm5,xmm5,[rel .coef2]
-		vmovss xmm5,[rel .coef2]
-		vfmadd231ss xmm5,xmm4,[rel .coef3]
+	vmovss xmm5,[rel .coef2]
+	vfmadd231ss xmm5,xmm4,[rel .coef3]
 
     ; a2 = C4 + C5*y
- ; vmulss xmm6,xmm4,[rel .coef5]
- ; vaddss xmm6,xmm6,[rel .coef4]
+   ; vmulss xmm6,xmm4,[rel .coef5]
+   ; vaddss xmm6,xmm6,[rel .coef4]
  	vmovss xmm6,[rel .coef4]
-		vfmadd231ss xmm6,xmm4,[rel .coef5]
+	vfmadd231ss xmm6,xmm4,[rel .coef5]
 
  	; b0 = a0 + a1*y²
  	vmulss xmm5,xmm5,xmm4
 
- ; vmulss xmm5,xmm5,xmm4
- ; vaddss xmm5,xmm5,xmm2
-  vfmadd213ss xmm5,xmm4,xmm2
+   ; vmulss xmm5,xmm5,xmm4
+   ; vaddss xmm5,xmm5,xmm2
+  	vfmadd213ss xmm5,xmm4,xmm2
 
  	vmulss xmm4,xmm4,xmm4               ; y²
 
@@ -110,7 +110,7 @@ sincos_fma:
 
    ; vmulss xmm5,xmm5,xmm3                ; p = v*(...)
    ; vaddss xmm5,xmm5,[rel .half]         ; w = 0.5 + p
-		vfmadd123ss xmm5,xmm3,[rel .half]
+	vfmadd123ss xmm5,xmm3,[rel .half]
 
     ; --- odd-quadrant fix: w -> 1-w for Q1/Q3 ---
     test r8d,1
@@ -128,9 +128,9 @@ sincos_fma:
     vmulss xmm7,xmm5,xmm5
    ; vmulss xmm4,xmm6,xmm6
    ; vaddss xmm7,xmm7,xmm4
-    vfmadd321ss xmm7,xmm6,xmm6
-    vmovss xmm8,xmm7
-    vsubss xmm7,xmm7,[rel .threequarter]   ; xmm7 = d = D - 0.75  (recentered)
+   vfmadd321ss xmm7,xmm6,xmm6
+   vmovaps xmm0,xmm7                  ; D kept in xmm0 (free here; volatile on Win64, unlike xmm8)
+   vsubss xmm7,xmm7,[rel .threequarter]   ; xmm7 = d = D - 0.75  (recentered)
 
     ;; ---- rsqrt polynomial evaluation, no FMA ----
     vmulss xmm4,xmm7,xmm7                ; d²
@@ -168,15 +168,15 @@ sincos_fma:
 	; xmm1 = 1/sqrt(D)
 	; xmm5 = w
 	; xmm6 = 1-w
-	;refine 1/sqrt(D)
-	; y1 = y0 * (1.5 - 0.5*D*y0^2)   -- xmm8 = D, xmm1 = y0
-	vmulss xmm2, xmm1, xmm1        ; y0²
-	vmulss xmm2, xmm2, xmm8        ; D*y0²
-	vmulss xmm2, xmm2, [.half]     ; 0.5*D*y0²
-	vmovss xmm3, [.onehalf]        ; 1.5
-	vsubss xmm3, xmm3, xmm2
-	vmulss xmm0, xmm1, xmm3        ; y1
-
+	; refine 1/sqrt(D), residual form (xmm0 = D, xmm1 = y0):
+	;   e  = 1 - D*y0*y0          (fused: one rounding)
+	;   y1 = y0 + 0.5*y0*e        (fused: one rounding)
+	vmulss xmm2, xmm0, xmm1              ; u = D*y0
+	vmovss xmm3, [.one]                  ; 1.0
+	vfnmadd231ss xmm3, xmm2, xmm1        ; xmm3 = 1 - u*y0 = e
+	vmulss xmm4, xmm1, [.half]           ; 0.5*y0 (exact)
+	vmovaps xmm0, xmm1                   ; y1 = y0
+	vfmadd231ss xmm0, xmm4, xmm3         ; y1 = y0 + (0.5*y0)*e
 
 	vmulss xmm5,xmm5,xmm0                ; xmm5 = sin_raw = w*inv
 	vmulss xmm6,xmm6,xmm0                ; xmm6 = cos_raw = (1-w)*inv
@@ -228,8 +228,6 @@ align 16
 
 .half:
 	dd 0x3F000000		; 0.5
-.onehalf:
-	dd 0x3FC00000		; 1.5
 .one:
 	dd 0x3F800000		; 1.0
 .threequarter:
