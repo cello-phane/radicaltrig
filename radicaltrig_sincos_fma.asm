@@ -1,6 +1,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;SINCOS_RAU;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-; https://godbolt.org/z/Me6v6ojx5 (pair test)
+; https://godbolt.org/z/Me6v6ojx5 (pair test)    https://godbolt.org/z/badfMebEe (comparison test)
 ;
 ; ABI selection: this function writes xmm6/xmm7 as scratch. Under SysV64
 ; (Linux/macOS) ALL xmm registers are caller-saved, so this is fine as-is.
