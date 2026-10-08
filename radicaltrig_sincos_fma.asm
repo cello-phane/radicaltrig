@@ -1,6 +1,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;SINCOS_RAU;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-; https://godbolt.org/z/Me6v6ojx5 (pair test)    https://godbolt.org/z/badfMebEe (comparison test)
+; https://godbolt.org/z/Me6v6ojx5 (pair test)    https://godbolt.org/z/eE8aqrqqK
+;                                           (comparison test;with another assembler too)
 ;
 ; ABI selection: this function writes xmm6/xmm7 as scratch. Under SysV64
 ; (Linux/macOS) ALL xmm registers are caller-saved, so this is fine as-is.
@@ -106,7 +107,7 @@ sincos_fma:
     ; b0 + (a2 + C6*y²)*y⁴
    ; vmulss xmm1,xmm1,xmm4
    ; vaddss xmm5,xmm5,xmm1
-		vfmadd321ss xmm5,xmm1,xmm4
+	vfmadd321ss xmm5,xmm1,xmm4
 
    ; vmulss xmm5,xmm5,xmm3                ; p = v*(...)
    ; vaddss xmm5,xmm5,[rel .half]         ; w = 0.5 + p
@@ -128,42 +129,27 @@ sincos_fma:
     vmulss xmm7,xmm5,xmm5
    ; vmulss xmm4,xmm6,xmm6
    ; vaddss xmm7,xmm7,xmm4
-   vfmadd321ss xmm7,xmm6,xmm6
-   vmovaps xmm0,xmm7                  ; D kept in xmm0 (free here; volatile on Win64, unlike xmm8)
-   vsubss xmm7,xmm7,[rel .threequarter]   ; xmm7 = d = D - 0.75  (recentered)
+    vfmadd321ss xmm7,xmm6,xmm6
+    vmovaps xmm0,xmm7                  ; D kept in xmm0 (free here; volatile on Win64, unlike xmm8)
+    vsubss xmm7,xmm7,[rel .threequarter]   ; xmm7 = d = D - 0.75  (recentered)
 
-    ;; ---- rsqrt polynomial evaluation, no FMA ----
-    vmulss xmm4,xmm7,xmm7                ; d²
+    ;; ---- rsqrt polynomial evaluation ----
+    vmulss xmm4,xmm7,xmm7                  ; d²
 
-   ; vmulss xmm3,xmm7,[rel .rscoef7]
-   ; vaddss xmm3,xmm3,[rel .rscoef6]
-    vmovss xmm3,[rel .rscoef7]
-    vfmadd213ss xmm3,xmm7,[rel .rscoef6]
+    vmovss xmm3,[rel .rscoef5]
+    vfmadd213ss xmm3,xmm7,[rel .rscoef4]   ; xmm3 = B = r5*d+r4
+    vmovss xmm2,[rel .rscoef7]
+    vfmadd213ss xmm2,xmm7,[rel .rscoef6]   ; xmm2 = A = r7*d+r6
+    vfmadd231ss xmm3,xmm2,xmm4             ; xmm3 = inner = A*d² + B
 
-    vmulss xmm3,xmm3,xmm4
-
-   ; vmulss xmm2,xmm7,[rel .rscoef5]
-   ; vaddss xmm2,xmm2,[rel .rscoef4]
-	vmovss xmm2,[rel .rscoef5]
-	vfmadd123ss xmm2,xmm7,[rel .rscoef4]
-
-    vaddss xmm3,xmm3,xmm2
-    vmulss xmm3,xmm3,xmm4
-    vmulss xmm3,xmm3,xmm4                ; * d⁴
-
-   ; vmulss xmm2,xmm7,[rel .rscoef3]
-   ; vaddss xmm2,xmm2,[rel .rscoef2]
     vmovss xmm2,[rel .rscoef3]
-    vfmadd123ss xmm2,xmm7,[rel .rscoef2]
-    vmulss xmm2,xmm2,xmm4
-
-   ; vmulss xmm1,xmm7,[rel .rscoef1]
-   ; vaddss xmm1,xmm1,[rel .rscoef0]
+    vfmadd213ss xmm2,xmm7,[rel .rscoef2]   ; xmm2 = C = r3*d+r2
     vmovss xmm1,[rel .rscoef1]
-    vfmadd123ss xmm1,xmm7,[rel .rscoef0]
+    vfmadd213ss xmm1,xmm7,[rel .rscoef0]   ; xmm1 = E = r1*d+r0
+    vfmadd231ss xmm1,xmm2,xmm4             ; xmm1 = t = C*d² + E   (last use of raw d² — xmm4 is safe to square after this)
 
-    vaddss xmm1,xmm1,xmm2
-    vaddss xmm1,xmm1,xmm3
+    vmulss xmm4,xmm4,xmm4                  ; xmm4 = d⁴
+    vfmadd231ss xmm1,xmm3,xmm4             ; xmm1 = y0 = inner*d⁴ + t
 	; -------- end rsqrt polynomial evaluation --------
 	; xmm1 = 1/sqrt(D)
 	; xmm5 = w
