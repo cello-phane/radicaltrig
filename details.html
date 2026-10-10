@@ -419,7 +419,7 @@ figcaption{
 </figure>
 
 <div class="formula">
-w        = 0.5 + v·P(v²)          <span class="c">← warp,  v = t−½</span><br>
+w        = 0.5 + P_w(t−½)          <span class="c">← warp,  t−½</span><br>
 D        = (1−w)² + w²             <span class="c">← always in [½,1]</span><br>
 cos(φ)   = <span class="hi">(1−w) / √D</span>         <span class="c">← x component</span><br>
 sin(φ)   = <span class="hi">w / √D</span>              <span class="c">← y component</span>
@@ -587,7 +587,7 @@ w = warp(frac(mod(φ, 4)))           <span class="c">← w in [0,1)</span><br>
 D = 1 − 2w + 2w²            <span class="c">← = (1-w)²+w²</span><br><br>
 R_vec = <span class="hi">(i.x·(1−w) − i.y·w,  i.y·(1−w) + i.x·w)</span>   <span class="c">← before normalization</span><br>
 <span class="hi">cos</span> = R_vec.x / √D<br>
-<span class="hi">sin</span> = R_vec.y / √D       <span class="c">← verified: max err ~4.3⁻⁹</span>
+<span class="hi">sin</span> = R_vec.y / √D       <span class="c">← verified: max err ~4.3×10⁻⁹</span>
 </div>
 
 <!-- The page break occurs right here -->
@@ -602,7 +602,7 @@ R_vec = <span class="hi">(i.x·(1−w) − i.y·w,  i.y·(1−w) + i.x·w)</span
 (1/√D) = P(D) by the following:
 d = D − 0.75                      <span class="c">← recenter, d ∈ [−0.25, 0.25]</span><br>
 P_base(d) ≈ 1/√D                  <span class="c">← 8-term Estrin fit, see §10</span><br>
-P(D) = ½·(P_base(d)² + 1/D) / P_base(d)   <span class="c">← one Newton-Raphson step</span>
+P(D) = P_base(d)·(1.5 − 0.5·D·P_base(d)²)   <span class="c">← one Newton-Raphson step</span>
 </div>
 
 <div class="box box-teal">
@@ -734,7 +734,7 @@ Store <strong>sign(cos)</strong> and <strong>sign(sin)</strong> as two bits. Upd
     <tr>
       <td>Forward (cos,sin)</td>
       <td class="mono pur">R_vec or r_cos/r_sin</td>
-      <td class="mono teal">~4.3⁻⁹</td>
+      <td class="mono teal">~4.3×10⁻⁹</td>
       <td>Always — machine epsilon</td>
     </tr>
     <tr>
