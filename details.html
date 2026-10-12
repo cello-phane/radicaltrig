@@ -341,13 +341,13 @@ figcaption{
     <rect x="20" y="30" width="140" height="140" fill="none" stroke="#d4cfc4" stroke-width="1" stroke-dasharray="4,4"/>
     <polygon points="20,170 160,30" fill="#eef2fa" opacity="0.5"/>
     <!-- diagonal line -->
-    <line x1="20" y1="170" x2="160" y2="30" stroke="#4a2878" stroke-width="2"/>
-    <circle cx="20" cy="170" r="5" fill="#1a3870"/>
-    <circle cx="160" cy="30" r="5" fill="#1a3870"/>
+    <line x1="160" y1="170" x2="20" y2="30" stroke="#4a2878" stroke-width="2"/>
+    <circle cx="160" cy="170" r="5" fill="#1a3870"/>
+    <circle cx="20" cy="30" r="5" fill="#1a3870"/>
     <circle cx="90" cy="100" r="6" fill="#9a7030"/>
     <!-- labels -->
-    <text x="6" y="185" font-size="10" fill="#1a3870">(1,0)</text>
-    <text x="145" y="24" font-size="10" fill="#1a3870">(0,1)</text>
+    <text x="6" y="25" font-size="10" fill="#1a3870">(0,1)</text>
+    <text x="145" y="160" font-size="10" fill="#1a3870">(1,0)</text>
     <text x="98" y="97" font-size="10" fill="#9a7030">w</text>
     <text x="0" y="200" font-size="9" fill="#9a7030">w = t at parameter t ∈ [0,1]</text>
     <!-- axis labels -->
@@ -607,7 +607,7 @@ P(D) = P_base(d)·(1.5 − 0.5·D·P_base(d)²)   <span class="c">← one Newton
 
 <div class="box box-teal">
 <span class="box-label">why recenter</span>
-Fitting 1/√x directly on [0.5,1] produces coefficients spanning a ~208:1 ratio, which amplifies rounding error at float32. Recentering on d = D−0.75 (so d ∈ [−0.25,0.25]) brings the coefficient magnitudes in line and removes that error-amplification path. The Newton step afterward roughly doubles the fit's effective precision for one extra multiply-add.
+Fitting 1/√x directly on [0.5,1] produces coefficients spanning a ~208:1 ratio, which amplifies rounding error at float32. Recentering on d = D−0.75 (so d ∈ [−0.25,0.25]) brings the coefficient magnitudes in line and removes that error-amplification path. The Newton step afterward is optional: it takes the fit's error from ~3.7×10⁻⁷ to the warp-limited ~7×10⁻⁹ for a few multiply-adds and no divide.
 </div>
 
 <!-- The page break occurs right here -->
@@ -776,6 +776,13 @@ Store <strong>sign(cos)</strong> and <strong>sign(sin)</strong> as two bits. Upd
   </tbody>
 </table>
 
+<div class="box box-teal">
+<span class="box-label">side note — alternative w → t inverse: i_nvdiag</span>
+Besides the arctan route (<code>t = a_tan(w/(1−w))·(2/π)</code>, ~4.1×10⁻⁷), the warp can be undone directly with a short polynomial in w, with no atan or divide. Endpoint-pinned refit (recommended), max error <strong>1.13×10⁻⁶</strong>:<br>
+D_arctan = [1.2732086496, −1.693841808, 3.9376877867, −9.4340260103, 16.9209741638, −14.8936532067]<br>
+Pinned at both endpoints, so t = 0 and t = 1 invert exactly. The earlier unpinned list is about 3.7×10⁻⁶ and misses the endpoints. Use the arctan route when round-trip precision matters; use i_nvdiag when atan is unavailable or too costly. Not part of the forward pipeline.
+</div>
+
 <!-- ══ §9 PIPELINE AT A GLANCE ══════════════════════════════════════════ -->
 <h2><span class="sec-num">§9</span>Pipeline at a Glance</h2>
 
@@ -834,7 +841,7 @@ S5 = <span class="hi">0.98389454964086504873</span><br>
 S6 = <span class="hi">−1.1731736300945866946</span><br>
 S7 = <span class="hi">1.7987005561684346056</span><br>
 S8 = <span class="hi">−2.2836002361103702185</span><br><br>
-P(D) = ½·(P_base(d)² + 1/D) / P_base(d)   <span class="c">← Newton refinement, final result</span>
+P(D) = P_base(d)·(1.5 − 0.5·D·P_base(d)²)   <span class="c">← Newton refinement, divide-free, final result (optional; see §5)</span>
 </div>
 
 <h3>Arctan — a_tan(x), §6 inverse path</h3>
