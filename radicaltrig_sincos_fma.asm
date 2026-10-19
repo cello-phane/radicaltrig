@@ -134,22 +134,25 @@ sincos_fma:
     vsubss xmm7,xmm7,[rel .threequarter]   ; xmm7 = d = D - 0.75  (recentered)
 
     ;; ---- rsqrt polynomial evaluation ----
-    vmulss xmm4,xmm7,xmm7                  ; d²
+    vmulss xmm4,xmm7,xmm7        ; d²
+    vmovss  xmm3, [rel .rscoef7]
+    vfmadd213ss xmm3, xmm7, [rel .rscoef6]
+    vmovss  xmm2, [rel .rscoef5]
+    vfmadd213ss xmm2, xmm7, [rel .rscoef4]
+    ;vmulss  xmm3, xmm3, xmm4
+    ;vaddss  xmm3, xmm3, xmm2
+    vfmadd213ss xmm3, xmm4, xmm2 ; compacted above to this
+    vmulss  xmm3, xmm3, xmm4
+    vmulss  xmm3, xmm3, xmm4     ; xmm3 * d⁴
+    vmovss  xmm2, [rel .rscoef3]
+    vfmadd213ss xmm2, xmm7, [rel .rscoef2]    ; C = r3*d+r2
+    vmovss  xmm1, [rel .rscoef1]
+    vfmadd213ss xmm1, xmm7, [rel .rscoef0]    ; E = r1*d+r0
+    vfmadd231ss xmm1, xmm2, xmm4    ; t = C*d² + E
+    vmulss  xmm4, xmm4, xmm4        ; xmm4 = d⁴
+    vfmadd231ss xmm1, xmm3, xmm4    ; y0 = inner*d⁴ + t
+    vaddss  xmm1, xmm1, xmm3     ; xmm1 = y0 ~ 1/sqrt(D)
 
-    vmovss xmm3,[rel .rscoef5]
-    vfmadd213ss xmm3,xmm7,[rel .rscoef4]   ; xmm3 = B = r5*d+r4
-    vmovss xmm2,[rel .rscoef7]
-    vfmadd213ss xmm2,xmm7,[rel .rscoef6]   ; xmm2 = A = r7*d+r6
-    vfmadd231ss xmm3,xmm2,xmm4             ; xmm3 = inner = A*d² + B
-
-    vmovss xmm2,[rel .rscoef3]
-    vfmadd213ss xmm2,xmm7,[rel .rscoef2]   ; xmm2 = C = r3*d+r2
-    vmovss xmm1,[rel .rscoef1]
-    vfmadd213ss xmm1,xmm7,[rel .rscoef0]   ; xmm1 = E = r1*d+r0
-    vfmadd231ss xmm1,xmm2,xmm4             ; xmm1 = t = C*d² + E   (last use of raw d² — xmm4 is safe to square after this)
-
-    vmulss xmm4,xmm4,xmm4                  ; xmm4 = d⁴
-    vfmadd231ss xmm1,xmm3,xmm4             ; xmm1 = y0 = inner*d⁴ + t
 	; -------- end rsqrt polynomial evaluation --------
 	; xmm1 = 1/sqrt(D)
 	; xmm5 = w
