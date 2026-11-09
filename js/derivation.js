@@ -381,28 +381,6 @@ function drawDerivation() {
     // Ideal target angle (what a perfectly uniform parameter would give)
     const targetAngleRad = t * (Math.PI / 2);
 
-    // In warp mode, draw a faint ghost ray at the ideal target angle so
-    // the gap between "where warp lands" and "where it should land" is
-    // visible directly on the canvas
-    if (useWarp) {
-        const gx = Math.cos(targetAngleRad), gy = Math.sin(targetAngleRad);
-        const gStart = toCanvas(gx * 0.15, gy * 0.15);
-        const gEnd = toCanvas(gx * 1.15, gy * 1.15);
-        ctx.strokeStyle = colors.target;
-        ctx.lineWidth = 1.5;
-        ctx.setLineDash([4, 4]);
-        ctx.beginPath();
-        ctx.moveTo(gStart.x, gStart.y);
-        ctx.lineTo(gEnd.x, gEnd.y);
-        ctx.stroke();
-        ctx.setLineDash([]);
-        /*if (showLabels) {
-            ctx.fillStyle = colors.target;
-            ctx.font = '14px monospace';
-            ctx.fillText('ideal t·90°', gEnd.x + 4, gEnd.y);
-        }*/
-    }
-    
     const angleRad = Math.atan2(circleY, circleX);
     // Construction lines
     if (showConstruction) {
