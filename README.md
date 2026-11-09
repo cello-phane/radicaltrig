@@ -12,8 +12,8 @@
 ### Library & Demo
 [C/JS/GLSL source](radicaltrig.c) · [Interactive demo](https://cello-phane.github.io/radicaltrig/index.html)
 
-### 2D/3D applications:  
-[2D demo](https://www.shadertoy.com/view/M3cfRN)  
+### GPU(shadertoy)  
+[2D demo](https://www.shadertoy.com/view/WXGfD3)  
 [3D demo](https://www.shadertoy.com/view/WXVXDR)   
 Graph:  
 [Geogebra](https://www.geogebra.org/calculator/kvnpt4f3)  
