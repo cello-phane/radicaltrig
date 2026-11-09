@@ -29,6 +29,25 @@ function getColors() {
     };
 }
 
+function drawRotatedText(ctx, text, x, y, angle) {
+    // 1. Save the current canvas state
+    ctx.save(); 
+
+    // 2. Move the canvas origin (0,0) to your target text coordinates
+    ctx.translate(x, y);
+    ctx.rotate(angle); 
+
+    // 4. Align text so it centers nicely on your origin point
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+
+    // 5. Draw the text at the new local (0, 0) coordinates
+    ctx.fillText(text, 0, 0); 
+
+    // 6. Restore the canvas state back to normal
+    ctx.restore(); 
+}
+
 // ============================================================================
 // WARP POLYNOMIAL (rau_warp_11 — confirmed double-precision coefficients)
 // Same derivation as in geom.js: w(t) = 0.5 + warp11(t), an 11th-order
@@ -177,7 +196,7 @@ function drawDerivation() {
     
     // Axes
     ctx.strokeStyle = colors.axis;
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 0.5;
     const xStart = toCanvas(-1.3, 0), xEnd = toCanvas(1.3, 0);
     ctx.beginPath();
     ctx.moveTo(xStart.x, xStart.y);
@@ -191,19 +210,19 @@ function drawDerivation() {
     ctx.stroke();
     
     // Axis labels
-    if (showLabels) {
+    /*if (showLabels) {
         ctx.fillStyle = colors.text;
-        ctx.font = '12px monospace';
+        ctx.font = '14px monospace';
         const p1Label = toCanvas(1, 0);
         ctx.fillText('1', p1Label.x + 5, p1Label.y + 15);
         const p2Label = toCanvas(0, 1);
         ctx.fillText('1', p2Label.x - 15, p2Label.y + 5);
-    }
+    }*/
     
     // Unit circle
     const center = toCanvas(0, 0);
     ctx.strokeStyle = colors.circle;
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 1;
     ctx.beginPath();
     ctx.arc(center.x, center.y, scale, 0, 2 * Math.PI);
     ctx.stroke();
@@ -221,7 +240,7 @@ function drawDerivation() {
     // Diagonal line (Q0 edge)
     const p1 = toCanvas(1, 0), p2 = toCanvas(0, 1);
     ctx.strokeStyle = colors.diagonal;
-    ctx.lineWidth = 4;
+    ctx.lineWidth = 0.5;
     ctx.beginPath();
     ctx.moveTo(p1.x, p1.y);
     ctx.lineTo(p2.x, p2.y);
@@ -230,15 +249,15 @@ function drawDerivation() {
     // Diagonal endpoints
     ctx.fillStyle = colors.diagonal;
     ctx.beginPath();
-    ctx.arc(p1.x, p1.y, 5, 0, 2 * Math.PI);
+    ctx.arc(p1.x, p1.y, 2, 0, 2 * Math.PI);
     ctx.fill();
     ctx.beginPath();
-    ctx.arc(p2.x, p2.y, 5, 0, 2 * Math.PI);
+    ctx.arc(p2.x, p2.y, 2, 0, 2 * Math.PI);
     ctx.fill();
     
     if (showLabels) {
         ctx.fillStyle = colors.diagonal;
-        ctx.font = '12px monospace';
+        ctx.font = '9px monospace';
         ctx.fillText('(1, 0)', p1.x + 10, p1.y + 15);
         ctx.fillText('(0, 1)', p2.x - 35, p2.y - 5);
     }
@@ -299,15 +318,15 @@ function drawDerivation() {
 
         // diagonal points
         ctx.fillStyle = colors.linear;
-        ctx.beginPath(); ctx.arc(pRawDiag.x, pRawDiag.y, 6, 0, 2*Math.PI); ctx.fill();
+        ctx.beginPath(); ctx.arc(pRawDiag.x, pRawDiag.y, 3, 0, 2*Math.PI); ctx.fill();
         ctx.fillStyle = colors.warp;
-        ctx.beginPath(); ctx.arc(pWarpDiag.x, pWarpDiag.y, 6, 0, 2*Math.PI); ctx.fill();
+        ctx.beginPath(); ctx.arc(pWarpDiag.x, pWarpDiag.y, 3, 0, 2*Math.PI); ctx.fill();
 
         // circle points
         ctx.fillStyle = colors.linear;
-        ctx.beginPath(); ctx.arc(pLinCircle.x, pLinCircle.y, 7, 0, 2*Math.PI); ctx.fill();
+        ctx.beginPath(); ctx.arc(pLinCircle.x, pLinCircle.y, 3, 0, 2*Math.PI); ctx.fill();
         ctx.fillStyle = colors.warp;
-        ctx.beginPath(); ctx.arc(pWarpCircle.x, pWarpCircle.y, 7, 0, 2*Math.PI); ctx.fill();
+        ctx.beginPath(); ctx.arc(pWarpCircle.x, pWarpCircle.y, 3, 0, 2*Math.PI); ctx.fill();
 
         // orange difference segment — the whole point of dual mode
         ctx.strokeStyle = colors.diff;
@@ -318,7 +337,7 @@ function drawDerivation() {
         ctx.stroke();
 
         if (showLabels) {
-            ctx.font = '11px monospace';
+            ctx.font = '10px monospace';
             ctx.fillStyle = colors.linear;
             ctx.fillText('linear t', pLinCircle.x + 10, pLinCircle.y + 16);
             ctx.fillStyle = colors.warp;
@@ -377,13 +396,14 @@ function drawDerivation() {
         ctx.lineTo(gEnd.x, gEnd.y);
         ctx.stroke();
         ctx.setLineDash([]);
-        if (showLabels) {
+        /*if (showLabels) {
             ctx.fillStyle = colors.target;
-            ctx.font = '10px monospace';
+            ctx.font = '14px monospace';
             ctx.fillText('ideal t·90°', gEnd.x + 4, gEnd.y);
-        }
+        }*/
     }
     
+    const angleRad = Math.atan2(circleY, circleX);
     // Construction lines
     if (showConstruction) {
         ctx.strokeStyle = colors.construction;
@@ -397,10 +417,10 @@ function drawDerivation() {
         
         if (showLabels) {
             ctx.fillStyle = colors.construction;
-            ctx.font = '12px monospace';
+            ctx.font = '14px monospace';
             const midX = (origin.x + pDiag.x) / 2;
             const midY = (origin.y + pDiag.y) / 2;
-            ctx.fillText(useWarp ? 'r = √(1-2w+2w²)' : 'r = √(1-2t+2t²)', midX + 10, midY - 5);
+            drawRotatedText(ctx, useWarp ? 'r = √(1-2w+2w²)' : 'r = √(1-2t+2t²)', midX - 8, midY - 8, -angleRad);
         }
         
         ctx.strokeStyle = '#888';
@@ -423,14 +443,14 @@ function drawDerivation() {
         
         if (showLabels) {
             ctx.fillStyle = '#888';
-            ctx.font = '11px monospace';
+            ctx.font = '14px monospace';
             ctx.fillText(useWarp ? '1-w' : '1-t', pDiagBottom.x - 10, pDiagBottom.y + 15);
             ctx.fillText(useWarp ? 'w' : 't', pDiagLeft.x - 20, pDiagLeft.y);
         }
     }
     
     ctx.strokeStyle = colors.line;
-    ctx.lineWidth = 3;
+    ctx.lineWidth = 1;
     ctx.beginPath();
     ctx.moveTo(origin.x, origin.y);
     ctx.lineTo(pCircle.x, pCircle.y);
@@ -438,29 +458,28 @@ function drawDerivation() {
     
     ctx.fillStyle = colors.diagonal;
     ctx.beginPath();
-    ctx.arc(pDiag.x, pDiag.y, 6, 0, 2 * Math.PI);
+    ctx.arc(pDiag.x, pDiag.y, 3, 0, 2 * Math.PI);
     ctx.fill();
     
     if (showLabels) {
         ctx.fillStyle = colors.diagonal;
-        ctx.font = 'bold 13px monospace';
-        ctx.fillText(`(${diagX.toFixed(3)}, ${diagY.toFixed(3)})`, pDiag.x + 10, pDiag.y - 10);
+        ctx.font = 'bold 12px monospace';
+        ctx.fillText(`(${diagX.toFixed(3)}, ${diagY.toFixed(3)})`, pDiag.x - 10, pDiag.y - 10);
     }
     
     ctx.fillStyle = colors.line;
     ctx.beginPath();
-    ctx.arc(pCircle.x, pCircle.y, 7, 0, 2 * Math.PI);
+    ctx.arc(pCircle.x, pCircle.y, 4, 0, 2 * Math.PI);
     ctx.fill();
     
     if (showLabels) {
         ctx.fillStyle = colors.line;
-        ctx.font = 'bold 13px monospace';
-        ctx.fillText(`(${circleX.toFixed(3)}, ${circleY.toFixed(3)})`, pCircle.x + 10, pCircle.y + 20);
+        ctx.font = 'bold 12px monospace';
+        ctx.fillText(`(${circleX.toFixed(3)}, ${circleY.toFixed(3)})`, pCircle.x - 15, pCircle.y - 20);
     }
     
-    const angleRad = Math.atan2(circleY, circleX);
     ctx.strokeStyle = colors.angle;
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 0.6;
     ctx.beginPath();
     ctx.arc(origin.x, origin.y, scale * 0.2, 0, -angleRad, true);
     ctx.stroke();
