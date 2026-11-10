@@ -1,10 +1,11 @@
 // ===== DERIVATION CANVAS  =====
-const canvas = document.getElementById('derivCanvas');
-
+let canvas = document.getElementById('derivCanvas');
+canvas.width /= 2;
+canvas.height /= 2;
 const ctx = canvas.getContext('2d');
 const scale = 250;
-const centerX = canvas.width / 2;
-const centerY = canvas.height / 2;
+const centerX = canvas.width - scale*1.34;
+const centerY = canvas.height - scale/5.5;
 
 function toCanvas(x, y) {
     return { x: centerX + x * scale, y: centerY - y * scale };
@@ -220,12 +221,12 @@ function drawDerivation() {
     }*/
     
     // Unit circle
-    const center = toCanvas(0, 0);
-    ctx.strokeStyle = colors.circle;
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.arc(center.x, center.y, scale, 0, 2 * Math.PI);
-    ctx.stroke();
+    // const center = toCanvas(0, 0);
+    // ctx.strokeStyle = colors.circle;
+    // ctx.lineWidth = 1;
+    // ctx.beginPath();
+    // ctx.arc(center.x, center.y, scale, 0, 2 * Math.PI);
+    // ctx.stroke();
 
     // Raw (linear-t) Q0 diagonal point — needed as the mirror basis
     // regardless of mode, and as one half of dual mode
@@ -410,20 +411,14 @@ function drawDerivation() {
         ctx.moveTo(pDiag.x, pDiag.y);
         ctx.lineTo(pDiagBottom.x, pDiagBottom.y);
         ctx.stroke();
-        
-        const pDiagLeft = toCanvas(0, diagY);
-        ctx.beginPath();
-        ctx.moveTo(pDiag.x, pDiag.y);
-        ctx.lineTo(pDiagLeft.x, pDiagLeft.y);
-        ctx.stroke();
-        
+       
         ctx.setLineDash([]);
         
         if (showLabels) {
             ctx.fillStyle = '#888';
             ctx.font = '14px monospace';
-            ctx.fillText(useWarp ? '1-w' : '1-t', pDiagBottom.x - 10, pDiagBottom.y + 15);
-            ctx.fillText(useWarp ? 'w' : 't', pDiagLeft.x - 20, pDiagLeft.y);
+            ctx.fillText(useWarp ? '1-w' : '1-t', origin.x*1.5 + pDiagBottom.x*0.55 - 50, pDiagBottom.y + 15);
+            ctx.fillText(useWarp ? 'w' : 't', pDiagBottom.x + scale*0.05 * Math.cos(-angleRad / 2), origin.y + scale*0.55 * Math.sin(-angleRad / 2));
         }
     }
     
