@@ -1,6 +1,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;SINCOS_RAU;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-; https://godbolt.org/z/Me6v6ojx5 (pair test)    https://godbolt.org/z/seWbb8c69
+; https://godbolt.org/z/Me6v6ojx5 (pair test)    https://godbolt.org/z/9azGbj1rn
 ;                                           (comparison test;with another assembler too)
 ;
 ; ABI selection: this function writes xmm6/xmm7 as scratch. Under SysV64
@@ -149,7 +149,6 @@ sincos_fma:
     vmovss  xmm1, [rel .rscoef1]
     vfmadd213ss xmm1, xmm7, [rel .rscoef0]    ; E = r1*d+r0
     vfmadd231ss xmm1, xmm2, xmm4    ; t = C*d² + E
-    vmulss  xmm4, xmm4, xmm4        ; xmm4 = d⁴
     vaddss  xmm1, xmm1, xmm3     ; xmm1 = y0 ~ 1/sqrt(D)
 
 	; -------- end rsqrt polynomial evaluation --------
