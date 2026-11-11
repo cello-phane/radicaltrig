@@ -1,6 +1,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;SINCOS_RAU;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-; https://godbolt.org/z/Me6v6ojx5 (pair test)    https://godbolt.org/z/eE8aqrqqK
+; https://godbolt.org/z/Me6v6ojx5 (pair test)    https://godbolt.org/z/seWbb8c69
 ;                                           (comparison test;with another assembler too)
 ;
 ; ABI selection: this function writes xmm6/xmm7 as scratch. Under SysV64
