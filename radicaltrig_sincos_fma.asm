@@ -150,7 +150,6 @@ sincos_fma:
     vfmadd213ss xmm1, xmm7, [rel .rscoef0]    ; E = r1*d+r0
     vfmadd231ss xmm1, xmm2, xmm4    ; t = C*d² + E
     vmulss  xmm4, xmm4, xmm4        ; xmm4 = d⁴
-    vfmadd231ss xmm1, xmm3, xmm4    ; y0 = inner*d⁴ + t
     vaddss  xmm1, xmm1, xmm3     ; xmm1 = y0 ~ 1/sqrt(D)
 
 	; -------- end rsqrt polynomial evaluation --------
