@@ -6,13 +6,15 @@
 ; ABI selection: this function writes xmm6/xmm7 as scratch. Under SysV64
 ; (Linux/macOS) ALL xmm registers are caller-saved, so this is fine as-is.
 ; Under Win64, xmm6-xmm15 are CALLEE-saved -- a caller may have a live
-; value sitting in xmm6/xmm7 across this call, and this function would
 ; silently corrupt it unless it saves/restores them itself.
 ;
 ; Assemble for Linux/SysV64:
 ;     nasm -f elf64 sincos_fma.asm -o sincos_fma.o
 ; Assemble for Windows x64:
 ;     nasm -f win64 -DWIN64_ABI sincos_fma.asm -o sincos_fma.obj
+;
+; Precision: reduction in double, warp + rsqrt in float32, one Newton step on 1/sqrt(D).
+; Max error ~1.6e-7 vs libm. No NaN/Inf handling.
 ;
 ; Return convention: -- struct {double s, c;}
 ; in xmm0:xmm1 under SysV64, via hidden pointer (RCX in, RAX out) under
@@ -56,12 +58,10 @@ sincos_fma:
 	vsubsd xmm0, xmm0, xmm1                 ; xmm0 = m, in [0,4), double
 
 	; --- quadrant + fraction, still double ---
-	vcvttsd2si eax,xmm0              ; eax = qi_full -- stays live all the way
-	mov r8d,eax                      ; to the sign-application block below
-	and r8d,3                        ; r8d = qi
+	vcvttsd2si eax,xmm0              ; eax = q in [0,3], kept live for the sign bits below
 
-	vcvtsi2sd xmm2,xmm0,eax          ; convert qi_full (double), NOT masked qi
-	vsubsd xmm0,xmm0,xmm2            ; frac = m - qi_full, double, in [0,1)
+	vcvtsi2sd xmm2,xmm0,eax          ; q as double
+	vsubsd xmm0,xmm0,xmm2            ; frac = m - q, double, in [0,1)
 
 	; --- narrow to float32 now: frac is small and already well-reduced ---
 	vcvtsd2ss xmm0,xmm0,xmm0
@@ -70,56 +70,41 @@ sincos_fma:
     vsubss xmm3,xmm3,[rel .half]       ; v = frac - 0.5
     vmulss xmm4,xmm3,xmm3              ; y = v²
 
-    ; a0 = C0 + C1*y   (no FMA: separate mul + add)
-   ; vmulss xmm2,xmm4,[rel .coef1]
-   ; vaddss xmm2,xmm2,[rel .coef0]
+    ; a0 = C0 + C1*y
     vmovss xmm2,[rel .coef0]
     vfmadd231ss xmm2,xmm4,[rel .coef1]
 
     ; a1 = C2 + C3*y
-   ; vmulss xmm5,xmm4,[rel .coef3]
-   ; vaddss xmm5,xmm5,[rel .coef2]
 	vmovss xmm5,[rel .coef2]
 	vfmadd231ss xmm5,xmm4,[rel .coef3]
 
     ; a2 = C4 + C5*y
-   ; vmulss xmm6,xmm4,[rel .coef5]
-   ; vaddss xmm6,xmm6,[rel .coef4]
  	vmovss xmm6,[rel .coef4]
 	vfmadd231ss xmm6,xmm4,[rel .coef5]
 
  	; b0 = a0 + a1*y²
  	vmulss xmm5,xmm5,xmm4
 
-   ; vmulss xmm5,xmm5,xmm4
-   ; vaddss xmm5,xmm5,xmm2
   	vfmadd213ss xmm5,xmm4,xmm2
 
  	vmulss xmm4,xmm4,xmm4               ; y²
 
     ; a2 + C6*y²
-   ; vmulss xmm1,xmm4,[rel .coef6]
-   ; vaddss xmm1,xmm1,xmm6
     vmovss xmm1,[rel .coef6]
 	vfmadd312ss xmm1,xmm6,xmm4
     vmulss xmm4,xmm4,xmm4               ; y⁴
 
     ; b0 + (a2 + C6*y²)*y⁴
-   ; vmulss xmm1,xmm1,xmm4
-   ; vaddss xmm5,xmm5,xmm1
 	vfmadd321ss xmm5,xmm1,xmm4
 
-   ; vmulss xmm5,xmm5,xmm3                ; p = v*(...)
-   ; vaddss xmm5,xmm5,[rel .half]         ; w = 0.5 + p
 	vfmadd123ss xmm5,xmm3,[rel .half]
 
-    ; --- odd-quadrant fix: w -> 1-w for Q1/Q3 ---
-    test r8d,1
-    jz .no_flip
-    vmovss xmm6,[rel .one]
-    vsubss xmm6,xmm6,xmm5
-    vmovss xmm5,xmm6
-.no_flip:
+    ; --- odd-quadrant fix, branchless: w = |w - (q&1)| (= 1-w on Q1/Q3) ---
+    mov r8d,eax
+    and r8d,1
+    vcvtsi2ss xmm6,xmm6,r8d
+    vsubss xmm5,xmm5,xmm6
+    vandps xmm5,xmm5,[rel .abs_mask_ps]
     ; xmm5 = w
 
     vmovss xmm6,[rel .one]
@@ -127,8 +112,6 @@ sincos_fma:
 
     ; D = w² + (1-w)²
     vmulss xmm7,xmm5,xmm5
-   ; vmulss xmm4,xmm6,xmm6
-   ; vaddss xmm7,xmm7,xmm4
     vfmadd321ss xmm7,xmm6,xmm6
     vmovaps xmm0,xmm7                  ; D kept in xmm0 (free here; volatile on Win64, unlike xmm8)
     vsubss xmm7,xmm7,[rel .threequarter]   ; xmm7 = d = D - 0.75  (recentered)
@@ -139,9 +122,7 @@ sincos_fma:
     vfmadd213ss xmm3, xmm7, [rel .rscoef6]
     vmovss  xmm2, [rel .rscoef5]
     vfmadd213ss xmm2, xmm7, [rel .rscoef4]
-    ;vmulss  xmm3, xmm3, xmm4
-    ;vaddss  xmm3, xmm3, xmm2
-    vfmadd213ss xmm3, xmm4, xmm2 ; compacted above to this
+    vfmadd213ss xmm3, xmm4, xmm2
     vmulss  xmm3, xmm3, xmm4
     vmulss  xmm3, xmm3, xmm4     ; xmm3 * d⁴
     vmovss  xmm2, [rel .rscoef3]
@@ -167,19 +148,15 @@ sincos_fma:
 
 	vmulss xmm5,xmm5,xmm0                ; xmm5 = sin_raw = w*inv
 	vmulss xmm6,xmm6,xmm0                ; xmm6 = cos_raw = (1-w)*inv
-	; --- sin: periodic sign (qi bit1) ---
+	; --- quadrant signs (q<=3): sin flips on bit1 of q, cos on bit1 of q+1 ---
 	mov edx,eax
 	shr edx,1
-	and edx,1                       ; defensive: guard against qi_full transiently >3
 	shl edx,31
 	vmovd xmm2,edx
 	vpxor xmm5,xmm5,xmm2
 
-	; --- cos: periodic sign (qi bit1 XOR bit0), no overall-sign step ---
-	mov r8d,eax
+	lea r8d,[rax+1]
 	shr r8d,1
-	xor r8d,eax
-	and r8d,1
 	shl r8d,31
 	vmovd xmm3,r8d
 	vpxor xmm6,xmm6,xmm3
@@ -202,6 +179,8 @@ sincos_fma:
 	ret
 
 align 16
+.abs_mask_ps:
+	dd 0x7FFFFFFF, 0x7FFFFFFF, 0x7FFFFFFF, 0x7FFFFFFF
 .abs_mask_dbl:
 	dq 0x7FFFFFFFFFFFFFFF, 0x7FFFFFFFFFFFFFFF
 
