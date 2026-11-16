@@ -1,275 +1,474 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><title>RAU FK / IK</title>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>RAU 6-DOF arm: FK, closed-form IK, hinge CCD</title>
 <style>
-:root{
-  --bg:#fafbfc; --ink:#111827; --mute:#5b6472; --rule:#d9dee7; --card:#ffffff;
-  --blue:#1d4ed8; --blue-bg:#eef3ff; --purple:#7c3aed; --purple-bg:#f5f1ff;
-  --teal:#0f766e; --teal-bg:#ecfaf6; --red:#dc2626; --amber:#b45309; --amber-bg:#fff7ea;
-}
-*{box-sizing:border-box;margin:0;padding:0}
-body{width:1200px;background:var(--bg);color:var(--ink);font-family:"Segoe UI","DejaVu Sans",Arial,sans-serif;padding:44px 48px 40px;font-size:15px;line-height:1.45}
-.mono{font-family:"DejaVu Sans Mono",Consolas,monospace;font-size:13px}
-h1{text-align:center;font-size:40px;letter-spacing:.5px;font-weight:800}
-h1 .a{color:var(--blue)} h1 .b{color:var(--purple)}
-.sub{text-align:center;color:var(--mute);margin:6px 0 30px;font-size:16px}
-.sec{background:var(--card);border:1px solid var(--rule);border-radius:14px;padding:22px 26px;margin-bottom:22px}
-.sec h2{display:flex;align-items:center;gap:12px;font-size:20px;margin-bottom:12px}
-.num{flex:none;width:30px;height:30px;border-radius:50%;border:2px solid var(--blue);color:var(--blue);font-weight:700;font-size:15px;display:flex;align-items:center;justify-content:center}
-.grid{display:grid;grid-template-columns:1fr 440px;gap:26px;align-items:center}
-.grid.rev{grid-template-columns:440px 1fr}
-.lead{color:var(--mute);margin-bottom:10px}
-.eq{background:var(--blue-bg);border:1px solid #c9d6fb;border-radius:9px;padding:9px 13px;margin:9px 0;font-size:14.5px}
-.eq .t{font-size:11.5px;letter-spacing:.3px;color:var(--mute);font-weight:700;margin-bottom:3px}
-.eq.p{background:var(--purple-bg);border-color:#dccffa}
-.eq.g{background:var(--teal-bg);border-color:#bfe8dd}
-.eq.o{background:var(--amber-bg);border-color:#f3dcb4}
-ul{margin:8px 0 0 18px} li{margin:4px 0}
-b.bl{color:var(--blue)} b.pu{color:var(--purple)} b.tl{color:var(--teal)} b.rd{color:var(--red)} b.am{color:var(--amber)}
-code{font-family:"DejaVu Sans Mono",Consolas,monospace;font-size:13px;background:#eef1f6;border-radius:4px;padding:1px 5px}
-svg{display:block;width:100%;height:auto}
-.cap{font-size:12.5px;color:var(--mute);text-align:center;margin-top:4px}
-.pipe{display:flex;align-items:stretch;gap:6px;margin:6px 0 4px}
-.pipe .box{flex:1;border:1.5px solid var(--rule);border-radius:9px;padding:9px 8px;text-align:center;font-size:13px;background:#fbfcfe}
-.pipe .box b{display:block;font-size:12px;color:var(--mute);margin-bottom:3px}
-.pipe .box.hl{border-color:var(--purple);background:var(--purple-bg)}
-.pipe .box.hb{border-color:var(--blue);background:var(--blue-bg)}
-.pipe .ar{align-self:center;color:var(--mute);font-size:18px}
-table{width:100%;border-collapse:collapse;font-size:14px}
-th{font-size:12px;letter-spacing:.8px;text-transform:uppercase;text-align:left;padding:8px 10px;background:#f3f5f9}
-th.r{color:var(--blue)} th.t{color:var(--mute)}
-td{padding:9px 10px;border-top:1px solid var(--rule);vertical-align:top}
-td:first-child{font-weight:700;width:19%}
-td.t{color:var(--mute);width:31%} td.r{color:var(--blue)}
-.foot{border:2px solid var(--teal);background:var(--teal-bg);border-radius:14px;padding:16px 22px;color:#064e45;text-align:center}
-.foot h3{font-size:17px;margin-bottom:5px}
-.fn{text-align:center;color:var(--mute);font-size:12.5px;margin-top:18px}
-.edge{font-size:12.5px;color:var(--mute);margin-top:10px}
-</style></head><body>
+:root[data-theme="dark"]{--bg:#1a1a2e;--text:#eee;--control-bg:#16213e;--border:#0f3460;--accent:#00ff88;--accent2:#ff8800;--danger:#ff5566;--mute:#9aa5b8}
+:root[data-theme="light"]{--bg:#f5f5f5;--text:#333;--control-bg:#fff;--border:#ddd;--accent:#0066cc;--accent2:#cc6600;--danger:#cc0033;--mute:#667}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:"Segoe UI",Tahoma,Geneva,Verdana,sans-serif;background:var(--bg);color:var(--text);display:flex;flex-direction:column;align-items:center;padding:20px}
+h1{margin-bottom:4px;color:var(--accent);font-size:22px}
+.subtitle{margin-bottom:14px;opacity:.7;font-size:13px;font-family:monospace;text-align:center}
+.container{display:flex;gap:20px;max-width:1500px;flex-wrap:wrap;justify-content:center}
+canvas{border:2px solid var(--border);border-radius:8px;background:var(--bg);cursor:grab;display:block}
+canvas:active{cursor:grabbing}
+.controls{background:var(--control-bg);padding:16px;border-radius:8px;border:1px solid var(--border);width:380px;max-height:720px;overflow-y:auto}
+.section-title{font-weight:700;font-size:13px;text-transform:uppercase;letter-spacing:.5px;color:var(--accent);margin:14px 0 8px;border-bottom:1px solid var(--border);padding-bottom:4px}
+.section-title:first-child{margin-top:0}
+.hint{font-size:11.5px;opacity:.7;line-height:1.4;margin:6px 0 10px}
+button{padding:8px 10px;margin:0 6px 6px 0;background:var(--accent);color:var(--bg);border:none;border-radius:6px;cursor:pointer;font-weight:600;font-size:12.5px}
+button:hover{opacity:.82}
+button.secondary{background:var(--control-bg);color:var(--text);border:1px solid var(--border)}
+button.on{outline:2px solid var(--accent2)}
+.row{display:flex;gap:6px;margin-bottom:6px;align-items:center}
+.row span{font-size:12px;opacity:.7;width:16px}
+.row input[type=number]{width:100%;background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:4px;padding:3px 5px;font-size:12px}
+select{background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:4px;padding:4px;font-size:12.5px;width:100%;margin-bottom:6px}
+label.chk{display:flex;gap:6px;font-size:12.5px;margin:4px 0;align-items:center}
+.panel{background:var(--control-bg);border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin-top:14px;width:100%;max-width:1280px;font-family:monospace;font-size:12.5px}
+.panel .m{color:var(--accent);font-weight:bold}
+.panel .bad{color:var(--danger);font-weight:bold}
+.panel .warn{color:var(--accent2)}
+table{border-collapse:collapse;width:100%;margin:6px 0}
+th,td{padding:3px 10px 3px 0;text-align:left;white-space:nowrap}
+th{opacity:.6;font-weight:600}
+tr.sel td{color:var(--accent)}
+tr.click{cursor:pointer}
+tr.click:hover td{background:rgba(128,128,128,.12)}
+.cap td,.cap th{white-space:normal;vertical-align:top;font-family:"Segoe UI",sans-serif;font-size:12.5px}
+.cap tr.cur td{color:var(--accent);font-weight:600}
+</style>
+</head>
+<body>
+<h1>RAU 6-DOF arm</h1>
+<div class="subtitle">hinge joints &middot; FK from joint angles &middot; closed-form IK with branches &middot; CCD &middot; every trig step through the RAU core</div>
 
-<h1><span class="a">RAU</span> FK / IK</h1>
-<div class="sub">how a joint chain is described, moved and solved &mdash; with no arctangent anywhere in the loop</div>
-
-<!-- 1 ---------------------------------------------------------------->
-<div class="sec">
-  <h2><span class="num">1</span>Describe a point by distances: <span class="mono">E = Point(A: r; B: α, C: β; D)</span></h2>
-  <div class="grid">
-    <div>
-      <div class="lead">A link carries four reference points <b class="bl">A, B, C, D</b> that move rigidly with it. Any point <b class="am">E</b> attached to the link is stored as three lengths, all in the same unit &mdash; not as x, y, z.</div>
-      <ul>
-        <li><b class="am">r</b> = |AE|, the distance from A.</li>
-        <li><b class="bl">α</b> and <b class="tl">β</b> are <i>arc lengths</i> centred at A: α = phase<sub>B</sub> · |AB|, β = phase<sub>C</sub> · |AC|, where each phase is the RAU angle between AE and AB (or AC).</li>
-        <li><b>D</b> only picks the side of plane ABC. On the far side the arcs are the long way round: (4 − phase) · |AB|.</li>
-      </ul>
-      <div class="eq"><div class="t">Forward (E → r, α, β)</div>phase = <code>rauVec3AnglePhase</code>(AB, AE) &nbsp;&middot;&nbsp; z = Ê·n picks the side</div>
-      <div class="eq"><div class="t">Inverse (r, α, β → E)</div>x = cos(phase<sub>B</sub>) &nbsp; y = (cos(phase<sub>C</sub>) − x·cosγ) / sinγ &nbsp; z = ±√(1−x²−y²)<br>E = A + r · (x·e₁ + y·e₂ + z·n)</div>
-    </div>
-    <div>
-      <svg viewBox="0 0 440 350" aria-label="Point E described by r, alpha and beta from reference points A, B, C and D">
-        <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#b45309"/></marker></defs>
-        <polygon points="110,230 310,255 190,320" fill="#dbeafe" stroke="#93b4f5" stroke-width="1.5" opacity=".9"/>
-        <line x1="110" y1="230" x2="95" y2="95" stroke="#9aa3b2" stroke-dasharray="4 4" stroke-width="1.5"/>
-        <line x1="110" y1="230" x2="310" y2="255" stroke="#1d4ed8" stroke-width="2.4"/>
-        <line x1="110" y1="230" x2="190" y2="320" stroke="#0f766e" stroke-width="2.4"/>
-        <line x1="110" y1="230" x2="260" y2="120" stroke="#b45309" stroke-width="3" marker-end="url(#ah)"/>
-        <path d="M179.5 238.7 A70 70 0 0 0 166.4 188.5" fill="none" stroke="#1d4ed8" stroke-width="2.6"/>
-        <path d="M139.6 262.5 A44 44 0 0 0 145.5 203.9" fill="none" stroke="#0f766e" stroke-width="2.6"/>
-        <circle cx="110" cy="230" r="6" fill="#1d4ed8"/><circle cx="310" cy="255" r="6" fill="#1d4ed8"/>
-        <circle cx="190" cy="320" r="6" fill="#0f766e"/><circle cx="95" cy="95" r="6" fill="#6b7280"/>
-        <circle cx="260" cy="120" r="7" fill="#b45309"/>
-        <g font-size="15" font-weight="700" fill="#111827">
-          <text x="84" y="236">A</text><text x="318" y="262">B</text><text x="196" y="338">C</text>
-          <text x="104" y="88">D</text><text x="272" y="116" fill="#b45309">E</text>
-        </g>
-        <g font-size="17" font-style="italic" font-weight="700">
-          <text x="196" y="208" fill="#1d4ed8">α</text><text x="150" y="272" fill="#0f766e">β</text>
-          <text x="172" y="162" fill="#b45309" font-style="italic">r</text>
-        </g>
-        <text x="104" y="60" font-size="11.5" fill="#6b7280">D sets the side</text>
-        <text x="232" y="338" font-size="11.5" fill="#6b7280">plane ABC</text>
-      </svg>
-      <div class="cap">schematic &mdash; the three magnitudes r, α, β share one distance unit</div>
-    </div>
+<div class="container">
+  <div>
+    <canvas id="canvas" width="860" height="640"></canvas>
+    <div class="panel" id="stats"></div>
   </div>
-  <div class="edge">Needs A, B, C not collinear. When E lies almost exactly in plane ABC the short-arc / long-arc decision is a hard threshold.</div>
-</div>
+  <div class="controls">
+    <div style="display:flex"><button id="themeToggle" class="secondary" style="width:100%">Light mode</button></div>
 
-<!-- 2 ---------------------------------------------------------------->
-<div class="sec">
-  <h2><span class="num">2</span>Two kinds of phase: <i>raw</i> from vectors, <i>uniform</i> for sliders</h2>
-  <div class="grid rev">
-    <div>
-      <svg id="phase" viewBox="0 0 440 340" aria-label="Chord fraction versus angle on a quarter circle"></svg>
-      <div class="cap">equal angle steps (blue ticks) land unevenly on the chord (amber ticks)</div>
-    </div>
-    <div>
-      <div class="lead">Move along the chord from (1,0) to (0,1) by a fraction <b class="am">w</b>, then project the point radially onto the unit circle. That point <i>is</i> (cosθ, sinθ).</div>
-      <div class="eq g"><div class="t">Raw phase &mdash; what two vectors give you</div>w = |u×v| / ( |u·v| + |u×v| ) &nbsp;&nbsp;(+ quadrant offset)<br>(cosθ, sinθ) = (1−w, w) / √((1−w)² + w²)</div>
-      <div class="eq p"><div class="t">Uniform phase &mdash; proportional to angle</div>t ∈ [0,1) per quarter turn &nbsp;&rarr;&nbsp; w = warp(t) &nbsp;(7-coefficient polynomial)<br>Slider: 1 RAU = 90°, 4 = full turn</div>
-      <ul>
-        <li>A raw phase is <b>not</b> proportional to the angle (up to ~4° off), but rotating <i>by</i> it is exact &mdash; dot and cross already encode sin θ and cos θ.</li>
-        <li>So aiming and point construction stay raw. The warp is only paid for where the angle itself must be uniform, and the inverse warp only to print degrees.</li>
-      </ul>
-    </div>
+    <div class="section-title">Stage (active joints)</div>
+    <div id="dofBtns"></div>
+    <div class="hint" id="dofHint"></div>
+
+    <div class="section-title">Target pose</div>
+    <div class="row"><span>x</span><input type="number" id="tx" step="0.1"><span>y</span><input type="number" id="ty" step="0.1"><span>z</span><input type="number" id="tz" step="0.1"></div>
+    <div class="hint" style="margin-top:0">Orientation as Z-Y-Z angles in RAU units (1 = 90&deg;, 4 = full turn) &mdash; same form as the wrist.</div>
+    <div class="row"><span>a</span><input type="number" id="ta" step="0.05"><span>b</span><input type="number" id="tb" step="0.05"><span>g</span><input type="number" id="tg" step="0.05"></div>
+    <button id="randTarget">New reachable target</button><button id="resetArm" class="secondary">Home pose</button>
+    <div style="margin-top:6px">Orientation goal</div>
+    <select id="oriMode"><option value="none">position only</option><option value="axis">approach axis only (pointing)</option><option value="full">full orientation</option></select>
+
+    <div class="section-title">Closed-form IK</div>
+    <button id="runAnalytic">Solve (list branches)</button><button id="applyAnalytic">Move arm to selected</button>
+    <div class="hint">Wrist-decoupled: the first three joints place the wrist centre, the last three give the orientation. Angles come from (cos, sin) pairs through the raw phase and inverse warp &mdash; no arctangent, no angle sums.</div>
+
+    <div class="section-title">CCD (hinge axes)</div>
+    <button id="ccdStep">1 sweep</button><button id="ccdSolve">Solve (animate)</button>
+    <div class="hint">Each joint rotates about its own fixed axis; u and v are projected onto the plane perpendicular to it, and orientation error is folded into the same (dot, cross) pair.</div>
+
+    <div class="section-title">Safety layer</div>
+    <label class="chk"><input type="checkbox" id="enfLimits" checked> enforce joint limits</label>
+    <label class="chk"><input type="checkbox" id="rateLimit" checked> rate-limit joint motion (3&deg;/frame)</label>
+    <label class="chk"><input type="checkbox" id="showGhost" checked> show selected solution as ghost</label>
+    <div class="hint">Drag the canvas to orbit the view.</div>
   </div>
 </div>
 
-<!-- 3 ---------------------------------------------------------------->
-<div class="sec">
-  <h2><span class="num">3</span>Forward kinematics: move the frame, recompute the point</h2>
-  <div class="grid">
-    <div>
-      <div class="lead">(r, α, β) is captured once and never changes &mdash; it is a body-local description. A joint only moves A, B, C, D.</div>
-      <div class="pipe">
-        <div class="box hl"><b>joint angle</b>RAU units</div><div class="ar">&rarr;</div>
-        <div class="box hl"><b>rauSinCos</b>uniform</div><div class="ar">&rarr;</div>
-        <div class="box"><b>Rodrigues</b>axis n, + translate</div><div class="ar">&rarr;</div>
-        <div class="box hb"><b>A′ B′ C′ D′</b>rigid motion</div>
-      </div>
-      <div class="pipe">
-        <div class="box hb"><b>A′ B′ C′ D′</b>+ stored r, α, β</div><div class="ar">&rarr;</div>
-        <div class="box hb"><b>pointFromRAB</b>inverse construction</div><div class="ar">&rarr;</div>
-        <div class="box"><b>E (world)</b>this frame</div>
-      </div>
-      <ul>
-        <li>A chain is just composed rigid motions: each link transforms its own A,B,C,D and every point rigidly attached to it.</li>
-        <li>Verified: reconstructed E matches ground truth to ~1e-15 (double) through a multi-link chain.</li>
-        <li>Rodrigues is one way to move the frame; a quaternion or rotor can do it instead &mdash; (r, α, β) does not change.</li>
-      </ul>
-    </div>
-    <div>
-      <svg viewBox="0 0 440 300" aria-label="A link frame before and after a rigid motion">
-        <defs><marker id="ab" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10z" fill="#7c3aed"/></marker></defs>
-        <g transform="translate(20,55)">
-          <polygon points="20,120 130,135 70,175" fill="#dbeafe" stroke="#93b4f5" stroke-width="1.5"/>
-          <line x1="20" y1="120" x2="110" y2="60" stroke="#b45309" stroke-width="2.5"/>
-          <circle cx="20" cy="120" r="5" fill="#1d4ed8"/><circle cx="130" cy="135" r="5" fill="#1d4ed8"/><circle cx="70" cy="175" r="5" fill="#0f766e"/><circle cx="110" cy="60" r="6" fill="#b45309"/>
-          <text x="2" y="118" font-size="13" font-weight="700">A</text><text x="136" y="140" font-size="13" font-weight="700">B</text><text x="64" y="195" font-size="13" font-weight="700">C</text><text x="118" y="58" font-size="13" font-weight="700" fill="#b45309">E</text>
-          <text x="10" y="-4" font-size="13" fill="#5b6472">before</text>
-        </g>
-        <path d="M150 100 C 210 38, 290 38, 345 118" fill="none" stroke="#7c3aed" stroke-width="2.6" marker-end="url(#ab)"/>
-        <text x="196" y="40" font-size="13" font-weight="700" fill="#7c3aed">R(n, θ) + T</text>
-        <polygon points="265,160 350.4,231 278.2,233.1" fill="#dbeafe" stroke="#93b4f5" stroke-width="1.5"/>
-        <line x1="265" y1="160" x2="373.1" y2="156.8" stroke="#b45309" stroke-width="2.5"/>
-        <circle cx="265" cy="160" r="5" fill="#1d4ed8"/><circle cx="350.4" cy="231" r="5" fill="#1d4ed8"/>
-        <circle cx="278.2" cy="233.1" r="5" fill="#0f766e"/><circle cx="373.1" cy="156.8" r="6" fill="#b45309"/>
-        <g font-size="13" font-weight="700"><text x="244" y="158">A′</text><text x="358" y="238">B′</text><text x="268" y="254">C′</text><text x="382" y="152" fill="#b45309">E′</text></g>
-        <text x="385" y="198" font-size="13" fill="#5b6472">after</text>
-      </svg>
-      <div class="cap">same r, α, β &mdash; only A, B, C, D moved</div>
-    </div>
-  </div>
-</div>
-
-<!-- 4 ---------------------------------------------------------------->
-<div class="sec">
-  <h2><span class="num">4</span>Inverse kinematics: CCD with raw phase</h2>
-  <div class="grid rev">
-    <div>
-      <svg viewBox="0 0 440 320" aria-label="CCD step at one joint: vectors to the tip and to the target">
-        <defs>
-          <marker id="au" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#1d4ed8"/></marker>
-          <marker id="av" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#dc2626"/></marker>
-        </defs>
-        <polyline points="50,265 120,230 190,235 255,190 330,200" fill="none" stroke="#7ac7e8" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/>
-        <line x1="190" y1="235" x2="326" y2="198" stroke="#1d4ed8" stroke-width="2.2" marker-end="url(#au)"/>
-        <line x1="190" y1="235" x2="316" y2="80" stroke="#dc2626" stroke-width="2.2" stroke-dasharray="6 4" marker-end="url(#av)"/>
-        <path d="M243.1 220.6 A55 55 0 0 0 224.7 192.3" fill="none" stroke="#7c3aed" stroke-width="2.6"/>
-        <g fill="#55cc99" stroke="#fff" stroke-width="2"><circle cx="120" cy="230" r="7"/><circle cx="255" cy="190" r="7"/></g>
-        <circle cx="50" cy="265" r="8" fill="#1d4ed8" stroke="#fff" stroke-width="2"/>
-        <circle cx="190" cy="235" r="9" fill="#7c3aed" stroke="#fff" stroke-width="2"/>
-        <circle cx="330" cy="200" r="7" fill="#55cc99" stroke="#fff" stroke-width="2"/>
-        <circle cx="320" cy="76" r="9" fill="#dc2626"/>
-        <g font-size="14" font-weight="700">
-          <text x="30" y="290">base</text><text x="176" y="262" fill="#7c3aed">joint i</text>
-          <text x="336" y="222">tip</text><text x="332" y="74" fill="#dc2626">target</text>
-          <text x="280" y="236" fill="#1d4ed8">u</text><text x="262" y="130" fill="#dc2626">v</text>
-          <text x="222" y="176" fill="#7c3aed" font-style="italic" text-anchor="end">phase</text>
-        </g>
-      </svg>
-      <div class="cap">one CCD step: rotate everything past joint i so u swings onto v</div>
-    </div>
-    <div>
-      <div class="lead">Walk from the last joint back to the base. At each joint i:</div>
-      <ol style="margin:6px 0 0 20px">
-        <li><b class="bl">u</b> = tip − joint &nbsp;&nbsp; <b class="rd">v</b> = target − joint</li>
-        <li>axis <b>k</b> = u×v / |u×v| &nbsp;&nbsp; raw phase = <code>rauVec3AnglePhase</code>(u, v)</li>
-        <li>rotate every joint beyond i about k by that raw phase (<code>rodriguesRaw</code>)</li>
-      </ol>
-      <div class="eq o" style="margin-top:12px"><div class="t">Why there is no arctangent</div>Rotating by the raw phase uses (1−w, w)/norm = (cosθ, sinθ) of the true vector angle &mdash; exact by construction. The angle is never turned into degrees to move the joint.</div>
-      <ul>
-        <li>Repeat sweeps until the tip error stops shrinking. Demo chain (4 links): ~10 sweeps to ~1e-10.</li>
-        <li>u ∥ v: nothing to do. u antiparallel to v: pick any axis ⟂ u and use phase 2 (a half turn).</li>
-        <li>Out of reach: the chain stretches straight toward the target. Link lengths drift only at ~1e-15.</li>
-      </ul>
-    </div>
-  </div>
-</div>
-
-<!-- 5 ---------------------------------------------------------------->
-<div class="sec">
-  <h2><span class="num">5</span>The sin / cos / tan core that everything above calls</h2>
-  <div class="lead">One pipeline serves both phases. The only difference: the uniform phase passes through the warp, the raw phase skips it.</div>
-  <div class="pipe">
-    <div class="box"><b>phase</b>RAU units, any sign</div><div class="ar">&rarr;</div>
-    <div class="box"><b>reduce</b>m = |x| − 4·floor(|x|/4)<br>q = ⌊m⌋, t = m − q</div><div class="ar">&rarr;</div>
-    <div class="box hl"><b>warp (uniform only)</b>w = warp(t)<br><span style="color:var(--mute)">raw: w = t</span></div><div class="ar">&rarr;</div>
-    <div class="box"><b>mirror</b>w = |w − (q &amp; 1)|</div><div class="ar">&rarr;</div>
-    <div class="box"><b>normalize</b>(1−w, w) · 1/√D</div><div class="ar">&rarr;</div>
-    <div class="box"><b>signs</b>XOR from q<br>sin odd in phase</div>
-  </div>
-  <div class="pipe" style="margin-top:8px">
-    <div class="box hb" style="flex:3;text-align:left;padding-left:14px"><b>tan</b>= ±w / (1 − w) &nbsp;&mdash; the normalization cancels, so tan needs no rsqrt at all</div>
-    <div class="box" style="flex:3;text-align:left;padding-left:14px"><b>1/√D</b>exact (<code>1/sqrt</code>) on CPUs with fast sqrt/div; polynomial + one Newton step where there is none (SIMD, WASM, FPGA)</div>
-    <div class="box" style="flex:2;text-align:left;padding-left:14px"><b>accuracy</b>sin/cos ≈ 7e-9 (double), ≈ 1.5e-7 (float32)</div>
-  </div>
-</div>
-
-<!-- 6 ---------------------------------------------------------------->
-<div class="sec">
-  <h2><span class="num">6</span>What is different from textbook FK / IK</h2>
-  <table>
-    <tr><th></th><th class="t">Textbook</th><th class="r">RAU system</th></tr>
-    <tr><td>Point on a link</td><td class="t">x, y, z in the link frame</td><td class="r">E = Point(A: r; B: α, C: β; D) &mdash; three distances from four reference points</td></tr>
-    <tr><td>Link pose</td><td class="t">rotation matrix or quaternion per joint</td><td class="r">A, B, C, D move rigidly; any rotation scheme can drive them</td></tr>
-    <tr><td>Angle between vectors</td><td class="t">atan2(|u×v|, u·v)</td><td class="r">raw phase w = |u×v| / (|u·v| + |u×v|), a ratio</td></tr>
-    <tr><td>Angle unit</td><td class="t">radians</td><td class="r">RAU: 1 = 90°, 4 = full turn</td></tr>
-    <tr><td>IK aim step</td><td class="t">Jacobian, or atan2 per joint</td><td class="r">CCD sweep; raw phase gives the exact rotation</td></tr>
-    <tr><td>Trig</td><td class="t">libm sin / cos / tan</td><td class="r">rauSinCos / rauTan: floor reduction, warp, normalize, quadrant signs</td></tr>
-    <tr><td>Showing degrees</td><td class="t">direct</td><td class="r">inverse warp of the raw phase, only for display</td></tr>
-  </table>
-</div>
-
-<div class="foot">
-  <h3>The descriptor is independent of the rotation scheme</h3>
-  Whether a joint moves A, B, C, D with a Rodrigues matrix or a quaternion, the same (r, α, β) and the same inverse construction recover E.
-  Choosing a rotation backend and choosing this point description are separate decisions.
-</div>
-<div class="fn">rauVec3AnglePhase &middot; rodriguesRAU / rodriguesRaw &middot; forwardRAB / pointFromRAB &middot; rauSinCos &middot; rauTan &mdash; radicaltrig (RAU)</div>
+<div class="panel" id="solPanel"></div>
+<div class="panel cap" id="capPanel"></div>
 
 <script>
-// phase diagram: quarter circle, chord, uniform ticks (blue) vs raw chord fractions (amber)
-(function(){
-  const svg=document.getElementById('phase'),O={x:70,y:285},R=215,ns='http://www.w3.org/2000/svg';
-  const P=(x,y)=>[O.x+R*x,O.y-R*y];
-  const add=(h)=>svg.insertAdjacentHTML('beforeend',h);
-  const [x1,y1]=P(1,0),[x2,y2]=P(0,1);
-  add(`<path d="M${x1} ${y1} A${R} ${R} 0 0 0 ${x2} ${y2}" fill="none" stroke="#7c3aed" stroke-width="3"/>`);
-  add(`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#b45309" stroke-width="3"/>`);
-  add(`<line x1="${O.x}" y1="${O.y}" x2="${x1}" y2="${y1}" stroke="#9aa3b2" stroke-width="1.5"/><line x1="${O.x}" y1="${O.y}" x2="${x2}" y2="${y2}" stroke="#9aa3b2" stroke-width="1.5"/>`);
-  for(let k=0;k<=4;k++){
-    const th=k*Math.PI/8, c=Math.cos(th), s=Math.sin(th);
-    const w=s/(s+c), [cx,cy]=P(1-w,w), [ax,ay]=P(c,s);
-    if(k>0&&k<4) add(`<line x1="${O.x}" y1="${O.y}" x2="${ax}" y2="${ay}" stroke="#c9ced8" stroke-dasharray="4 4" stroke-width="1.3"/>`);
-    add(`<circle cx="${ax}" cy="${ay}" r="6" fill="#1d4ed8" stroke="#fff" stroke-width="2"/>`);
-    add(`<circle cx="${cx}" cy="${cy}" r="6" fill="#b45309" stroke="#fff" stroke-width="2"/>`);
+// ============================================================================
+// RAU CORE — finalized forward functions (uniform phase: 4 = full turn, 1 = 90 deg)
+//   floor reduction -> warp -> branchless mirror -> normalize (1-w, w) -> quadrant signs
+// plus the inverse direction used here, which needs no arctangent:
+//   (cos, sin) -> raw chord phase (quadrant offsets a, 2-a, 2+a, 4-a) -> inverse warp -> angle
+// ============================================================================
+const WC=[0.78539828866558314,0.64594625770051587,0.63827326697947083,0.6235791642083048,0.75561600946878778,0.079951715963356818,1.8429558690126906];
+function warpQ(v){const y=v*v;let r=WC[6];for(let k=5;k>=0;k--)r=r*y+WC[k];return v*r;}
+function warpQd(v){const y=v*v;let r=0;for(let k=6;k>=0;k--)r=r*y+WC[k]*(2*k+1);return r;}
+const rauWarp=(t)=>0.5+warpQ(t-0.5);
+function invWarp(w){let f=w;for(let i=0;i<5;i++){const v=f-0.5;f-=(0.5+warpQ(v)-w)/warpQd(v);}return f;}
+function rauSinCos(phase){
+  const a=Math.abs(phase),m=a-4*Math.floor(a*0.25),q=Math.min(Math.floor(m),3),t=m-q;
+  const w=Math.abs(rauWarp(t)-(q&1)),omw=1-w,inv=1/Math.sqrt(omw*omw+w*w);
+  const c=omw*inv,s=w*inv,cneg=((q+1)>>1)&1,sneg=((q>>1)&1)^(phase<0?1:0);
+  return{sin:sneg?-s:s,cos:cneg?-c:c};
+}
+// raw chord phase in [0,4] of the direction (c, s); scale-free
+function rawPhaseFromCS(c,s){
+  const ac=Math.abs(c),as=Math.abs(s),d=ac+as;
+  if(d<1e-300)return 0;
+  const a=as/d;
+  if(s>=0)return c>=0?a:2-a;
+  return c<0?2+a:4-a;
+}
+const wrap2=(x)=>x-4*Math.floor((x+2)/4);                       // to [-2,2)
+const rawToUniform=(p)=>{const q=Math.floor(p),t=p-q;return q+invWarp(t);};
+const angleFromCS=(c,s)=>wrap2(rawToUniform(rawPhaseFromCS(c,s)));  // uniform RAU angle in [-2,2)
+
+// ============================================================================
+// VECTORS / MATRICES (3x3 as rows)
+// ============================================================================
+const add=(a,b)=>[a[0]+b[0],a[1]+b[1],a[2]+b[2]],sub=(a,b)=>[a[0]-b[0],a[1]-b[1],a[2]-b[2]];
+const scl=(a,s)=>[a[0]*s,a[1]*s,a[2]*s],dot=(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2];
+const crs=(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];
+const len=(a)=>Math.sqrt(dot(a,a));
+const I3=()=>[[1,0,0],[0,1,0],[0,0,1]];
+const mulMV=(M,v)=>[dot(M[0],v),dot(M[1],v),dot(M[2],v)];
+const col=(M,j)=>[M[0][j],M[1][j],M[2][j]];
+const tr=(M)=>[[M[0][0],M[1][0],M[2][0]],[M[0][1],M[1][1],M[2][1]],[M[0][2],M[1][2],M[2][2]]];
+function mulMM(A,B){const T=tr(B);return A.map((r)=>[dot(r,T[0]),dot(r,T[1]),dot(r,T[2])]);}
+function hinge(k,c,s){  // Rodrigues matrix about unit axis k from (cos, sin)
+  const [x,y,z]=k,t=1-c;
+  return[[c+x*x*t,x*y*t-z*s,x*z*t+y*s],[y*x*t+z*s,c+y*y*t,y*z*t-x*s],[z*x*t-y*s,z*y*t+x*s,c+z*z*t]];
+}
+const Rz=(c,s)=>[[c,-s,0],[s,c,0],[0,0,1]];
+const Ry=(c,s)=>[[c,0,s],[0,1,0],[-s,0,c]];
+
+// ============================================================================
+// ARM MODEL — anthropomorphic, spherical wrist; zero pose = straight up
+//   J1 yaw (z)  J2 shoulder (y)  J3 elbow (y)  J4 roll (z)  J5 pitch (y)  J6 roll (z)
+//   axes 4,5,6 meet at the wrist centre
+// ============================================================================
+const D1=1.0,L2=2.0,L3=1.8,D6=0.6;
+const J=[
+  {axis:[0,0,1],off:[0,0,0]},{axis:[0,1,0],off:[0,0,D1]},{axis:[0,1,0],off:[0,0,L2]},
+  {axis:[0,0,1],off:[0,0,L3]},{axis:[0,1,0],off:[0,0,0]},{axis:[0,0,1],off:[0,0,0]},
+];
+const TOOL=[0,0,D6];
+const LIM=[[-2,2],[-1.2,1.2],[-1.7,1.7],[-2,2],[-1.7,1.7],[-2,2]];   // RAU units
+const clamp=(x,a,b)=>Math.min(b,Math.max(a,x));
+
+function fk(q,sc){                                  // sc: optional {sin,cos} provider (libm cross-check)
+  const trig=sc||rauSinCos;
+  let R=I3(),p=[0,0,0];const joints=[];
+  for(let i=0;i<6;i++){
+    p=add(p,mulMV(R,J[i].off));
+    joints.push({o:p.slice(),k:mulMV(R,J[i].axis)});
+    const t=trig(q[i]);R=mulMM(R,hinge(J[i].axis,t.cos,t.sin));
   }
-  add(`<circle cx="${O.x}" cy="${O.y}" r="5" fill="#111827"/>`);
-  add(`<g font-size="13" font-weight="700"><text x="${x1+6}" y="${y1+16}">(1, 0)</text><text x="${x2-4}" y="${y2-10}">(0, 1)</text></g>`);
-  add(`<g font-size="12.5"><circle cx="258" cy="46" r="5.5" fill="#1d4ed8"/><text x="270" y="50" fill="#1d4ed8">uniform t = 0, ¼, ½, ¾, 1</text>
-       <circle cx="258" cy="68" r="5.5" fill="#b45309"/><text x="270" y="72" fill="#b45309">raw w: 0, .29, .50, .71, 1</text></g>`);
-  const halo='paint-order="stroke" stroke="#fff" stroke-width="5" stroke-linejoin="round"';
-  add(`<text x="180" y="62" font-size="12.5" fill="#7c3aed" ${halo}>unit circle</text>`);
-  add(`<text x="${O.x+8}" y="${O.y-92}" font-size="12.5" fill="#b45309" ${halo}>chord x + y = 1</text>`);
-})();
+  return{joints,tip:add(p,mulMV(R,TOOL)),R,wc:joints[3].o};
+}
+const libm=(q)=>({sin:Math.sin(q*Math.PI/2),cos:Math.cos(q*Math.PI/2)});
+
+// orientation error between two rotations: angle in RAU units (0..2), no arccos
+function oriErr(Ra,Rb){
+  const E=mulMM(Ra,tr(Rb));
+  const c=(E[0][0]+E[1][1]+E[2][2]-1)/2;
+  const v=[E[2][1]-E[1][2],E[0][2]-E[2][0],E[1][0]-E[0][1]];
+  return Math.abs(angleFromCS(c,len(v)/2));
+}
+const poseErr=(F,T)=>({pos:len(sub(F.tip,T.p)),ori:oriErr(F.R,T.R)});
+
+// Z-Y-Z angles <-> matrix (the wrist form)
+function RFromZYZ(a,b,g){const A=rauSinCos(a),B=rauSinCos(b),G=rauSinCos(g);return mulMM(mulMM(Rz(A.cos,A.sin),Ry(B.cos,B.sin)),Rz(G.cos,G.sin));}
+function zyzFromR(R){
+  const sb=Math.hypot(R[0][2],R[1][2]),cb=R[2][2];
+  if(sb>1e-9)return[angleFromCS(R[0][2]/sb,R[1][2]/sb),angleFromCS(cb,sb),angleFromCS(-R[2][0]/sb,R[2][1]/sb)];
+  return cb>0?[0,0,angleFromCS(R[0][0],R[1][0])]:[0,2,-angleFromCS(-R[0][0],-R[1][0])];
+}
+
+// ============================================================================
+// CLOSED-FORM IK — wrist-decoupled. Up to 8 branches: shoulder front/back, elbow +/-, wrist +/-
+// ============================================================================
+function planarArm(pc,Le3,front,elbow,qCur){          // wrist centre (or tip) -> q1,q2,q3 as (cos,sin) pairs
+  const rho0=Math.hypot(pc[0],pc[1]);
+  let c1,s1;
+  if(rho0<1e-9){const t=rauSinCos(qCur[0]);c1=t.cos;s1=t.sin;}else{c1=pc[0]/rho0;s1=pc[1]/rho0;}
+  let rho=rho0;
+  if(!front){c1=-c1;s1=-s1;rho=-rho0;}
+  const h=pc[2]-D1,D2=rho*rho+h*h;
+  const c3=(D2-L2*L2-Le3*Le3)/(2*L2*Le3);
+  if(Math.abs(c3)>1+1e-9||D2<1e-18)return null;       // unreachable
+  const cc3=clamp(c3,-1,1),s3=elbow*Math.sqrt(Math.max(0,1-cc3*cc3));
+  const ca=L2+Le3*cc3,sa=Le3*s3;                       // (cos, sin) of delta, scaled by D
+  const c2=(h*ca+rho*sa)/D2,s2=(rho*ca-h*sa)/D2;       // q2 = psi - delta by phasor rotation
+  return{c1,s1,c2,s2,c3:cc3,s3};
+}
+function analyticIK(T,qCur,dof){
+  const sols=[];
+  const push=(q,tag)=>{
+    const F=fk(q),e=poseErr(F,T);
+    const inLim=q.every((v,i)=>v>=LIM[i][0]-1e-9&&v<=LIM[i][1]+1e-9);
+    let dist=0;for(let i=0;i<6;i++)dist+=Math.abs(wrap2(q[i]-qCur[i]));
+    const okPos=e.pos<1e-5,okOri=dof<6||e.ori<1e-5;
+    sols.push({q,tag,pos:e.pos,ori:e.ori,valid:okPos&&okOri,inLim,dist});
+  };
+  if(dof===2||dof===3){
+    const Le3=L3+D6;                                    // wrist locked straight: forearm + tool in line
+    for(const front of dof===2?[true]:[true,false])for(const elbow of[1,-1]){
+      const pc=dof===2?[T.p[0],0,T.p[2]]:T.p;
+      const s=planarArm(pc,Le3,front,elbow,qCur);if(!s)continue;
+      const q1=dof===2?0:angleFromCS(s.c1,s.s1);
+      push([q1,angleFromCS(s.c2,s.s2),angleFromCS(s.c3,s.s3),0,0,0],(front?"front":"back")+" / elbow "+(elbow>0?"+":"−"));
+    }
+    return sols;
+  }
+  if(dof!==6)return null;                               // 4, 5: no closed form here
+  const pc=sub(T.p,scl(col(T.R,2),D6));
+  for(const front of[true,false])for(const elbow of[1,-1]){
+    const s=planarArm(pc,L3,front,elbow,qCur);if(!s)continue;
+    const c23=s.c2*s.c3-s.s2*s.s3,s23=s.s2*s.c3+s.c2*s.s3;
+    const R36=mulMM(tr(mulMM(Rz(s.c1,s.s1),Ry(c23,s23))),T.R);
+    const cb=R36[2][2],sb0=Math.hypot(R36[0][2],R36[1][2]);
+    const q123=[angleFromCS(s.c1,s.s1),angleFromCS(s.c2,s.s2),angleFromCS(s.c3,s.s3)];
+    const base=(front?"front":"back")+" / elbow "+(elbow>0?"+":"−");
+    if(sb0<1e-7){                                       // wrist singular: axes 4 and 6 aligned; keep current q4
+      const t4=rauSinCos(qCur[3]);let cg,sg;
+      if(cb>0){const cAG=R36[0][0],sAG=R36[1][0];cg=cAG*t4.cos+sAG*t4.sin;sg=sAG*t4.cos-cAG*t4.sin;}
+      else{const cAG=-R36[0][0],sAG=-R36[1][0];cg=t4.cos*cAG+t4.sin*sAG;sg=t4.sin*cAG-t4.cos*sAG;}
+      push([...q123,qCur[3],cb>0?0:2,angleFromCS(cg,sg)],base+" / wrist singular");
+      continue;
+    }
+    for(const w of[1,-1]){
+      const sb=w*sb0;
+      push([...q123,angleFromCS(R36[0][2]/sb,R36[1][2]/sb),angleFromCS(cb,sb),angleFromCS(-R36[2][0]/sb,R36[2][1]/sb)],base+" / wrist "+(w>0?"+":"−"));
+    }
+  }
+  return sols;
+}
+function bestSolution(sols,enforce){
+  const pool=(f)=>sols.filter(f);
+  let c=pool((s)=>s.valid&&(!enforce||s.inLim));
+  if(!c.length)c=pool((s)=>s.valid);
+  if(c.length)return c.reduce((a,b)=>(b.dist<a.dist?b:a));
+  return sols.length?sols.reduce((a,b)=>(b.pos+b.ori<a.pos+b.ori?b:a)):null;
+}
+
+// ============================================================================
+// CCD with hinge axes. Position + weighted orientation fold into one (dot, cross) pair per joint.
+// ============================================================================
+function oriWeights(mode){return mode==="full"?[1,1,1]:mode==="axis"?[0,0,1]:[0,0,0];}
+function ccdSweep(q,T,dof,mode,enforce){
+  const W=oriWeights(mode),SC=4;                        // SC ~ (characteristic length)^2 for orientation terms
+  for(let i=dof-1;i>=0;i--){
+    const F=fk(q),o=F.joints[i].o,k=F.joints[i].k;
+    const proj=(v)=>sub(v,scl(k,dot(v,k)));
+    const u=proj(sub(F.tip,o)),v=proj(sub(T.p,o));
+    let d=dot(u,v),c=dot(k,crs(u,v));
+    for(let j=0;j<3;j++){
+      if(!W[j])continue;
+      const e=proj(col(F.R,j)),t=proj(col(T.R,j));
+      d+=W[j]*SC*dot(e,t);c+=W[j]*SC*dot(k,crs(e,t));
+    }
+    if(Math.abs(d)+Math.abs(c)<1e-14)continue;
+    q[i]=wrap2(q[i]+angleFromCS(d,c));
+    if(enforce)q[i]=clamp(q[i],LIM[i][0],LIM[i][1]);
+  }
+  return q;
+}
+
+// ============================================================================
+// STATE
+// ============================================================================
+const NAMES=["J1 yaw","J2 shoulder","J3 elbow","J4 roll","J5 pitch","J6 roll"];
+let dof=6,oriMode="full",q=[0,0,0,0,0,0],goalQ=null,target=null,sols=null,selIdx=-1,ghostQ=null,anim=0;
+const QSTAR=[0.4,0.5,-0.9,0.3,0.7,-0.2];
+const CAP=[
+ {n:2,j:"J2, J3",c:"position in the arm plane (2 of 3)",m:"closed form (planar 2-link)",t:"A target off the plane (y ≠ 0) cannot be reached: the residual is |y|."},
+ {n:3,j:"J1–J3",c:"3D position",m:"closed form (yaw + planar 2-link)",t:"Orientation falls out of the position — it is not controllable. 2 position branches × front/back."},
+ {n:4,j:"J1–J4",c:"position + roll about the approach axis",m:"CCD only here",t:"The approach direction is still set by the position (tool lies along the forearm). Roll is the only extra freedom."},
+ {n:5,j:"J1–J5",c:"position + pointing (2 of 3 orientation)",m:"CCD only here",t:"Tool roll about its own axis is uncontrolled. Use “approach axis only” as the goal."},
+ {n:6,j:"J1–J6",c:"full pose",m:"closed form, up to 8 branches",t:"Spherical wrist decouples position (J1–J3) from orientation (J4–J6). Singular when q3 = 0 (stretched), q5 = 0 (wrist aligned) or the wrist centre is over the base."},
+];
+const el=(id)=>document.getElementById(id);
+const enforce=()=>el("enfLimits").checked;
+const fmt=(v,n=3)=>v.toFixed(n);
+const fmtE=(v)=>(v<1e-12?"0":v.toExponential(1));
+
+function setTarget(T){
+  target={p:T.p.slice(),R:T.R};
+  const z=zyzFromR(T.R);
+  ["x","y","z"].forEach((a,i)=>(el("t"+a).value=fmt(T.p[i],4)));
+  ["a","b","g"].forEach((a,i)=>(el("t"+a).value=fmt(z[i],4)));
+}
+function targetFromInputs(){
+  const g=(id)=>parseFloat(el(id).value)||0;
+  target={p:[g("tx"),g("ty"),g("tz")],R:RFromZYZ(g("ta"),g("tb"),g("tg"))};
+}
+function activeQ(src){return src.map((v,i)=>(i<dof?v:0));}
+function setStage(n,keepTarget){
+  dof=n;
+  oriMode=n<=3?"none":n===5?"axis":"full";
+  el("oriMode").value=oriMode;
+  q=activeQ(q);goalQ=null;sols=null;selIdx=-1;ghostQ=null;
+  document.querySelectorAll("#dofBtns button").forEach((b)=>b.classList.toggle("on",+b.dataset.n===n));
+  const c=CAP.find((x)=>x.n===n);
+  el("dofHint").innerHTML=`<b>${n}-DOF</b> (${c.j}): controllable &mdash; ${c.c}. ${c.t}`;
+  if(!keepTarget)setTarget(fk(activeQ(QSTAR)).tip&&{p:fk(activeQ(QSTAR)).tip,R:fk(activeQ(QSTAR)).R});
+  render();
+}
+function randomReachable(){
+  for(;;){
+    const r=[];for(let i=0;i<6;i++)r.push(i<dof?LIM[i][0]*0.85+Math.random()*(LIM[i][1]-LIM[i][0])*0.85:0);
+    if(Math.abs(rauSinCos(r[2]).sin)<0.15||(dof>=5&&Math.abs(rauSinCos(r[4]).sin)<0.15))continue;
+    const F=fk(r);if(Math.hypot(F.wc[0],F.wc[1])<0.3)continue;
+    setTarget({p:F.tip,R:F.R});return r;
+  }
+}
+
+// ============================================================================
+// VIEW
+// ============================================================================
+const canvas=el("canvas"),ctx=canvas.getContext("2d");
+let az=30,elev=22;
+const CX=430,CY=350,PERSP=1100,S=62,CEN=[0,0,2.3];
+function P(p){
+  const d=sub(p,CEN),a=rauSinCos(az/90),e=rauSinCos(elev/90);
+  const x1=d[0]*a.cos-d[1]*a.sin,y1=d[0]*a.sin+d[1]*a.cos,up=d[2]*e.cos+y1*e.sin,depth=y1*e.cos-d[2]*e.sin;
+  const sc=PERSP/(PERSP+depth*S);
+  return{x:CX+x1*S*sc,y:CY-up*S*sc,sc};
+}
+function line(a,b,color,w,dash){const p=P(a),r=P(b);ctx.strokeStyle=color;ctx.lineWidth=w||2;ctx.setLineDash(dash||[]);ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(r.x,r.y);ctx.stroke();ctx.setLineDash([]);}
+function dotAt(a,color,r){const p=P(a);ctx.fillStyle=color;ctx.beginPath();ctx.arc(p.x,p.y,r||5,0,6.2832);ctx.fill();}
+function label(a,text,color,dx,dy){const p=P(a);ctx.fillStyle=color||getComputedStyle(document.documentElement).getPropertyValue("--text");ctx.font="12px monospace";ctx.fillText(text,p.x+(dx||8),p.y+(dy||-8));}
+function frame(p,R,len_,alpha,dash){
+  [["#ff5566",0],["#55dd77",1],["#5599ff",2]].forEach(([c,j])=>{
+    ctx.globalAlpha=alpha;line(p,add(p,scl(col(R,j),len_)),c,alpha<1?2:3,dash);ctx.globalAlpha=1;
+  });
+}
+function drawArm(qv,color,w,full){
+  const F=fk(qv),pts=[F.joints[0].o,F.joints[1].o,F.joints[2].o,F.wc,F.tip];
+  for(let i=0;i<4;i++)line(pts[i],pts[i+1],color,w);
+  line(pts[3],pts[4],color,w*0.6);
+  if(full){
+    F.joints.forEach((j,i)=>{
+      if(i===4||i===5)return;
+      const act=i<dof;ctx.globalAlpha=act?1:0.35;
+      line(sub(j.o,scl(j.k,0.38)),add(j.o,scl(j.k,0.38)),"#c8cdd6",2);ctx.globalAlpha=1;
+      dotAt(j.o,act?"#55cc99":"#777",5);
+    });
+    dotAt(F.wc,"#ffcc00",6);label(F.wc,"wrist centre","#ffcc00");
+    frame(F.tip,F.R,0.8,1);
+  }
+  return F;
+}
+function render(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  for(let g=-4;g<=4;g++){line([g,-4,0],[g,4,0],"rgba(128,140,160,.25)",1);line([-4,g,0],[4,g,0],"rgba(128,140,160,.25)",1);}
+  if(target){frame(target.p,target.R,0.8,0.45,[5,4]);dotAt(target.p,"#ff5566",6);label(target.p,"target","#ff5566");}
+  if(ghostQ&&el("showGhost").checked)drawArm(ghostQ,"rgba(255,170,60,.55)",5,false);
+  const F=drawArm(q,"#55ccff",7,true);
+  dotAt([0,0,0],"#5599ff",8);
+  updateStats(F);updateSolPanel();updateCap();
+}
+
+// ============================================================================
+// PANELS
+// ============================================================================
+let checkStr="";
+function selfCheck(){
+  let m=0;
+  for(let n=0;n<300;n++){
+    const r=[0,1,2,3,4,5].map((i)=>LIM[i][0]+Math.random()*(LIM[i][1]-LIM[i][0]));
+    const A=fk(r),B=fk(r,libm);m=Math.max(m,len(sub(A.tip,B.tip)));
+  }
+  checkStr=`FK (RAU core) vs libm FK over 300 random poses: max tip difference <span class="m">${m.toExponential(1)}</span>`;
+}
+function updateStats(F){
+  if(!target)return;
+  const e=poseErr(F,target),sb=Math.abs(rauSinCos(q[4]).sin),s3=Math.abs(rauSinCos(q[2]).sin),rho=Math.hypot(F.wc[0],F.wc[1]);
+  const flags=[];
+  if(dof>=5&&sb<0.05)flags.push("wrist near-singular (q5≈0)");
+  if(dof>=3&&s3<0.05)flags.push("elbow near-singular (stretched/folded)");
+  if(dof>=3&&rho<0.1)flags.push("wrist centre over the base");
+  const lim=q.map((v,i)=>(v<LIM[i][0]-1e-9||v>LIM[i][1]+1e-9?NAMES[i]:null)).filter(Boolean);
+  let h=`<div>tip position error: <span class="m">${e.pos.toExponential(2)}</span> &nbsp; orientation error: <span class="m">${(e.ori*90).toFixed(3)}&deg;</span>${dof<6&&oriMode==="none"?' <span class="warn">(not controlled at this stage)</span>':""}</div>`;
+  h+=`<div>joints: ${q.map((v,i)=>`<span style="opacity:${i<dof?1:.4}">${NAMES[i].split(" ")[0]} <span class="m">${fmt(v,3)}</span> (${(v*90).toFixed(1)}&deg;)</span>`).join(" &nbsp; ")}</div>`;
+  h+=`<div>${flags.length?'<span class="warn">'+flags.join(" &middot; ")+"</span>":"no singularity flags"}${lim.length?' &nbsp; <span class="bad">outside limits: '+lim.join(", ")+"</span>":""}</div>`;
+  h+=`<div style="opacity:.7">${checkStr}</div>`;
+  el("stats").innerHTML=h;
+}
+function updateSolPanel(){
+  const p=el("solPanel");
+  if(dof===4||dof===5){p.innerHTML=`<b>Closed-form IK</b>: not available for ${dof}-DOF (no decoupling here). Use CCD &mdash; it works for any stage and reports the residual honestly.`;return;}
+  if(!sols){p.innerHTML=`<b>Closed-form IK</b>: press <i>Solve</i> to list the branches for the current target.`;return;}
+  if(!sols.length){p.innerHTML=`<b>Closed-form IK</b>: <span class="bad">target is out of reach</span> (the law-of-cosines term |cos q3| &gt; 1).`;return;}
+  let h=`<b>Closed-form IK</b> &mdash; ${sols.length} branch${sols.length>1?"es":""}. Click a row to select; the arm moves to it only when you press <i>Move arm to selected</i>.<table><tr><th>branch</th>`+[1,2,3,4,5,6].map((i)=>`<th>q${i}</th>`).join("")+`<th>pos err</th><th>ori err</th><th>limits</th><th>joint distance</th></tr>`;
+  sols.forEach((s,i)=>{
+    h+=`<tr class="click${i===selIdx?" sel":""}" data-i="${i}"><td>${i===selIdx?"&#9654; ":""}${s.tag}</td>`+s.q.map((v,j)=>`<td style="opacity:${j<dof?1:.35}">${fmt(v,3)}</td>`).join("")+`<td>${fmtE(s.pos)}</td><td>${fmtE(s.ori*90)}&deg;</td><td>${s.inLim?"ok":'<span class="bad">violates</span>'}</td><td>${fmt(s.dist,2)}</td></tr>`;
+  });
+  h+=`</table><div style="opacity:.7">Default pick: valid and within limits, nearest to the current joints (so the arm does not jump between branches).</div>`;
+  p.innerHTML=h;
+  p.querySelectorAll("tr.click").forEach((r)=>r.addEventListener("click",()=>{selIdx=+r.dataset.i;ghostQ=sols[selIdx].q.slice();render();}));
+}
+function updateCap(){
+  let h=`<b>Progression to 6-DOF</b> (current stage highlighted)<table><tr><th>DOF</th><th>joints</th><th>controllable</th><th>IK here</th><th>note</th></tr>`;
+  CAP.forEach((c)=>{h+=`<tr class="${c.n===dof?"cur":""}"><td>${c.n}</td><td>${c.j}</td><td>${c.c}</td><td>${c.m}</td><td>${c.t}</td></tr>`;});
+  el("capPanel").innerHTML=h+"</table>";
+}
+
+// ============================================================================
+// MOTION (rate-limited joint-space move) + solvers wiring
+// ============================================================================
+const STEP=0.03;                                         // RAU units per frame = 2.7 deg
+function moveToward(goal){
+  goalQ=goal.slice();
+  if(!el("rateLimit").checked){q=goalQ.slice();goalQ=null;render();return;}
+  if(anim)cancelAnimationFrame(anim);
+  const tick=()=>{
+    let done=true;
+    for(let i=0;i<6;i++){
+      const d=wrap2(goalQ[i]-q[i]);
+      if(Math.abs(d)>STEP){q[i]=wrap2(q[i]+Math.sign(d)*STEP);done=false;}else q[i]=goalQ[i];
+    }
+    render();
+    anim=done?0:requestAnimationFrame(tick);
+  };
+  anim=requestAnimationFrame(tick);
+}
+function runAnalytic(){
+  targetFromInputs();
+  sols=analyticIK(target,q,dof);
+  if(sols&&sols.length){const b=bestSolution(sols,enforce());selIdx=sols.indexOf(b);ghostQ=b.q.slice();}else{selIdx=-1;ghostQ=null;}
+  render();
+}
+let ccdAnim=0;
+function ccdOnce(){targetFromInputs();q=activeQ(ccdSweep(q.slice(),target,dof,oriMode,enforce()));render();}
+function ccdAnimate(){
+  if(ccdAnim)return;targetFromInputs();let n=0,last=Infinity;
+  const tick=()=>{
+    q=activeQ(ccdSweep(q.slice(),target,dof,oriMode,enforce()));render();
+    const e=poseErr(fk(q),target),m=e.pos+e.ori*0.1;n++;
+    if(m>1e-7&&last-m>1e-10&&n<600)ccdAnim=requestAnimationFrame(tick);else ccdAnim=0;
+    last=m;
+  };
+  ccdAnim=requestAnimationFrame(tick);
+}
+
+// UI wiring
+const dofBtns=el("dofBtns");
+[2,3,4,5,6].forEach((n)=>{const b=document.createElement("button");b.textContent=n+"-DOF";b.dataset.n=n;b.className="secondary";b.addEventListener("click",()=>setStage(n));dofBtns.appendChild(b);});
+el("oriMode").addEventListener("change",(e)=>{oriMode=e.target.value;render();});
+["tx","ty","tz","ta","tb","tg"].forEach((id)=>el(id).addEventListener("input",()=>{targetFromInputs();render();}));
+el("randTarget").addEventListener("click",()=>{randomReachable();sols=null;selIdx=-1;ghostQ=null;render();});
+el("resetArm").addEventListener("click",()=>{if(anim){cancelAnimationFrame(anim);anim=0;}q=[0,0,0,0,0,0];render();});
+el("runAnalytic").addEventListener("click",runAnalytic);
+el("applyAnalytic").addEventListener("click",()=>{if(sols&&selIdx>=0)moveToward(sols[selIdx].q);});
+el("ccdStep").addEventListener("click",ccdOnce);
+el("ccdSolve").addEventListener("click",ccdAnimate);
+["enfLimits","rateLimit","showGhost"].forEach((id)=>el(id).addEventListener("change",render));
+el("themeToggle").addEventListener("click",function(){
+  const cur=document.documentElement.getAttribute("data-theme"),nx=cur==="dark"?"light":"dark";
+  document.documentElement.setAttribute("data-theme",nx);this.textContent=nx==="dark"?"Light mode":"Dark mode";render();
+});
+let drag=false,lx,ly;
+canvas.addEventListener("mousedown",(e)=>{drag=true;lx=e.clientX;ly=e.clientY;});
+canvas.addEventListener("mousemove",(e)=>{if(!drag)return;az=(az+(e.clientX-lx)*0.5+360)%360;elev=clamp(elev+(e.clientY-ly)*0.4,-80,85);lx=e.clientX;ly=e.clientY;render();});
+document.addEventListener("mouseup",()=>(drag=false));
+
+selfCheck();
+setStage(6);
+window.RAU6={fk,analyticIK,ccdSweep,angleFromCS,poseErr,oriErr,RFromZYZ,zyzFromR,LIM,wrap2,rauSinCos,state:()=>({q,dof})};
+// SPDX-License-Identifier: MIT
 </script>
-</body></html>
+</body>
+</html>
