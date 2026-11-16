@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>RAU FK / IK</title>
+<style>
+:root{
+  --bg:#fafbfc; --ink:#111827; --mute:#5b6472; --rule:#d9dee7; --card:#ffffff;
+  --blue:#1d4ed8; --blue-bg:#eef3ff; --purple:#7c3aed; --purple-bg:#f5f1ff;
+  --teal:#0f766e; --teal-bg:#ecfaf6; --red:#dc2626; --amber:#b45309; --amber-bg:#fff7ea;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{width:1200px;background:var(--bg);color:var(--ink);font-family:"Segoe UI","DejaVu Sans",Arial,sans-serif;padding:44px 48px 40px;font-size:15px;line-height:1.45}
+.mono{font-family:"DejaVu Sans Mono",Consolas,monospace;font-size:13px}
+h1{text-align:center;font-size:40px;letter-spacing:.5px;font-weight:800}
+h1 .a{color:var(--blue)} h1 .b{color:var(--purple)}
+.sub{text-align:center;color:var(--mute);margin:6px 0 30px;font-size:16px}
+.sec{background:var(--card);border:1px solid var(--rule);border-radius:14px;padding:22px 26px;margin-bottom:22px}
+.sec h2{display:flex;align-items:center;gap:12px;font-size:20px;margin-bottom:12px}
+.num{flex:none;width:30px;height:30px;border-radius:50%;border:2px solid var(--blue);color:var(--blue);font-weight:700;font-size:15px;display:flex;align-items:center;justify-content:center}
+.grid{display:grid;grid-template-columns:1fr 440px;gap:26px;align-items:center}
+.grid.rev{grid-template-columns:440px 1fr}
+.lead{color:var(--mute);margin-bottom:10px}
+.eq{background:var(--blue-bg);border:1px solid #c9d6fb;border-radius:9px;padding:9px 13px;margin:9px 0;font-size:14.5px}
+.eq .t{font-size:11.5px;letter-spacing:.3px;color:var(--mute);font-weight:700;margin-bottom:3px}
+.eq.p{background:var(--purple-bg);border-color:#dccffa}
+.eq.g{background:var(--teal-bg);border-color:#bfe8dd}
+.eq.o{background:var(--amber-bg);border-color:#f3dcb4}
+ul{margin:8px 0 0 18px} li{margin:4px 0}
+b.bl{color:var(--blue)} b.pu{color:var(--purple)} b.tl{color:var(--teal)} b.rd{color:var(--red)} b.am{color:var(--amber)}
+code{font-family:"DejaVu Sans Mono",Consolas,monospace;font-size:13px;background:#eef1f6;border-radius:4px;padding:1px 5px}
+svg{display:block;width:100%;height:auto}
+.cap{font-size:12.5px;color:var(--mute);text-align:center;margin-top:4px}
+.pipe{display:flex;align-items:stretch;gap:6px;margin:6px 0 4px}
+.pipe .box{flex:1;border:1.5px solid var(--rule);border-radius:9px;padding:9px 8px;text-align:center;font-size:13px;background:#fbfcfe}
+.pipe .box b{display:block;font-size:12px;color:var(--mute);margin-bottom:3px}
+.pipe .box.hl{border-color:var(--purple);background:var(--purple-bg)}
+.pipe .box.hb{border-color:var(--blue);background:var(--blue-bg)}
+.pipe .ar{align-self:center;color:var(--mute);font-size:18px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{font-size:12px;letter-spacing:.8px;text-transform:uppercase;text-align:left;padding:8px 10px;background:#f3f5f9}
+th.r{color:var(--blue)} th.t{color:var(--mute)}
+td{padding:9px 10px;border-top:1px solid var(--rule);vertical-align:top}
+td:first-child{font-weight:700;width:19%}
+td.t{color:var(--mute);width:31%} td.r{color:var(--blue)}
+.foot{border:2px solid var(--teal);background:var(--teal-bg);border-radius:14px;padding:16px 22px;color:#064e45;text-align:center}
+.foot h3{font-size:17px;margin-bottom:5px}
+.fn{text-align:center;color:var(--mute);font-size:12.5px;margin-top:18px}
+.edge{font-size:12.5px;color:var(--mute);margin-top:10px}
+</style></head><body>
+
+<h1><span class="a">RAU</span> FK / IK</h1>
+<div class="sub">how a joint chain is described, moved and solved &mdash; with no arctangent anywhere in the loop</div>
+
+<!-- 1 ---------------------------------------------------------------->
+<div class="sec">
+  <h2><span class="num">1</span>Describe a point by distances: <span class="mono">E = Point(A: r; B: α, C: β; D)</span></h2>
+  <div class="grid">
+    <div>
+      <div class="lead">A link carries four reference points <b class="bl">A, B, C, D</b> that move rigidly with it. Any point <b class="am">E</b> attached to the link is stored as three lengths, all in the same unit &mdash; not as x, y, z.</div>
+      <ul>
+        <li><b class="am">r</b> = |AE|, the distance from A.</li>
+        <li><b class="bl">α</b> and <b class="tl">β</b> are <i>arc lengths</i> centred at A: α = phase<sub>B</sub> · |AB|, β = phase<sub>C</sub> · |AC|, where each phase is the RAU angle between AE and AB (or AC).</li>
+        <li><b>D</b> only picks the side of plane ABC. On the far side the arcs are the long way round: (4 − phase) · |AB|.</li>
+      </ul>
+      <div class="eq"><div class="t">Forward (E → r, α, β)</div>phase = <code>rauVec3AnglePhase</code>(AB, AE) &nbsp;&middot;&nbsp; z = Ê·n picks the side</div>
+      <div class="eq"><div class="t">Inverse (r, α, β → E)</div>x = cos(phase<sub>B</sub>) &nbsp; y = (cos(phase<sub>C</sub>) − x·cosγ) / sinγ &nbsp; z = ±√(1−x²−y²)<br>E = A + r · (x·e₁ + y·e₂ + z·n)</div>
+    </div>
+    <div>
+      <svg viewBox="0 0 440 350" aria-label="Point E described by r, alpha and beta from reference points A, B, C and D">
+        <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#b45309"/></marker></defs>
+        <polygon points="110,230 310,255 190,320" fill="#dbeafe" stroke="#93b4f5" stroke-width="1.5" opacity=".9"/>
+        <line x1="110" y1="230" x2="95" y2="95" stroke="#9aa3b2" stroke-dasharray="4 4" stroke-width="1.5"/>
+        <line x1="110" y1="230" x2="310" y2="255" stroke="#1d4ed8" stroke-width="2.4"/>
+        <line x1="110" y1="230" x2="190" y2="320" stroke="#0f766e" stroke-width="2.4"/>
+        <line x1="110" y1="230" x2="260" y2="120" stroke="#b45309" stroke-width="3" marker-end="url(#ah)"/>
+        <path d="M179.5 238.7 A70 70 0 0 0 166.4 188.5" fill="none" stroke="#1d4ed8" stroke-width="2.6"/>
+        <path d="M139.6 262.5 A44 44 0 0 0 145.5 203.9" fill="none" stroke="#0f766e" stroke-width="2.6"/>
+        <circle cx="110" cy="230" r="6" fill="#1d4ed8"/><circle cx="310" cy="255" r="6" fill="#1d4ed8"/>
+        <circle cx="190" cy="320" r="6" fill="#0f766e"/><circle cx="95" cy="95" r="6" fill="#6b7280"/>
+        <circle cx="260" cy="120" r="7" fill="#b45309"/>
+        <g font-size="15" font-weight="700" fill="#111827">
+          <text x="84" y="236">A</text><text x="318" y="262">B</text><text x="196" y="338">C</text>
+          <text x="104" y="88">D</text><text x="272" y="116" fill="#b45309">E</text>
+        </g>
+        <g font-size="17" font-style="italic" font-weight="700">
+          <text x="196" y="208" fill="#1d4ed8">α</text><text x="150" y="272" fill="#0f766e">β</text>
+          <text x="172" y="162" fill="#b45309" font-style="italic">r</text>
+        </g>
+        <text x="104" y="60" font-size="11.5" fill="#6b7280">D sets the side</text>
+        <text x="232" y="338" font-size="11.5" fill="#6b7280">plane ABC</text>
+      </svg>
+      <div class="cap">schematic &mdash; the three magnitudes r, α, β share one distance unit</div>
+    </div>
+  </div>
+  <div class="edge">Needs A, B, C not collinear. When E lies almost exactly in plane ABC the short-arc / long-arc decision is a hard threshold.</div>
+</div>
+
+<!-- 2 ---------------------------------------------------------------->
+<div class="sec">
+  <h2><span class="num">2</span>Two kinds of phase: <i>raw</i> from vectors, <i>uniform</i> for sliders</h2>
+  <div class="grid rev">
+    <div>
+      <svg id="phase" viewBox="0 0 440 340" aria-label="Chord fraction versus angle on a quarter circle"></svg>
+      <div class="cap">equal angle steps (blue ticks) land unevenly on the chord (amber ticks)</div>
+    </div>
+    <div>
+      <div class="lead">Move along the chord from (1,0) to (0,1) by a fraction <b class="am">w</b>, then project the point radially onto the unit circle. That point <i>is</i> (cosθ, sinθ).</div>
+      <div class="eq g"><div class="t">Raw phase &mdash; what two vectors give you</div>w = |u×v| / ( |u·v| + |u×v| ) &nbsp;&nbsp;(+ quadrant offset)<br>(cosθ, sinθ) = (1−w, w) / √((1−w)² + w²)</div>
+      <div class="eq p"><div class="t">Uniform phase &mdash; proportional to angle</div>t ∈ [0,1) per quarter turn &nbsp;&rarr;&nbsp; w = warp(t) &nbsp;(7-coefficient polynomial)<br>Slider: 1 RAU = 90°, 4 = full turn</div>
+      <ul>
+        <li>A raw phase is <b>not</b> proportional to the angle (up to ~4° off), but rotating <i>by</i> it is exact &mdash; dot and cross already encode sin θ and cos θ.</li>
+        <li>So aiming and point construction stay raw. The warp is only paid for where the angle itself must be uniform, and the inverse warp only to print degrees.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- 3 ---------------------------------------------------------------->
+<div class="sec">
+  <h2><span class="num">3</span>Forward kinematics: move the frame, recompute the point</h2>
+  <div class="grid">
+    <div>
+      <div class="lead">(r, α, β) is captured once and never changes &mdash; it is a body-local description. A joint only moves A, B, C, D.</div>
+      <div class="pipe">
+        <div class="box hl"><b>joint angle</b>RAU units</div><div class="ar">&rarr;</div>
+        <div class="box hl"><b>rauSinCos</b>uniform</div><div class="ar">&rarr;</div>
+        <div class="box"><b>Rodrigues</b>axis n, + translate</div><div class="ar">&rarr;</div>
+        <div class="box hb"><b>A′ B′ C′ D′</b>rigid motion</div>
+      </div>
+      <div class="pipe">
+        <div class="box hb"><b>A′ B′ C′ D′</b>+ stored r, α, β</div><div class="ar">&rarr;</div>
+        <div class="box hb"><b>pointFromRAB</b>inverse construction</div><div class="ar">&rarr;</div>
+        <div class="box"><b>E (world)</b>this frame</div>
+      </div>
+      <ul>
+        <li>A chain is just composed rigid motions: each link transforms its own A,B,C,D and every point rigidly attached to it.</li>
+        <li>Verified: reconstructed E matches ground truth to ~1e-15 (double) through a multi-link chain.</li>
+        <li>Rodrigues is one way to move the frame; a quaternion or rotor can do it instead &mdash; (r, α, β) does not change.</li>
+      </ul>
+    </div>
+    <div>
+      <svg viewBox="0 0 440 300" aria-label="A link frame before and after a rigid motion">
+        <defs><marker id="ab" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10z" fill="#7c3aed"/></marker></defs>
+        <g transform="translate(20,55)">
+          <polygon points="20,120 130,135 70,175" fill="#dbeafe" stroke="#93b4f5" stroke-width="1.5"/>
+          <line x1="20" y1="120" x2="110" y2="60" stroke="#b45309" stroke-width="2.5"/>
+          <circle cx="20" cy="120" r="5" fill="#1d4ed8"/><circle cx="130" cy="135" r="5" fill="#1d4ed8"/><circle cx="70" cy="175" r="5" fill="#0f766e"/><circle cx="110" cy="60" r="6" fill="#b45309"/>
+          <text x="2" y="118" font-size="13" font-weight="700">A</text><text x="136" y="140" font-size="13" font-weight="700">B</text><text x="64" y="195" font-size="13" font-weight="700">C</text><text x="118" y="58" font-size="13" font-weight="700" fill="#b45309">E</text>
+          <text x="10" y="-4" font-size="13" fill="#5b6472">before</text>
+        </g>
+        <path d="M150 100 C 210 38, 290 38, 345 118" fill="none" stroke="#7c3aed" stroke-width="2.6" marker-end="url(#ab)"/>
+        <text x="196" y="40" font-size="13" font-weight="700" fill="#7c3aed">R(n, θ) + T</text>
+        <polygon points="265,160 350.4,231 278.2,233.1" fill="#dbeafe" stroke="#93b4f5" stroke-width="1.5"/>
+        <line x1="265" y1="160" x2="373.1" y2="156.8" stroke="#b45309" stroke-width="2.5"/>
+        <circle cx="265" cy="160" r="5" fill="#1d4ed8"/><circle cx="350.4" cy="231" r="5" fill="#1d4ed8"/>
+        <circle cx="278.2" cy="233.1" r="5" fill="#0f766e"/><circle cx="373.1" cy="156.8" r="6" fill="#b45309"/>
+        <g font-size="13" font-weight="700"><text x="244" y="158">A′</text><text x="358" y="238">B′</text><text x="268" y="254">C′</text><text x="382" y="152" fill="#b45309">E′</text></g>
+        <text x="385" y="198" font-size="13" fill="#5b6472">after</text>
+      </svg>
+      <div class="cap">same r, α, β &mdash; only A, B, C, D moved</div>
+    </div>
+  </div>
+</div>
+
+<!-- 4 ---------------------------------------------------------------->
+<div class="sec">
+  <h2><span class="num">4</span>Inverse kinematics: CCD with raw phase</h2>
+  <div class="grid rev">
+    <div>
+      <svg viewBox="0 0 440 320" aria-label="CCD step at one joint: vectors to the tip and to the target">
+        <defs>
+          <marker id="au" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#1d4ed8"/></marker>
+          <marker id="av" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#dc2626"/></marker>
+        </defs>
+        <polyline points="50,265 120,230 190,235 255,190 330,200" fill="none" stroke="#7ac7e8" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/>
+        <line x1="190" y1="235" x2="326" y2="198" stroke="#1d4ed8" stroke-width="2.2" marker-end="url(#au)"/>
+        <line x1="190" y1="235" x2="316" y2="80" stroke="#dc2626" stroke-width="2.2" stroke-dasharray="6 4" marker-end="url(#av)"/>
+        <path d="M243.1 220.6 A55 55 0 0 0 224.7 192.3" fill="none" stroke="#7c3aed" stroke-width="2.6"/>
+        <g fill="#55cc99" stroke="#fff" stroke-width="2"><circle cx="120" cy="230" r="7"/><circle cx="255" cy="190" r="7"/></g>
+        <circle cx="50" cy="265" r="8" fill="#1d4ed8" stroke="#fff" stroke-width="2"/>
+        <circle cx="190" cy="235" r="9" fill="#7c3aed" stroke="#fff" stroke-width="2"/>
+        <circle cx="330" cy="200" r="7" fill="#55cc99" stroke="#fff" stroke-width="2"/>
+        <circle cx="320" cy="76" r="9" fill="#dc2626"/>
+        <g font-size="14" font-weight="700">
+          <text x="30" y="290">base</text><text x="176" y="262" fill="#7c3aed">joint i</text>
+          <text x="336" y="222">tip</text><text x="332" y="74" fill="#dc2626">target</text>
+          <text x="280" y="236" fill="#1d4ed8">u</text><text x="262" y="130" fill="#dc2626">v</text>
+          <text x="222" y="176" fill="#7c3aed" font-style="italic" text-anchor="end">phase</text>
+        </g>
+      </svg>
+      <div class="cap">one CCD step: rotate everything past joint i so u swings onto v</div>
+    </div>
+    <div>
+      <div class="lead">Walk from the last joint back to the base. At each joint i:</div>
+      <ol style="margin:6px 0 0 20px">
+        <li><b class="bl">u</b> = tip − joint &nbsp;&nbsp; <b class="rd">v</b> = target − joint</li>
+        <li>axis <b>k</b> = u×v / |u×v| &nbsp;&nbsp; raw phase = <code>rauVec3AnglePhase</code>(u, v)</li>
+        <li>rotate every joint beyond i about k by that raw phase (<code>rodriguesRaw</code>)</li>
+      </ol>
+      <div class="eq o" style="margin-top:12px"><div class="t">Why there is no arctangent</div>Rotating by the raw phase uses (1−w, w)/norm = (cosθ, sinθ) of the true vector angle &mdash; exact by construction. The angle is never turned into degrees to move the joint.</div>
+      <ul>
+        <li>Repeat sweeps until the tip error stops shrinking. Demo chain (4 links): ~10 sweeps to ~1e-10.</li>
+        <li>u ∥ v: nothing to do. u antiparallel to v: pick any axis ⟂ u and use phase 2 (a half turn).</li>
+        <li>Out of reach: the chain stretches straight toward the target. Link lengths drift only at ~1e-15.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- 5 ---------------------------------------------------------------->
+<div class="sec">
+  <h2><span class="num">5</span>The sin / cos / tan core that everything above calls</h2>
+  <div class="lead">One pipeline serves both phases. The only difference: the uniform phase passes through the warp, the raw phase skips it.</div>
+  <div class="pipe">
+    <div class="box"><b>phase</b>RAU units, any sign</div><div class="ar">&rarr;</div>
+    <div class="box"><b>reduce</b>m = |x| − 4·floor(|x|/4)<br>q = ⌊m⌋, t = m − q</div><div class="ar">&rarr;</div>
+    <div class="box hl"><b>warp (uniform only)</b>w = warp(t)<br><span style="color:var(--mute)">raw: w = t</span></div><div class="ar">&rarr;</div>
+    <div class="box"><b>mirror</b>w = |w − (q &amp; 1)|</div><div class="ar">&rarr;</div>
+    <div class="box"><b>normalize</b>(1−w, w) · 1/√D</div><div class="ar">&rarr;</div>
+    <div class="box"><b>signs</b>XOR from q<br>sin odd in phase</div>
+  </div>
+  <div class="pipe" style="margin-top:8px">
+    <div class="box hb" style="flex:3;text-align:left;padding-left:14px"><b>tan</b>= ±w / (1 − w) &nbsp;&mdash; the normalization cancels, so tan needs no rsqrt at all</div>
+    <div class="box" style="flex:3;text-align:left;padding-left:14px"><b>1/√D</b>exact (<code>1/sqrt</code>) on CPUs with fast sqrt/div; polynomial + one Newton step where there is none (SIMD, WASM, FPGA)</div>
+    <div class="box" style="flex:2;text-align:left;padding-left:14px"><b>accuracy</b>sin/cos ≈ 7e-9 (double), ≈ 1.5e-7 (float32)</div>
+  </div>
+</div>
+
+<!-- 6 ---------------------------------------------------------------->
+<div class="sec">
+  <h2><span class="num">6</span>What is different from textbook FK / IK</h2>
+  <table>
+    <tr><th></th><th class="t">Textbook</th><th class="r">RAU system</th></tr>
+    <tr><td>Point on a link</td><td class="t">x, y, z in the link frame</td><td class="r">E = Point(A: r; B: α, C: β; D) &mdash; three distances from four reference points</td></tr>
+    <tr><td>Link pose</td><td class="t">rotation matrix or quaternion per joint</td><td class="r">A, B, C, D move rigidly; any rotation scheme can drive them</td></tr>
+    <tr><td>Angle between vectors</td><td class="t">atan2(|u×v|, u·v)</td><td class="r">raw phase w = |u×v| / (|u·v| + |u×v|), a ratio</td></tr>
+    <tr><td>Angle unit</td><td class="t">radians</td><td class="r">RAU: 1 = 90°, 4 = full turn</td></tr>
+    <tr><td>IK aim step</td><td class="t">Jacobian, or atan2 per joint</td><td class="r">CCD sweep; raw phase gives the exact rotation</td></tr>
+    <tr><td>Trig</td><td class="t">libm sin / cos / tan</td><td class="r">rauSinCos / rauTan: floor reduction, warp, normalize, quadrant signs</td></tr>
+    <tr><td>Showing degrees</td><td class="t">direct</td><td class="r">inverse warp of the raw phase, only for display</td></tr>
+  </table>
+</div>
+
+<div class="foot">
+  <h3>The descriptor is independent of the rotation scheme</h3>
+  Whether a joint moves A, B, C, D with a Rodrigues matrix or a quaternion, the same (r, α, β) and the same inverse construction recover E.
+  Choosing a rotation backend and choosing this point description are separate decisions.
+</div>
+<div class="fn">rauVec3AnglePhase &middot; rodriguesRAU / rodriguesRaw &middot; forwardRAB / pointFromRAB &middot; rauSinCos &middot; rauTan &mdash; radicaltrig (RAU)</div>
+
+<script>
+// phase diagram: quarter circle, chord, uniform ticks (blue) vs raw chord fractions (amber)
+(function(){
+  const svg=document.getElementById('phase'),O={x:70,y:285},R=215,ns='http://www.w3.org/2000/svg';
+  const P=(x,y)=>[O.x+R*x,O.y-R*y];
+  const add=(h)=>svg.insertAdjacentHTML('beforeend',h);
+  const [x1,y1]=P(1,0),[x2,y2]=P(0,1);
+  add(`<path d="M${x1} ${y1} A${R} ${R} 0 0 0 ${x2} ${y2}" fill="none" stroke="#7c3aed" stroke-width="3"/>`);
+  add(`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#b45309" stroke-width="3"/>`);
+  add(`<line x1="${O.x}" y1="${O.y}" x2="${x1}" y2="${y1}" stroke="#9aa3b2" stroke-width="1.5"/><line x1="${O.x}" y1="${O.y}" x2="${x2}" y2="${y2}" stroke="#9aa3b2" stroke-width="1.5"/>`);
+  for(let k=0;k<=4;k++){
+    const th=k*Math.PI/8, c=Math.cos(th), s=Math.sin(th);
+    const w=s/(s+c), [cx,cy]=P(1-w,w), [ax,ay]=P(c,s);
+    if(k>0&&k<4) add(`<line x1="${O.x}" y1="${O.y}" x2="${ax}" y2="${ay}" stroke="#c9ced8" stroke-dasharray="4 4" stroke-width="1.3"/>`);
+    add(`<circle cx="${ax}" cy="${ay}" r="6" fill="#1d4ed8" stroke="#fff" stroke-width="2"/>`);
+    add(`<circle cx="${cx}" cy="${cy}" r="6" fill="#b45309" stroke="#fff" stroke-width="2"/>`);
+  }
+  add(`<circle cx="${O.x}" cy="${O.y}" r="5" fill="#111827"/>`);
+  add(`<g font-size="13" font-weight="700"><text x="${x1+6}" y="${y1+16}">(1, 0)</text><text x="${x2-4}" y="${y2-10}">(0, 1)</text></g>`);
+  add(`<g font-size="12.5"><circle cx="258" cy="46" r="5.5" fill="#1d4ed8"/><text x="270" y="50" fill="#1d4ed8">uniform t = 0, ¼, ½, ¾, 1</text>
+       <circle cx="258" cy="68" r="5.5" fill="#b45309"/><text x="270" y="72" fill="#b45309">raw w: 0, .29, .50, .71, 1</text></g>`);
+  const halo='paint-order="stroke" stroke="#fff" stroke-width="5" stroke-linejoin="round"';
+  add(`<text x="180" y="62" font-size="12.5" fill="#7c3aed" ${halo}>unit circle</text>`);
+  add(`<text x="${O.x+8}" y="${O.y-92}" font-size="12.5" fill="#b45309" ${halo}>chord x + y = 1</text>`);
+})();
+</script>
+</body></html>
