@@ -222,11 +222,8 @@ function calculateAngleMode(u, v) {
   // Default mode: standard angle measurement
   if (uiState.defaultMode) {
     p = ccwDirection ? 4 - p : p;
-    if (p = 4 && Math.abs(angleBetweenDeg) === 0) {
-      p = 0;
-    }
     return {
-      rau: p,
+      rau: p === 4 && Math.abs(angleBetweenDeg) === 0 ? 0 : p,
       signedDeg: angleBetweenDeg * (ccwDirection ? 1 : -1),
       unsignedDeg: Math.abs(angleBetweenDeg),
       ccw: ccwDirection,
@@ -235,7 +232,8 @@ function calculateAngleMode(u, v) {
 
   // Fallback
   return {
-    rau: ccwDirection ? 4 - p : p,
+    p = ccwDirection ? 4 - p : p;
+    rau: p === 4 && Math.abs(angleBetweenDeg) === 0 ? 0 : p,
     signedDeg: angleBetweenDeg * (ccwDirection ? 1 : -1),
     unsignedDeg: Math.abs(angleBetweenDeg),
     ccw: ccwDirection,
