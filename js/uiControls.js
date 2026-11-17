@@ -200,7 +200,7 @@ function calculateAngleMode(u, v) {
   // Bias mode: always going ccw/cw from u
   if (uiState.biasMode) {
     return {
-      rau: p,
+      rau: p === 4 && Math.abs(angleBetweenDeg) === 0 ? 0 : p,
       signedDeg: -Math.abs(angleBetweenDeg),
       unsignedDeg: Math.abs(angleBetweenDeg),
       ccw: false,
