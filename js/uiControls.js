@@ -222,7 +222,7 @@ function calculateAngleMode(u, v) {
   // Default mode: standard angle measurement
   if (uiState.defaultMode) {
     p = ccwDirection ? 4 - p : p;
-    if (p = 4 && Math.abs(angleBetweenDeg) == 0.0) {
+    if (p = 4 && Math.abs(angleBetweenDeg) === 0) {
       p = 0;
     }
     return {
