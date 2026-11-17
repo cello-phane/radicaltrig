@@ -212,7 +212,7 @@ function calculateAngleMode(u, v) {
     p = ccwDirection ? p : 4 - p;
     const wrapped = 360 - Math.abs(angleBetweenDeg);
     return {
-      rau: p,
+      rau: p === 0 && Math.abs(wrapped) === 360 ? 4 : p,
       signedDeg: ccwDirection || angleBetweenDeg === 0 ? -wrapped : wrapped,
       unsignedDeg: Math.min(Math.abs(angleBetweenDeg), wrapped),
       ccw: ccwDirection || angleBetweenDeg === 0 ? false : true,
