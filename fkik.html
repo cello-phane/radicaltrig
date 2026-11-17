@@ -146,6 +146,9 @@ const J=[
 const TOOL=[0,0,D6];
 const LIM=[[-2,2],[-1.2,1.2],[-1.7,1.7],[-2,2],[-1.7,1.7],[-2,2]];   // RAU units
 const clamp=(x,a,b)=>Math.min(b,Math.max(a,x));
+// which joints move at each stage: 2-DOF = shoulder + elbow (J2, J3, the planar arm); otherwise J1..Jn
+let dof=6;
+const isActive=(i)=>(dof===2?i===1||i===2:i<dof);
 
 function fk(q,sc){                                  // sc: optional {sin,cos} provider (libm cross-check)
   const trig=sc||rauSinCos;
@@ -179,12 +182,13 @@ function zyzFromR(R){
 // ============================================================================
 // CLOSED-FORM IK — wrist-decoupled. Up to 8 branches: shoulder front/back, elbow +/-, wrist +/-
 // ============================================================================
-function planarArm(pc,Le3,front,elbow,qCur){          // wrist centre (or tip) -> q1,q2,q3 as (cos,sin) pairs
+function planarArm(pc,Le3,front,elbow,qCur,planar){          // wrist centre (or tip) -> q1,q2,q3 as (cos,sin) pairs
   const rho0=Math.hypot(pc[0],pc[1]);
   let c1,s1;
   if(rho0<1e-9){const t=rauSinCos(qCur[0]);c1=t.cos;s1=t.sin;}else{c1=pc[0]/rho0;s1=pc[1]/rho0;}
   let rho=rho0;
   if(!front){c1=-c1;s1=-s1;rho=-rho0;}
+  if(planar){c1=1;s1=0;rho=pc[0];}                     // 2-DOF: yaw locked at 0, so the plane's x is signed
   const h=pc[2]-D1,D2=rho*rho+h*h;
   const c3=(D2-L2*L2-Le3*Le3)/(2*L2*Le3);
   if(Math.abs(c3)>1+1e-9||D2<1e-18)return null;       // unreachable
@@ -206,7 +210,7 @@ function analyticIK(T,qCur,dof){
     const Le3=L3+D6;                                    // wrist locked straight: forearm + tool in line
     for(const front of dof===2?[true]:[true,false])for(const elbow of[1,-1]){
       const pc=dof===2?[T.p[0],0,T.p[2]]:T.p;
-      const s=planarArm(pc,Le3,front,elbow,qCur);if(!s)continue;
+      const s=planarArm(pc,Le3,front,elbow,qCur,dof===2);if(!s)continue;
       const q1=dof===2?0:angleFromCS(s.c1,s.s1);
       push([q1,angleFromCS(s.c2,s.s2),angleFromCS(s.c3,s.s3),0,0,0],(front?"front":"back")+" / elbow "+(elbow>0?"+":"−"));
     }
@@ -249,7 +253,8 @@ function bestSolution(sols,enforce){
 function oriWeights(mode){return mode==="full"?[1,1,1]:mode==="axis"?[0,0,1]:[0,0,0];}
 function ccdSweep(q,T,dof,mode,enforce){
   const W=oriWeights(mode),SC=4;                        // SC ~ (characteristic length)^2 for orientation terms
-  for(let i=dof-1;i>=0;i--){
+  for(let i=5;i>=0;i--){
+    if(!isActive(i))continue;
     const F=fk(q),o=F.joints[i].o,k=F.joints[i].k;
     const proj=(v)=>sub(v,scl(k,dot(v,k)));
     const u=proj(sub(F.tip,o)),v=proj(sub(T.p,o));
@@ -270,7 +275,7 @@ function ccdSweep(q,T,dof,mode,enforce){
 // STATE
 // ============================================================================
 const NAMES=["J1 yaw","J2 shoulder","J3 elbow","J4 roll","J5 pitch","J6 roll"];
-let dof=6,oriMode="full",q=[0,0,0,0,0,0],goalQ=null,target=null,sols=null,selIdx=-1,ghostQ=null,anim=0;
+let oriMode="full",q=[0,0,0,0,0,0],goalQ=null,target=null,sols=null,selIdx=-1,ghostQ=null,anim=0;
 const QSTAR=[0.4,0.5,-0.9,0.3,0.7,-0.2];
 const CAP=[
  {n:2,j:"J2, J3",c:"position in the arm plane (2 of 3)",m:"closed form (planar 2-link)",t:"A target off the plane (y ≠ 0) cannot be reached: the residual is |y|."},
@@ -294,7 +299,7 @@ function targetFromInputs(){
   const g=(id)=>parseFloat(el(id).value)||0;
   target={p:[g("tx"),g("ty"),g("tz")],R:RFromZYZ(g("ta"),g("tb"),g("tg"))};
 }
-function activeQ(src){return src.map((v,i)=>(i<dof?v:0));}
+function activeQ(src){return src.map((v,i)=>(isActive(i)?v:0));}
 function setStage(n,keepTarget){
   dof=n;
   oriMode=n<=3?"none":n===5?"axis":"full";
@@ -303,16 +308,17 @@ function setStage(n,keepTarget){
   document.querySelectorAll("#dofBtns button").forEach((b)=>b.classList.toggle("on",+b.dataset.n===n));
   const c=CAP.find((x)=>x.n===n);
   el("dofHint").innerHTML=`<b>${n}-DOF</b> (${c.j}): controllable &mdash; ${c.c}. ${c.t}`;
-  if(!keepTarget)setTarget(fk(activeQ(QSTAR)).tip&&{p:fk(activeQ(QSTAR)).tip,R:fk(activeQ(QSTAR)).R});
+  if(!keepTarget){const F0=fk(activeQ(QSTAR));setTarget({p:F0.tip,R:F0.R});}
   render();
 }
 function randomReachable(){
-  for(;;){
-    const r=[];for(let i=0;i<6;i++)r.push(i<dof?LIM[i][0]*0.85+Math.random()*(LIM[i][1]-LIM[i][0])*0.85:0);
-    if(Math.abs(rauSinCos(r[2]).sin)<0.15||(dof>=5&&Math.abs(rauSinCos(r[4]).sin)<0.15))continue;
-    const F=fk(r);if(Math.hypot(F.wc[0],F.wc[1])<0.3)continue;
+  for(let tries=0;tries<500;tries++){
+    const r=[];for(let i=0;i<6;i++)r.push(isActive(i)?LIM[i][0]*0.85+Math.random()*(LIM[i][1]-LIM[i][0])*0.85:0);
+    if(Math.abs(rauSinCos(r[2]).sin)<0.15||(dof>=5&&Math.abs(rauSinCos(r[4]).sin)<0.15))continue;   // keep clear of singular poses
+    const F=fk(r);if(dof>=3&&Math.hypot(F.wc[0],F.wc[1])<0.3)continue;
     setTarget({p:F.tip,R:F.R});return r;
   }
+  const F=fk(activeQ(QSTAR));setTarget({p:F.tip,R:F.R});return activeQ(QSTAR);   // fallback: the stage's default target
 }
 
 // ============================================================================
@@ -320,7 +326,7 @@ function randomReachable(){
 // ============================================================================
 const canvas=el("canvas"),ctx=canvas.getContext("2d");
 let az=30,elev=22;
-const CX=430,CY=350,PERSP=1100,S=62,CEN=[0,0,2.3];
+const CX=430,CY=350,PERSP=1100,S=76,CEN=[0,0,2.3];
 function P(p){
   const d=sub(p,CEN),a=rauSinCos(az/90),e=rauSinCos(elev/90);
   const x1=d[0]*a.cos-d[1]*a.sin,y1=d[0]*a.sin+d[1]*a.cos,up=d[2]*e.cos+y1*e.sin,depth=y1*e.cos-d[2]*e.sin;
@@ -342,7 +348,7 @@ function drawArm(qv,color,w,full){
   if(full){
     F.joints.forEach((j,i)=>{
       if(i===4||i===5)return;
-      const act=i<dof;ctx.globalAlpha=act?1:0.35;
+      const act=isActive(i);ctx.globalAlpha=act?1:0.35;
       line(sub(j.o,scl(j.k,0.38)),add(j.o,scl(j.k,0.38)),"#c8cdd6",2);ctx.globalAlpha=1;
       dotAt(j.o,act?"#55cc99":"#777",5);
     });
@@ -354,10 +360,11 @@ function drawArm(qv,color,w,full){
 function render(){
   ctx.clearRect(0,0,canvas.width,canvas.height);
   for(let g=-4;g<=4;g++){line([g,-4,0],[g,4,0],"rgba(128,140,160,.25)",1);line([-4,g,0],[4,g,0],"rgba(128,140,160,.25)",1);}
-  if(target){frame(target.p,target.R,0.8,0.45,[5,4]);dotAt(target.p,"#ff5566",6);label(target.p,"target","#ff5566");}
+  if(target){frame(target.p,target.R,0.8,0.45,[5,4]);dotAt(target.p,"#ff5566",6);}
   if(ghostQ&&el("showGhost").checked)drawArm(ghostQ,"rgba(255,170,60,.55)",5,false);
   const F=drawArm(q,"#55ccff",7,true);
   dotAt([0,0,0],"#5599ff",8);
+  if(target)label(target.p,"target","#ff5566",10,18);       // drawn last so the arm does not cover it
   updateStats(F);updateSolPanel();updateCap();
 }
 
@@ -378,11 +385,11 @@ function updateStats(F){
   const e=poseErr(F,target),sb=Math.abs(rauSinCos(q[4]).sin),s3=Math.abs(rauSinCos(q[2]).sin),rho=Math.hypot(F.wc[0],F.wc[1]);
   const flags=[];
   if(dof>=5&&sb<0.05)flags.push("wrist near-singular (q5≈0)");
-  if(dof>=3&&s3<0.05)flags.push("elbow near-singular (stretched/folded)");
+  if(s3<0.05)flags.push("elbow near-singular (stretched/folded)");
   if(dof>=3&&rho<0.1)flags.push("wrist centre over the base");
   const lim=q.map((v,i)=>(v<LIM[i][0]-1e-9||v>LIM[i][1]+1e-9?NAMES[i]:null)).filter(Boolean);
   let h=`<div>tip position error: <span class="m">${e.pos.toExponential(2)}</span> &nbsp; orientation error: <span class="m">${(e.ori*90).toFixed(3)}&deg;</span>${dof<6&&oriMode==="none"?' <span class="warn">(not controlled at this stage)</span>':""}</div>`;
-  h+=`<div>joints: ${q.map((v,i)=>`<span style="opacity:${i<dof?1:.4}">${NAMES[i].split(" ")[0]} <span class="m">${fmt(v,3)}</span> (${(v*90).toFixed(1)}&deg;)</span>`).join(" &nbsp; ")}</div>`;
+  h+=`<div>joints: ${q.map((v,i)=>`<span style="opacity:${isActive(i)?1:.4}">${NAMES[i].split(" ")[0]} <span class="m">${fmt(v,3)}</span> (${(v*90).toFixed(1)}&deg;)</span>`).join(" &nbsp; ")}</div>`;
   h+=`<div>${flags.length?'<span class="warn">'+flags.join(" &middot; ")+"</span>":"no singularity flags"}${lim.length?' &nbsp; <span class="bad">outside limits: '+lim.join(", ")+"</span>":""}</div>`;
   h+=`<div style="opacity:.7">${checkStr}</div>`;
   el("stats").innerHTML=h;
@@ -394,7 +401,7 @@ function updateSolPanel(){
   if(!sols.length){p.innerHTML=`<b>Closed-form IK</b>: <span class="bad">target is out of reach</span> (the law-of-cosines term |cos q3| &gt; 1).`;return;}
   let h=`<b>Closed-form IK</b> &mdash; ${sols.length} branch${sols.length>1?"es":""}. Click a row to select; the arm moves to it only when you press <i>Move arm to selected</i>.<table><tr><th>branch</th>`+[1,2,3,4,5,6].map((i)=>`<th>q${i}</th>`).join("")+`<th>pos err</th><th>ori err</th><th>limits</th><th>joint distance</th></tr>`;
   sols.forEach((s,i)=>{
-    h+=`<tr class="click${i===selIdx?" sel":""}" data-i="${i}"><td>${i===selIdx?"&#9654; ":""}${s.tag}</td>`+s.q.map((v,j)=>`<td style="opacity:${j<dof?1:.35}">${fmt(v,3)}</td>`).join("")+`<td>${fmtE(s.pos)}</td><td>${fmtE(s.ori*90)}&deg;</td><td>${s.inLim?"ok":'<span class="bad">violates</span>'}</td><td>${fmt(s.dist,2)}</td></tr>`;
+    h+=`<tr class="click${i===selIdx?" sel":""}" data-i="${i}"><td>${i===selIdx?"&#9654; ":""}${s.tag}</td>`+s.q.map((v,j)=>`<td style="opacity:${isActive(j)?1:.35}">${fmt(v,3)}</td>`).join("")+`<td>${fmtE(s.pos)}</td><td>${fmtE(s.ori*90)}&deg;</td><td>${s.inLim?"ok":'<span class="bad">violates</span>'}</td><td>${fmt(s.dist,2)}</td></tr>`;
   });
   h+=`</table><div style="opacity:.7">Default pick: valid and within limits, nearest to the current joints (so the arm does not jump between branches).</div>`;
   p.innerHTML=h;
@@ -467,6 +474,7 @@ document.addEventListener("mouseup",()=>(drag=false));
 
 selfCheck();
 setStage(6);
+window.__dof=(n)=>{dof=n;};window.__active=(i)=>isActive(i);
 window.RAU6={fk,analyticIK,ccdSweep,angleFromCS,poseErr,oriErr,RFromZYZ,zyzFromR,LIM,wrap2,rauSinCos,state:()=>({q,dof})};
 // SPDX-License-Identifier: MIT
 </script>
