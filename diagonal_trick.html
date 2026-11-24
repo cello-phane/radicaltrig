@@ -1,0 +1,396 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>The Diagonal Trick</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout concept: one narrow reading column; each idea is a short text block above a live figure you can drag.
+   Teal = the Diagonal (cheap method). Rust = the circle (true angle, the textbook method). */
+:root {
+  --bg: #f4f6f7;
+  --card: #ffffff;
+  --fg: #16212a;
+  --muted: #55646f;
+  --line: #d3dbe0;
+  --teal: #0e7c6b;
+  --teal-soft: #d9efe9;
+  --rust: #b4461f;
+  --rust-soft: #f6e0d6;
+  --f-display: 'Bricolage Grotesque', 'Segoe UI', system-ui, sans-serif;
+  --f-body: 'IBM Plex Sans', 'Segoe UI', system-ui, sans-serif;
+  --f-mono: 'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f171c; --card: #172229; --fg: #e6eef2; --muted: #9fb0ba; --line: #2b3a43;
+    --teal: #3fc2a8; --teal-soft: #14362f; --rust: #f08a5d; --rust-soft: #3d231a;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f171c; --card: #172229; --fg: #e6eef2; --muted: #9fb0ba; --line: #2b3a43;
+  --teal: #3fc2a8; --teal-soft: #14362f; --rust: #f08a5d; --rust-soft: #3d231a;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg);
+  font: 400 17px/1.6 var(--f-body);
+  padding-block: 40px 64px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+main { max-width: 860px; margin: 0 auto; display: flex; flex-direction: column; gap: 56px; }
+h1, h2 { font-family: var(--f-display); letter-spacing: -0.01em; text-wrap: balance; margin: 0; }
+h1 { font-size: clamp(2.4rem, 7vw, 3.8rem); line-height: 1.02; font-weight: 700; }
+h2 { font-size: clamp(1.5rem, 4vw, 2rem); line-height: 1.15; font-weight: 600; }
+p { margin: 0; max-width: 62ch; }
+.lede { font-size: 1.2rem; color: var(--muted); margin-top: 18px; max-width: 56ch; }
+.kicker { font: 500 0.78rem/1 var(--f-mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--teal); margin-bottom: 14px; display: block; }
+section { display: flex; flex-direction: column; gap: 18px; }
+.t { color: var(--teal); font-weight: 600; }
+.r { color: var(--rust); font-weight: 600; }
+code, .mono { font-family: var(--f-mono); font-size: 0.92em; }
+.fig { display: grid; grid-template-columns: minmax(0, 340px) minmax(0, 1fr); gap: 28px; align-items: start; }
+@media (max-width: 720px) { .fig { grid-template-columns: minmax(0, 1fr); } }
+.panel { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 18px; }
+svg { display: block; width: 100%; height: auto; touch-action: none; user-select: none; }
+svg text { font-family: var(--f-mono); fill: var(--muted); font-size: 11px; }
+.ring { fill: none; stroke: var(--rust); stroke-width: 1.5; opacity: 0.55; }
+.dia { fill: var(--teal-soft); fill-opacity: 0.55; stroke: var(--teal); stroke-width: 1.5; }
+.axis { stroke: var(--line); stroke-width: 1; }
+.ray { stroke: var(--fg); stroke-width: 1; stroke-dasharray: 3 3; opacity: 0.6; }
+.arc { fill: none; stroke: var(--rust); stroke-width: 4; stroke-linecap: round; }
+.walk { fill: none; stroke: var(--teal); stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; }
+.dot-r { fill: var(--rust); stroke: var(--card); stroke-width: 2; }
+.dot-t { fill: var(--teal); stroke: var(--card); stroke-width: 2; }
+.wedge { stroke: var(--rust); stroke-width: 1; opacity: 0.7; }
+.read { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; font: 400 0.9rem/1.35 var(--f-mono); }
+.read dt { color: var(--muted); }
+.read dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; }
+.read .hl-t { color: var(--teal); font-weight: 500; }
+.read .hl-r { color: var(--rust); font-weight: 500; }
+.read hr { grid-column: 1 / -1; width: 100%; border: 0; border-top: 1px dashed var(--line); margin: 4px 0; }
+.ctl { display: flex; flex-direction: column; gap: 6px; margin-top: 14px; font: 500 0.85rem/1.2 var(--f-mono); color: var(--muted); }
+.ctl label { display: flex; justify-content: space-between; }
+input[type=range] { width: 100%; accent-color: var(--teal); }
+figcaption { font-size: 0.92rem; color: var(--muted); margin-top: 10px; max-width: 62ch; }
+figure { margin: 0; }
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 18px; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.card h3 { margin: 0; font: 600 1.05rem/1.25 var(--f-display); }
+.card p { font-size: 0.95rem; color: var(--muted); }
+.card .mono { color: var(--fg); background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px; display: block; overflow-x: auto; white-space: nowrap; }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; }
+.stat { border-left: 3px solid var(--teal); padding: 2px 0 2px 14px; }
+.stat b { display: block; font: 700 1.9rem/1.1 var(--f-display); }
+.stat span { font-size: 0.9rem; color: var(--muted); }
+.fine { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
+a { color: var(--teal); }
+ul.plain { margin: 0; padding-left: 1.2em; display: flex; flex-direction: column; gap: 8px; max-width: 62ch; }
+
+.eq { font: 500 1rem/1.5 var(--f-mono); background: var(--card); border: 1px solid var(--line); border-left: 3px solid var(--teal); border-radius: 10px; padding: 14px 16px; overflow-x: auto; display: flex; flex-direction: column; gap: 6px; max-width: 62ch; }
+.eq span { white-space: nowrap; }
+.eq .c { white-space: normal; color: var(--muted); font-weight: 400; font-size: 0.85rem; }
+:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
+</style>
+
+<main>
+  <header>
+    <span class="kicker">An introduction</span>
+    <h1>The Diagonal Trick</h1>
+    <p class="lede">A cheaper way to say which way something points, with no sine, cosine or arctangent anywhere in it.</p>
+  </header>
+
+  <section>
+    <h2>First, the same thing in plain trigonometry</h2>
+    <p>If you already know <code>tan</code>, you can meet the trick there. Take any angle and make a number from its sine and cosine, but with sizes added instead of squares:</p>
+    <div class="eq">
+      <span><b class="t">d</b> = sin / ( |sin| + |cos| )</span>
+      <span class="c">always between &minus;1 and 1, and it still grows with the angle</span>
+    </div>
+    <p>That number is the <span class="t">dangent</span>. It is a stand-in for the angle, and the tangent drops straight out of it with one division:</p>
+    <div class="eq">
+      <span>tan = <b class="t">d</b> / ( 1 &minus; |<b class="t">d</b>| )</span>
+      <span class="c">exact, for angles between &minus;90&deg; and 90&deg;</span>
+      <span>y / x = sign(x) &middot; sign(<b class="t">d</b>) &middot; |<b class="t">d</b>| / ( 1 &minus; |<b class="t">d</b>| )</span>
+      <span class="c">going backwards from a point (x, y): d = y / (|x| + |y|), keep the sign of x</span>
+    </div>
+    <p>Nothing here is an approximation. The only price is that <code>d</code> is not the angle itself. Try it:</p>
+    <div class="fig">
+      <figure class="panel">
+        <div class="ctl" style="margin-top:0">
+          <label for="a0"><span>Angle</span><span id="a0Out">40&deg;</span></label>
+          <input id="a0" type="range" min="-89" max="89" step="1" value="40">
+        </div>
+        <figcaption>Slide the angle and compare the last two lines.</figcaption>
+      </figure>
+      <div class="panel"><dl class="read" id="read0"></dl></div>
+    </div>
+    <p>The sine and cosine in <code>d</code> are only there to explain it. In practice you never compute them: you have <code>(x, y)</code> already, and <code>d = y / (|x| + |y|)</code> needs neither. The pieces below show what that buys. If you want to play with the full system, including the fast polynomial form, there is a <a href="https://www.desmos.com/calculator/cjvzxecfyk">Desmos graph</a>.</p>
+  </section>
+
+  <section>
+    <h2>Aim at the Diagonal instead of measuring an angle</h2>
+    <p>Edges, lines and arrows all have a direction. The usual way to write a direction down is an angle in degrees, and finding that angle from a pair of numbers <code>(x, y)</code> takes <code>atan2</code>, which is slow and awkward on small chips.</p>
+    <p>Here is the shortcut. Draw a square standing on its corner, a Diagonal, around the centre. A direction is just a ray from the middle, and that ray hits the Diagonal at one spot. Walk around the Diagonal from the right-hand corner, count the corners as 0, 1, 2, 3, and the number where you stop is the direction. Drag the dot or use the slider and watch both measures.</p>
+    <div class="fig">
+      <figure class="panel">
+        <svg id="s1" viewBox="0 0 340 340" role="img" aria-label="A circle and a Diagonal around the same centre. A dashed ray from the centre meets the circle at a rust dot and the Diagonal at a teal dot. A rust arc and a teal path show how far each dot is from the start.">
+          <g id="s1g"></g>
+        </svg>
+        <div class="ctl">
+          <label for="ang"><span>Direction</span><span id="angOut">36°</span></label>
+          <input id="ang" type="range" min="0" max="359" step="1" value="36">
+        </div>
+        <figcaption>Drag anywhere in the picture to aim the ray.</figcaption>
+      </figure>
+      <div class="panel">
+        <dl class="read" id="read"></dl>
+      </div>
+    </div>
+    <p>The recipe is three steps: add up the sizes of <code>x</code> and <code>y</code>, divide <code>y</code> by that total, and add which quarter you are in. That is the whole thing. One division, a few additions, and no trigonometry. The two numbers on the bottom lines of the readout are the same direction written two ways.</p>
+  </section>
+
+  <section>
+    <h2>The steps are not the same size</h2>
+    <p>Equal walking distances on the Diagonal are not equal turns of the ray. Slice the Diagonal into equal pieces and the wedges that result are narrower where the ray points along an axis and wider on the diagonals. The widest is up to twice the narrowest, and the ratio climbs toward 2 to 1 as the slices get finer.</p>
+    <div class="fig">
+      <figure class="panel">
+        <svg id="s2" viewBox="0 0 340 340" role="img" aria-label="A circle and a Diagonal cut into equal slices on the Diagonal. The wedges along the axes are narrower than the wedges on the diagonals.">
+          <g id="s2g"></g>
+        </svg>
+        <div class="ctl">
+          <label for="nsl"><span>Equal slices of the Diagonal</span><span id="nslOut">32</span></label>
+          <input id="nsl" type="range" min="16" max="128" step="8" value="32">
+        </div>
+      </figure>
+      <figure class="panel">
+        <svg id="s3" viewBox="0 0 340 190" role="img" aria-label="Bar chart of wedge width in degrees for each slice in the first quadrant. Bars are shortest at the axes and tallest at the diagonal.">
+          <g id="s3g"></g>
+        </svg>
+        <p class="fine" id="s3note" style="margin-top:8px"></p>
+        <figcaption>Wedge width in degrees, for the slices between the x axis and the y axis.</figcaption>
+      </figure>
+    </div>
+    <p>For many jobs that does not matter, because the number is only used to put directions in order or into buckets. If you do need real degrees, you convert once at the end, or look the answer up in a small table.</p>
+  </section>
+
+  <section>
+    <h2>What you can do without leaving the Diagonal</h2>
+    <div class="cards">
+      <div class="card">
+        <h3>Put directions in order</h3>
+        <p>A bigger Diagonal position always means a bigger turn, so sorting by it gives the same order as sorting by angle.</p>
+        <code class="mono">sort(by: position)</code>
+      </div>
+      <div class="card">
+        <h3>Drop directions into buckets</h3>
+        <p>Multiply the position by the number of buckets you want and drop the fraction. Edge pixels can then vote for the direction they face.</p>
+        <code class="mono">bucket = floor(pos × n / 4)</code>
+      </div>
+      <div class="card">
+        <h3>Get the slope back</h3>
+        <p>Inside the first quarter the position <code>f</code> turns back into the slope <code>y/x</code> with one more division. The other quarters use the flipped form.</p>
+        <code class="mono">slope = f / (1 − f)</code>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Where it earns its keep</h2>
+    <p>A lane-keeping line finder asks every edge pixel which way it faces, then lets that pixel vote for lines running that way. Millions of pixels means millions of direction questions, so the cost of each one matters. The finder built on this idea keeps its direction as a Diagonal position, splits it into 128 buckets, and never calls <code>atan2</code>, <code>sin</code>, <code>cos</code> or a square root per pixel.</p>
+    <div class="stats">
+      <div class="stat"><b>≈ 2×</b><span>faster than the same vote with <code>atan2</code> buckets, at the same accuracy</span></div>
+      <div class="stat"><b>3.9–5.0×</b><span>faster than a textbook integer Hough sweep in the author's sandbox build</span></div>
+      <div class="stat"><b>128</b><span>direction buckets, each about 0.9° to 1.8° wide over a half turn</span></div>
+    </div>
+    <p class="fine">Timings are single-thread scalar C on straight-edge test scenes and one dashcam frame. Curved, thin and blurred features have not been tested.</p>
+  </section>
+
+  <section>
+    <h2>What it costs</h2>
+    <ul class="plain">
+      <li>The buckets are uneven by up to 2 to 1, as the second picture shows. A job that needs perfectly equal angle steps should convert first.</li>
+      <li>Averaging two directions, or turning by a set number of degrees, does not work on Diagonal positions directly. Convert, do the work, convert back.</li>
+    </ul>
+    <p class="fine">The idea is old. The graphics book GPU Gems uses a pseudo-angle to order the corners of a slicing polygon, citing Moret and Shapiro (1991): <a href="https://developer.nvidia.com/gpugems/gpugems/part-vi-beyond-triangles/chapter-39-volume-rendering-techniques" target="_blank" rel="noopener">chapter 39, Algorithm 39-2</a>. In this project the Diagonal position is called the dangent.</p>
+  </section>
+</main>
+
+<script>
+(function () {
+  var NS = 'http://www.w3.org/2000/svg';
+  var C = 170, R = 128;
+  var DEG = 180 / Math.PI;
+
+  function el(tag, attrs, parent) {
+    var e = document.createElementNS(NS, tag);
+    for (var k in attrs) e.setAttribute(k, attrs[k]);
+    if (parent) parent.appendChild(e);
+    return e;
+  }
+  function X(x) { return (C + x).toFixed(2); }
+  function Y(y) { return (C - y).toFixed(2); }
+  function fmt(v, n) { return v.toFixed(n); }
+
+  // Diagonal position: q = quarter 0..3, f = fraction through it, p = q + f
+  function pseudo(x, y) {
+    var a = Math.abs(x) + Math.abs(y), q, f;
+    if (x >= 0 && y >= 0) { q = 0; f = y / a; }
+    else if (x < 0 && y >= 0) { q = 1; f = -x / a; }
+    else if (x < 0 && y < 0) { q = 2; f = -y / a; }
+    else { q = 3; f = x / a; }
+    return { q: q, f: f, p: q + f };
+  }
+  function angleOfP(p) {
+    var q = Math.floor(p), f = p - q;
+    return 90 * q + Math.atan2(f, 1 - f) * DEG;
+  }
+  var V = [[R, 0], [0, R], [-R, 0], [0, -R], [R, 0]];
+  function DiagonalPoint(p) {
+    var q = Math.min(3, Math.floor(p)), f = p - q;
+    return [V[q][0] + (V[q + 1][0] - V[q][0]) * f, V[q][1] + (V[q + 1][1] - V[q][1]) * f];
+  }
+  function base(g) {
+    el('line', { x1: X(-R - 18), y1: Y(0), x2: X(R + 18), y2: Y(0), 'class': 'axis' }, g);
+    el('line', { x1: X(0), y1: Y(-R - 18), x2: X(0), y2: Y(R + 18), 'class': 'axis' }, g);
+    el('circle', { cx: C, cy: C, r: R, 'class': 'ring' }, g);
+    el('polygon', { points: V.slice(0, 4).map(function (v) { return X(v[0]) + ',' + Y(v[1]); }).join(' '), 'class': 'dia' }, g);
+  }
+
+  /* ---------- figure 1 ---------- */
+  var svg1 = document.getElementById('s1'), g1 = document.getElementById('s1g');
+  var ang = document.getElementById('ang'), angOut = document.getElementById('angOut');
+  var read = document.getElementById('read');
+  var st = { x: Math.cos(36 / DEG) * 100, y: Math.sin(36 / DEG) * 100 };
+
+  function draw1() {
+    g1.textContent = '';
+    base(g1);
+    var th = (Math.atan2(st.y, st.x) * DEG + 360) % 360;
+    var ps = pseudo(st.x, st.y);
+    var a = Math.abs(st.x) + Math.abs(st.y);
+    var cx = st.x / Math.hypot(st.x, st.y) * R, cy = st.y / Math.hypot(st.x, st.y) * R;
+    var dx = st.x / a * R, dy = st.y / a * R;
+    // rust arc along the circle
+    var pts = [], i, steps = Math.max(2, Math.ceil(th / 2));
+    for (i = 0; i <= steps; i++) { var t = th * i / steps / DEG; pts.push(X(Math.cos(t) * (R + 8)) + ',' + Y(Math.sin(t) * (R + 8))); }
+    el('polyline', { points: pts.join(' '), 'class': 'arc' }, g1);
+    // teal walk around the Diagonal
+    var wp = [[V[0][0], V[0][1]]];
+    for (i = 1; i <= ps.q; i++) wp.push(V[i]);
+    wp.push([dx, dy]);
+    el('polyline', { points: wp.map(function (v) { return X(v[0]) + ',' + Y(v[1]); }).join(' '), 'class': 'walk' }, g1);
+    el('line', { x1: X(0), y1: Y(0), x2: X(cx * 1.0), y2: Y(cy * 1.0), 'class': 'ray' }, g1);
+    el('circle', { cx: X(cx), cy: Y(cy), r: 6, 'class': 'dot-r' }, g1);
+    el('circle', { cx: X(dx), cy: Y(dy), r: 6, 'class': 'dot-t' }, g1);
+    // corner numbers
+    var lab = [['0', R + 10, -18, 'start'], ['1', 6, R + 14, 'start'], ['2', -R - 8, -4, 'end'], ['3', 6, -R - 8, 'start']];
+    lab.forEach(function (l) {
+      var t = el('text', { x: X(l[1]), y: Y(l[2]), 'text-anchor': l[3] }, g1);
+      t.style.fill = 'var(--teal)'; t.style.fontWeight = '600'; t.style.fontSize = '13px';
+      t.textContent = l[0];
+    });
+    var t1 = el('text', { x: 10, y: 20 }, g1); t1.style.fill = 'var(--rust)'; t1.textContent = 'circle: true angle';
+    var t2 = el('text', { x: 10, y: 36 }, g1); t2.style.fill = 'var(--teal)'; t2.textContent = 'Diagonal: position 0 to 4';
+
+    // readout
+    var slope = ps.q % 2 === 0 ? ps.f / (1 - ps.f) : -(1 - ps.f) / ps.f;
+    var truth = st.y / st.x;
+    var slopeTxt = Math.abs(st.x) < 1e-6 ? 'vertical' : fmt(slope, 3);
+    var truthTxt = Math.abs(st.x) < 1e-6 ? 'vertical' : fmt(truth, 3);
+    read.innerHTML =
+      '<dt>x, y</dt><dd>' + fmt(st.x, 0) + ', ' + fmt(st.y, 0) + '</dd>' +
+      '<dt>|x| + |y|</dt><dd>' + fmt(a, 0) + '</dd>' +
+      '<dt>quarter</dt><dd>' + ps.q + '</dd>' +
+      '<dt>fraction f</dt><dd>' + fmt(ps.f, 3) + '</dd>' +
+      '<hr>' +
+      '<dt class="hl-t">Diagonal position</dt><dd class="hl-t">' + fmt(ps.p, 3) + ' of 4</dd>' +
+      '<dt class="hl-t">around the Diagonal</dt><dd class="hl-t">' + fmt(ps.p / 4 * 100, 1) + '%</dd>' +
+      '<dt class="hl-r">true angle (atan2)</dt><dd class="hl-r">' + fmt(th, 1) + '°</dd>' +
+      '<dt class="hl-r">around the circle</dt><dd class="hl-r">' + fmt(th / 360 * 100, 1) + '%</dd>' +
+      '<hr>' +
+      '<dt>slope from position</dt><dd>' + slopeTxt + '</dd>' +
+      '<dt>slope y ÷ x</dt><dd>' + truthTxt + '</dd>';
+    angOut.textContent = Math.round(th) + '°';
+    ang.value = Math.round(th) % 360;
+  }
+  function pointer1(ev) {
+    var r = svg1.getBoundingClientRect();
+    var x = (ev.clientX - r.left) / r.width * 340 - C;
+    var y = C - (ev.clientY - r.top) / r.height * 340;
+    if (Math.abs(x) + Math.abs(y) < 6) return;
+    st.x = x; st.y = y; draw1();
+  }
+  var down = false;
+  svg1.addEventListener('pointerdown', function (e) { down = true; svg1.setPointerCapture(e.pointerId); pointer1(e); });
+  svg1.addEventListener('pointermove', function (e) { if (down) pointer1(e); });
+  svg1.addEventListener('pointerup', function () { down = false; });
+  svg1.addEventListener('pointercancel', function () { down = false; });
+  ang.addEventListener('input', function () {
+    var t = Number(ang.value) / DEG; st.x = Math.cos(t) * 100; st.y = Math.sin(t) * 100; draw1();
+  });
+  draw1();
+
+  /* ---------- figures 2 and 3 ---------- */
+  var g2 = document.getElementById('s2g'), g3 = document.getElementById('s3g');
+  var nsl = document.getElementById('nsl'), nslOut = document.getElementById('nslOut');
+  var s3note = document.getElementById('s3note');
+
+  function draw2() {
+    var N = Number(nsl.value);
+    nslOut.textContent = N;
+    g2.textContent = ''; g3.textContent = '';
+    base(g2);
+    var k, widths = [];
+    for (k = 0; k < N; k++) {
+      var p = 4 * k / N, th = angleOfP(p) / DEG, d = DiagonalPoint(p);
+      el('line', { x1: X(0), y1: Y(0), x2: X(Math.cos(th) * R), y2: Y(Math.sin(th) * R), 'class': 'wedge' }, g2);
+      el('circle', { cx: X(d[0]), cy: Y(d[1]), r: 3.2, 'class': 'dot-t' }, g2);
+    }
+    var per = N / 4;
+    for (k = 0; k < per; k++) widths.push(angleOfP(4 * (k + 1) / N) - angleOfP(4 * k / N));
+    var mn = Math.min.apply(null, widths), mx = Math.max.apply(null, widths);
+    // bars
+    var W = 340, H = 190, left = 34, right = 12, top = 16, bot = 40;
+    var plotW = W - left - right, plotH = H - top - bot;
+    var ymax = Math.ceil(mx * 1.15);
+    [0, 0.5, 1].forEach(function (fr) {
+      var yy = top + plotH - fr * plotH;
+      el('line', { x1: left, y1: yy, x2: W - right, y2: yy, 'class': 'axis' }, g3);
+      var tt = el('text', { x: left - 6, y: yy + 4, 'text-anchor': 'end' }, g3);
+      tt.textContent = fmt(ymax * fr, 0) + '°';
+    });
+    var bw = plotW / per;
+    widths.forEach(function (w, i) {
+      var h = w / ymax * plotH;
+      var r = el('rect', { x: (left + i * bw + bw * 0.12).toFixed(2), y: (top + plotH - h).toFixed(2), width: (bw * 0.76).toFixed(2), height: h.toFixed(2), rx: 2 }, g3);
+      r.style.fill = 'var(--teal)';
+      r.style.opacity = (0.45 + 0.55 * (w - mn) / Math.max(1e-9, mx - mn)).toFixed(2);
+    });
+    var l1 = el('text', { x: left, y: H - 20, 'text-anchor': 'start' }, g3); l1.textContent = 'along x axis';
+    var l2 = el('text', { x: left + plotW / 2, y: H - 20, 'text-anchor': 'middle' }, g3); l2.textContent = 'diagonal';
+    var l3 = el('text', { x: W - right, y: H - 20, 'text-anchor': 'end' }, g3); l3.textContent = 'along y axis';
+    s3note.textContent = 'Narrowest wedge ' + fmt(mn, 1) + '°, widest ' + fmt(mx, 1) + '°, ratio ' + fmt(mx / mn, 2) + ' to 1.';
+  }
+  nsl.addEventListener('input', draw2);
+  draw2();
+})();
+
+(function(){
+  var sl=document.getElementById('a0'),out=document.getElementById('a0Out'),rd=document.getElementById('read0');
+  function f(v){return (v>=0?'\u00a0':'')+v.toFixed(5);}
+  function upd(){
+    var deg=+sl.value,a=deg*Math.PI/180,sn=Math.sin(a),cs=Math.cos(a);
+    var d=sn/(Math.abs(sn)+Math.abs(cs)),r=d/(1-Math.abs(d)),t=Math.tan(a);
+    out.textContent=deg+'\u00b0';
+    rd.innerHTML='<dt>sin</dt><dd>'+f(sn)+'</dd><dt>cos</dt><dd>'+f(cs)+'</dd><hr>'+
+      '<dt>d = sin/(|sin|+|cos|)</dt><dd class="hl-t">'+f(d)+'</dd>'+
+      '<dt>d/(1&minus;|d|)</dt><dd class="hl-t">'+f(r)+'</dd><dt>tan</dt><dd class="hl-r">'+f(t)+'</dd>';
+  }
+  sl.addEventListener('input',upd);upd();
+})();
+</script>
+
+</body></html>
