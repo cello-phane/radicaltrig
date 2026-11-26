@@ -1,0 +1,258 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Slope Accumulator</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout concept: one reading column. A wide curve figure on top, two smaller figures under it, then the code table.
+   Teal = the encoded (dangent) side. Rust = the textbook slope side. Same colours as the other radical-trig pages. */
+:root {
+  --bg: #f4f6f7; --card: #ffffff; --fg: #16212a; --muted: #55646f; --line: #d3dbe0;
+  --teal: #0e7c6b; --teal-soft: #d9efe9; --rust: #b4461f; --rust-soft: #f6e0d6; --gold: #8a6a12;
+  --f-display: 'Bricolage Grotesque', 'Segoe UI', system-ui, sans-serif;
+  --f-body: 'IBM Plex Sans', 'Segoe UI', system-ui, sans-serif;
+  --f-mono: 'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f171c; --card: #172229; --fg: #e6eef2; --muted: #9fb0ba; --line: #2b3a43;
+    --teal: #3fc2a8; --teal-soft: #14362f; --rust: #f08a5d; --rust-soft: #3d231a; --gold: #e0b84a;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f171c; --card: #172229; --fg: #e6eef2; --muted: #9fb0ba; --line: #2b3a43;
+  --teal: #3fc2a8; --teal-soft: #14362f; --rust: #f08a5d; --rust-soft: #3d231a; --gold: #e0b84a;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg); font: 400 17px/1.6 var(--f-body);
+  padding-block: 40px 64px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+main { max-width: 900px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+h1, h2 { font-family: var(--f-display); letter-spacing: -0.01em; text-wrap: balance; margin: 0; }
+h1 { font-size: clamp(2.2rem, 6.5vw, 3.4rem); line-height: 1.04; font-weight: 700; }
+h2 { font-size: clamp(1.25rem, 3.5vw, 1.6rem); line-height: 1.15; font-weight: 600; }
+p { margin: 0; max-width: 68ch; }
+.lede { color: var(--muted); font-size: 1.08rem; margin-top: 14px; }
+code, .mono { font-family: var(--f-mono); font-size: 0.9em; }
+.t { color: var(--teal); font-weight: 600; } .r { color: var(--rust); font-weight: 600; }
+.panel { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 16px; min-width: 0; }
+.eq { font: 500 0.95rem/1.55 var(--f-mono); background: var(--card); border: 1px solid var(--line); border-left: 3px solid var(--teal); border-radius: 10px; padding: 12px 14px; overflow-x: auto; max-width: 68ch; }
+.row { display: flex; flex-wrap: wrap; gap: 12px 20px; align-items: center; }
+.seg { display: inline-flex; flex-wrap: wrap; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; background: var(--card); }
+.seg input { position: absolute; opacity: 0; pointer-events: none; }
+.seg label { padding: 8px 13px; cursor: pointer; font-size: 0.92rem; border-right: 1px solid var(--line); }
+.seg label:last-of-type { border-right: 0; }
+.seg input:checked + label { background: var(--teal-soft); color: var(--teal); font-weight: 600; }
+.seg input:focus-visible + label { outline: 2px solid var(--teal); outline-offset: -2px; }
+.ctl { display: flex; flex-direction: column; gap: 2px; min-width: 150px; flex: 1 1 150px; }
+.ctl label { display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--muted); font-family: var(--f-mono); }
+input[type=range] { width: 100%; accent-color: var(--teal); }
+.ctl[hidden] { display: none; }
+:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
+.fig { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.fig canvas { width: 100%; display: block; border-radius: 8px; }
+.fig .cap { font-size: 0.85rem; color: var(--muted); line-height: 1.4; }
+.two { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px 16px; font-family: var(--f-mono); font-size: 0.88rem; }
+.stats div { display: flex; flex-direction: column; }
+.stats span.k { color: var(--muted); font-size: 0.78rem; }
+.stats span.v { font-size: 1.02rem; font-weight: 500; }
+.warn { color: var(--rust); } .ok { color: var(--teal); }
+.tbl { overflow: auto; max-height: 320px; border: 1px solid var(--line); border-radius: 10px; }
+table { border-collapse: collapse; width: 100%; font-family: var(--f-mono); font-size: 0.82rem; }
+th, td { padding: 6px 10px; text-align: right; white-space: nowrap; border-bottom: 1px solid var(--line); }
+th { position: sticky; top: 0; background: var(--card); color: var(--muted); font-weight: 500; }
+tr.sel td { background: var(--teal-soft); }
+td.e0 { color: var(--teal); }
+</style>
+
+<main>
+<header>
+  <h1>Slope accumulator</h1>
+  <p class="lede">Walk along a curve in steps of <code>h</code>. At each step, split the secant slope into the tangent slope plus a remainder <code>Q</code>, store both as dangents, then rebuild the curve from the codes alone.</p>
+</header>
+
+<div class="panel" style="display:flex;flex-direction:column;gap:14px">
+  <div class="row">
+    <div class="seg" role="radiogroup" aria-label="Function">
+      <input type="radio" name="fn" id="f0" value="0"><label for="f0">Linear</label>
+      <input type="radio" name="fn" id="f1" value="1" checked><label for="f1">Parabola</label>
+      <input type="radio" name="fn" id="f2" value="2"><label for="f2">Cubic</label>
+      <input type="radio" name="fn" id="f3" value="3"><label for="f3">Sine</label>
+      <input type="radio" name="fn" id="f4" value="4"><label for="f4">Exponential</label>
+      <input type="radio" name="fn" id="f5" value="5"><label for="f5">Kink</label>
+    </div>
+  </div>
+  <div class="row">
+    <div class="ctl"><label for="hh"><span>step h</span><span id="hOut"></span></label><input id="hh" type="range" min="0.05" max="1" step="0.05" value="0.5"></div>
+    <div class="ctl"><label for="nn"><span>steps</span><span id="nOut"></span></label><input id="nn" type="range" min="4" max="40" step="1" value="10"></div>
+    <div class="ctl"><label for="bits"><span>code bits (scale 2^b)</span><span id="bOut"></span></label><input id="bits" type="range" min="4" max="14" step="1" value="10"></div>
+    <div class="ctl"><label for="kk"><span>inspect step k</span><span id="kOut"></span></label><input id="kk" type="range" min="0" max="9" step="1" value="3"></div>
+  </div>
+</div>
+
+<section class="fig panel">
+  <h2>The split at one step</h2>
+  <canvas id="cMain" role="img" aria-label="The curve with its tangent and secant at the inspected step, showing the rise f2 along the tangent and the extra rise f1 above it"></canvas>
+  <div class="cap">Teal segments are the secants between grid points. The dashed rust line is the tangent at step <span class="mono">k</span>. <span class="mono">f&#8322;</span> is the tangent's rise over <span class="mono">h</span>; <span class="mono">f&#8321;</span> is how far the curve ends up above it.</div>
+  <div class="stats" id="selStats"></div>
+</section>
+
+<div class="two">
+  <section class="fig panel">
+    <h2>Euler plus accumulated Q</h2>
+    <canvas id="cRec" role="img" aria-label="True curve, tangent-only Euler reconstruction, and the reconstruction decoded from the dangent codes"></canvas>
+    <div class="cap">Following tangents only (rust, dashed) falls away from the curve. The shaded gap is exactly the running sum of <span class="mono">h&middot;Q</span>. The teal line is rebuilt from the stored codes.</div>
+  </section>
+  <section class="fig panel">
+    <h2>What gets stored</h2>
+    <canvas id="cBars" role="img" aria-label="Bars of Q per step in rust with decoded values as dots, and the difference angle dB per step in teal"></canvas>
+    <div class="cap">Top: <span class="mono">Q</span> per step (bars) and its decoded value (dots). Bottom: the difference angle as a dangent, <span class="mono">dB</span>, which is what is actually stored beside the tangent's dangent.</div>
+  </section>
+</div>
+
+<div class="panel"><div class="stats" id="allStats"></div></div>
+
+<section class="panel" style="display:flex;flex-direction:column;gap:12px">
+  <h2>The code stream</h2>
+  <p>Each row is one step. <span class="t">dt</span> and <span class="t">dB</span> are the two integers that get stored. Everything to their right is decoded from them: <code>t = d/(1&minus;|d|)</code>, then <code>m<sub>s</sub> = (t<sub>t</sub> + t<sub>B</sub>)/(1 &minus; t<sub>t</sub>&middot;t<sub>B</sub>)</code>, then <code>Q = m<sub>s</sub> &minus; m<sub>t</sub></code>.</p>
+  <div class="tbl"><table id="tbl"></table></div>
+</section>
+
+<section style="display:flex;flex-direction:column;gap:14px">
+  <h2>Reading it</h2>
+  <p><b>Linear:</b> every <code>Q</code> and every <code>dB</code> is exactly 0. A constant slope costs nothing after the first code.</p>
+  <p><b>Curved functions:</b> <code>Q</code> is about <code>f&Prime;(x)&middot;h/2</code>, so halve <code>h</code> and the codes <code>dB</code> halve too. With few bits, small <code>dB</code> values round to 0 or to a coarse step, and the decoded curve can drift away from the true one. More bits shrink the drift, which is the cost of compact storage.</p>
+  <p><b>Kink:</b> at the corner the tangent is ambiguous (the page uses the right-hand slope). The one step that straddles the corner keeps a <code>Q</code> of up to the full slope jump however small <code>h</code> gets, while every other step stays exact. A remainder that does not shrink with <code>h</code> marks a non-differentiable point.</p>
+</section>
+</main>
+
+<script>
+(function () {
+  'use strict';
+  var $ = function (id) { return document.getElementById(id); };
+  function css(n) { return getComputedStyle(document.documentElement).getPropertyValue(n).trim(); }
+  var FN = [
+    { name: 'linear', f: function (x) { return 0.45 * x + 0.3; }, d: function () { return 0.45; }, x0: 0.3 },
+    { name: 'parabola', f: function (x) { return 0.22 * x * x - 0.3 * x + 0.5; }, d: function (x) { return 0.44 * x - 0.3; }, x0: 0.3 },
+    { name: 'cubic', f: function (x) { return 0.12 * x * x * x - 0.5 * x; }, d: function (x) { return 0.36 * x * x - 0.5; }, x0: -1.5 },
+    { name: 'sine', f: function (x) { return Math.sin(x); }, d: function (x) { return Math.cos(x); }, x0: 0.2 },
+    { name: 'exponential', f: function (x) { return 0.35 * Math.exp(0.55 * x); }, d: function (x) { return 0.1925 * Math.exp(0.55 * x); }, x0: 0.2 },
+    { name: 'kink', f: function (x) { return 0.5 * Math.abs(x - 2.17) + 0.1 * x; }, d: function (x) { return (x >= 2.17 ? 0.5 : -0.5) + 0.1; }, x0: 0.4, kink: 2.17 }
+  ];
+  var dang = function (t) { return t / (1 + Math.abs(t)); };            /* slope -> dangent, in (-1, 1) */
+  var undang = function (d) { d = Math.max(-0.9995, Math.min(0.9995, d)); return d / (1 - Math.abs(d)); };   /* dangent -> slope */
+
+  function setup(canvas, ratio) {
+    var dpr = Math.min(window.devicePixelRatio || 1, 2), w = canvas.clientWidth || 300, h = Math.round(w * ratio);
+    if (canvas.width !== Math.round(w * dpr) || canvas.height !== Math.round(h * dpr)) { canvas.width = Math.round(w * dpr); canvas.height = Math.round(h * dpr); canvas.style.height = h + 'px'; }
+    var g = canvas.getContext('2d'); g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, w, h); return { g: g, w: w, h: h };
+  }
+  function model() {
+    var fn = FN[+document.querySelector('input[name=fn]:checked').value];
+    var h = +$('hh').value, N = +$('nn').value, bits = +$('bits').value, S = Math.pow(2, bits);
+    var x0 = fn.kink ? fn.kink - N * h * 0.47 : fn.x0, xs = [], fs = [], rows = [], i, k;
+    for (k = 0; k <= N; k++) { xs.push(x0 + k * h); fs.push(fn.f(x0 + k * h)); }
+    var E = [fs[0]], D = [fs[0]], accQ = 0, maxQerr = 0, maxdB = 0;
+    for (k = 0; k < N; k++) {
+      var mt = fn.d(xs[k]), ms = (fs[k + 1] - fs[k]) / h, Q = ms - mt;
+      var tB = (ms - mt) / (1 + ms * mt);                       /* tangent of the angle between tangent and secant */
+      var dt = dang(mt), dB = dang(tB);
+      var qdt = Math.round(dt * S), qdB = Math.round(dB * S);   /* the two stored integers */
+      var tt = undang(qdt / S), tb = undang(qdB / S);           /* decode */
+      var msD = (tt + tb) / (1 - tt * tb), QD = msD - tt;
+      accQ += h * Q; E.push(E[k] + h * mt); D.push(D[k] + h * msD);
+      maxQerr = Math.max(maxQerr, Math.abs(QD - Q)); maxdB = Math.max(maxdB, Math.abs(qdB));
+      rows.push({ k: k, x: xs[k], mt: mt, ms: ms, Q: Q, dt: dt, dB: dB, qdt: qdt, qdB: qdB, msD: msD, QD: QD, f1: Q * h, f2: mt * h });
+    }
+    return { fn: fn, h: h, N: N, bits: bits, S: S, xs: xs, fs: fs, E: E, D: D, rows: rows, accQ: accQ, maxQerr: maxQerr, maxdB: maxdB };
+  }
+  function stat(k, v, ok) { return '<div><span class="k">' + k + '</span><span class="v ' + (ok === false ? 'warn' : ok ? 'ok' : '') + '">' + v + '</span></div>'; }
+  function f3(v) { return (v >= 0 ? '' : '−') + Math.abs(v).toFixed(3); }
+
+  function plotRange(arrs) { var lo = Infinity, hi = -Infinity; arrs.forEach(function (a) { a.forEach(function (v) { if (v < lo) lo = v; if (v > hi) hi = v; }); }); var p = (hi - lo) * 0.12 || 0.5; return [lo - p, hi + p]; }
+
+  function draw() {
+    var M = model(), kmax = M.N - 1; var ks = $('kk'); ks.max = kmax; if (+ks.value > kmax) ks.value = kmax; var ksel = +ks.value, R = M.rows[ksel];
+    $('hOut').textContent = M.h.toFixed(2); $('nOut').textContent = M.N; $('bOut').textContent = M.bits; $('kOut').textContent = ksel;
+    var teal = css('--teal'), rust = css('--rust'), line = css('--line'), muted = css('--muted'), soft = css('--teal-soft'), rsoft = css('--rust-soft'), fg = css('--fg'), gold = css('--gold');
+    var mono = '11px ' + css('--f-mono');
+
+    /* ---- main figure ---- */
+    var S0 = setup($('cMain'), 0.5), g = S0.g, W = S0.w, H = S0.h, pad = { l: 40, r: 14, t: 14, b: 28 };
+    var xr = [M.xs[0] - M.h * 0.3, M.xs[M.N] + M.h * 0.3], samp = [], ns = 160, i;
+    for (i = 0; i <= ns; i++) samp.push(M.fn.f(xr[0] + (xr[1] - xr[0]) * i / ns));
+    var tanEnd = R.mt * (xr[1] - M.xs[ksel]) + M.fs[ksel];
+    var yr = plotRange([samp, M.fs, [tanEnd, M.fs[ksel] + R.mt * (xr[0] - M.xs[ksel])]]);
+    var X = function (x) { return pad.l + (x - xr[0]) / (xr[1] - xr[0]) * (W - pad.l - pad.r); }, Y = function (y) { return H - pad.b - (y - yr[0]) / (yr[1] - yr[0]) * (H - pad.t - pad.b); };
+    g.strokeStyle = line; g.lineWidth = 1; g.fillStyle = muted; g.font = mono; g.textAlign = 'right';
+    for (i = 0; i <= 4; i++) { var yv = yr[0] + (yr[1] - yr[0]) * i / 4; g.beginPath(); g.moveTo(pad.l, Y(yv)); g.lineTo(W - pad.r, Y(yv)); g.stroke(); g.fillText(yv.toFixed(2), pad.l - 6, Y(yv) + 4); }
+    g.textAlign = 'center'; for (i = 0; i <= 5; i++) { var xv = xr[0] + (xr[1] - xr[0]) * i / 5; g.fillText(xv.toFixed(1), X(xv), H - 8); }
+    g.save(); g.beginPath(); g.rect(pad.l, pad.t, W - pad.l - pad.r, H - pad.t - pad.b); g.clip();
+    g.strokeStyle = fg; g.lineWidth = 2.5; g.beginPath(); for (i = 0; i <= ns; i++) { var xx = xr[0] + (xr[1] - xr[0]) * i / ns; if (i) g.lineTo(X(xx), Y(samp[i])); else g.moveTo(X(xx), Y(samp[i])); } g.stroke();
+    g.strokeStyle = teal; g.lineWidth = 2; g.beginPath(); for (i = 0; i <= M.N; i++) { if (i) g.lineTo(X(M.xs[i]), Y(M.fs[i])); else g.moveTo(X(M.xs[i]), Y(M.fs[i])); } g.stroke();
+    var xk = M.xs[ksel], fk = M.fs[ksel];
+    g.setLineDash([6, 5]); g.strokeStyle = rust; g.lineWidth = 2; g.beginPath(); g.moveTo(X(xr[0]), Y(fk + R.mt * (xr[0] - xk))); g.lineTo(X(xr[1]), Y(fk + R.mt * (xr[1] - xk))); g.stroke(); g.setLineDash([]);
+    var x1 = xk + M.h, tanY = fk + R.mt * M.h, curY = M.fs[ksel + 1];
+    g.strokeStyle = muted; g.lineWidth = 1; g.setLineDash([2, 3]); g.beginPath(); g.moveTo(X(xk), Y(fk)); g.lineTo(X(x1), Y(fk)); g.stroke(); g.setLineDash([]);
+    g.strokeStyle = rust; g.lineWidth = 3; g.beginPath(); g.moveTo(X(x1) + 5, Y(fk)); g.lineTo(X(x1) + 5, Y(tanY)); g.stroke();
+    g.strokeStyle = gold; g.lineWidth = 3; g.beginPath(); g.moveTo(X(x1) + 5, Y(tanY)); g.lineTo(X(x1) + 5, Y(curY)); g.stroke();
+    g.fillStyle = teal; for (i = 0; i <= M.N; i++) { g.beginPath(); g.arc(X(M.xs[i]), Y(M.fs[i]), i === ksel ? 5.5 : 3, 0, 6.2832); g.fill(); }
+    g.restore();
+    g.font = '12px ' + css('--f-mono'); g.textAlign = 'left';
+    g.fillStyle = rust; g.fillRect(pad.l + 10, pad.t + 6, 12, 4); g.fillText('f₂ = f′(x)·h : tangent rise over h', pad.l + 28, pad.t + 12);
+    g.fillStyle = gold; g.fillRect(pad.l + 10, pad.t + 24, 12, 4); g.fillText('f₁ = Q·h : extra rise of the curve', pad.l + 28, pad.t + 30);
+    g.fillStyle = muted; g.textAlign = 'center'; g.fillText('h', (X(xk) + X(x1)) / 2, Y(fk) - 5);
+    $('selStats').innerHTML = stat('tangent slope', f3(R.mt)) + stat('secant slope', f3(R.ms)) + stat('Q = secant − tangent', f3(R.Q), true) +
+      stat('dt (stored int)', R.qdt) + stat('dB (stored int)', R.qdB) + stat('decoded Q', f3(R.QD), Math.abs(R.QD - R.Q) < 0.02);
+
+    /* ---- reconstruction ---- */
+    var S1 = setup($('cRec'), 0.8); g = S1.g; W = S1.w; H = S1.h; pad = { l: 40, r: 12, t: 12, b: 26 };
+    var yr2 = plotRange([M.fs, M.E, M.D]), xr2 = [M.xs[0], M.xs[M.N]];
+    X = function (x) { return pad.l + (x - xr2[0]) / (xr2[1] - xr2[0]) * (W - pad.l - pad.r); }; Y = function (y) { return H - pad.b - (y - yr2[0]) / (yr2[1] - yr2[0]) * (H - pad.t - pad.b); };
+    g.strokeStyle = line; g.lineWidth = 1; g.fillStyle = muted; g.font = mono; g.textAlign = 'right';
+    for (i = 0; i <= 3; i++) { var yy2 = yr2[0] + (yr2[1] - yr2[0]) * i / 3; g.beginPath(); g.moveTo(pad.l, Y(yy2)); g.lineTo(W - pad.r, Y(yy2)); g.stroke(); g.fillText(yy2.toFixed(2), pad.l - 6, Y(yy2) + 4); }
+    g.fillStyle = rsoft; g.beginPath(); for (i = 0; i <= M.N; i++) { if (i) g.lineTo(X(M.xs[i]), Y(M.fs[i])); else g.moveTo(X(M.xs[i]), Y(M.fs[i])); } for (i = M.N; i >= 0; i--) g.lineTo(X(M.xs[i]), Y(M.E[i])); g.closePath(); g.fill();
+    function path(arr, col, w, dash) { g.strokeStyle = col; g.lineWidth = w; g.setLineDash(dash || []); g.beginPath(); for (var j = 0; j <= M.N; j++) { if (j) g.lineTo(X(M.xs[j]), Y(arr[j])); else g.moveTo(X(M.xs[j]), Y(arr[j])); } g.stroke(); g.setLineDash([]); }
+    path(M.E, rust, 2, [6, 5]); path(M.fs, fg, 2.5); path(M.D, teal, 2, [2, 3]);
+    g.fillStyle = teal; for (i = 0; i <= M.N; i++) { g.beginPath(); g.arc(X(M.xs[i]), Y(M.D[i]), 2.5, 0, 6.2832); g.fill(); }
+
+    /* ---- bars ---- */
+    var S2 = setup($('cBars'), 0.8); g = S2.g; W = S2.w; H = S2.h; pad = { l: 12, r: 12, t: 16, b: 8 };
+    var qa = M.rows.map(function (r) { return r.Q; }), da = M.rows.map(function (r) { return r.dB; });
+    function bars(y0, y1, vals, col, dots, label) {
+      var top0 = y0 + 18, mx = Math.max(1e-9, Math.max.apply(null, vals.map(Math.abs)), dots ? Math.max.apply(null, dots.map(Math.abs)) : 0), half = (y1 - top0) / 2 - 4, mid = top0 + half + 2, bw = (W - pad.l - pad.r) / vals.length;
+      g.strokeStyle = line; g.lineWidth = 1; g.beginPath(); g.moveTo(pad.l, mid); g.lineTo(W - pad.r, mid); g.stroke();
+      for (var j = 0; j < vals.length; j++) { var h2 = vals[j] / mx * half; g.fillStyle = col; g.globalAlpha = j === ksel ? 1 : 0.55; g.fillRect(pad.l + j * bw + bw * 0.15, h2 >= 0 ? mid - h2 : mid, bw * 0.7, Math.abs(h2)); g.globalAlpha = 1;
+        if (dots) { g.fillStyle = teal; g.beginPath(); g.arc(pad.l + j * bw + bw / 2, mid - dots[j] / mx * half, 3, 0, 6.2832); g.fill(); } }
+      g.fillStyle = muted; g.font = mono; g.textAlign = 'left'; g.fillText(label + '  (full scale ±' + mx.toFixed(3) + ')', pad.l, y0 + 10);
+    }
+    bars(0, H / 2, qa, rust, M.rows.map(function (r) { return r.QD; }), 'Q per step');
+    bars(H / 2, H, da, teal, null, 'dB per step');
+
+    /* ---- table & stats ---- */
+    var th = '<tr><th>k</th><th>x</th><th>m_t</th><th>m_s</th><th>Q</th><th>dt</th><th>dB</th><th>m_s decoded</th><th>Q decoded</th></tr>';
+    var body = M.rows.map(function (r) { return '<tr' + (r.k === ksel ? ' class="sel"' : '') + '><td>' + r.k + '</td><td>' + r.x.toFixed(2) + '</td><td>' + f3(r.mt) + '</td><td>' + f3(r.ms) + '</td><td>' + f3(r.Q) + '</td><td class="e0">' + r.qdt + '</td><td class="e0">' + r.qdB + '</td><td>' + f3(r.msD) + '</td><td>' + f3(r.QD) + '</td></tr>'; }).join('');
+    $('tbl').innerHTML = th + body;
+    var ident = Math.abs(M.E[M.N] + M.accQ - M.fs[M.N]);
+    var decErr = Math.abs(M.D[M.N] - M.fs[M.N]), eulerGap = Math.abs(M.E[M.N] - M.fs[M.N]);
+    $('allStats').innerHTML = stat('Euler + Σh·Q − f(end)', ident.toExponential(1), ident < 1e-9) + stat('Euler-only error at end', eulerGap.toFixed(3), eulerGap < 0.01) +
+      stat('decoded error at end', decErr.toFixed(4), decErr < Math.max(0.01, eulerGap * 0.2)) + stat('worst Q decode error', M.maxQerr.toFixed(4), M.maxQerr < 0.02) +
+      stat('largest dB code', M.maxdB + ' of ±' + M.S, true);
+  }
+  ['hh', 'nn', 'bits', 'kk'].forEach(function (id) { $(id).addEventListener('input', draw); });
+  document.querySelectorAll('input[name=fn]').forEach(function (r) { r.addEventListener('change', draw); });
+  window.addEventListener('resize', draw);
+  try { window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', draw); } catch (e) { }
+  new MutationObserver(draw).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+  draw(); if (document.fonts && document.fonts.ready) document.fonts.ready.then(draw);
+  window.__slopeModel = model;
+})();
+</script>
+
+</body></html>
