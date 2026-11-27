@@ -264,6 +264,48 @@ figcaption{
   border-top:1px solid var(--rule);
   text-align:center;
 }
+/* ── Dark-mode mapping for SVG palette variables ── */
+html[data-theme="dark"] .diagram {
+  background: #0d1117; /* Or var(--paper) if you want it to match the page background */
+}
+
+/* 1. Canvas background */
+html[data-theme="dark"] .diagram svg [fill="white"],
+html[data-theme="dark"] .diagram svg [fill="#ffffff"],
+html[data-theme="dark"] .diagram svg [fill="#fff"] {
+  fill: #0d1117 !important;
+}
+
+/* 2. Light box fills (--lblue, --lgold, --lgrn, --lpur, --lteal, --lred) */
+html[data-theme="dark"] .diagram svg [fill="#eef2fa"] { fill: var(--lblue) !important; }
+html[data-theme="dark"] .diagram svg [fill="#fdf6e3"] { fill: var(--lgold) !important; }
+html[data-theme="dark"] .diagram svg [fill="#eef8f0"] { fill: var(--lgrn)  !important; }
+html[data-theme="dark"] .diagram svg [fill="#f4f0fa"] { fill: var(--lpur)  !important; }
+html[data-theme="dark"] .diagram svg [fill="#e8f5f3"] { fill: var(--lteal) !important; }
+html[data-theme="dark"] .diagram svg [fill="#fdf0f0"] { fill: var(--lred)  !important; }
+
+/* 3. Text & accent fills (--pur, --gold, --grn, --teal, --blue, --red, --ghost, --rule, --ink) */
+html[data-theme="dark"] .diagram svg [fill="#4a2878"] { fill: var(--pur)   !important; }
+html[data-theme="dark"] .diagram svg [fill="#9a7030"] { fill: var(--gold)  !important; }
+html[data-theme="dark"] .diagram svg [fill="#1a5830"] { fill: var(--grn)   !important; }
+html[data-theme="dark"] .diagram svg [fill="#1a7068"] { fill: var(--teal)  !important; }
+html[data-theme="dark"] .diagram svg [fill="#1a3870"] { fill: var(--blue)  !important; }
+html[data-theme="dark"] .diagram svg [fill="#8a2020"] { fill: var(--red)   !important; }
+html[data-theme="dark"] .diagram svg [fill="#b8b2a4"] { fill: var(--ghost) !important; }
+html[data-theme="dark"] .diagram svg [fill="#d4cfc4"] { fill: var(--rule)  !important; }
+html[data-theme="dark"] .diagram svg [fill="#1a1a24"] { fill: var(--ink)   !important; }
+
+/* 4. Strokes (borders & arrows) */
+html[data-theme="dark"] .diagram svg [stroke="#4a2878"] { stroke: var(--pur)   !important; }
+html[data-theme="dark"] .diagram svg [stroke="#9a7030"] { stroke: var(--gold)  !important; }
+html[data-theme="dark"] .diagram svg [stroke="#1a5830"] { stroke: var(--grn)   !important; }
+html[data-theme="dark"] .diagram svg [stroke="#1a7068"] { stroke: var(--teal)  !important; }
+html[data-theme="dark"] .diagram svg [stroke="#1a3870"] { stroke: var(--blue)  !important; }
+html[data-theme="dark"] .diagram svg [stroke="#8a2020"] { stroke: var(--red)   !important; }
+html[data-theme="dark"] .diagram svg [stroke="#b8b2a4"] { stroke: var(--ghost) !important; }
+html[data-theme="dark"] .diagram svg [stroke="#d4cfc4"] { stroke: var(--rule)  !important; }
+html[data-theme="dark"] .diagram svg [stroke="#1a1a24"] { stroke: var(--ink)   !important; }
+
 /* Dark-mode background & white-fill overrides for ALL SVGs on the page */
 html[data-theme="dark"] svg {
   background-color: #0d1117;
