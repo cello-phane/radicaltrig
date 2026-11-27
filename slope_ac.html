@@ -8,7 +8,7 @@
    Teal = the encoded (dangent) side. Rust = the textbook slope side. Same colours as the other radical-trig pages. */
 :root {
   --bg: #f4f6f7; --card: #ffffff; --fg: #16212a; --muted: #55646f; --line: #d3dbe0;
-  --teal: #0e7c6b; --teal-soft: #d9efe9; --rust: #b4461f; --rust-soft: #f6e0d6; --gold: #8a6a12;
+  --teal: #0e7c6b; --teal-soft: #d9efe9; --rust: #b4461f; --rust-soft: #f6e0d6; --gold: #8a6a12; --tang: #5b3fc4; --sec: #c2185b; --halo: #ffffff;
   --f-display: 'Bricolage Grotesque', 'Segoe UI', system-ui, sans-serif;
   --f-body: 'IBM Plex Sans', 'Segoe UI', system-ui, sans-serif;
   --f-mono: 'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace;
@@ -16,13 +16,13 @@
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     --bg: #0f171c; --card: #172229; --fg: #e6eef2; --muted: #9fb0ba; --line: #2b3a43;
-    --teal: #3fc2a8; --teal-soft: #14362f; --rust: #f08a5d; --rust-soft: #3d231a; --gold: #e0b84a;
+    --teal: #3fc2a8; --teal-soft: #14362f; --rust: #f08a5d; --rust-soft: #3d231a; --gold: #e0b84a; --tang: #a99bff; --sec: #ff7eb3; --halo: #1c1c1c;
     color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
   --bg: #0f171c; --card: #172229; --fg: #e6eef2; --muted: #9fb0ba; --line: #2b3a43;
-  --teal: #3fc2a8; --teal-soft: #14362f; --rust: #f08a5d; --rust-soft: #3d231a; --gold: #e0b84a;
+  --teal: #3fc2a8; --teal-soft: #14362f; --rust: #f08a5d; --rust-soft: #3d231a; --gold: #e0b84a; --tang: #a99bff; --sec: #ff7eb3; --halo: #1c1c1c;
   color-scheme: dark;
 }
 * { box-sizing: border-box; }
@@ -92,6 +92,7 @@ td.e0 { color: var(--teal); }
     <div class="ctl"><label for="hh"><span>step h</span><span id="hOut"></span></label><input id="hh" type="range" min="0.05" max="1" step="0.05" value="0.5"></div>
     <div class="ctl"><label for="nn"><span>steps</span><span id="nOut"></span></label><input id="nn" type="range" min="4" max="40" step="1" value="10"></div>
     <div class="ctl"><label for="bits"><span>code bits (scale 2^b)</span><span id="bOut"></span></label><input id="bits" type="range" min="4" max="14" step="1" value="10"></div>
+    <div class="ctl"><label for="lock" style="justify-content:flex-start;gap:8px"><input id="lock" type="checkbox" style="width:auto"><span>lock axes (freeze plot ranges)</span></label></div>
     <div class="ctl"><label for="kk"><span>inspect step k</span><span id="kOut"></span></label><input id="kk" type="range" min="0" max="9" step="1" value="3"></div>
   </div>
 </div>
@@ -177,10 +178,11 @@ td.e0 { color: var(--teal); }
 
   function plotRange(arrs) { var lo = Infinity, hi = -Infinity; arrs.forEach(function (a) { a.forEach(function (v) { if (v < lo) lo = v; if (v > hi) hi = v; }); }); var p = (hi - lo) * 0.12 || 0.5; return [lo - p, hi + p]; }
 
+  var lockR = null;
   function draw() {
     var M = model(), kmax = M.N - 1; var ks = $('kk'); ks.max = kmax; if (+ks.value > kmax) ks.value = kmax; var ksel = +ks.value, R = M.rows[ksel];
     $('hOut').textContent = M.h.toFixed(2); $('nOut').textContent = M.N; $('bOut').textContent = M.bits; $('kOut').textContent = ksel;
-    var teal = css('--teal'), rust = css('--rust'), line = css('--line'), muted = css('--muted'), soft = css('--teal-soft'), rsoft = css('--rust-soft'), fg = css('--fg'), gold = css('--gold');
+    var teal = css('--teal'), rust = css('--rust'), line = css('--line'), muted = css('--muted'), soft = css('--teal-soft'), rsoft = css('--rust-soft'), fg = css('--fg'), gold = css('--gold'), tang = css('--tang'), sec = css('--sec'), halo = css('--card') || '#fff';
     var mono = '11px ' + css('--f-mono');
 
     /* ---- main figure ---- */
@@ -189,24 +191,26 @@ td.e0 { color: var(--teal); }
     for (i = 0; i <= ns; i++) samp.push(M.fn.f(xr[0] + (xr[1] - xr[0]) * i / ns));
     var tanEnd = R.mt * (xr[1] - M.xs[ksel]) + M.fs[ksel];
     var yr = plotRange([samp, M.fs, [tanEnd, M.fs[ksel] + R.mt * (xr[0] - M.xs[ksel])]]);
+    var lockOn = $('lock').checked; if (lockOn && lockR) { xr = lockR.xr; yr = lockR.yr; } else if (lockOn) lockR = { xr: xr, yr: yr };
     var X = function (x) { return pad.l + (x - xr[0]) / (xr[1] - xr[0]) * (W - pad.l - pad.r); }, Y = function (y) { return H - pad.b - (y - yr[0]) / (yr[1] - yr[0]) * (H - pad.t - pad.b); };
     g.strokeStyle = line; g.lineWidth = 1; g.fillStyle = muted; g.font = mono; g.textAlign = 'right';
     for (i = 0; i <= 4; i++) { var yv = yr[0] + (yr[1] - yr[0]) * i / 4; g.beginPath(); g.moveTo(pad.l, Y(yv)); g.lineTo(W - pad.r, Y(yv)); g.stroke(); g.fillText(yv.toFixed(2), pad.l - 6, Y(yv) + 4); }
     g.textAlign = 'center'; for (i = 0; i <= 5; i++) { var xv = xr[0] + (xr[1] - xr[0]) * i / 5; g.fillText(xv.toFixed(1), X(xv), H - 8); }
     g.save(); g.beginPath(); g.rect(pad.l, pad.t, W - pad.l - pad.r, H - pad.t - pad.b); g.clip();
-    g.strokeStyle = fg; g.lineWidth = 2.5; g.beginPath(); for (i = 0; i <= ns; i++) { var xx = xr[0] + (xr[1] - xr[0]) * i / ns; if (i) g.lineTo(X(xx), Y(samp[i])); else g.moveTo(X(xx), Y(samp[i])); } g.stroke();
-    g.strokeStyle = teal; g.lineWidth = 2; g.beginPath(); for (i = 0; i <= M.N; i++) { if (i) g.lineTo(X(M.xs[i]), Y(M.fs[i])); else g.moveTo(X(M.xs[i]), Y(M.fs[i])); } g.stroke();
+    g.lineJoin = 'round'; g.strokeStyle = line; g.lineWidth = 9; g.beginPath(); for (i = 0; i <= ns; i++) { var xx = xr[0] + (xr[1] - xr[0]) * i / ns; if (i) g.lineTo(X(xx), Y(samp[i])); else g.moveTo(X(xx), Y(samp[i])); } g.stroke();
+    g.strokeStyle = fg; g.lineWidth = 1.6; g.beginPath(); for (i = 0; i <= ns; i++) { var xx = xr[0] + (xr[1] - xr[0]) * i / ns; if (i) g.lineTo(X(xx), Y(samp[i])); else g.moveTo(X(xx), Y(samp[i])); } g.stroke();
+    g.strokeStyle = teal; g.lineWidth = 1.6; g.beginPath(); for (i = 0; i <= M.N; i++) { if (i) g.lineTo(X(M.xs[i]), Y(M.fs[i])); else g.moveTo(X(M.xs[i]), Y(M.fs[i])); } g.stroke();
     var xk = M.xs[ksel], fk = M.fs[ksel];
     g.setLineDash([6, 5]); g.strokeStyle = rust; g.lineWidth = 2; g.beginPath(); g.moveTo(X(xr[0]), Y(fk + R.mt * (xr[0] - xk))); g.lineTo(X(xr[1]), Y(fk + R.mt * (xr[1] - xk))); g.stroke(); g.setLineDash([]);
     var x1 = xk + M.h, tanY = fk + R.mt * M.h, curY = M.fs[ksel + 1];
     g.strokeStyle = muted; g.lineWidth = 1; g.setLineDash([2, 3]); g.beginPath(); g.moveTo(X(xk), Y(fk)); g.lineTo(X(x1), Y(fk)); g.stroke(); g.setLineDash([]);
-    g.strokeStyle = rust; g.lineWidth = 3; g.beginPath(); g.moveTo(X(x1) + 5, Y(fk)); g.lineTo(X(x1) + 5, Y(tanY)); g.stroke();
-    g.strokeStyle = gold; g.lineWidth = 3; g.beginPath(); g.moveTo(X(x1) + 5, Y(tanY)); g.lineTo(X(x1) + 5, Y(curY)); g.stroke();
-    g.fillStyle = teal; for (i = 0; i <= M.N; i++) { g.beginPath(); g.arc(X(M.xs[i]), Y(M.fs[i]), i === ksel ? 5.5 : 3, 0, 6.2832); g.fill(); }
+    g.strokeStyle = tang; g.lineWidth = 4; g.beginPath(); g.moveTo(X(x1) + 5, Y(fk)); g.lineTo(X(x1) + 5, Y(tanY)); g.stroke();
+    g.strokeStyle = sec; g.lineWidth = 4; g.beginPath(); g.moveTo(X(x1) + 5, Y(tanY)); g.lineTo(X(x1) + 5, Y(curY)); g.stroke();
+    for (i = 0; i <= M.N; i++) { g.beginPath(); g.arc(X(M.xs[i]), Y(M.fs[i]), i === ksel ? 5.5 : 3, 0, 6.2832); g.fillStyle = teal; g.fill(); g.strokeStyle = halo; g.lineWidth = 1.5; g.stroke(); }
     g.restore();
     g.font = '12px ' + css('--f-mono'); g.textAlign = 'left';
-    g.fillStyle = rust; g.fillRect(pad.l + 10, pad.t + 6, 12, 4); g.fillText('f₂ = f′(x)·h : tangent rise over h', pad.l + 28, pad.t + 12);
-    g.fillStyle = gold; g.fillRect(pad.l + 10, pad.t + 24, 12, 4); g.fillText('f₁ = Q·h : extra rise of the curve', pad.l + 28, pad.t + 30);
+    g.fillStyle = tang; g.fillRect(pad.l + 10, pad.t + 6, 12, 4); g.fillText('f₂ = f′(x)·h : tangent rise over h', pad.l + 28, pad.t + 12);
+    g.fillStyle = sec; g.fillRect(pad.l + 10, pad.t + 24, 12, 4); g.fillText('f₁ = Q·h : extra rise of the curve', pad.l + 28, pad.t + 30);
     g.fillStyle = muted; g.textAlign = 'center'; g.fillText('h', (X(xk) + X(x1)) / 2, Y(fk) - 5);
     $('selStats').innerHTML = stat('tangent slope', f3(R.mt)) + stat('secant slope', f3(R.ms)) + stat('Q = secant − tangent', f3(R.Q), true) +
       stat('dt (stored int)', R.qdt) + stat('dB (stored int)', R.qdB) + stat('decoded Q', f3(R.QD), Math.abs(R.QD - R.Q) < 0.02);
@@ -214,13 +218,14 @@ td.e0 { color: var(--teal); }
     /* ---- reconstruction ---- */
     var S1 = setup($('cRec'), 0.8); g = S1.g; W = S1.w; H = S1.h; pad = { l: 40, r: 12, t: 12, b: 26 };
     var yr2 = plotRange([M.fs, M.E, M.D]), xr2 = [M.xs[0], M.xs[M.N]];
+    if (lockOn && lockR.r2) { yr2 = lockR.r2.y; xr2 = lockR.r2.x; } else if (lockOn) lockR.r2 = { y: yr2, x: xr2 };
     X = function (x) { return pad.l + (x - xr2[0]) / (xr2[1] - xr2[0]) * (W - pad.l - pad.r); }; Y = function (y) { return H - pad.b - (y - yr2[0]) / (yr2[1] - yr2[0]) * (H - pad.t - pad.b); };
     g.strokeStyle = line; g.lineWidth = 1; g.fillStyle = muted; g.font = mono; g.textAlign = 'right';
     for (i = 0; i <= 3; i++) { var yy2 = yr2[0] + (yr2[1] - yr2[0]) * i / 3; g.beginPath(); g.moveTo(pad.l, Y(yy2)); g.lineTo(W - pad.r, Y(yy2)); g.stroke(); g.fillText(yy2.toFixed(2), pad.l - 6, Y(yy2) + 4); }
     g.fillStyle = rsoft; g.beginPath(); for (i = 0; i <= M.N; i++) { if (i) g.lineTo(X(M.xs[i]), Y(M.fs[i])); else g.moveTo(X(M.xs[i]), Y(M.fs[i])); } for (i = M.N; i >= 0; i--) g.lineTo(X(M.xs[i]), Y(M.E[i])); g.closePath(); g.fill();
     function path(arr, col, w, dash) { g.strokeStyle = col; g.lineWidth = w; g.setLineDash(dash || []); g.beginPath(); for (var j = 0; j <= M.N; j++) { if (j) g.lineTo(X(M.xs[j]), Y(arr[j])); else g.moveTo(X(M.xs[j]), Y(arr[j])); } g.stroke(); g.setLineDash([]); }
-    path(M.E, rust, 2, [6, 5]); path(M.fs, fg, 2.5); path(M.D, teal, 2, [2, 3]);
-    g.fillStyle = teal; for (i = 0; i <= M.N; i++) { g.beginPath(); g.arc(X(M.xs[i]), Y(M.D[i]), 2.5, 0, 6.2832); g.fill(); }
+    path(M.fs, line, 9); path(M.fs, fg, 1.6); path(M.E, rust, 2, [6, 5]); path(M.D, teal, 1.6, [2, 3]);
+    for (i = 0; i <= M.N; i++) { g.beginPath(); g.arc(X(M.xs[i]), Y(M.D[i]), 2.5, 0, 6.2832); g.fillStyle = teal; g.fill(); g.strokeStyle = halo; g.lineWidth = 1; g.stroke(); }
 
     /* ---- bars ---- */
     var S2 = setup($('cBars'), 0.8); g = S2.g; W = S2.w; H = S2.h; pad = { l: 12, r: 12, t: 16, b: 8 };
@@ -246,7 +251,8 @@ td.e0 { color: var(--teal); }
       stat('largest dB code', M.maxdB + ' of ±' + M.S, true);
   }
   ['hh', 'nn', 'bits', 'kk'].forEach(function (id) { $(id).addEventListener('input', draw); });
-  document.querySelectorAll('input[name=fn]').forEach(function (r) { r.addEventListener('change', draw); });
+  $('lock').addEventListener('change', function () { lockR = null; draw(); });
+  document.querySelectorAll('input[name=fn]').forEach(function (r) { r.addEventListener('change', function () { $('lock').checked = false; lockR = null; draw(); }); });
   window.addEventListener('resize', draw);
   try { window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', draw); } catch (e) { }
   new MutationObserver(draw).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
