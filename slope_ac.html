@@ -147,7 +147,7 @@ td.e0 { color: var(--teal); }
     { name: 'kink', f: function (x) { return 0.5 * Math.abs(x - 2.17) + 0.1 * x; }, d: function (x) { return (x >= 2.17 ? 0.5 : -0.5) + 0.1; }, x0: 0.4, kink: 2.17 }
   ];
   var dang = function (t) { return t / (1 + Math.abs(t)); };            /* slope -> dangent, in (-1, 1) */
-  var undang = function (d) { d = Math.max(-0.9995, Math.min(0.9995, d)); return d / (1 - Math.abs(d)); };   /* dangent -> slope */
+  var undang = function (d, S) { var c = 1 - 0.5 / S; d = Math.max(-c, Math.min(c, d)); return d / (1 - Math.abs(d)); };   /* dangent -> slope */
 
   function setup(canvas, ratio) {
     var dpr = Math.min(window.devicePixelRatio || 1, 2), w = canvas.clientWidth || 300, h = Math.round(w * ratio);
@@ -159,19 +159,21 @@ td.e0 { color: var(--teal); }
     var h = +$('hh').value, N = +$('nn').value, bits = +$('bits').value, S = Math.pow(2, bits);
     var x0 = fn.kink ? fn.kink - N * h * 0.47 : fn.x0, xs = [], fs = [], rows = [], i, k;
     for (k = 0; k <= N; k++) { xs.push(x0 + k * h); fs.push(fn.f(x0 + k * h)); }
-    var E = [fs[0]], D = [fs[0]], accQ = 0, maxQerr = 0, maxdB = 0;
+    var E = [fs[0]], D = [fs[0]], accQ = 0, maxQerr = 0, maxdB = 0, nSat = 0, nStored = 0, prevQ = null;
     for (k = 0; k < N; k++) {
       var mt = fn.d(xs[k]), ms = (fs[k + 1] - fs[k]) / h, Q = ms - mt;
-      var tB = (ms - mt) / (1 + ms * mt);                       /* tangent of the angle between tangent and secant */
-      var dt = dang(mt), dB = dang(tB);
+      var dot = 1 + ms * mt, cross = ms - mt;                   /* (1, mt) . (1, ms) and (1, mt) x (1, ms) */
+      var dt = dang(mt), dB = cross * (dot < 0 ? -1 : 1) / (Math.abs(dot) + Math.abs(cross));   /* = dang(cross/dot), but no pole at dot = 0 */
       var qdt = Math.round(dt * S), qdB = Math.round(dB * S);   /* the two stored integers */
-      var tt = undang(qdt / S), tb = undang(qdB / S);           /* decode */
+      var tt = undang(qdt / S, S), tb = undang(qdB / S, S);           /* decode */
       var msD = (tt + tb) / (1 - tt * tb), QD = msD - tt;
       accQ += h * Q; E.push(E[k] + h * mt); D.push(D[k] + h * msD);
       maxQerr = Math.max(maxQerr, Math.abs(QD - Q)); maxdB = Math.max(maxdB, Math.abs(qdB));
-      rows.push({ k: k, x: xs[k], mt: mt, ms: ms, Q: Q, dt: dt, dB: dB, qdt: qdt, qdB: qdB, msD: msD, QD: QD, f1: Q * h, f2: mt * h });
+      if (sat) nSat++; if (qdt !== prevQ) nStored++; if (qdB !== 0) nStored++; prevQ = qdt;
+      var sat = Math.abs(qdt) >= S || Math.abs(qdB) >= S;
+      rows.push({ sat: sat, k: k, x: xs[k], mt: mt, ms: ms, Q: Q, dt: dt, dB: dB, qdt: qdt, qdB: qdB, msD: msD, QD: QD, f1: Q * h, f2: mt * h });
     }
-    return { fn: fn, h: h, N: N, bits: bits, S: S, xs: xs, fs: fs, E: E, D: D, rows: rows, accQ: accQ, maxQerr: maxQerr, maxdB: maxdB };
+    return { fn: fn, h: h, N: N, bits: bits, S: S, xs: xs, fs: fs, E: E, D: D, rows: rows, accQ: accQ, nSat: nSat, nStored: nStored, maxQerr: maxQerr, maxdB: maxdB };
   }
   function stat(k, v, ok) { return '<div><span class="k">' + k + '</span><span class="v ' + (ok === false ? 'warn' : ok ? 'ok' : '') + '">' + v + '</span></div>'; }
   function f3(v) { return (v >= 0 ? '' : '−') + Math.abs(v).toFixed(3); }
@@ -205,7 +207,8 @@ td.e0 { color: var(--teal); }
     var x1 = xk + M.h, tanY = fk + R.mt * M.h, curY = M.fs[ksel + 1];
     g.strokeStyle = muted; g.lineWidth = 1; g.setLineDash([2, 3]); g.beginPath(); g.moveTo(X(xk), Y(fk)); g.lineTo(X(x1), Y(fk)); g.stroke(); g.setLineDash([]);
     g.strokeStyle = tang; g.lineWidth = 4; g.beginPath(); g.moveTo(X(x1) + 5, Y(fk)); g.lineTo(X(x1) + 5, Y(tanY)); g.stroke();
-    g.strokeStyle = sec; g.lineWidth = 4; g.beginPath(); g.moveTo(X(x1) + 5, Y(tanY)); g.lineTo(X(x1) + 5, Y(curY)); g.stroke();
+    var fo = R.mt * R.Q < 0 ? 10 : 5;   /* f1 steps aside when it points back over f2 */
+    g.strokeStyle = sec; g.lineWidth = 4; g.beginPath(); g.moveTo(X(x1) + fo, Y(tanY)); g.lineTo(X(x1) + fo, Y(curY)); g.stroke();
     for (i = 0; i <= M.N; i++) { g.beginPath(); g.arc(X(M.xs[i]), Y(M.fs[i]), i === ksel ? 5.5 : 3, 0, 6.2832); g.fillStyle = teal; g.fill(); g.strokeStyle = halo; g.lineWidth = 1.5; g.stroke(); }
     g.restore();
     g.font = '12px ' + css('--f-mono'); g.textAlign = 'left';
@@ -242,13 +245,14 @@ td.e0 { color: var(--teal); }
 
     /* ---- table & stats ---- */
     var th = '<tr><th>k</th><th>x</th><th>m_t</th><th>m_s</th><th>Q</th><th>dt</th><th>dB</th><th>m_s decoded</th><th>Q decoded</th></tr>';
-    var body = M.rows.map(function (r) { return '<tr' + (r.k === ksel ? ' class="sel"' : '') + '><td>' + r.k + '</td><td>' + r.x.toFixed(2) + '</td><td>' + f3(r.mt) + '</td><td>' + f3(r.ms) + '</td><td>' + f3(r.Q) + '</td><td class="e0">' + r.qdt + '</td><td class="e0">' + r.qdB + '</td><td>' + f3(r.msD) + '</td><td>' + f3(r.QD) + '</td></tr>'; }).join('');
+    var body = M.rows.map(function (r) { return '<tr' + (r.k === ksel ? ' class="sel"' : '') + (r.sat ? ' title="code at the ±S limit: saturated or exactly perpendicular"' : '') + '><td>' + r.k + '</td><td>' + r.x.toFixed(2) + '</td><td>' + f3(r.mt) + '</td><td>' + f3(r.ms) + '</td><td>' + f3(r.Q) + '</td><td class="' + (Math.abs(r.qdt) >= M.S ? 'warn' : 'e0') + '">' + r.qdt + '</td><td class="' + (Math.abs(r.qdB) >= M.S ? 'warn' : 'e0') + '">' + r.qdB + '</td><td>' + f3(r.msD) + '</td><td>' + f3(r.QD) + '</td></tr>'; }).join('');
     $('tbl').innerHTML = th + body;
     var ident = Math.abs(M.E[M.N] + M.accQ - M.fs[M.N]);
     var decErr = Math.abs(M.D[M.N] - M.fs[M.N]), eulerGap = Math.abs(M.E[M.N] - M.fs[M.N]);
     $('allStats').innerHTML = stat('Euler + Σh·Q − f(end)', ident.toExponential(1), ident < 1e-9) + stat('Euler-only error at end', eulerGap.toFixed(3), eulerGap < 0.01) +
       stat('decoded error at end', decErr.toFixed(4), decErr < Math.max(0.01, eulerGap * 0.2)) + stat('worst Q decode error', M.maxQerr.toFixed(4), M.maxQerr < 0.02) +
-      stat('largest dB code', M.maxdB + ' of ±' + M.S, true);
+      stat('largest dB code', M.maxdB + ' of ±' + M.S, true) +
+      stat('codes at ±S limit', M.nSat + ' of ' + M.N + ' steps', M.nSat === 0) + stat('codes stored (repeats, zero dB skipped)', M.nStored + ' of ' + 2 * M.N, true);
   }
   ['hh', 'nn', 'bits', 'kk'].forEach(function (id) { $(id).addEventListener('input', draw); });
   $('lock').addEventListener('change', function () { lockR = null; draw(); });
