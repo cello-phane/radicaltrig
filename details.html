@@ -239,8 +239,22 @@ hr{border:none;border-top:1px solid var(--rule);margin:2rem 0;}
   border:1px solid var(--rule);
   border-radius:4px;
   overflow:hidden;
+  transition:background .2s ease, border-color .2s ease;
 }
 .diagram svg{display:block;width:100%;height:auto;}
+
+/* Dark theme overrides tied to your toggle */
+html[data-theme="dark"] .diagram{
+  background:#0d1117; /* Or use var(--paper) to match #15141a */
+}
+
+/* Override any hardcoded white fills inside the SVG itself */
+html[data-theme="dark"] .diagram svg [fill="#ffffff"],
+html[data-theme="dark"] .diagram svg [fill="#fff"],
+html[data-theme="dark"] .diagram svg [fill="white"]{
+  fill:#0d1117 !important;
+}
+
 figcaption{
   font-family:'Martian Mono',monospace;
   font-size:.6rem;
