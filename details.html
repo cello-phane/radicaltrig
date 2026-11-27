@@ -264,7 +264,41 @@ figcaption{
   border-top:1px solid var(--rule);
   text-align:center;
 }
+/* Dark-mode background & white-fill overrides for ALL SVGs on the page */
+html[data-theme="dark"] svg {
+  background-color: #0d1117;
+}
 
+/* Override both HTML attributes (fill="#fff") AND inline styles (style="fill: #fff") */
+html[data-theme="dark"] svg [fill="#ffffff"],
+html[data-theme="dark"] svg [fill="#fff"],
+html[data-theme="dark"] svg [fill="white"],
+html[data-theme="dark"] svg [style*="fill: #ffffff"],
+html[data-theme="dark"] svg [style*="fill: #fff"],
+html[data-theme="dark"] svg [style*="fill:#ffffff"],
+html[data-theme="dark"] svg [style*="fill:#fff"],
+html[data-theme="dark"] svg [style*="fill: white"] {
+  fill: #0d1117 !important;
+}
+
+/* Invert black/dark ink fills and strokes to match your --ink variable */
+html[data-theme="dark"] svg [fill="#000"],
+html[data-theme="dark"] svg [fill="#000000"],
+html[data-theme="dark"] svg [fill="#1a1a24"],
+html[data-theme="dark"] svg [style*="fill: #000"],
+html[data-theme="dark"] svg [style*="fill:#000"],
+html[data-theme="dark"] svg [style*="fill: #1a1a24"] {
+  fill: var(--ink) !important;
+}
+
+html[data-theme="dark"] svg [stroke="#000"],
+html[data-theme="dark"] svg [stroke="#000000"],
+html[data-theme="dark"] svg [stroke="#1a1a24"],
+html[data-theme="dark"] svg [style*="stroke: #000"],
+html[data-theme="dark"] svg [style*="stroke:#000"],
+html[data-theme="dark"] svg [style*="stroke: #1a1a24"] {
+  stroke: var(--ink) !important;
+}
 /* ── table ── */
 .tbl{width:100%;border-collapse:collapse;font-size:.84rem;margin:.7rem 0;}
 .tbl th{
