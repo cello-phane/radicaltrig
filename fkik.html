@@ -1,0 +1,482 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>RAU 6-DOF arm: FK, closed-form IK, hinge CCD</title>
+<style>
+:root[data-theme="dark"]{--bg:#1a1a2e;--text:#eee;--control-bg:#16213e;--border:#0f3460;--accent:#00ff88;--accent2:#ff8800;--danger:#ff5566;--mute:#9aa5b8}
+:root[data-theme="light"]{--bg:#f5f5f5;--text:#333;--control-bg:#fff;--border:#ddd;--accent:#0066cc;--accent2:#cc6600;--danger:#cc0033;--mute:#667}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:"Segoe UI",Tahoma,Geneva,Verdana,sans-serif;background:var(--bg);color:var(--text);display:flex;flex-direction:column;align-items:center;padding:20px}
+h1{margin-bottom:4px;color:var(--accent);font-size:22px}
+.subtitle{margin-bottom:14px;opacity:.7;font-size:13px;font-family:monospace;text-align:center}
+.container{display:flex;gap:20px;max-width:1500px;flex-wrap:wrap;justify-content:center}
+canvas{border:2px solid var(--border);border-radius:8px;background:var(--bg);cursor:grab;display:block}
+canvas:active{cursor:grabbing}
+.controls{background:var(--control-bg);padding:16px;border-radius:8px;border:1px solid var(--border);width:380px;max-height:720px;overflow-y:auto}
+.section-title{font-weight:700;font-size:13px;text-transform:uppercase;letter-spacing:.5px;color:var(--accent);margin:14px 0 8px;border-bottom:1px solid var(--border);padding-bottom:4px}
+.section-title:first-child{margin-top:0}
+.hint{font-size:11.5px;opacity:.7;line-height:1.4;margin:6px 0 10px}
+button{padding:8px 10px;margin:0 6px 6px 0;background:var(--accent);color:var(--bg);border:none;border-radius:6px;cursor:pointer;font-weight:600;font-size:12.5px}
+button:hover{opacity:.82}
+button.secondary{background:var(--control-bg);color:var(--text);border:1px solid var(--border)}
+button.on{outline:2px solid var(--accent2)}
+.row{display:flex;gap:6px;margin-bottom:6px;align-items:center}
+.row span{font-size:12px;opacity:.7;width:16px}
+.row input[type=number]{width:100%;background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:4px;padding:3px 5px;font-size:12px}
+select{background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:4px;padding:4px;font-size:12.5px;width:100%;margin-bottom:6px}
+label.chk{display:flex;gap:6px;font-size:12.5px;margin:4px 0;align-items:center}
+.panel{background:var(--control-bg);border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin-top:14px;width:100%;max-width:1280px;font-family:monospace;font-size:12.5px}
+.panel .m{color:var(--accent);font-weight:bold}
+.panel .bad{color:var(--danger);font-weight:bold}
+.panel .warn{color:var(--accent2)}
+table{border-collapse:collapse;width:100%;margin:6px 0}
+th,td{padding:3px 10px 3px 0;text-align:left;white-space:nowrap}
+th{opacity:.6;font-weight:600}
+tr.sel td{color:var(--accent)}
+tr.click{cursor:pointer}
+tr.click:hover td{background:rgba(128,128,128,.12)}
+.cap td,.cap th{white-space:normal;vertical-align:top;font-family:"Segoe UI",sans-serif;font-size:12.5px}
+.cap tr.cur td{color:var(--accent);font-weight:600}
+</style>
+</head>
+<body>
+<h1>RAU 6-DOF arm</h1>
+<div class="subtitle">hinge joints &middot; FK from joint angles &middot; closed-form IK with branches &middot; CCD &middot; every trig step through the RAU core</div>
+
+<div class="container">
+  <div>
+    <canvas id="canvas" width="860" height="640"></canvas>
+    <div class="panel" id="stats"></div>
+  </div>
+  <div class="controls">
+    <div style="display:flex"><button id="themeToggle" class="secondary" style="width:100%">Light mode</button></div>
+
+    <div class="section-title">Stage (active joints)</div>
+    <div id="dofBtns"></div>
+    <div class="hint" id="dofHint"></div>
+
+    <div class="section-title">Target pose</div>
+    <div class="row"><span>x</span><input type="number" id="tx" step="0.1"><span>y</span><input type="number" id="ty" step="0.1"><span>z</span><input type="number" id="tz" step="0.1"></div>
+    <div class="hint" style="margin-top:0">Orientation as Z-Y-Z angles in RAU units (1 = 90&deg;, 4 = full turn) &mdash; same form as the wrist.</div>
+    <div class="row"><span>a</span><input type="number" id="ta" step="0.05"><span>b</span><input type="number" id="tb" step="0.05"><span>g</span><input type="number" id="tg" step="0.05"></div>
+    <button id="randTarget">New reachable target</button><button id="resetArm" class="secondary">Home pose</button>
+    <div style="margin-top:6px">Orientation goal</div>
+    <select id="oriMode"><option value="none">position only</option><option value="axis">approach axis only (pointing)</option><option value="full">full orientation</option></select>
+
+    <div class="section-title">Closed-form IK</div>
+    <button id="runAnalytic">Solve (list branches)</button><button id="applyAnalytic">Move arm to selected</button>
+    <div class="hint">Wrist-decoupled: the first three joints place the wrist centre, the last three give the orientation. Angles come from (cos, sin) pairs through the raw phase and inverse warp &mdash; no arctangent, no angle sums.</div>
+
+    <div class="section-title">CCD (hinge axes)</div>
+    <button id="ccdStep">1 sweep</button><button id="ccdSolve">Solve (animate)</button>
+    <div class="hint">Each joint rotates about its own fixed axis; u and v are projected onto the plane perpendicular to it, and orientation error is folded into the same (dot, cross) pair.</div>
+
+    <div class="section-title">Safety layer</div>
+    <label class="chk"><input type="checkbox" id="enfLimits" checked> enforce joint limits</label>
+    <label class="chk"><input type="checkbox" id="rateLimit" checked> rate-limit joint motion (3&deg;/frame)</label>
+    <label class="chk"><input type="checkbox" id="showGhost" checked> show selected solution as ghost</label>
+    <div class="hint">Drag the canvas to orbit the view.</div>
+  </div>
+</div>
+
+<div class="panel" id="solPanel"></div>
+<div class="panel cap" id="capPanel"></div>
+
+<script>
+// ============================================================================
+// RAU CORE — finalized forward functions (uniform phase: 4 = full turn, 1 = 90 deg)
+//   floor reduction -> warp -> branchless mirror -> normalize (1-w, w) -> quadrant signs
+// plus the inverse direction used here, which needs no arctangent:
+//   (cos, sin) -> raw chord phase (quadrant offsets a, 2-a, 2+a, 4-a) -> inverse warp -> angle
+// ============================================================================
+const WC=[0.78539828866558314,0.64594625770051587,0.63827326697947083,0.6235791642083048,0.75561600946878778,0.079951715963356818,1.8429558690126906];
+function warpQ(v){const y=v*v;let r=WC[6];for(let k=5;k>=0;k--)r=r*y+WC[k];return v*r;}
+function warpQd(v){const y=v*v;let r=0;for(let k=6;k>=0;k--)r=r*y+WC[k]*(2*k+1);return r;}
+const rauWarp=(t)=>0.5+warpQ(t-0.5);
+function invWarp(w){let f=w;for(let i=0;i<5;i++){const v=f-0.5;f-=(0.5+warpQ(v)-w)/warpQd(v);}return f;}
+function rauSinCos(phase){
+  const a=Math.abs(phase),m=a-4*Math.floor(a*0.25),q=Math.min(Math.floor(m),3),t=m-q;
+  const w=Math.abs(rauWarp(t)-(q&1)),omw=1-w,inv=1/Math.sqrt(omw*omw+w*w);
+  const c=omw*inv,s=w*inv,cneg=((q+1)>>1)&1,sneg=((q>>1)&1)^(phase<0?1:0);
+  return{sin:sneg?-s:s,cos:cneg?-c:c};
+}
+// raw chord phase in [0,4] of the direction (c, s); scale-free
+function rawPhaseFromCS(c,s){
+  const ac=Math.abs(c),as=Math.abs(s),d=ac+as;
+  if(d<1e-300)return 0;
+  const a=as/d;
+  if(s>=0)return c>=0?a:2-a;
+  return c<0?2+a:4-a;
+}
+const wrap2=(x)=>x-4*Math.floor((x+2)/4);                       // to [-2,2)
+const rawToUniform=(p)=>{const q=Math.floor(p),t=p-q;return q+invWarp(t);};
+const angleFromCS=(c,s)=>wrap2(rawToUniform(rawPhaseFromCS(c,s)));  // uniform RAU angle in [-2,2)
+
+// ============================================================================
+// VECTORS / MATRICES (3x3 as rows)
+// ============================================================================
+const add=(a,b)=>[a[0]+b[0],a[1]+b[1],a[2]+b[2]],sub=(a,b)=>[a[0]-b[0],a[1]-b[1],a[2]-b[2]];
+const scl=(a,s)=>[a[0]*s,a[1]*s,a[2]*s],dot=(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2];
+const crs=(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];
+const len=(a)=>Math.sqrt(dot(a,a));
+const I3=()=>[[1,0,0],[0,1,0],[0,0,1]];
+const mulMV=(M,v)=>[dot(M[0],v),dot(M[1],v),dot(M[2],v)];
+const col=(M,j)=>[M[0][j],M[1][j],M[2][j]];
+const tr=(M)=>[[M[0][0],M[1][0],M[2][0]],[M[0][1],M[1][1],M[2][1]],[M[0][2],M[1][2],M[2][2]]];
+function mulMM(A,B){const T=tr(B);return A.map((r)=>[dot(r,T[0]),dot(r,T[1]),dot(r,T[2])]);}
+function hinge(k,c,s){  // Rodrigues matrix about unit axis k from (cos, sin)
+  const [x,y,z]=k,t=1-c;
+  return[[c+x*x*t,x*y*t-z*s,x*z*t+y*s],[y*x*t+z*s,c+y*y*t,y*z*t-x*s],[z*x*t-y*s,z*y*t+x*s,c+z*z*t]];
+}
+const Rz=(c,s)=>[[c,-s,0],[s,c,0],[0,0,1]];
+const Ry=(c,s)=>[[c,0,s],[0,1,0],[-s,0,c]];
+
+// ============================================================================
+// ARM MODEL — anthropomorphic, spherical wrist; zero pose = straight up
+//   J1 yaw (z)  J2 shoulder (y)  J3 elbow (y)  J4 roll (z)  J5 pitch (y)  J6 roll (z)
+//   axes 4,5,6 meet at the wrist centre
+// ============================================================================
+const D1=1.0,L2=2.0,L3=1.8,D6=0.6;
+const J=[
+  {axis:[0,0,1],off:[0,0,0]},{axis:[0,1,0],off:[0,0,D1]},{axis:[0,1,0],off:[0,0,L2]},
+  {axis:[0,0,1],off:[0,0,L3]},{axis:[0,1,0],off:[0,0,0]},{axis:[0,0,1],off:[0,0,0]},
+];
+const TOOL=[0,0,D6];
+const LIM=[[-2,2],[-1.2,1.2],[-1.7,1.7],[-2,2],[-1.7,1.7],[-2,2]];   // RAU units
+const clamp=(x,a,b)=>Math.min(b,Math.max(a,x));
+// which joints move at each stage: 2-DOF = shoulder + elbow (J2, J3, the planar arm); otherwise J1..Jn
+let dof=6;
+const isActive=(i)=>(dof===2?i===1||i===2:i<dof);
+
+function fk(q,sc){                                  // sc: optional {sin,cos} provider (libm cross-check)
+  const trig=sc||rauSinCos;
+  let R=I3(),p=[0,0,0];const joints=[];
+  for(let i=0;i<6;i++){
+    p=add(p,mulMV(R,J[i].off));
+    joints.push({o:p.slice(),k:mulMV(R,J[i].axis)});
+    const t=trig(q[i]);R=mulMM(R,hinge(J[i].axis,t.cos,t.sin));
+  }
+  return{joints,tip:add(p,mulMV(R,TOOL)),R,wc:joints[3].o};
+}
+const libm=(q)=>({sin:Math.sin(q*Math.PI/2),cos:Math.cos(q*Math.PI/2)});
+
+// orientation error between two rotations: angle in RAU units (0..2), no arccos
+function oriErr(Ra,Rb){
+  const E=mulMM(Ra,tr(Rb));
+  const c=(E[0][0]+E[1][1]+E[2][2]-1)/2;
+  const v=[E[2][1]-E[1][2],E[0][2]-E[2][0],E[1][0]-E[0][1]];
+  return Math.abs(angleFromCS(c,len(v)/2));
+}
+const poseErr=(F,T)=>({pos:len(sub(F.tip,T.p)),ori:oriErr(F.R,T.R)});
+
+// Z-Y-Z angles <-> matrix (the wrist form)
+function RFromZYZ(a,b,g){const A=rauSinCos(a),B=rauSinCos(b),G=rauSinCos(g);return mulMM(mulMM(Rz(A.cos,A.sin),Ry(B.cos,B.sin)),Rz(G.cos,G.sin));}
+function zyzFromR(R){
+  const sb=Math.hypot(R[0][2],R[1][2]),cb=R[2][2];
+  if(sb>1e-9)return[angleFromCS(R[0][2]/sb,R[1][2]/sb),angleFromCS(cb,sb),angleFromCS(-R[2][0]/sb,R[2][1]/sb)];
+  return cb>0?[0,0,angleFromCS(R[0][0],R[1][0])]:[0,2,-angleFromCS(-R[0][0],-R[1][0])];
+}
+
+// ============================================================================
+// CLOSED-FORM IK — wrist-decoupled. Up to 8 branches: shoulder front/back, elbow +/-, wrist +/-
+// ============================================================================
+function planarArm(pc,Le3,front,elbow,qCur,planar){          // wrist centre (or tip) -> q1,q2,q3 as (cos,sin) pairs
+  const rho0=Math.hypot(pc[0],pc[1]);
+  let c1,s1;
+  if(rho0<1e-9){const t=rauSinCos(qCur[0]);c1=t.cos;s1=t.sin;}else{c1=pc[0]/rho0;s1=pc[1]/rho0;}
+  let rho=rho0;
+  if(!front){c1=-c1;s1=-s1;rho=-rho0;}
+  if(planar){c1=1;s1=0;rho=pc[0];}                     // 2-DOF: yaw locked at 0, so the plane's x is signed
+  const h=pc[2]-D1,D2=rho*rho+h*h;
+  const c3=(D2-L2*L2-Le3*Le3)/(2*L2*Le3);
+  if(Math.abs(c3)>1+1e-9||D2<1e-18)return null;       // unreachable
+  const cc3=clamp(c3,-1,1),s3=elbow*Math.sqrt(Math.max(0,1-cc3*cc3));
+  const ca=L2+Le3*cc3,sa=Le3*s3;                       // (cos, sin) of delta, scaled by D
+  const c2=(h*ca+rho*sa)/D2,s2=(rho*ca-h*sa)/D2;       // q2 = psi - delta by phasor rotation
+  return{c1,s1,c2,s2,c3:cc3,s3};
+}
+function analyticIK(T,qCur,dof){
+  const sols=[];
+  const push=(q,tag)=>{
+    const F=fk(q),e=poseErr(F,T);
+    const inLim=q.every((v,i)=>v>=LIM[i][0]-1e-9&&v<=LIM[i][1]+1e-9);
+    let dist=0;for(let i=0;i<6;i++)dist+=Math.abs(wrap2(q[i]-qCur[i]));
+    const okPos=e.pos<1e-5,okOri=dof<6||e.ori<1e-5;
+    sols.push({q,tag,pos:e.pos,ori:e.ori,valid:okPos&&okOri,inLim,dist});
+  };
+  if(dof===2||dof===3){
+    const Le3=L3+D6;                                    // wrist locked straight: forearm + tool in line
+    for(const front of dof===2?[true]:[true,false])for(const elbow of[1,-1]){
+      const pc=dof===2?[T.p[0],0,T.p[2]]:T.p;
+      const s=planarArm(pc,Le3,front,elbow,qCur,dof===2);if(!s)continue;
+      const q1=dof===2?0:angleFromCS(s.c1,s.s1);
+      push([q1,angleFromCS(s.c2,s.s2),angleFromCS(s.c3,s.s3),0,0,0],(front?"front":"back")+" / elbow "+(elbow>0?"+":"−"));
+    }
+    return sols;
+  }
+  if(dof!==6)return null;                               // 4, 5: no closed form here
+  const pc=sub(T.p,scl(col(T.R,2),D6));
+  for(const front of[true,false])for(const elbow of[1,-1]){
+    const s=planarArm(pc,L3,front,elbow,qCur);if(!s)continue;
+    const c23=s.c2*s.c3-s.s2*s.s3,s23=s.s2*s.c3+s.c2*s.s3;
+    const R36=mulMM(tr(mulMM(Rz(s.c1,s.s1),Ry(c23,s23))),T.R);
+    const cb=R36[2][2],sb0=Math.hypot(R36[0][2],R36[1][2]);
+    const q123=[angleFromCS(s.c1,s.s1),angleFromCS(s.c2,s.s2),angleFromCS(s.c3,s.s3)];
+    const base=(front?"front":"back")+" / elbow "+(elbow>0?"+":"−");
+    if(sb0<1e-7){                                       // wrist singular: axes 4 and 6 aligned; keep current q4
+      const t4=rauSinCos(qCur[3]);let cg,sg;
+      if(cb>0){const cAG=R36[0][0],sAG=R36[1][0];cg=cAG*t4.cos+sAG*t4.sin;sg=sAG*t4.cos-cAG*t4.sin;}
+      else{const cAG=-R36[0][0],sAG=-R36[1][0];cg=t4.cos*cAG+t4.sin*sAG;sg=t4.sin*cAG-t4.cos*sAG;}
+      push([...q123,qCur[3],cb>0?0:2,angleFromCS(cg,sg)],base+" / wrist singular");
+      continue;
+    }
+    for(const w of[1,-1]){
+      const sb=w*sb0;
+      push([...q123,angleFromCS(R36[0][2]/sb,R36[1][2]/sb),angleFromCS(cb,sb),angleFromCS(-R36[2][0]/sb,R36[2][1]/sb)],base+" / wrist "+(w>0?"+":"−"));
+    }
+  }
+  return sols;
+}
+function bestSolution(sols,enforce){
+  const pool=(f)=>sols.filter(f);
+  let c=pool((s)=>s.valid&&(!enforce||s.inLim));
+  if(!c.length)c=pool((s)=>s.valid);
+  if(c.length)return c.reduce((a,b)=>(b.dist<a.dist?b:a));
+  return sols.length?sols.reduce((a,b)=>(b.pos+b.ori<a.pos+b.ori?b:a)):null;
+}
+
+// ============================================================================
+// CCD with hinge axes. Position + weighted orientation fold into one (dot, cross) pair per joint.
+// ============================================================================
+function oriWeights(mode){return mode==="full"?[1,1,1]:mode==="axis"?[0,0,1]:[0,0,0];}
+function ccdSweep(q,T,dof,mode,enforce){
+  const W=oriWeights(mode),SC=4;                        // SC ~ (characteristic length)^2 for orientation terms
+  for(let i=5;i>=0;i--){
+    if(!isActive(i))continue;
+    const F=fk(q),o=F.joints[i].o,k=F.joints[i].k;
+    const proj=(v)=>sub(v,scl(k,dot(v,k)));
+    const u=proj(sub(F.tip,o)),v=proj(sub(T.p,o));
+    let d=dot(u,v),c=dot(k,crs(u,v));
+    for(let j=0;j<3;j++){
+      if(!W[j])continue;
+      const e=proj(col(F.R,j)),t=proj(col(T.R,j));
+      d+=W[j]*SC*dot(e,t);c+=W[j]*SC*dot(k,crs(e,t));
+    }
+    if(Math.abs(d)+Math.abs(c)<1e-14)continue;
+    q[i]=wrap2(q[i]+angleFromCS(d,c));
+    if(enforce)q[i]=clamp(q[i],LIM[i][0],LIM[i][1]);
+  }
+  return q;
+}
+
+// ============================================================================
+// STATE
+// ============================================================================
+const NAMES=["J1 yaw","J2 shoulder","J3 elbow","J4 roll","J5 pitch","J6 roll"];
+let oriMode="full",q=[0,0,0,0,0,0],goalQ=null,target=null,sols=null,selIdx=-1,ghostQ=null,anim=0;
+const QSTAR=[0.4,0.5,-0.9,0.3,0.7,-0.2];
+const CAP=[
+ {n:2,j:"J2, J3",c:"position in the arm plane (2 of 3)",m:"closed form (planar 2-link)",t:"A target off the plane (y ≠ 0) cannot be reached: the residual is |y|."},
+ {n:3,j:"J1–J3",c:"3D position",m:"closed form (yaw + planar 2-link)",t:"Orientation falls out of the position — it is not controllable. 2 position branches × front/back."},
+ {n:4,j:"J1–J4",c:"position + roll about the approach axis",m:"CCD only here",t:"The approach direction is still set by the position (tool lies along the forearm). Roll is the only extra freedom."},
+ {n:5,j:"J1–J5",c:"position + pointing (2 of 3 orientation)",m:"CCD only here",t:"Tool roll about its own axis is uncontrolled. Use “approach axis only” as the goal."},
+ {n:6,j:"J1–J6",c:"full pose",m:"closed form, up to 8 branches",t:"Spherical wrist decouples position (J1–J3) from orientation (J4–J6). Singular when q3 = 0 (stretched), q5 = 0 (wrist aligned) or the wrist centre is over the base."},
+];
+const el=(id)=>document.getElementById(id);
+const enforce=()=>el("enfLimits").checked;
+const fmt=(v,n=3)=>v.toFixed(n);
+const fmtE=(v)=>(v<1e-12?"0":v.toExponential(1));
+
+function setTarget(T){
+  target={p:T.p.slice(),R:T.R};
+  const z=zyzFromR(T.R);
+  ["x","y","z"].forEach((a,i)=>(el("t"+a).value=fmt(T.p[i],4)));
+  ["a","b","g"].forEach((a,i)=>(el("t"+a).value=fmt(z[i],4)));
+}
+function targetFromInputs(){
+  const g=(id)=>parseFloat(el(id).value)||0;
+  target={p:[g("tx"),g("ty"),g("tz")],R:RFromZYZ(g("ta"),g("tb"),g("tg"))};
+}
+function activeQ(src){return src.map((v,i)=>(isActive(i)?v:0));}
+function setStage(n,keepTarget){
+  dof=n;
+  oriMode=n<=3?"none":n===5?"axis":"full";
+  el("oriMode").value=oriMode;
+  q=activeQ(q);goalQ=null;sols=null;selIdx=-1;ghostQ=null;
+  document.querySelectorAll("#dofBtns button").forEach((b)=>b.classList.toggle("on",+b.dataset.n===n));
+  const c=CAP.find((x)=>x.n===n);
+  el("dofHint").innerHTML=`<b>${n}-DOF</b> (${c.j}): controllable &mdash; ${c.c}. ${c.t}`;
+  if(!keepTarget){const F0=fk(activeQ(QSTAR));setTarget({p:F0.tip,R:F0.R});}
+  render();
+}
+function randomReachable(){
+  for(let tries=0;tries<500;tries++){
+    const r=[];for(let i=0;i<6;i++)r.push(isActive(i)?LIM[i][0]*0.85+Math.random()*(LIM[i][1]-LIM[i][0])*0.85:0);
+    if(Math.abs(rauSinCos(r[2]).sin)<0.15||(dof>=5&&Math.abs(rauSinCos(r[4]).sin)<0.15))continue;   // keep clear of singular poses
+    const F=fk(r);if(dof>=3&&Math.hypot(F.wc[0],F.wc[1])<0.3)continue;
+    setTarget({p:F.tip,R:F.R});return r;
+  }
+  const F=fk(activeQ(QSTAR));setTarget({p:F.tip,R:F.R});return activeQ(QSTAR);   // fallback: the stage's default target
+}
+
+// ============================================================================
+// VIEW
+// ============================================================================
+const canvas=el("canvas"),ctx=canvas.getContext("2d");
+let az=30,elev=22;
+const CX=430,CY=350,PERSP=1100,S=76,CEN=[0,0,2.3];
+function P(p){
+  const d=sub(p,CEN),a=rauSinCos(az/90),e=rauSinCos(elev/90);
+  const x1=d[0]*a.cos-d[1]*a.sin,y1=d[0]*a.sin+d[1]*a.cos,up=d[2]*e.cos+y1*e.sin,depth=y1*e.cos-d[2]*e.sin;
+  const sc=PERSP/(PERSP+depth*S);
+  return{x:CX+x1*S*sc,y:CY-up*S*sc,sc};
+}
+function line(a,b,color,w,dash){const p=P(a),r=P(b);ctx.strokeStyle=color;ctx.lineWidth=w||2;ctx.setLineDash(dash||[]);ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(r.x,r.y);ctx.stroke();ctx.setLineDash([]);}
+function dotAt(a,color,r){const p=P(a);ctx.fillStyle=color;ctx.beginPath();ctx.arc(p.x,p.y,r||5,0,6.2832);ctx.fill();}
+function label(a,text,color,dx,dy){const p=P(a);ctx.fillStyle=color||getComputedStyle(document.documentElement).getPropertyValue("--text");ctx.font="12px monospace";ctx.fillText(text,p.x+(dx||8),p.y+(dy||-8));}
+function frame(p,R,len_,alpha,dash){
+  [["#ff5566",0],["#55dd77",1],["#5599ff",2]].forEach(([c,j])=>{
+    ctx.globalAlpha=alpha;line(p,add(p,scl(col(R,j),len_)),c,alpha<1?2:3,dash);ctx.globalAlpha=1;
+  });
+}
+function drawArm(qv,color,w,full){
+  const F=fk(qv),pts=[F.joints[0].o,F.joints[1].o,F.joints[2].o,F.wc,F.tip];
+  for(let i=0;i<4;i++)line(pts[i],pts[i+1],color,w);
+  line(pts[3],pts[4],color,w*0.6);
+  if(full){
+    F.joints.forEach((j,i)=>{
+      if(i===4||i===5)return;
+      const act=isActive(i);ctx.globalAlpha=act?1:0.35;
+      line(sub(j.o,scl(j.k,0.38)),add(j.o,scl(j.k,0.38)),"#c8cdd6",2);ctx.globalAlpha=1;
+      dotAt(j.o,act?"#55cc99":"#777",5);
+    });
+    dotAt(F.wc,"#ffcc00",6);label(F.wc,"wrist centre","#ffcc00");
+    frame(F.tip,F.R,0.8,1);
+  }
+  return F;
+}
+function render(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  for(let g=-4;g<=4;g++){line([g,-4,0],[g,4,0],"rgba(128,140,160,.25)",1);line([-4,g,0],[4,g,0],"rgba(128,140,160,.25)",1);}
+  if(target){frame(target.p,target.R,0.8,0.45,[5,4]);dotAt(target.p,"#ff5566",6);}
+  if(ghostQ&&el("showGhost").checked)drawArm(ghostQ,"rgba(255,170,60,.55)",5,false);
+  const F=drawArm(q,"#55ccff",7,true);
+  dotAt([0,0,0],"#5599ff",8);
+  if(target)label(target.p,"target","#ff5566",10,18);       // drawn last so the arm does not cover it
+  updateStats(F);updateSolPanel();updateCap();
+}
+
+// ============================================================================
+// PANELS
+// ============================================================================
+let checkStr="";
+function selfCheck(){
+  let m=0;
+  for(let n=0;n<300;n++){
+    const r=[0,1,2,3,4,5].map((i)=>LIM[i][0]+Math.random()*(LIM[i][1]-LIM[i][0]));
+    const A=fk(r),B=fk(r,libm);m=Math.max(m,len(sub(A.tip,B.tip)));
+  }
+  checkStr=`FK (RAU core) vs libm FK over 300 random poses: max tip difference <span class="m">${m.toExponential(1)}</span>`;
+}
+function updateStats(F){
+  if(!target)return;
+  const e=poseErr(F,target),sb=Math.abs(rauSinCos(q[4]).sin),s3=Math.abs(rauSinCos(q[2]).sin),rho=Math.hypot(F.wc[0],F.wc[1]);
+  const flags=[];
+  if(dof>=5&&sb<0.05)flags.push("wrist near-singular (q5≈0)");
+  if(s3<0.05)flags.push("elbow near-singular (stretched/folded)");
+  if(dof>=3&&rho<0.1)flags.push("wrist centre over the base");
+  const lim=q.map((v,i)=>(v<LIM[i][0]-1e-9||v>LIM[i][1]+1e-9?NAMES[i]:null)).filter(Boolean);
+  let h=`<div>tip position error: <span class="m">${e.pos.toExponential(2)}</span> &nbsp; orientation error: <span class="m">${(e.ori*90).toFixed(3)}&deg;</span>${dof<6&&oriMode==="none"?' <span class="warn">(not controlled at this stage)</span>':""}</div>`;
+  h+=`<div>joints: ${q.map((v,i)=>`<span style="opacity:${isActive(i)?1:.4}">${NAMES[i].split(" ")[0]} <span class="m">${fmt(v,3)}</span> (${(v*90).toFixed(1)}&deg;)</span>`).join(" &nbsp; ")}</div>`;
+  h+=`<div>${flags.length?'<span class="warn">'+flags.join(" &middot; ")+"</span>":"no singularity flags"}${lim.length?' &nbsp; <span class="bad">outside limits: '+lim.join(", ")+"</span>":""}</div>`;
+  h+=`<div style="opacity:.7">${checkStr}</div>`;
+  el("stats").innerHTML=h;
+}
+function updateSolPanel(){
+  const p=el("solPanel");
+  if(dof===4||dof===5){p.innerHTML=`<b>Closed-form IK</b>: not available for ${dof}-DOF (no decoupling here). Use CCD &mdash; it works for any stage and reports the residual honestly.`;return;}
+  if(!sols){p.innerHTML=`<b>Closed-form IK</b>: press <i>Solve</i> to list the branches for the current target.`;return;}
+  if(!sols.length){p.innerHTML=`<b>Closed-form IK</b>: <span class="bad">target is out of reach</span> (the law-of-cosines term |cos q3| &gt; 1).`;return;}
+  let h=`<b>Closed-form IK</b> &mdash; ${sols.length} branch${sols.length>1?"es":""}. Click a row to select; the arm moves to it only when you press <i>Move arm to selected</i>.<table><tr><th>branch</th>`+[1,2,3,4,5,6].map((i)=>`<th>q${i}</th>`).join("")+`<th>pos err</th><th>ori err</th><th>limits</th><th>joint distance</th></tr>`;
+  sols.forEach((s,i)=>{
+    h+=`<tr class="click${i===selIdx?" sel":""}" data-i="${i}"><td>${i===selIdx?"&#9654; ":""}${s.tag}</td>`+s.q.map((v,j)=>`<td style="opacity:${isActive(j)?1:.35}">${fmt(v,3)}</td>`).join("")+`<td>${fmtE(s.pos)}</td><td>${fmtE(s.ori*90)}&deg;</td><td>${s.inLim?"ok":'<span class="bad">violates</span>'}</td><td>${fmt(s.dist,2)}</td></tr>`;
+  });
+  h+=`</table><div style="opacity:.7">Default pick: valid and within limits, nearest to the current joints (so the arm does not jump between branches).</div>`;
+  p.innerHTML=h;
+  p.querySelectorAll("tr.click").forEach((r)=>r.addEventListener("click",()=>{selIdx=+r.dataset.i;ghostQ=sols[selIdx].q.slice();render();}));
+}
+function updateCap(){
+  let h=`<b>Progression to 6-DOF</b> (current stage highlighted)<table><tr><th>DOF</th><th>joints</th><th>controllable</th><th>IK here</th><th>note</th></tr>`;
+  CAP.forEach((c)=>{h+=`<tr class="${c.n===dof?"cur":""}"><td>${c.n}</td><td>${c.j}</td><td>${c.c}</td><td>${c.m}</td><td>${c.t}</td></tr>`;});
+  el("capPanel").innerHTML=h+"</table>";
+}
+
+// ============================================================================
+// MOTION (rate-limited joint-space move) + solvers wiring
+// ============================================================================
+const STEP=0.03;                                         // RAU units per frame = 2.7 deg
+function moveToward(goal){
+  goalQ=goal.slice();
+  if(!el("rateLimit").checked){q=goalQ.slice();goalQ=null;render();return;}
+  if(anim)cancelAnimationFrame(anim);
+  const tick=()=>{
+    let done=true;
+    for(let i=0;i<6;i++){
+      const d=wrap2(goalQ[i]-q[i]);
+      if(Math.abs(d)>STEP){q[i]=wrap2(q[i]+Math.sign(d)*STEP);done=false;}else q[i]=goalQ[i];
+    }
+    render();
+    anim=done?0:requestAnimationFrame(tick);
+  };
+  anim=requestAnimationFrame(tick);
+}
+function runAnalytic(){
+  targetFromInputs();
+  sols=analyticIK(target,q,dof);
+  if(sols&&sols.length){const b=bestSolution(sols,enforce());selIdx=sols.indexOf(b);ghostQ=b.q.slice();}else{selIdx=-1;ghostQ=null;}
+  render();
+}
+let ccdAnim=0;
+function ccdOnce(){targetFromInputs();q=activeQ(ccdSweep(q.slice(),target,dof,oriMode,enforce()));render();}
+function ccdAnimate(){
+  if(ccdAnim)return;targetFromInputs();let n=0,last=Infinity;
+  const tick=()=>{
+    q=activeQ(ccdSweep(q.slice(),target,dof,oriMode,enforce()));render();
+    const e=poseErr(fk(q),target),m=e.pos+e.ori*0.1;n++;
+    if(m>1e-7&&last-m>1e-10&&n<600)ccdAnim=requestAnimationFrame(tick);else ccdAnim=0;
+    last=m;
+  };
+  ccdAnim=requestAnimationFrame(tick);
+}
+
+// UI wiring
+const dofBtns=el("dofBtns");
+[2,3,4,5,6].forEach((n)=>{const b=document.createElement("button");b.textContent=n+"-DOF";b.dataset.n=n;b.className="secondary";b.addEventListener("click",()=>setStage(n));dofBtns.appendChild(b);});
+el("oriMode").addEventListener("change",(e)=>{oriMode=e.target.value;render();});
+["tx","ty","tz","ta","tb","tg"].forEach((id)=>el(id).addEventListener("input",()=>{targetFromInputs();render();}));
+el("randTarget").addEventListener("click",()=>{randomReachable();sols=null;selIdx=-1;ghostQ=null;render();});
+el("resetArm").addEventListener("click",()=>{if(anim){cancelAnimationFrame(anim);anim=0;}q=[0,0,0,0,0,0];render();});
+el("runAnalytic").addEventListener("click",runAnalytic);
+el("applyAnalytic").addEventListener("click",()=>{if(sols&&selIdx>=0)moveToward(sols[selIdx].q);});
+el("ccdStep").addEventListener("click",ccdOnce);
+el("ccdSolve").addEventListener("click",ccdAnimate);
+["enfLimits","rateLimit","showGhost"].forEach((id)=>el(id).addEventListener("change",render));
+el("themeToggle").addEventListener("click",function(){
+  const cur=document.documentElement.getAttribute("data-theme"),nx=cur==="dark"?"light":"dark";
+  document.documentElement.setAttribute("data-theme",nx);this.textContent=nx==="dark"?"Light mode":"Dark mode";render();
+});
+let drag=false,lx,ly;
+canvas.addEventListener("mousedown",(e)=>{drag=true;lx=e.clientX;ly=e.clientY;});
+canvas.addEventListener("mousemove",(e)=>{if(!drag)return;az=(az+(e.clientX-lx)*0.5+360)%360;elev=clamp(elev+(e.clientY-ly)*0.4,-80,85);lx=e.clientX;ly=e.clientY;render();});
+document.addEventListener("mouseup",()=>(drag=false));
+
+selfCheck();
+setStage(6);
+window.__dof=(n)=>{dof=n;};window.__active=(i)=>isActive(i);
+window.RAU6={fk,analyticIK,ccdSweep,angleFromCS,poseErr,oriErr,RFromZYZ,zyzFromR,LIM,wrap2,rauSinCos,state:()=>({q,dof})};
+// SPDX-License-Identifier: MIT
+</script>
+</body>
+</html>

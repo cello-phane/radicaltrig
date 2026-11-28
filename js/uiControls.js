@@ -200,7 +200,7 @@ function calculateAngleMode(u, v) {
   // Bias mode: always going ccw/cw from u
   if (uiState.biasMode) {
     return {
-      rau: p,
+      rau: p === 4 && Math.abs(angleBetweenDeg) === 0 ? 0 : p,
       signedDeg: -Math.abs(angleBetweenDeg),
       unsignedDeg: Math.abs(angleBetweenDeg),
       ccw: false,
@@ -212,7 +212,7 @@ function calculateAngleMode(u, v) {
     p = ccwDirection ? p : 4 - p;
     const wrapped = 360 - Math.abs(angleBetweenDeg);
     return {
-      rau: p,
+      rau: p === 0 && Math.abs(wrapped) === 360 ? 4 : p,
       signedDeg: ccwDirection || angleBetweenDeg === 0 ? -wrapped : wrapped,
       unsignedDeg: Math.min(Math.abs(angleBetweenDeg), wrapped),
       ccw: ccwDirection || angleBetweenDeg === 0 ? false : true,
@@ -223,7 +223,7 @@ function calculateAngleMode(u, v) {
   if (uiState.defaultMode) {
     p = ccwDirection ? 4 - p : p;
     return {
-      rau: p,
+      rau: p === 4 && Math.abs(angleBetweenDeg) === 0 ? 0 : p,
       signedDeg: angleBetweenDeg * (ccwDirection ? 1 : -1),
       unsignedDeg: Math.abs(angleBetweenDeg),
       ccw: ccwDirection,
@@ -232,7 +232,7 @@ function calculateAngleMode(u, v) {
 
   // Fallback
   return {
-    rau: ccwDirection ? 4 - p : p,
+    rau: p === 4 && Math.abs(angleBetweenDeg) === 0 ? 0 : ccwDirection ? 4 - p : p,
     signedDeg: angleBetweenDeg * (ccwDirection ? 1 : -1),
     unsignedDeg: Math.abs(angleBetweenDeg),
     ccw: ccwDirection,
