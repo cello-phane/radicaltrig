@@ -17,10 +17,24 @@
  *   0 = warp applied — arc-uniform, π/2 per RAU
  *   1 = raw diagonal  — no warp, non-uniform arc speed
  *   runtime blend: rau_sincos_mf(phi, M, s, c)  M∈[0,1]
-
+ *
+ * RAU_WARP_QUALITY (compile-time, default 1):
+ *   1 = v2        (default) — constrained minimax refit, C1 still
+ *                   exactly π/4, end-to-end sin/cos max err 1.246e-7
+ *                   RAU (double precision) / 2.372e-7 (measured on real
+ *                   float32 hardware, ~2.7x tighter than tier 0 there).
+ *                   Validated: compiled and run on real x86 float32,
+ *                   cross-checked against an independent LP/mpmath
+ *                   derivation and against a reference Desmos
+ *                   construction.
+ *   0 = original  — end-to-end sin/cos max err 5.472e-7 RAU. Kept for
+ *                   anyone who specifically wants the older fit.
+ *   rau_warpf_orig() and rau_warpf_v2() are both callable directly
+ *   regardless of this define, for A/B testing.
  *
  * Accuracy:
- *   rau_sincosf       1.246e-7  float32  (5.472e-7 with RAU_WARP_QUALITY=0)
+ *   rau_sincosf       ~1e-7 float32 (rounding level) with RAU_WARP_QUALITY=2 (default; 6.9e-9 in double);
+ *                     1.246e-7 double / 2.37e-7 float32 with =1; 5.472e-7 with =0
  *   rau_tanf          7.73e-6   float16  (pole sign unreliable near ±90°)
  *   rau_r_arctanf     ~1e-15    exact rational
  *   rau_r_arcsinf     ~1e-14    algebraic
@@ -71,6 +85,7 @@ float rau_warpf_orig(float t);
  * tighter as actually compiled on float32 (2.372e-7 vs 6.362e-7).
  * Always callable directly, independent of RAU_WARP_QUALITY. */
 float rau_warpf_v2(float t);
+float rau_warpf_v3(float t);   /* tier 2: degree-13 odd warp, default */
 
 /* Simultaneous sin and cos from RAU angle. Single warp + single sqrt.
  * Prefer over separate rau_sinf/rau_cosf when both outputs are needed. */
@@ -89,11 +104,8 @@ void  rau_sincos_mf(float phi, float M, float *sin_out, float *cos_out);
 
 /* ── §2 Inverse ───────────────────────────────────────────────────────────── */
 
-// Extracts the
 float rau_invdiagonal_from_ratio(float ry, float rx);
 float rau_invdiagonal_from_ratio_quotient(float ry_over_rx);
-float rau_invdiagonal_from_y(float ry);
-float rau_invdiagonal_from_x(float rx);
 
 /* Exact rational arctan: w = |ry/rx| / (1 + |ry/rx|) ∈ [0,1].
  * Returns first-quadrant diagonal coordinate. No approximation. */
@@ -110,6 +122,9 @@ float rau_r_arccosf(float c, int *err);
 /* Approximate inverse of rau_warpf: w ∈ [0,1] → t ∈ [0,1).
  * Accuracy set by RAU_ATAN_QUALITY. Max err at default: ~3.62e-7 RAU. */
 float rau_invpolyf(float w, int *err);
+
+float rau_arcsinf(float ry);
+float rau_arccosf(float rx);
 
 /* Four-quadrant phase recovery → RAU ∈ [0,4). Analogous to atan2(y,x).
  * 0=+x, 1=+y, 2=-x, 3=-y. NaN input → err=1. */

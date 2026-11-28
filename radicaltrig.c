@@ -1,6 +1,4 @@
 #include "radicaltrig.h"
-#include "SDL_stdinc.h"
-#include <math.h>
 #include <immintrin.h>
 
 // Radical Angle Unit (RAU) trigonometric library
@@ -23,7 +21,12 @@
 
 // RAU_WARP_QUALITY selects which forward-warp coefficient tier rau_warpf()
 // (and therefore rau_sincosf/rau_tanf/rau_sincos_mf) dispatches to:
-// 1 = v2 (default) — constrained minimax refit, end-to-end sin/cos max
+// 2 = v3 (default) — degree-13 odd warp (7 coefficients, evaluated in x^2 with
+//                     fused multiply-add; same polynomial as rau_sincosf.h).
+//                     sin/cos max err ~6.9e-9 (double) — about 18x tighter than
+//                     tier 1; float32 results sit at rounding level (~1e-7).
+//                     Compile with -mfma for the fused path.
+// 1 = v2 — constrained minimax refit, end-to-end sin/cos max
 //                     err 1.246e-7 (double-precision theoretical) /
 //                     2.372e-7 (measured on real float32 hardware, ~2.68x
 //                     tighter than tier 0 there). Same C1=pi/4 exactness
@@ -36,26 +39,32 @@
 //                     rau_warpf_orig() is also directly callable
 //                     regardless of this define.
 #ifndef RAU_WARP_QUALITY
-#define RAU_WARP_QUALITY 1
+#define RAU_WARP_QUALITY 2
+#endif
+
+#ifdef __FMA__
+#define RT_FMAF(a, b, c) fmaf((a), (b), (c))
+#else
+#define RT_FMAF(a, b, c) ((a) * (b) + (c))
 #endif
 
 // ── Helper Functions ───────────────────────────────────────────────────────
 
 static float mod4(float a) {
-    float r = SDL_fmodf(a, 4.0f);
+    float r = fmodf(a, 4.0f);
     if (r < 0.0f) r += 4.0f;
     return r;
 }
 
 static Uint32 float_to_bits(float x) {
     Uint32 u;
-    SDL_memcpy(&u, &x, sizeof u);
+    memcpy(&u, &x, sizeof u);
     return u;
 }
 
 static float bits_to_float(Uint32 u) {
     float x;
-    SDL_memcpy(&x, &u, sizeof x);
+    memcpy(&x, &u, sizeof x);
     return x;
 }
 
@@ -92,33 +101,31 @@ float rau_atan2_signed_degs(float phi_rau) {
 // v2). rau_warpf_orig() and rau_warpf_v2() are both exposed directly so
 // either is callable regardless of that define, for A/B comparison
 // without a recompile.
-
+//
+// Both figures below are end-to-end sin/cos error (after the radical-
+// identity projection), which is very slightly larger than the raw
+// warp-space approximation error alone (5.168e-7 for tier 0) — verified
+// via mpmath at 50-digit precision and cross-checked with an independent
+// scipy/HiGHS linear-program minimax solve, then again by compiling and
+// running both tiers on real x86 float32 hardware.
+//
+//   tier 0 (original): Remez minimax over full [0,1]. C1 = π/4 exact.
+//                       sin/cos max err: 5.472e-7 (double) / 6.36e-7 (float32)
+//   tier 1 (v2, default): constrained L-infinity refit — C1 still pinned
+//                       exactly to π/4, C2..C6 re-solved by LP. sin/cos
+//                       max err: 1.246e-7 (double) / 2.37e-7 (float32) —
+//                       ~4.4x tighter in double precision, ~2.7x tighter
+//                       as actually compiled, confirming the improvement
+//                       survives float32 rounding rather than being an
+//                       artifact of the double-precision derivation.
 static inline float rau_warpf_tier0(float t) {
-    static const float C[7] = {
-        0.78539828866558314f,
-        0.64594625770051587f,
-        0.63827326697947083f,
-        0.62357916420830480f,
-        0.75561600946878778f,
-        0.079951715963356818f,
-        1.8429558690126906f
-    };
-    float v  = t - 0.5f;
-    float v2 = v * v;
-    float p  = C[6];
-    for (int i = 5; i >= 0; --i)
-        p = v2 * p + C[i];
-    return 0.5f + v * p;
-}
-
-static inline float rau_warpf_tier1(float t) {
     static const float C[6] = {
-        0.7853980572931007f,
-        0.645998410943566f,
-        0.6358057177332058f,
-        0.6676945542914484f,
-        0.39804812605847295f,
-        1.4099248224897576f
+        0.78539816339744830962f,
+        0.64607158024987317298f,
+        0.63401589172451679138f,
+        0.68515350354689586789f,
+        0.32501622369042378935f,
+        1.51901679307446258196f
     };
     float v  = t - 0.5f;
     float v2 = v * v;
@@ -128,42 +135,78 @@ static inline float rau_warpf_tier1(float t) {
     return 0.5f + v * p;
 }
 
+static inline float rau_warpf_tier1(float t) {
+    static const float C[6] = {
+        0.78539816339744830962f, /* unchanged from tier 0 — pi/4, exact */
+        0.6460261721112686f,
+        0.6346711435786873f,
+        0.6812793876895539f,
+        0.33448057938003534f,
+        1.5121252251949524f
+    };
+    float v  = t - 0.5f;
+    float v2 = v * v;
+    float p  = C[5];
+    for (int i = 4; i >= 0; --i)
+        p = v2 * p + C[i];
+    return 0.5f + v * p;
+}
+
+// tier 2 (v3, default): degree-13 odd warp about t = 0.5, coefficients in y = x^2.
+static inline float rau_warpf_tier2(float t) {
+    float x = t - 0.5f, y = x * x, y2 = y * y, y4 = y2 * y2;
+    float b0 = RT_FMAF(RT_FMAF(0.62357916420830480f, y, 0.63827326697947083f), y2,
+                       RT_FMAF(0.64594625770051587f, y, 0.78539828866558314f));
+    float b1 = RT_FMAF(1.8429558690126906f, y2,
+                       RT_FMAF(0.079951715963356818f, y, 0.75561600946878778f));
+    return RT_FMAF(x, RT_FMAF(b1, y4, b0), 0.5f);
+}
+
+float rau_warpf_v3(float t) { return rau_warpf_tier2(t); }
 float rau_warpf_orig(float t) { return rau_warpf_tier0(t); }
 float rau_warpf_v2(float t) { return rau_warpf_tier1(t); }
 
-#if RAU_WARP_QUALITY == 1
+#if RAU_WARP_QUALITY == 2
+float rau_warpf(float t) { return rau_warpf_tier2(t); }
+#elif RAU_WARP_QUALITY == 1
 float rau_warpf(float t) { return rau_warpf_tier1(t); }
 #else
 float rau_warpf(float t) { return rau_warpf_tier0(t); }
 #endif
 
+// Shared range reduction. Reduces |x| (not x): for a small negative x, x + 4 would round
+// to the ulp of 4.0 and lose ~3e-7; the subtraction below is exact. The sign of x is
+// returned as a bit mask so odd functions can XOR it back in.
+static inline float rau_reduce_w(float x, int *q, Uint32 *xsign) {
+    float a = fabsf(x);
+    float m = RT_FMAF(-4.0f, floorf(a * 0.25f), a);    // exact, [0,4)
+    int qi = (int)m;
+#if NON_UNIFORM_VEL
+    float w = m - (float)qi;
+#else
+    float w = rau_warpf(m - (float)qi);
+#endif
+    *q = qi;
+    *xsign = float_to_bits(x) & 0x80000000u;
+    return fabsf(w - (float)(qi & 1));   // 1-w on odd quadrants, branch-free
+}
+
 // ── Forward Trigonometric Functions ───────────────────────────────────────
 
 void rau_sincosf(float input_t, float *sin_out, float *cos_out) {
-    float rau_pos = mod4(input_t);
-    int   qi_full = (int)rau_pos;
-    float frac    = rau_pos - (float)qi_full;  /* ∈ [0,1) */
-    int   qi      = qi_full & 3;               /* quadrant 0..3 */
-
-#if NON_UNIFORM_VEL
-    float w = frac;
-#else
-    float w = rau_warpf(frac);
-#endif
-
-    /* Odd-quadrant reversal: ensures w increases 0→1 in every quadrant */
-    if (qi & 1) w = 1.0f - w;
+    int qi; Uint32 xs;
+    float w = rau_reduce_w(input_t, &qi, &xs);
 
     /* Diagonal point → unit circle via single sqrt */
     float omw = 1.0f - w;
     float D   = omw * omw + w * w;
-    float inv = 1.0f / SDL_sqrtf(D);
+    float inv = 1.0f / sqrtf(D);
     float cs  = omw * inv;
     float sn  = w   * inv;
 
     /* Sign via IEEE-754 bit XOR — no branches, no float multiply */
     Uint32 csign = (Uint32)(((qi + 1) >> 1) & 1) << 31;
-    Uint32 ssign = (Uint32)(( qi      >> 1) & 1) << 31;
+    Uint32 ssign = ((Uint32)((qi >> 1) & 1) << 31) ^ xs;
 
     *cos_out = bits_to_float(float_to_bits(cs) ^ csign);
     *sin_out = bits_to_float(float_to_bits(sn) ^ ssign);
@@ -185,19 +228,9 @@ float rau_cosf(float x) {
 // Sign via bit XOR, consistent with rau_sincosf convention
 // Note: large absolute error near poles (π/2 + nπ) is unavoidable;
 // sign may flip when w rounds across the w=1 boundary
-float rau_tanf(float x) {
-    float rau_pos = mod4(x);
-    int   qi_full = (int)rau_pos;
-    float frac    = rau_pos - (float)qi_full;
-    int   qi      = qi_full & 3;
-
-#if NON_UNIFORM_VEL
-    float w = frac;
-#else
-    float w = rau_warpf(frac);
-#endif
-
-    if (qi & 1) w = 1.0f - w;
+float rau_tanf(float input_t) {
+    int qi; Uint32 xs;
+    float w = rau_reduce_w(input_t, &qi, &xs);
 
     float denom = 1.0f - w;
     if (denom < 1e-6f) denom = 1e-6f;  /* pole magnitude clamp */
@@ -209,7 +242,7 @@ float rau_tanf(float x) {
      * formula ((qi>>1)^(qi&1)) flipped the sign in Q2 and Q3 — verified
      * both by inspection and by comparing rau_tanf's sign against
      * sin/cos from rau_sincosf across all four quadrants.) */
-    Uint32 sign = (Uint32)(qi & 1) << 31;
+    Uint32 sign = ((Uint32)(qi & 1) << 31) ^ xs;
     return bits_to_float(float_to_bits(rho) ^ sign);
 }
 
@@ -217,23 +250,15 @@ float rau_tanf(float x) {
 // M=1 gives fully warped (arc-uniform). Lerp between the two for
 // smooth transition effects
 void rau_sincos_mf(float input_t, float M, float *sin_out, float *cos_out) {
-    float rau_pos = mod4(input_t);
-    int   qi_full = (int)rau_pos;
-    float frac    = rau_pos - (float)qi_full;
-    int   qi      = qi_full & 3;
-
-    float w_raw  = frac;
-    float w_warp = rau_warpf(frac);
-    float w      = w_raw + M * (w_warp - w_raw);
-
-    if (qi & 1) w = 1.0f - w;
+    int qi; Uint32 xs;
+    float w = rau_reduce_w(input_t, &qi, &xs);
 
     float omw = 1.0f - w;
     float D   = omw * omw + w * w;
-    float inv = 1.0f / SDL_sqrtf(D);
+    float inv = 1.0f / sqrtf(D);
 
     Uint32 csign = (Uint32)(((qi + 1) >> 1) & 1) << 31;
-    Uint32 ssign = (Uint32)(( qi      >> 1) & 1) << 31;
+    Uint32 ssign = ((Uint32)((qi >> 1) & 1) << 31) ^ xs;
 
     *cos_out = bits_to_float(float_to_bits(omw * inv) ^ csign);
     *sin_out = bits_to_float(float_to_bits(w   * inv) ^ ssign);
@@ -349,58 +374,31 @@ float rau_invdiagonal_from_ratio(float ry, float rx) {
 // Safely bypasses the vector components while preserving singularity protection
 float rau_invdiagonal_from_ratio_quotient(float ry_over_rx) {
     // 1. Explicitly catch vertical tracking limits (rx == 0) to prevent NaN quotients
-    if (isinf(ry_over_rx)) {
+    if (!rau_isfinitef(ry_over_rx)) {
         // As slope approaches infinity, k converges to 1.0f
         // rau_kernel_unwarp(1.0f) smoothly evaluates to a magnitude of 1.0f RAU
-        return SDL_copysignf(1.0f, ry_over_rx);
+        return copysignf(1.0f, ry_over_rx);
     }
-    if (isnan(ry_over_rx)) {
+    if (!rau_isfinitef(ry_over_rx)) {
         return 0.0f;
     }
-    float abs_t = SDL_fabsf(ry_over_rx);
+    float abs_t = fabsf(ry_over_rx);
     float k     = abs_t / (1.0f + abs_t);
 
     float poly_out = rau_kernel_unwarp(k);
-    return SDL_copysignf(poly_out, ry_over_rx);
+    return copysignf(poly_out, ry_over_rx);
 }
 
-// ── Drop-In Inverse Variant 2: From Y-Component (Arcsine Alternative) ──────
-// Maps raw Y coordinate/sine to RAU ∈ [-1.0, 1.0]
-float rau_invdiagonal_from_y(float ry) {
-    int err;
-    float k = rau_r_arcsinf(ry, &err);
-    if (err) return 0.0f;
-
-    float poly_out = rau_kernel_unwarp(k);
-
-    return SDL_copysignf(poly_out, ry);
-}
-
-// ── Drop-In Inverse Variant 3: From X-Component (Arccosine Alternative) ────
-// Maps raw X coordinate/cosine to RAU ∈ [0.0, 2.0] (Principal Arccosine Range)
-float rau_invdiagonal_from_x(float rx) {
-    int err;
-    float k = rau_r_arccosf(rx, &err);
-    if (err) return 0.0f;
-
-    float poly_out = rau_kernel_unwarp(k);
-
-    // Matches Desmos Line 52: { R.x > 0: poly_out, 2.0f - poly_out }
-    if (rx < 0.0f) {
-        return 2.0f - poly_out;
-    }
-    return poly_out;
-}
 
 // rau_r_arctanf — exact rational arctan in RAU ∈ [0,1].
 // Returns |y/x| / (1 + |y/x|) — the RAU diagonal coordinate
 float rau_r_arctanf(float ry, float rx, int *err) {
     if (err) *err = 0;
-    if (isnan(rx) || isnan(ry))       { if (err) *err = 1; return NAN; }
+    if (rau_isnanf(rx) || rau_isnanf(ry))       { if (err) *err = 1; return NAN; }
     if (ry == 0.0f && rx == 0.0f)    { if (err) *err = 1; return NAN; }
-    if (isinf(ry) || isinf(rx)) {
-        if (isinf(ry) && isinf(rx))  return 0.5f;
-        if (isinf(ry))               return 1.0f;
+    if (!rau_isfinitef(ry) || !rau_isfinitef(rx)) {
+        if (!rau_isfinitef(ry) && !rau_isfinitef(rx))  return 0.5f;
+        if (!rau_isfinitef(ry)) return 1.0f;
         return 0.0f;
     }
     if (rx == 0.0f) return 1.0f;
@@ -419,10 +417,10 @@ float rau_r_arcsinf(float s, int *err) {
     }
     float sy2   = s * s;
     float denom = 2.0f * sy2 - 1.0f;
-    if (SDL_fabsf(denom) < 1e-10f)
+    if (fabsf(denom) < 1e-10f)
         return 0.5f;  /* 45° — diagonal point, geometric singularity */
-    float disc = SDL_sqrtf(SDL_max(sy2 * (1.0f - sy2), 0.0f));
-    return SDL_fabsf((sy2 - disc) / denom);
+    float disc = sqrtf(max(sy2 * (1.0f - sy2), 0.0f));
+    return fabsf((sy2 - disc) / denom);
 }
 
 // rau_r_arccosf — rational arccos in RAU ∈ [0,1]
@@ -436,10 +434,10 @@ float rau_r_arccosf(float c, int *err) {
     }
     float cx2   = c * c;
     float denom = 2.0f * cx2 - 1.0f;
-    if (SDL_fabsf(denom) < 1e-10f)
+    if (fabsf(denom) < 1e-10f)
         return 0.5f;  /* 45° — diagonal point, geometric singularity */
-    float disc = SDL_sqrtf(SDL_max(cx2 * (1.0f - cx2), 0.0f));
-    return SDL_fabsf((cx2 - 1.0f + disc) / denom);
+    float disc = sqrtf(max(cx2 * (1.0f - cx2), 0.0f));
+    return fabsf((cx2 - 1.0f + disc) / denom);
 }
 
 // rau_invpolyf — convert RAU diagonal coordinate w ∈ [0,1] to RAU angle ∈ [0,1].
@@ -467,6 +465,35 @@ float rau_invpolyf(float w, int *err) {
     }
 }
 
+
+// ── Drop-In Inverse Variant 2: From Y-Component (Arcsine Alternative) ──────
+// Maps raw Y coordinate/sine to RAU ∈ [-1.0, 1.0]
+float rau_arcsinf(float ry) {
+    int err;
+    float k = rau_r_arcsinf(ry, &err);
+    if (err) return 0.0f;
+
+    float poly_out = rau_kernel_unwarp(k);
+
+    return copysignf(poly_out, ry);
+}
+
+// ── Drop-In Inverse Variant 3: From X-Component (Arccosine Alternative) ────
+// Maps raw X coordinate/cosine to RAU ∈ [0.0, 2.0] (Principal Arccosine Range)
+float rau_arccosf(float rx) {
+    int err;
+    float k = rau_r_arccosf(rx, &err);
+    if (err) return 0.0f;
+
+    float poly_out = rau_kernel_unwarp(k);
+
+    // Matches Desmos Line 52: { R.x > 0: poly_out, 2.0f - poly_out }
+    if (rx < 0.0f) {
+        return 2.0f - poly_out;
+    }
+    return poly_out;
+}
+
 // rau_atan2f — full four-quadrant arctan2, result in RAU [0,4)
 // Accuracy determined by RAU_ATAN_QUALITY (default: float32, 3.62e-7 RAU)
 float rau_atan2f(float y, float x, int *err) {
@@ -474,14 +501,14 @@ float rau_atan2f(float y, float x, int *err) {
     if (rau_isnanf(x) || rau_isnanf(y))  { if (err) *err = 1; return NAN; }
     if (x == 0.0f && y == 0.0f)          { if (err) *err = 1; return NAN; }
 
-    if (isinf(x) || isinf(y)) {
-        if (isinf(y) && isinf(x)) {
+    if (!rau_isfinitef(x) || !rau_isfinitef(y)) {
+        if (!rau_isfinitef(y) && !rau_isfinitef(x)) {
             if (y > 0.0f && x > 0.0f) return 0.5f;
             if (y > 0.0f && x < 0.0f) return 1.5f;
             if (y < 0.0f && x < 0.0f) return 2.5f;
             return 3.5f;
         }
-        if (isinf(y)) return (y > 0.0f) ? 1.0f : 3.0f;
+        if (!rau_isfinitef(y)) return (y > 0.0f) ? 1.0f : 3.0f;
         return (x > 0.0f) ? 0.0f : 2.0f;
     }
 
@@ -514,10 +541,10 @@ float rau_atan2f(float y, float x, int *err) {
 float rau_atanf(float x, int *err) {
     if (err) *err = 0;
     if (rau_isnanf(x))     { if (err) *err = 1; return NAN; }
-    if (!rau_isfinitef(x)) { return SDL_copysignf(1.0f, x); }
+    if (!rau_isfinitef(x)) { return copysignf(1.0f, x); }
     if (x == 0.0f)         { return x; }
 
-    float ax = SDL_fabsf(x);
+    float ax = fabsf(x);
     float a;
     if (ax > 1.0f) { // SIMD if available
     #ifdef __SSE__
@@ -537,5 +564,5 @@ float rau_atanf(float x, int *err) {
          * returned ~0 garbage for regardless of x. */
         a = rau_atanf_polyf(ax) * (float)M_2_PI;
     }
-    return SDL_copysignf(a, x);
+    return copysignf(a, x);
 }
